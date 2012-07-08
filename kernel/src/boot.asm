@@ -1,4 +1,4 @@
-;	Copyright 2011-2012 the developers of the universe
+;	Copyright 2012 the developers of the universe
 ;	This file is part of Universe Kernel.
 ;
 ;    Universe Kernel is free software: you can redistribute it and/or modify
