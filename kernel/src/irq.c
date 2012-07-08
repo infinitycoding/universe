@@ -144,6 +144,7 @@ void remap_pic(void){
 
 void INIT_IDT(void){
 	remap_pic();
+	IDT=PMM_malloc(1);
 	//Exceptions
 	Set_IDT_Entry(0,0x8,(uint32_t)int_0,0xEE00); Set_IDT_Entry(1,0x8,(uint32_t)int_1,0xEE00); Set_IDT_Entry(2,0x8,(uint32_t)int_2,0xEE00);
 	Set_IDT_Entry(3,0x8,(uint32_t)int_3,0xEE00); Set_IDT_Entry(4,0x8,(uint32_t)int_4,0xEE00); Set_IDT_Entry(5,0x8,(uint32_t)int_5,0xEE00);
@@ -166,10 +167,4 @@ void INIT_IDT(void){
 	Set_IDT_Entry(44,0x8,(uint32_t)irq_12,0xEE00); Set_IDT_Entry(45,0x8,(uint32_t)irq_13,0xEE00);
 	Set_IDT_Entry(46,0x8,(uint32_t)irq_14,0xEE00); Set_IDT_Entry(47,0x8,(uint32_t)irq_15,0xEE00);
 	lidt(48);
-}
-
-void irq_panic(struct cpu_state* cpu){
-
-
-
 }
