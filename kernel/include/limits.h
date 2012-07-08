@@ -1,3 +1,5 @@
+#ifndef	_limits_h_
+#define	_limits_h_
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
@@ -34,26 +36,28 @@
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
-#define INT8_MIN -128
-#define INT8_MAX 127
-#define UINT8_MAX 255
+	#define INT8_MIN -128
+	#define INT8_MAX 127
+	#define UINT8_MAX 255
 
-#define INT16_MIN -32768
-#define INT16_MAX 32767
-#define UINT16_MAX 65535
+	#define INT16_MIN -32768
+	#define INT16_MAX 32767
+	#define UINT16_MAX 65535
 
-#define INT32_MIN ((int32_t) -0x80000000)
-#define INT32_MAX 0x7FFFFFFF
-#define UINT32_MAX 0xFFFFFFFF
+	#define INT32_MIN ((int32_t) -0x80000000)
+	#define INT32_MAX 0x7FFFFFFF
+	#define UINT32_MAX 0xFFFFFFFF
 
-#define INT64_MIN ((int64_t) -0x8000000000000000LL)
-#define INT64_MAX 0x7FFFFFFFFFFFFFFFLL
-#define UINT64_MAX ((uint64_t) -1ULL)
+	#define INT64_MIN ((int64_t) -0x8000000000000000LL)
+	#define INT64_MAX 0x7FFFFFFFFFFFFFFFLL
+	#define UINT64_MAX ((uint64_t) -1ULL)
 
-#define INTPTR_MIN INT32_MIN
-#define INTPTR_MAX INT32_MAX
-#define UINTPTR_MAX UINT32_MAX
+	#define INTPTR_MIN INT32_MIN
+	#define INTPTR_MAX INT32_MAX
+	#define UINTPTR_MAX UINT32_MAX
 
-#define INTMAX_MIN INT64_MIN
-#define INTMAX_MAX INT64_MAX
-#define UINTMAX_MAX UINT64_MAX
+	#define INTMAX_MIN INT64_MIN
+	#define INTMAX_MAX INT64_MAX
+	#define UINTMAX_MAX UINT64_MAX
+	
+#endif

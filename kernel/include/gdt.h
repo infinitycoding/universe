@@ -1,3 +1,5 @@
+#ifndef	_gdt_h_
+#define	_gdt_h_
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
@@ -34,23 +36,21 @@
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
-#ifndef	_gdt_h_
-#define	_gdt_h_
 
-#include <stdint.h>
+	#include <stdint.h>
 
-struct gdt_entry{
-	uint16_t limit_low;
-	uint16_t Base_low;
-	uint8_t Base_middle;
-	uint8_t Access;
-	uint8_t limit_Flags;
-	uint8_t base_high;
-};
+	struct gdt_entry{
+		uint16_t limit_low;
+		uint16_t Base_low;
+		uint8_t Base_middle;
+		uint8_t Access;
+		uint8_t limit_Flags;
+		uint8_t base_high;
+	};
 
-struct gdtpt{
-	uint16_t limit;
-	void* base;
-} __attribute__((packed));
+	struct gdtpt{
+		uint16_t limit;
+		void* base;
+	} __attribute__((packed));
 
 #endif

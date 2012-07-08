@@ -38,6 +38,7 @@
 
 int init (void){
 	INIT_GDT();
+	INIT_IDT();
 }
 
 
