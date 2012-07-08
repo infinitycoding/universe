@@ -34,32 +34,34 @@
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
+#include <stdint.h>
+
 uint8_t inb(uint16_t port) {
 	uint8_t result;
-	asm volatile("inb %1, %0" : "=a" (result) : "d" (port));
+	asm volatile("inb %1, %0" : "=a" (result) : "Nd" (port));
 	return result;
 }
 
 uint16_t inw(uint16_t port) {
 	uint16_t result;
-	asm volatile("inw %1, %0" : "=a" (result) : "d" (port));
+	asm volatile("inw %1, %0" : "=a" (result) : "Nd" (port));
 	return result;
 }
 
 uint32_t inl(uint16_t port) {
 	uint32_t result;
-	asm volatile("inl %1, %0" : "=a" (result) : "d" (port));
+	asm volatile("inl %1, %0" : "=a" (result) : "Nd" (port));
 	return result;
 }
 
 void outb(uint16_t port, uint8_t value) {
-	asm volatile("outb %1, %0" : : "d" (port), "a" (value));
+	asm volatile("outb %1, %0" : : "Nd" (port), "a" (value));
 }
 
 void outw(uint16_t port, uint16_t value) {
-	asm volatile("outw %1, %0" : : "d" (port), "a" (value));
+	asm volatile("outw %1, %0" : : "Nd" (port), "a" (value));
 }
 
 void outl(uint16_t port, uint32_t value) {
-	asm volatile("outl %1, %0" : : "d" (port), "a" (value));
+	asm volatile("outl %1, %0" : : "Nd" (port), "a" (value));
 }
