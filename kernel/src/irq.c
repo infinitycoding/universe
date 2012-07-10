@@ -109,7 +109,7 @@ struct cpustate* exception_handler(struct cpustate* cpu){
 	if(((uint32_t)exc[cpu->interruptnum])!=NULL){
 		exc[cpu->interruptnum]();
 	}else{
-		irq_panic(cpu);
+		exc_panic(cpu);
 	}
 	EOI(cpu->interruptnum);
 	return cpu;
