@@ -51,7 +51,7 @@ char* exception_messages[] =
 
 
 // just used in case of untreated exceptions
-void irq_panic(struct cpu_state* cpu){
+void exc_panic(struct cpu_state* cpu){
 	int i;
 	char* exception=exception_messages;
 	for(i=0;i<cpu->intr;i++){
