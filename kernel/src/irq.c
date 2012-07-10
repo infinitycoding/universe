@@ -35,7 +35,7 @@
 */
 #include <idt.h>
 
-static struct IDT_Entry* IDT;
+static struct IDT_Entry IDT[256];
 static struct idtpt idtp;
 
 void lidt(uint16_t irq){
@@ -51,12 +51,6 @@ void EOI(int irq){
 	}
 }
 
-void pit_init(int freq){
-	freq = 1193182 / freq;
-	outb(0x43, 0x34);
-	outb(0x40,freq & 0xFF);
-	outb(0x40,freq >> 8);
-}
 
 void Set_IDT_Entry(uint32_t intnr, uint16_t selector,uint32_t Base, uint16_t flags){
 	IDT[intnr].Base_low=(uint16_t)Base;
@@ -144,7 +138,6 @@ void remap_pic(void){
 
 void INIT_IDT(void){
 	remap_pic();
-	IDT=PMM_malloc(1);
 	//Exceptions
 	Set_IDT_Entry(0,0x8,(uint32_t)int_0,0xEE00); Set_IDT_Entry(1,0x8,(uint32_t)int_1,0xEE00); Set_IDT_Entry(2,0x8,(uint32_t)int_2,0xEE00);
 	Set_IDT_Entry(3,0x8,(uint32_t)int_3,0xEE00); Set_IDT_Entry(4,0x8,(uint32_t)int_4,0xEE00); Set_IDT_Entry(5,0x8,(uint32_t)int_5,0xEE00);
