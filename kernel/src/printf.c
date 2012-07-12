@@ -34,8 +34,16 @@
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
-#include <stdarg.h>
 #include <printf.h>
+
+#include <ctype.h>
+#include <math.h>
+#include <stdarg.h>
+#include <string.h>
+
+/*
+	text output
+*/
 
 static int x = 0;
 static int y = 0;
@@ -75,16 +83,9 @@ void clear(void)
     x = y = 0;
 }
 
-
-
-#include <ctype.h>
-//#include <stdarg.h>
-//#include <string.h>
-//#include <math.h>
-
-//#include "printf.h"
-
-#define NULL 0
+/*
+	text formatting
+*/
 
 char * itoa(int value, char * str, int base)
 {
@@ -92,11 +93,11 @@ char * itoa(int value, char * str, int base)
 	int length;
 
 	if (value < 0) {
-	value = abs(value);
-	str[i++] = '-';
+		value = abs(value);
+		str[i++] = '-';
 	}
 
-	length = log2(value) / log2(base) + 1;
+	length = log2(value) / log2(base);
 
 	while (length > 0) {
 		int power = pow(base, --length);
@@ -130,7 +131,21 @@ int atoi(const char *str)
 	return result;
 }
 
-int sprintf_test(char * str, const char * format, ...)
+int printf(const char * format, ...)
+{
+	char buffer[1024]; /* TODO: dynamic buffer size */
+
+	va_list arg;
+	va_start(arg, format);
+
+	vsprintf(buffer, format, arg);
+
+	puts(buffer);
+
+	va_end(arg);
+}
+
+int sprintf(char * str, const char * format, ...)
 {
 	va_list arg;
 	va_start(arg, format);
