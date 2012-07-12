@@ -73,7 +73,7 @@ void puts(const char* s)
     }
 }
 
-void clear(void)
+void clear_screen(void)
 {
     int i;
     for (i = 0; i < 2 * 25 * 80; i++) {

@@ -55,4 +55,7 @@ int sprintf(char * str, const char * format, ...);
 int ftag_format(char *buf, int len, void *obj, ftag_t ftag);
 const char * ftag_scan(ftag_t *ftag, const char *format);
 
+void clear_screen(void);
+int printf(const char * format, ...);
+
 #endif
