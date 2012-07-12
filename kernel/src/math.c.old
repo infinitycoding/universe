@@ -19,34 +19,51 @@
 	
     Diese Datei ist ein Teil vom Universe Kernel.
 
-    Das Universe Kernel ist Freie Software: Sie können es unter den Bedingungen
+    Das Universe Kernel ist Freie Software: Sie kÃ¶nnen es unter den Bedingungen
     der GNU General Public License, wie von der Free Software Foundation,
-    Version 3 der Lizenz oder jeder späteren
-    veröffentlichten Version, weiterverbreiten und/oder modifizieren.
+    Version 3 der Lizenz oder jeder spÃ¤teren
+    verÃ¶ffentlichten Version, weiterverbreiten und/oder modifizieren.
 
-    Das Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
-    Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
-    OHNE JEDE GEWÄHELEISTUNG, bereitgestellt; sogar ohne die implizite
-    Gewährleistung der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
-    Siehe die GNU General Public License für weitere Details.
+    Das Universe Kernel wird in der Hoffnung, dass es nÃ¼tzlich sein wird, aber
+    Universe Kernel wird in der Hoffnung, dass es nÃ¼tzlich sein wird, aber
+    OHNE JEDE GEWÃ„HELEISTUNG, bereitgestellt; sogar ohne die implizite
+    GewÃ¤hrleistung der MARKTFÃ„HIGKEIT oder EIGNUNG FÃœR EINEN BESTIMMTEN ZWECK.
+    Siehe die GNU General Public License fÃ¼r weitere Details.
 
     Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
-#include <stdint.h>
+#include <math.h>
 
-#include <gdt.h>
-#include <idt.h>
-#include <io.h>
-
-int init (void)
+double pow (double base, double exponent)
 {
-	INIT_GDT();
-	INIT_IDT();
-	printf("Hello World!");
+	double result = base;
+	
+	int i;
+	for (i = 0; i < exponent - 1; ++i) {
+		result *= base;
+	}
+	
+	return result;
 }
 
+double log2 (double x)
+{
+    int log2 = 0;
+    double pot = 1;
+    while (x <= pot) {
+        pot *= 2;
+        ++log2;
+    }
+    return log2 - 1; 
+}
 
-
-
+double abs (double x)
+{
+	if (x < 0.00) {
+		return - x;
+	} else {
+		return x;
+	}
+}
