@@ -44,7 +44,8 @@ int init (void)
 {
 	INIT_GDT();
 	INIT_IDT();
-	printf("Hello World!");
+	
+	printf("%s\n%d %X", "Hello World!", 1234, 0xAC);
 }
 
 

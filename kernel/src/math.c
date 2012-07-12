@@ -52,7 +52,7 @@ double log2 (double x)
 {
     int log2 = 0;
     double pot = 1;
-    while (x <= pot) {
+    while (pot <= x) {
         pot *= 2;
         ++log2;
     }
