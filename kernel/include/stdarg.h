@@ -1,5 +1,5 @@
-#ifndef _printf_h_
-#define _printf_h_
+#ifndef _stdarg_h_
+#define _stdarg_h_
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
@@ -36,23 +36,9 @@
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
-#include <stdarg.h>
-
-typedef struct {
-		char flags;
-		int width;
-		int precision;
-		char length;
-		char specifier;
-} ftag_t;
-
-char * itoa(int value, char * str, int base);
-int atoi(const char *str);
-
-int vsprintf(char * str, const char * format, va_list arg);
-int sprintf(char * str, const char * format, ...);
-
-int ftag_format(char *buf, int len, void *obj, ftag_t ftag);
-const char * ftag_scan(ftag_t *ftag, const char *format);
+typedef __builtin_va_list       va_list;
+#define va_start(ap, X)         __builtin_va_start(ap, X)
+#define va_arg(ap, type)        __builtin_va_arg(ap, type)
+#define va_end(ap)              __builtin_va_end(ap)
 
 #endif

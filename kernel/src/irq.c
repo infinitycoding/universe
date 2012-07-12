@@ -34,29 +34,30 @@
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 #include <idt.h>
+#include <io.h>
 
 static struct IDT_Entry IDT[256];
 static struct idtpt idtp;
 
-void lidt(uint16_t irq){
-	idtp.limit=(8*irq)-1;
-	idtp.base=IDT;
+void lidt(uint16_t irq) {
+	idtp.limit = (8 * irq)-1;
+	idtp.base = IDT;
 	asm volatile("lidt %0" : : "m" (idtp));
 }
 
-void EOI(int irq){
+void EOI(int irq) {
 	outb(0x20, 0x20);
-	if (irq>=8){
+	if (irq >= 8) {
 		outb(0xA0, 0x20);
 	}
 }
 
 
-void Set_IDT_Entry(uint32_t intnr, uint16_t selector,uint32_t Base, uint16_t flags){
-	IDT[intnr].Base_low=(uint16_t)Base;
-	IDT[intnr].selector=selector;
-	IDT[intnr].flags=flags;
-	IDT[intnr].Base_hi=(uint16_t)(Base>>16);
+void Set_IDT_Entry(uint32_t intnr, uint16_t selector,uint32_t Base, uint16_t flags) {
+	IDT[intnr].Base_low = (uint16_t)Base;
+	IDT[intnr].selector = selector;
+	IDT[intnr].flags = flags;
+	IDT[intnr].Base_hi = (uint16_t)(Base>>16);
 }
 
 static void (*irq[16])(void) = {
@@ -70,21 +71,21 @@ static void (*irq[16])(void) = {
 	NULL, NULL
 };
 
-struct cpustate* irq_handler(struct cpustate* cpu){
-	if(((uint32_t)irq[cpu->interruptnum])!=NULL){
+struct cpustate* irq_handler(struct cpustate* cpu) {
+	if(((uint32_t)irq[cpu->interruptnum]) != NULL) {
 		irq[cpu->interruptnum]();
 	}
 	EOI(cpu->interruptnum);
 	return cpu;
 }
 
-int install_irq(int irqnum,void (*handler)(void)){
-	if(((uint32_t)irq[irqnum])!=NULL)return 1;
-	irq[irqnum]=handler;
+int install_irq(int irqnum,void (*handler)(void)) {
+	if(((uint32_t)irq[irqnum]) != NULL) return 1;
+	irq[irqnum] = handler;
 	return 0;
 }
 
-void deinstall_irq(int irqnum){irq[irqnum]=NULL;}
+void deinstall_irq(int irqnum) {irq[irqnum] = NULL;}
 
 static void (*exc[32])(void) = {
 	NULL, NULL,
@@ -105,25 +106,25 @@ static void (*exc[32])(void) = {
 	NULL, NULL
 };
 
-struct cpustate* exception_handler(struct cpustate* cpu){
-	if(((uint32_t)exc[cpu->interruptnum])!=NULL){
+struct cpustate* exception_handler(struct cpustate* cpu) {
+	if(((uint32_t)exc[cpu->interruptnum]) != NULL) {
 		exc[cpu->interruptnum]();
-	}else{
+	} else {
 		exc_panic(cpu);
 	}
 	EOI(cpu->interruptnum);
 	return cpu;
 }
 
-int install_exc(int excnum,void (*handler)(void)){
-	if(((uint32_t)exc[excnum])!=NULL)return 1;
-	exc[excnum]=handler;
+int install_exc(int excnum,void (*handler)(void)) {
+	if(((uint32_t)exc[excnum]) != NULL) return 1;
+	exc[excnum] = handler;
 	return 0;
 }
 
-void deinstall_exc(int excnum){exc[excnum]=NULL;}
+void deinstall_exc(int excnum) {exc[excnum] = NULL;}
 
-void remap_pic(void){
+void remap_pic(void) {
 	outb(0x20, 0x11);
 	outb(0xA0, 0x11);
 	outb(0x21, 32);
@@ -136,7 +137,7 @@ void remap_pic(void){
 	outb(0xA1, 0x00);
 }
 
-void INIT_IDT(void){
+void INIT_IDT(void) {
 	remap_pic();
 	//Exceptions
 	Set_IDT_Entry(0,0x8,(uint32_t)int_0,0xEE00); Set_IDT_Entry(1,0x8,(uint32_t)int_1,0xEE00); Set_IDT_Entry(2,0x8,(uint32_t)int_2,0xEE00);

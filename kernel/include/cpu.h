@@ -21,23 +21,21 @@
 	
     Diese Datei ist ein Teil vom Universe Kernel.
 
-    Das Universe Kernel ist Freie Software: Sie k�nnen es unter den Bedingungen
+    Das Universe Kernel ist Freie Software: Sie können es unter den Bedingungen
     der GNU General Public License, wie von der Free Software Foundation,
-    Version 3 der Lizenz oder jeder sp�teren
-    ver�ffentlichten Version, weiterverbreiten und/oder modifizieren.
+    Version 3 der Lizenz oder jeder späteren
+    veröffentlichten Version, weiterverbreiten und/oder modifizieren.
 
-    Das Universe Kernel wird in der Hoffnung, dass es n�tzlich sein wird, aber
-    Universe Kernel wird in der Hoffnung, dass es n�tzlich sein wird, aber
-    OHNE JEDE GEW�HELEISTUNG, bereitgestellt; sogar ohne die implizite
-    Gew�hrleistung der MARKTF�HIGKEIT oder EIGNUNG F�R EINEN BESTIMMTEN ZWECK.
-    Siehe die GNU General Public License f�r weitere Details.
+    Das Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
+    Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
+    OHNE JEDE GEWÄHELEISTUNG, bereitgestellt; sogar ohne die implizite
+    Gewährleistung der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
+    Siehe die GNU General Public License für weitere Details.
 
     Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
-	
-
-	#include <stdint.h>	
+#include <stdint.h>	
 		
 	struct cpu_state {
 		uint32_t   gs;
