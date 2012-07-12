@@ -97,7 +97,7 @@ char * itoa(int value, char * str, int base)
 		str[i++] = '-';
 	}
 
-	length = log2(value) / log2(base);
+	length = log2(value) / log2(base) + 1;
 
 	while (length > 0) {
 		int power = pow(base, --length);
