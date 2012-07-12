@@ -35,6 +35,7 @@
 */
 #include <idt.h>
 #include <io.h>
+#include <cpu.h>
 
 static struct IDT_Entry IDT[256];
 static struct idtpt idtp;
@@ -71,21 +72,21 @@ static void (*irq[16])(void) = {
 	NULL, NULL
 };
 
-struct cpustate* irq_handler(struct cpustate* cpu) {
-	if(((uint32_t)irq[cpu->interruptnum]) != NULL) {
-		irq[cpu->interruptnum]();
+struct cpu_state* irq_handler(struct cpu_state* cpu) {
+	if(((uint32_t)irq[cpu->intr]) != NULL) {
+		irq[cpu->intr]();
 	}
-	EOI(cpu->interruptnum);
+	EOI(cpu->intr);
 	return cpu;
 }
 
-int install_irq(int irqnum,void (*handler)(void)) {
-	if(((uint32_t)irq[irqnum]) != NULL) return 1;
-	irq[irqnum] = handler;
+int install_irq(int intr,void (*handler)(void)) {
+	if(((uint32_t)irq[intr]) != NULL) return 1;
+	irq[intr] = handler;
 	return 0;
 }
 
-void deinstall_irq(int irqnum) {irq[irqnum] = NULL;}
+void deinstall_irq(int intr) {irq[intr] = NULL;}
 
 static void (*exc[32])(void) = {
 	NULL, NULL,
@@ -106,13 +107,13 @@ static void (*exc[32])(void) = {
 	NULL, NULL
 };
 
-struct cpustate* exception_handler(struct cpustate* cpu) {
-	if(((uint32_t)exc[cpu->interruptnum]) != NULL) {
-		exc[cpu->interruptnum]();
+struct cpu_state* exception_handler(struct cpu_state* cpu) {
+	if(((uint32_t)exc[cpu->intr]) != NULL) {
+		exc[cpu->intr]();
 	} else {
 		exc_panic(cpu);
 	}
-	EOI(cpu->interruptnum);
+	EOI(cpu->intr);
 	return cpu;
 }
 
