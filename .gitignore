@@ -1,2 +1,8 @@
 #Windows Thumbnails ignorieren
 Thumbs.db
+
+#Objektdateien ignorieren
+*.o
+
+#Kernel Ausführbare Dateien ignoriere
+*.elf
