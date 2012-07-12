@@ -209,9 +209,15 @@ int ftag_format(char *buf, int len, void *obj, ftag_t ftag)
 					buffer[i] = tolower(buffer[i]);
 				}
 			}
-	
-			for (i = 0; i < ftag.width - k; ++i)
-			buf[len++] = ftag.flags;
+			
+			if (ftag.flags == '#' && base == 16) {
+				buf[len++] = '0';
+				buf[len++] = 'x';
+			} else {
+				for (i = 0; i < ftag.width - k; ++i) {
+					buf[len++] = ftag.flags;
+				}
+			}
 	
 			strncpy(buf + len, buffer, k);
 			len += k;
