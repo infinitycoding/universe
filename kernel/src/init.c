@@ -36,6 +36,10 @@
 
 #include <stdint.h>
 
+#include <gdt.h>
+#include <idt.h>
+#include <io.h>
+
 int init (void){
 	INIT_GDT();
 	INIT_IDT();
