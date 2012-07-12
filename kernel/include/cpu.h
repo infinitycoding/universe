@@ -40,6 +40,10 @@
 	#include <stdint.h>	
 		
 	struct cpu_state {
+		uint32_t   gs;
+		uint32_t   fs;
+		uint32_t   es;
+		uint32_t   ds;
 		uint32_t   eax;
 		uint32_t   ebx;
 		uint32_t   ecx;
