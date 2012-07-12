@@ -37,6 +37,7 @@
 */
 
 	#include <stdint.h>
+	#include <cpu.h>
 
 	extern void int_0(void);
 	extern void int_1(void);
@@ -100,21 +101,20 @@
 		void* base;
 	} __attribute__((packed));
 
-	struct cpu_state {
-		uint32_t   eax;
-		uint32_t   ebx;
-		uint32_t   ecx;
-		uint32_t   edx;
-		uint32_t   esi;
-		uint32_t   edi;
-		uint32_t   ebp;
-		uint32_t   intr;
-		uint32_t   error;
-		uint32_t   eip;
-		uint32_t   cs;
-		uint32_t   eflags;
-		uint32_t   esp;
-		uint32_t   ss;
-	};
+	
+	void lidt(uint16_t irq);
+	void EOI(int irq);
+	void Set_IDT_Entry(uint32_t intnr, uint16_t selector,uint32_t Base, uint16_t flags);
+
+	struct cpustate* irq_handler(struct cpustate* cpu);
+	int install_irq(int irqnum,void (*handler)(void));
+	void deinstall_irq(int irqnum);
+
+	struct cpustate* exception_handler(struct cpustate* cpu);
+	int install_exc(int excnum,void (*handler)(void));
+	void deinstall_exc(int excnum);
+
+	void remap_pic(void);
+	void INIT_IDT(void);
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef	_ctype_h_
-#define	_ctype_h_
+#ifndef _cpu_h_
+#define _cpu_h_
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
@@ -21,33 +21,40 @@
 	
     Diese Datei ist ein Teil vom Universe Kernel.
 
-    Das Universe Kernel ist Freie Software: Sie können es unter den Bedingungen
+    Das Universe Kernel ist Freie Software: Sie kï¿½nnen es unter den Bedingungen
     der GNU General Public License, wie von der Free Software Foundation,
-    Version 3 der Lizenz oder jeder späteren
-    veröffentlichten Version, weiterverbreiten und/oder modifizieren.
+    Version 3 der Lizenz oder jeder spï¿½teren
+    verï¿½ffentlichten Version, weiterverbreiten und/oder modifizieren.
 
-    Das Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
-    Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
-    OHNE JEDE GEWÄHELEISTUNG, bereitgestellt; sogar ohne die implizite
-    Gewährleistung der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
-    Siehe die GNU General Public License für weitere Details.
+    Das Universe Kernel wird in der Hoffnung, dass es nï¿½tzlich sein wird, aber
+    Universe Kernel wird in der Hoffnung, dass es nï¿½tzlich sein wird, aber
+    OHNE JEDE GEWï¿½HELEISTUNG, bereitgestellt; sogar ohne die implizite
+    Gewï¿½hrleistung der MARKTFï¿½HIGKEIT oder EIGNUNG Fï¿½R EINEN BESTIMMTEN ZWECK.
+    Siehe die GNU General Public License fï¿½r weitere Details.
 
     Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
+	
 
-	extern int isalnum(int);
-	extern int isalpha(int);
-	extern int iscntrl(int);
-	extern int isdigit(int);
-	extern int isgraph(int);
-	extern int islower(int);
-	extern int isprint(int);
-	extern int ispunct(int);
-	extern int isspace(int);
-	extern int isupper(int);
-	extern int isxdigit(int);
-	extern int tolower(int);
-	extern int toupper(int);
+	#include <stdint.h>	
+		
+	struct cpu_state {
+		uint32_t   eax;
+		uint32_t   ebx;
+		uint32_t   ecx;
+		uint32_t   edx;
+		uint32_t   esi;
+		uint32_t   edi;
+		uint32_t   ebp;
+		uint32_t   intr;
+		uint32_t   error;
+		uint32_t   eip;
+		uint32_t   cs;
+		uint32_t   eflags;
+		uint32_t   esp;
+		uint32_t   ss;
+	};
 
 #endif
+
