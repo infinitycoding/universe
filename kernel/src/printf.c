@@ -40,7 +40,6 @@
 #include <math.h>
 #include <string.h>
 
-
 static int x = 0;
 static int y = 0;
 
@@ -48,7 +47,7 @@ static char *video_mem = (char *)0xb8000;
 
 void putc(char c)
 {
-    if((x > 79) || (c == '\n')) {
+    if ((x > 79) || (c == '\n')) {
         x = 0;
         y++;
         if (c == '\n') {
@@ -60,16 +59,30 @@ void putc(char c)
     video_mem[2 * (y * 80 + x) + 1] = DEFAULT_FRONT_COLOR | DEFAULT_BACK_COLOR;
     x++;
 
-    if( (y * 80 + x) > (80 * 25) ){
+    if ( (y * 80 + x) > (80 * 25) ){
       scroll();
     }
 }
 
-void puts(const char* s)
+int puts(const char* s)
 {
     while (*s) {
         putc(*s++);
     }
+    putc('\n');
+	
+	return 0;
+}
+
+int fputs(const char* s, int fd)
+{
+	if (fd == STDOUT) {
+		while (*s) {
+			putc(*s++);
+		}
+	}
+	
+	return 0;
 }
 
 void clear_screen(void)
@@ -97,16 +110,18 @@ void scroll(void)
 char * itoa(int value, char * str, int base)
 {
 	int i = 0;
-	int length;
+	int length = 0;
+	int temp = 0;
 
 	if (value < 0) {
 		value = abs(value);
 		str[i++] = '-';
 	}
 
-	length = log2(value) / log2(base) + 1;
+	temp = value;
+	do {temp /= base; ++length;} while (temp);
 
-	while (length > 0) {
+	do {
 		int power = pow(base, --length);
 		int digit = value / power;
 		if (digit < 10) {
@@ -115,7 +130,7 @@ char * itoa(int value, char * str, int base)
 			str[i++] = 'A' + digit - 10;
 		}
 		value -= digit * power;
-	}
+	} while (length > 0);
 
 	str[i++] = '\0';
 
@@ -140,14 +155,14 @@ int atoi(const char *str)
 
 int printf(const char * format, ...)
 {
-	char buffer[1024]; /* TODO: dynamic buffer size */
+	char buffer[2096]; /* TODO: dynamic buffer size */
 
 	va_list arg;
 	va_start(arg, format);
 
 	vsprintf(buffer, format, arg);
 
-	puts(buffer);
+	fputs(buffer, STDOUT);
 
 	va_end(arg);
 	return strlen(buffer); // return number of printed chars
@@ -187,8 +202,6 @@ int ftag_format(char *buf, int len, void *obj, ftag_t ftag)
 {
 	int base = 10;
 	int i, k;
-	char buffer[10];
-	//char *ptrchr; //not used
 
 
 	switch (ftag.specifier)
@@ -207,14 +220,13 @@ int ftag_format(char *buf, int len, void *obj, ftag_t ftag)
 				base = 10;
 			}
 
-			i = (int)obj;
-			itoa(i, buffer, base);
+			i = itoa((int)obj, buf + len, base);
 
-			k = strlen(buffer);
+			k = strlen(buf + len);
 
 			if (ftag.specifier == 'x') {
 				for (i = 0; i < k; ++i) {
-					buffer[i] = tolower(buffer[i]);
+					buf[len + i] = tolower(buf[len + i]);
 				}
 			}
 
@@ -226,14 +238,12 @@ int ftag_format(char *buf, int len, void *obj, ftag_t ftag)
 					buf[len++] = ftag.flags;
 				}
 			}
-
-			strncpy(buf + len, buffer, k);
 			len += k;
 		break;
 		case 's':
 			k = strlen((char *)obj);
 			for (i = 0; i < ftag.width - 1; ++i)
-			buf[len++] = ftag.flags;
+				buf[len++] = ftag.flags;
 			strncpy(buf + len, (char *)obj, k);
 			len += k;
 		break;

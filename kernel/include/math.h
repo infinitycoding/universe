@@ -36,22 +36,9 @@
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
-     double pow (      double base,      double exponent );
-/*long double pow ( long double base, long double exponent );
-      float pow (       float base,       float exponent );
-     double pow (      double base,         int exponent );
-long double pow ( long double base,         int exponent );
-
-*/
-double log2(double x);
-/*float log2f(float x);
-long double log2l(long double x);
-*/
-
-double abs (      double x );
-/*
-      float abs (       float x );
-long double abs ( long double x );*/
+double pow(double base, double exponent);
+double log(double x);
+int abs(int x);
 
 unsigned int bit_scan_forward(unsigned int);
 
