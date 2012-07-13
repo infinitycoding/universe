@@ -52,21 +52,16 @@ section .text
 Global start
 start:
 cli
-mov [MBS],ebx
 mov esp,stack
-cmp eax,0x2BADB002
-jne halt
-
+push eax
+push ebx
 extern init
 call init
 
 halt:
+cli
 hlt
 jmp $
-
-section .data
-Global MBS
-MBS dd 0
 
 section .bss
 resb 4096
