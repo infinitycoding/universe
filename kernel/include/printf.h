@@ -40,14 +40,10 @@
 #include <stdint.h>
 #include <stdarg.h>
 
-/*
-#include <printf.h>
-#include <stdarg.h>
-#include <ctype.h>
-#include <math.h>
-#include <string.h>
-moved to printf.c
-*/
+#define DEFAULT_FRONT_COLOR	GREEN
+#define DEFAULT_BACK_COLOR BLACK
+
+#define STDOUT 1
 
 typedef struct {
 		char flags;
@@ -69,8 +65,5 @@ const char * ftag_scan(ftag_t *ftag, const char *format);
 void scroll(void);
 void clear_screen(void);
 int printf(const char * format, ...);
-
-#define DEFAULT_FRONT_COLOR	GREEN
-#define DEFAULT_BACK_COLOR	BLACK
 
 #endif

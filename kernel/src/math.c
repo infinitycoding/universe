@@ -36,32 +36,36 @@
 
 #include <math.h>
 
-double pow (double base, double exponent)
+double pow(double base, double exponent)
 {
 	double result = base;
-
 	int i;
-	for (i = 0; i < exponent - 1; ++i) {
-		result *= base;
+
+	if (exponent == 0) {
+		result = 1;
+	} else {
+		for (i = 0; i < exponent - 1; ++i) {
+			result *= base;
+		}
 	}
 
 	return result;
 }
 
-double log2 (double x)
+double log(double x)
 {
-    int log2 = 0;
-    double pot = 1;
-    while (pot <= x) {
-        pot *= 2;
-        ++log2;
-    }
-    return log2 - 1;
+	int log2 = 0;
+	int pot = 1;
+	while (pot <= x) {
+		pot *= 2;
+		++log2;
+	}
+	return log2 - 1;
 }
 
-double abs (double x)
+int abs(int x)
 {
-	if (x < 0.00) {
+	if (x < 0) {
 		return - x;
 	} else {
 		return x;
@@ -69,12 +73,12 @@ double abs (double x)
 }
 
 unsigned int bit_scan_forward(unsigned int i) {
-    unsigned int j;
+	unsigned int j;
 
-    for (j = 0; j < 32; j++) {
-        if (i & (1 << j)) {
-            return j;
-        }
-    }
-    return -1;
+	for (j = 0; j < 32; j++) {
+		if (i & (1 << j)) {
+			return j;
+		}
+	}
+	return -1;
 }

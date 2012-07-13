@@ -58,35 +58,40 @@
 int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 {
 	clear_screen();
-	if(magic_number!=0x2BADB002){panic("incompatible Bootlaoder");}
+	int i;
+	
+	char test[] = "TEST";
+	if (magic_number != 0x2BADB002) {
+		panic("incompatible bootloader");
+	}
+	
 	INIT_PMM(mb_info);
 	INIT_GDT();
 	INIT_IDT();
 	INIT_CPUID();
 	INIT_PIT(50);
 	INIT_CMOS();
-	asm volatile("sti");
+	//asm volatile("sti");
 
 	INIT_KEYBOARD();
 
 	time_t *time = get_time();
 	char *day_string;
-	switch(time->day_in_month % 7){
-		case 0: day_string = "Sontag";		break;
+	switch (time->day_in_month % 7) {
+		case 0: day_string = "Sonntag";		break;
 		case 1: day_string = "Montag";		break;
 		case 2: day_string = "Dienstag";	break;
 		case 3: day_string = "Mittwoch";	break;
 		case 4: day_string = "Donnerstag";	break;
-		case 5: day_string = "Freitag";	break;
-		case 6: day_string = "Sonnabend";	break;
-
+		case 5: day_string = "Freitag";		break;
+		case 6: day_string = "Samstag";		break;
 	}
-	printf("%s %s!\n", "Hello World am", day_string);
+	
+	printf("%s %s, den %d.%d.%d!\n", "Hello World am", day_string, 2, 7, 1996);
+	
 	CPU_info();
-	while(1);
+	
+	for(;;);
+	
 	return 0;
 }
-
-
-
-
