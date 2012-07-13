@@ -153,13 +153,13 @@ void INIT_IDT(void) {
 	Set_IDT_Entry(27,0x8,(uint32_t)int_27,0xEE00); Set_IDT_Entry(28,0x8,(uint32_t)int_28,0xEE00); Set_IDT_Entry(29,0x8,(uint32_t)int_29,0xEE00);   
 	Set_IDT_Entry(30,0x8,(uint32_t)int_30,0xEE00); Set_IDT_Entry(31,0x8,(uint32_t)int_31,0xEE00); 
 	//IRQs
-	Set_IDT_Entry(32,0x8,(uint32_t)irq_0,0xEE00); Set_IDT_Entry(33,0x8,(uint32_t)irq_1,0xEE00); 
-	Set_IDT_Entry(34,0x8,(uint32_t)irq_2,0xEE00); Set_IDT_Entry(35,0x8,(uint32_t)irq_3,0xEE00); 
-	Set_IDT_Entry(36,0x8,(uint32_t)irq_4,0xEE00); Set_IDT_Entry(37,0x8,(uint32_t)irq_5,0xEE00);
-	Set_IDT_Entry(38,0x8,(uint32_t)irq_6,0xEE00); Set_IDT_Entry(39,0x8,(uint32_t)irq_7,0xEE00); 
-	Set_IDT_Entry(40,0x8,(uint32_t)irq_8,0xEE00); Set_IDT_Entry(41,0x8,(uint32_t)irq_9,0xEE00);
-	Set_IDT_Entry(42,0x8,(uint32_t)irq_10,0xEE00); Set_IDT_Entry(43,0x8,(uint32_t)irq_11,0xEE00);
-	Set_IDT_Entry(44,0x8,(uint32_t)irq_12,0xEE00); Set_IDT_Entry(45,0x8,(uint32_t)irq_13,0xEE00);
-	Set_IDT_Entry(46,0x8,(uint32_t)irq_14,0xEE00); Set_IDT_Entry(47,0x8,(uint32_t)irq_15,0xEE00);
+//	Set_IDT_Entry(32,0x8,(uint32_t)irq_0,0xEE00); Set_IDT_Entry(33,0x8,(uint32_t)irq_1,0xEE00); 
+//	Set_IDT_Entry(34,0x8,(uint32_t)irq_2,0xEE00); Set_IDT_Entry(35,0x8,(uint32_t)irq_3,0xEE00); 
+//	Set_IDT_Entry(36,0x8,(uint32_t)irq_4,0xEE00); Set_IDT_Entry(37,0x8,(uint32_t)irq_5,0xEE00);
+//	Set_IDT_Entry(38,0x8,(uint32_t)irq_6,0xEE00); Set_IDT_Entry(39,0x8,(uint32_t)irq_7,0xEE00); 
+//	Set_IDT_Entry(40,0x8,(uint32_t)irq_8,0xEE00); Set_IDT_Entry(41,0x8,(uint32_t)irq_9,0xEE00);
+//	Set_IDT_Entry(42,0x8,(uint32_t)irq_10,0xEE00); Set_IDT_Entry(43,0x8,(uint32_t)irq_11,0xEE00);
+//	Set_IDT_Entry(44,0x8,(uint32_t)irq_12,0xEE00); Set_IDT_Entry(45,0x8,(uint32_t)irq_13,0xEE00);
+//	Set_IDT_Entry(46,0x8,(uint32_t)irq_14,0xEE00); Set_IDT_Entry(47,0x8,(uint32_t)irq_15,0xEE00);
 	lidt(48);
 }

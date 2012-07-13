@@ -4,30 +4,24 @@ OUTPUT_ARCH(i386:i386)
 
 SECTIONS
 {
-  . = 0x00100000;
-	kernel_start = .;
-  .text :
-  {
-    *(.text)
-  }
-	
-  .rodata :
-  {
-    *(.rodata)
-  }
+    . = 0x100000;
 
-  .data : 
-  {
-    *(.data)
-  }
+    kernel_start = .;
 
-  .bss :
-  {
-    _sbss = .;
-    *(COMMON)
-    *(.bss)
-    _ebss = .;
-  }
-      . = ALIGN(4096);
+    .text ALIGN(4096) : {
+        *(.multiboot)
+        *(.text)
+    }
+    .data ALIGN(4096) : {
+        *(.data)
+    }
+    .rodata ALIGN(4096) : {
+        *(.rodata)
+    }
+    .bss ALIGN(4096) : {
+        *(.bss)
+    }
+
+    . = ALIGN(4096);
     kernel_end = .;
 }
