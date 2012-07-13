@@ -75,55 +75,14 @@ void clear(void)
     x = y = 0;
 }
 
-int printf(const char *param, ...)
-{
-    va_list ap;
-    const char* s;
-    unsigned long n;
 
-    va_start(ap, param);
-    while (*param) {
-        if (*param == '%') {
-            param++;
-            switch (*param) {
-                case 's':
-                    s = va_arg(ap, char *);
-                    puts(s);
-                    break;
-                case 'c':
-                    n = va_arg(ap, int);
-                    putc(n);
-                    break;
-                case '%':
-                    putc('%');
-                    break;
-                case '\0':
-                    va_end(ap);
-                    return 0;
-                default:
-                    putc('%');
-                    putc(*param);
-                    break;
-            }
-        } else {
-            putc(*param);
-        }
 
-        param++;
-    }
-
-    va_end(ap);
-
-    return 0;
-}
-
-/*
 #include <ctype.h>
-#include <stdarg.h>
-#include <string.h>
-#include <math.h>
+//#include <stdarg.h>
+//#include <string.h>
+//#include <math.h>
 
-#include "printf.h"
+//#include "printf.h"
 
 #define NULL 0
 
@@ -311,4 +270,4 @@ const char * ftag_scan(ftag_t *ftag, const char *format)
 
 	return format;
 }
-*/
+
