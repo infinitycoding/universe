@@ -58,6 +58,7 @@
 int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 {
 	clear_screen();
+	
 	int i;
 	
 	char test[] = "TEST";
@@ -87,7 +88,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 		case 6: day_string = "Samstag";		break;
 	}
 	
-	printf("%s %s, den %d.%d.%d!\n", "Hello World am", day_string, 2, 7, 1996);
+	printf("%s %s, den %d.%d.%#X!\n", "Hello World am", day_string, 2, 7, 1996);
 	
 	CPU_info();
 	

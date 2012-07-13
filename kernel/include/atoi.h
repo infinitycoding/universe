@@ -1,5 +1,5 @@
-#ifndef _printf_h_
-#define _printf_h_
+#ifndef _atoi_h_
+#define _atoi_h_
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
@@ -36,12 +36,20 @@
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
+#include <video.h>
 
 #include <stdint.h>
-#include <stdarg.h>
 
-int printf(const char *fmt, ...);
-int sprintf(char *buf, const char *fmt, ...);
-int vsprintf(char *buf, const char *fmt, va_list args);
+#define ZEROPAD 1
+#define SIGN	2
+#define PLUS	4
+#define SPACE	8
+#define LEFT	16
+#define SMALL	32
+#define SPECIAL	64
+
+char * itoa_ex(int value, char * str, int base, int flags, int width);
+char * itoa(int value, char * str, int base);
+int atoi(const char *str);
 
 #endif

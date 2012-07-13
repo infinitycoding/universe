@@ -1,5 +1,5 @@
-#ifndef _printf_h_
-#define _printf_h_
+#ifndef _video_h_
+#define _video_h_
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
@@ -38,10 +38,16 @@
 
 
 #include <stdint.h>
-#include <stdarg.h>
 
-int printf(const char *fmt, ...);
-int sprintf(char *buf, const char *fmt, ...);
-int vsprintf(char *buf, const char *fmt, va_list args);
+#define DEFAULT_FRONT_COLOR	GREEN
+#define DEFAULT_BACK_COLOR BLACK
+
+#define STDOUT 1
+
+int putchar(int c);
+int puts(const char* s);
+static int fputs(const char* s, int fd);
+void clear_screen(void);
+static void scroll(void);
 
 #endif

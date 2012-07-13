@@ -35,278 +35,219 @@
 */
 
 #include <printf.h>
+#include <string.h>
 #include <stdarg.h>
 #include <ctype.h>
-#include <math.h>
-#include <string.h>
+#include <atoi.h>
+#include <video.h>
 
-static int x = 0;
-static int y = 0;
-
-static char *video_mem = (char *)0xb8000;
-
-void putc(char c)
+int printf(const char *fmt, ...)
 {
-    if ((x > 79) || (c == '\n')) {
-        x = 0;
-        y++;
-        if (c == '\n') {
-            return;
-        }
-    }
+	int size;
+	char buffer[1024];
+	memset(buffer, 0, 1024);
 
-    video_mem[2 * (y * 80 + x)] = c;
-    video_mem[2 * (y * 80 + x) + 1] = DEFAULT_FRONT_COLOR | DEFAULT_BACK_COLOR;
-    x++;
+	va_list args;
+	va_start(args, fmt);
 
-    if ( (y * 80 + x) > (80 * 25) ){
-      scroll();
-    }
+	size = vsprintf(buffer, fmt, args);
+
+	puts(buffer);
+
+	va_end(args);
+	return size;
 }
 
-int puts(const char* s)
+int sprintf(char *buf, const char *fmt, ...)
 {
-    while (*s) {
-        putc(*s++);
-    }
-    putc('\n');
-	
-	return 0;
+	int size;
+
+	va_list args;
+	va_start(args, fmt);
+
+	size = vsprintf(buf, fmt, args);
+
+	va_end(args);
+	return size;
 }
 
-int fputs(const char* s, int fd)
+int vsprintf(char *buf, const char *fmt, va_list args)
 {
-	if (fd == STDOUT) {
-		while (*s) {
-			putc(*s++);
-		}
-	}
-	
-	return 0;
-}
+	char *str = buf;
+	const char *s;
+	int i, len, num;
 
-void clear_screen(void)
-{
-    int i;
-    for (i = 0; i < 2 * 25 * 80; i++) {
-        video_mem[i] = 0;
-    }
+	int flags;
+	int width;
+	int precision;
+	int qualifier;
 
-    x = y = 0;
-}
+	int base;
 
-void scroll(void)
-{
-    int i;
-    y --;
-    for(i = 0; i < 3840; i++)
-      video_mem[i] = video_mem[i + 80];
-}
-
-/*
-	text formatting
-*/
-
-char * itoa(int value, char * str, int base)
-{
-	int i = 0;
-	int length = 0;
-	int temp = 0;
-
-	if (value < 0) {
-		value = abs(value);
-		str[i++] = '-';
-	}
-
-	temp = value;
-	do {temp /= base; ++length;} while (temp);
-
-	do {
-		int power = pow(base, --length);
-		int digit = value / power;
-		if (digit < 10) {
-			str[i++] = '0' + digit;
-		} else {
-			str[i++] = 'A' + digit - 10;
-		}
-		value -= digit * power;
-	} while (length > 0);
-
-	str[i++] = '\0';
-
-	return str;
-}
-
-int atoi(const char *str)
-{
-	int result = 0;
-	int length = 0;
-
-	while (isdigit(*str++))
-		++length;
-
-	str -= length + 1;
-
-	while (length > 0)
-		result += pow(10.00f, --length) * (*str++ - '0');
-
-	return result;
-}
-
-int printf(const char * format, ...)
-{
-	char buffer[2096]; /* TODO: dynamic buffer size */
-
-	va_list arg;
-	va_start(arg, format);
-
-	vsprintf(buffer, format, arg);
-
-	fputs(buffer, STDOUT);
-
-	va_end(arg);
-	return strlen(buffer); // return number of printed chars
-}
-
-int sprintf(char * str, const char * format, ...)
-{
-	va_list arg;
-	va_start(arg, format);
-
-	return vsprintf(str, format, arg);
-
-	va_end(arg);
-}
-
-int vsprintf(char * str, const char * format, va_list arg)
-{
-	ftag_t ftag;
-	int len = 0;
-
-	while (*format != NULL)
-	{
-		if (*format == '%') {
-			format = ftag_scan(&ftag, ++format);
-			len = ftag_format(str, len, va_arg(arg, void *), ftag);
-		} else {
-			str[len++] = *format;
+	for (; *fmt; ++fmt) {
+		if (*fmt != '%') {
+			*buf++ = *fmt;
+			continue;
 		}
 
-		++format;
-	}
-
-	return len;
-}
-
-int ftag_format(char *buf, int len, void *obj, ftag_t ftag)
-{
-	int base = 10;
-	int i, k;
-
-
-	switch (ftag.specifier)
-	{
-		case 'c':
-			for (i = 0; i < ftag.width - 1; ++i)
-			buf[len++] = ftag.flags;
-			buf[len++] = (char)obj;
-		break;
-		case 'd': case 'i': case 'u': case 'o': case 'x': case 'X':
-			if (ftag.specifier == 'o') {
-				base = 8;
-			} else if (ftag.specifier == 'x' || ftag.specifier == 'X') {
-				base = 16;
-			} else {
-				base = 10;
-			}
-
-			i = itoa((int)obj, buf + len, base);
-
-			k = strlen(buf + len);
-
-			if (ftag.specifier == 'x') {
-				for (i = 0; i < k; ++i) {
-					buf[len + i] = tolower(buf[len + i]);
-				}
-			}
-
-			if (ftag.flags == '#' && base == 16) {
-				buf[len++] = '0';
-				buf[len++] = 'x';
-			} else {
-				for (i = 0; i < ftag.width - k; ++i) {
-					buf[len++] = ftag.flags;
-				}
-			}
-			len += k;
-		break;
-		case 's':
-			k = strlen((char *)obj);
-			for (i = 0; i < ftag.width - 1; ++i)
-				buf[len++] = ftag.flags;
-			strncpy(buf + len, (char *)obj, k);
-			len += k;
-		break;
-		case '%':
-			for (i = 0; i < ftag.width - 1; ++i)
-				buf[len++] = ftag.flags;
-			buf[len++] = '%';
-	}
-
-	return len;
-}
-
-const char * ftag_scan(ftag_t *ftag, const char *format)
-{
-	ftag->flags = ' ';
-	ftag->width = 0;
-	ftag->precision = 1;
-	ftag->length = 'l';
-	ftag->specifier = '\0';
-
-	// flags
-	switch (*format)
-	{
-		case '-':
-		case '+':
-		case ' ':
-		case '#':
+		/* flags */
+		flags = 0;
+		loop:
+		++fmt;
+		switch (*fmt) {
 		case '0':
-			ftag->flags = *format;
-			++format;
-	}
-
-	// width
-	if (*format == '*') {
-		ftag->width = -1;
-	} else if (isdigit(*format)) {
-		ftag->width = atoi(format);
-		while (isdigit(*++format));
-	}
-
-	// precision
-	if (*format == '.') {
-		++format;
-		if (*format == '*') {
-			ftag->precision = -1;
-		} else if (isdigit(*format)) {
-			ftag->precision = atoi(format);
-			while (isdigit(*++format));
+			flags |= ZEROPAD;
+			goto loop;
+		case '+':
+			flags |= PLUS;
+			goto loop;
+		case ' ':
+			flags |= SPACE;
+			goto loop;
+		case '-':
+			flags |= LEFT;
+			goto loop;
+		case '#':
+			flags |= SPECIAL;
+			goto loop;
 		}
+
+		/* width */
+		width = 1;
+		if (isdigit(*fmt)) {
+			width = atoi(fmt);
+			while (isdigit(*++fmt));
+		} else if (*fmt == '*') {
+			++fmt;
+			width = va_arg(args, int);
+			if (width < 0) {
+				width = - width;
+				flags |= LEFT;
+			}
+		}
+
+		/* precision */
+		precision = -1;
+		if (*fmt == '.') {
+			++fmt;
+			if (isdigit(*fmt)) {
+				precision = atoi(fmt);
+				while (isdigit(*++fmt));
+			} else if (*fmt == '*') {
+				++fmt;
+				precision = va_arg(args, int);
+			}
+			if (width < 0) {
+				width = 0;
+			}
+		}
+
+		/* qualifier */
+		qualifier = -1;
+		if (strchr("hlL", *fmt)) {
+			qualifier = *fmt;
+			++fmt;
+		}
+
+		/* base */
+		base = 10;
+
+		/* specifier */
+		switch (*fmt) {
+		case 'c':
+			len = 1;
+
+			if (!(flags & LEFT))
+				while (len < width--)
+					*buf++ = ' ';
+
+			*buf++ = (unsigned char)va_arg(args, int);
+
+			while (len < width--)
+				*buf++ = ' ';
+			continue;
+
+		case 's':
+			s = va_arg(args, char *);
+			len = strnlen(s, precision);
+
+			if (!(flags & LEFT))
+				while (len < width--)
+					*buf++ = ' ';
+
+			for (i = 0; i < len; ++i)
+				*buf++ = *s++;
+
+			while (len < width--)
+				*buf++ = ' ';
+			continue;
+
+		case 'p':
+			if (width == -1) {
+				width = 2 * sizeof(void *);
+				flags |= ZEROPAD;
+			}
+			itoa_ex((unsigned long)va_arg(args, void *), buf, 16, flags, width);
+			continue;
+
+		case 'n':
+			if (qualifier == 'l') {
+				long *ip = va_arg(args, long *);
+				*ip = (buf - str);
+			} else {
+				int *ip = va_arg(args, int *);
+				*ip = (buf - str);
+			}
+			continue;
+
+		case '%':
+			*buf++ = '%';
+
+		/* integers */
+
+		case 'o':
+			base = 8;
+			break;
+
+		case 'x':
+			flags |= SMALL;
+		case 'X':
+			base = 16;
+			break;
+
+		case 'd':
+		case 'i':
+			flags |= SIGN;
+		case 'u':
+			break;
+
+		default:
+			*str++ = '%';
+			if (*fmt)
+				*str++ = *fmt;
+			else
+				--fmt;
+			continue;
+		}
+
+		if (qualifier == 'l') {
+			num = va_arg(args, unsigned long);
+		} else if (qualifier == 'h') {
+			num = (unsigned short)va_arg(args, int);
+			if (flags & SIGN) {
+				num = (short)num;
+			}
+		} else if (flags & SIGN) {
+			num = va_arg(args, int);
+		} else {
+			num = va_arg(args, unsigned int);
+		}
+
+		itoa_ex(num, buf, base, flags, width);
+		while (*++buf);
 	}
 
-	// length
-	switch (*format) {
-		case 'h':
-		case 'l':
-		case 'L':
-		ftag->length = *format;
-		++format;
-	}
+	*buf = '\0';
 
-	// specifier
-	ftag->specifier = *format;
-
-	return format;
+	return buf - str;
 }
-

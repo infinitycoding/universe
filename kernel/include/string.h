@@ -37,6 +37,7 @@
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
+	extern size_t strnlen(const char *s, size_t maxlen);
 	extern size_t strlen(const char*);
 	extern char* strcpy(char*,const char*);
 	extern char* strncpy(char*,const char*,size_t);
