@@ -39,9 +39,11 @@
 #include <gdt.h>
 #include <idt.h>
 #include <io.h>
+#include <printf.h>
 
 int init (void)
 {
+	clear_screen();
 	INIT_GDT();
 	INIT_IDT();
 	
