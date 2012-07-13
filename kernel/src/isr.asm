@@ -32,226 +32,85 @@
 ;    Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
 ;    Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 
-Global int_0
-Global int_1
-Global int_2
-Global int_3
-Global int_4
-Global int_5
-Global int_6
-Global int_7
-Global int_8
-Global int_9
-Global int_10
-Global int_11
-Global int_12
-Global int_13
-Global int_14
-Global int_15
-Global int_16
-Global int_17
-Global int_18
-Global int_19
-Global int_20
-Global int_21
-Global int_22
-Global int_23
-Global int_24
-Global int_25
-Global int_26
-Global int_27
-Global int_28
-Global int_29
-Global int_30
-Global int_31
+%macro EXCEPTION 1
+	Global int_%1
+	int_%1:
+	push dword 0
+	push dword %1
+	jmp exception_save
+%endmacro
+
+%macro EXCEPTION_ERROR_CODE 1
+	Global int_%1
+	int_%1:
+	push dword %1
+	jmp exception_save
+%endmacro
 
 ;Divide by Zero
-int_0:
-push dword 0
-push dword 0
-jmp exception_save
-
+	EXCEPTION 0
 ;Debug Exception
-int_1:
-push dword 0
-push dword 1
-jmp exception_save
-
+	EXCEPTION 1
 ;Non Maskable Interrupt
-int_2:
-push dword 0
-push dword 2
-jmp exception_save
-
+	EXCEPTION 2
 ;Breakpoint Exception
-int_3:
-push dword 0
-push dword 3
-jmp exception_save
-
+	EXCEPTION 3
 ;Overflow Exception
-int_4:
-push dword 0
-push dword 4
-jmp exception_save
-
+	EXCEPTION 4
 ;Bound Range Exception
-int_5:
-push dword 0
-push dword 5
-jmp exception_save
-
+	EXCEPTION 5
 ;Invalid Opcode
-int_6:
-push dword 0
-push dword 6
-jmp exception_save
-
+	EXCEPTION 6
 ;Device Not Available
-int_7:
-push dword 0
-push dword 7
-jmp exception_save
-
+	EXCEPTION 7
 ;Double Fault
-int_8:
-push dword 8
-jmp exception_save
-
+	EXCEPTION_ERROR_CODE 8
 ;Coprocessor Segment Overrun Exception
-int_9:
-push dword 0
-push dword 9
-jmp exception_save
-
+	EXCEPTION 9
 ;Invalid TSS
-int_10:
-push dword 10
-jmp exception_save
-
+	EXCEPTION_ERROR_CODE 10
 ;Segment not Present
-int_11:
-push dword 11
-jmp exception_save
-
+	EXCEPTION_ERROR_CODE 11
 ;Stack Fault
-int_12:
-push dword 12
-jmp exception_save
-
+	EXCEPTION_ERROR_CODE 12
 ;General Protection Fault
-int_13:
-push dword 13
-jmp exception_save
-
+	EXCEPTION_ERROR_CODE 13
 ;Page Fault
-int_14:
-push dword 14
-jmp exception_save
-
+	EXCEPTION_ERROR_CODE 14
 ;Reserved
-int_15:
-push dword 0
-push dword 15
-jmp exception_save
-
+	EXCEPTION 15
 ;x87 Floating Point Exception
-int_16:
-push dword 0
-push dword 16
-jmp exception_save
-
+	EXCEPTION 16
 ;Alignment Check
-int_17:
-push dword 17
-jmp exception_save
-
+	EXCEPTION_ERROR_CODE 17
 ;Machine Check
-int_18:
-push dword 0
-push dword 18
-jmp exception_save
-
+	EXCEPTION 18
 ;SIMD Floating Point
-int_19:
-push dword 0
-push dword 19
-jmp exception_save
-
+	EXCEPTION 19
 ;Reserved
-int_20:
-push dword 0
-push dword 20
-jmp exception_save
-
+	EXCEPTION 20
 ;Reserved
-int_21:
-push dword 0
-push dword 21
-jmp exception_save
-
+	EXCEPTION 21
 ;Reserved
-int_22:
-push dword 0
-push dword 22
-jmp exception_save
-
+	EXCEPTION 22
 ;Reserved
-int_23:
-push dword 0
-push dword 23
-jmp exception_save
-
+	EXCEPTION 23
 ;Reserved
-int_24:
-push dword 0
-push dword 24
-jmp exception_save
-
+	EXCEPTION 24
 ;Reserved
-int_25:
-push dword 0
-push dword 25
-jmp exception_save
-
+	EXCEPTION 25
 ;Reserved
-int_26:
-push dword 0
-push dword 26
-jmp exception_save
-
+	EXCEPTION 26
 ;Reserved
-int_27:
-push dword 0
-push dword 27
-jmp exception_save
-
+	EXCEPTION 27
 ;Reserved
-int_28:
-push dword 0
-push dword 28
-jmp exception_save
-
+	EXCEPTION 28
 ;Reserved
-int_29:
-push dword 0
-push dword 29
-jmp exception_save
-
+	EXCEPTION 29
 ;Reserved
-int_30:
-push dword 0
-push dword 30
-jmp exception_save
-
+	EXCEPTION 30
 ;Reserved
-int_31:
-push dword 0
-push dword 31
-jmp exception_save
-
-
-
+	EXCEPTION 31
 
 extern exception_handler
 exception_save:
@@ -276,107 +135,33 @@ popa
 add esp, 8
 iret
 
-Global irq_0
-Global irq_1
-Global irq_2
-Global irq_3
-Global irq_4
-Global irq_5
-Global irq_6
-Global irq_7
-Global irq_8
-Global irq_9
-Global irq_10
-Global irq_11
-Global irq_12
-Global irq_13
-Global irq_14
-Global irq_15
+%macro IRQ 1
+	Global int_%1
+	irq_%1:
+	push dword 0
+	push dword %1
+	jmp int_save
+%endmacro
 
-
-
-irq_0:
-push dword 0
-push dword 0
-jmp int_save
-
-irq_1:
-push dword 0
-push dword 1
-jmp int_save
-
-irq_2:
-push dword 0
-push dword 2
-jmp int_save
-
-irq_3:
-push dword 0
-push dword 3
-jmp int_save
-
-irq_4:
-push dword 0
-push dword 4
-jmp int_save
-
-irq_5:
-push dword 0
-push dword 5
-jmp int_save
-
-irq_6:
-push dword 0
-push dword 6
-jmp int_save
-
-irq_7:
-push dword 0
-push dword 7
-jmp int_save
-
-irq_8:
-push dword 0
-push dword 8
-jmp int_save
-
-irq_9:
-push dword 0
-push dword 9
-jmp int_save
-
-irq_10:
-push dword 0
-push dword 10
-jmp int_save
-
-irq_11:
-push dword 0
-push dword 11
-jmp int_save
-
-irq_12:
-push dword 0
-push dword 12
-jmp int_save
-
-irq_13:
-push dword 0
-push dword 13
-jmp int_save
-
-irq_14:
-push dword 0
-push dword 14
-jmp int_save
-
-irq_15:
-push dword 0
-push dword 15
-jmp int_save
+IRQ 0
+IRQ 1
+IRQ 2
+IRQ 3
+IRQ 4
+IRQ 5
+IRQ 6
+IRQ 7
+IRQ 8
+IRQ 9
+IRQ 10
+IRQ 11
+IRQ 12
+IRQ 13
+IRQ 14
+IRQ 15
 
 extern irq_handler
-irq_handler:
+int_save:
 pusha
 push ds
 push es
