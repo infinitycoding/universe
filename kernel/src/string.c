@@ -36,6 +36,17 @@
 
 #include <stdint.h>
 
+size_t strnlen(const char *s, size_t maxlen)
+{
+	const char *str = s;
+	while (*str && maxlen) {
+		++str;
+		maxlen--;
+	}
+
+	return str - s;
+}
+
 size_t strlen(const char* string){
 	size_t i=0;
 	while(string[i]){i++;}
