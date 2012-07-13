@@ -35,6 +35,7 @@
 */
 
 #include <idt.h>
+#include <cpu.h>
 #include <printf.h>
 
 char* exception_messages[] =
@@ -53,12 +54,12 @@ char* exception_messages[] =
 // just used in case of untreated exceptions
 void exc_panic(struct cpu_state* cpu){
 	int i;
-	char* exception=exception_messages;
-	for(i=0;i<cpu->intr;i++){
+	char* exception=exception_messages[cpu->intr];
+	/*for(i=0;i<cpu->intr;i++){
 		while(exception[0]){
 			exception++;
 		}
-	}
+	}*/
 	printf("%s  Errorcode:%-10x\n\n",exception,cpu->error);
 	printf("EAX: %-10x  EBX: %-10x\n",cpu->eax,cpu->ebx);
 	printf("ECX: %-10x  EDX: %-10x\n",cpu->ecx,cpu->edx);
@@ -69,7 +70,9 @@ void exc_panic(struct cpu_state* cpu){
 	printf("GS: %-10x  FS: %-10x\n",cpu->gs,cpu->fs);
 	printf("EIP: %-10x  EFLAGS: %-10x\n",cpu->eip,cpu->eflags);
 	printf("System halted...\n");
-	while(1){}
+	while(1){
+		asm volatile("cli; hlt");	
+	}
 }
 
 //hope this function never will be used ;)
