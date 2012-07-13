@@ -41,13 +41,13 @@
 #include <io.h>
 #include <printf.h>
 
-int init (void)
+int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 {
 	clear_screen();
 	INIT_GDT();
 	INIT_IDT();
 	
-	printf("%s\n%d %#X", "Hello World!", 1234, 0xAC);
+	printf("%s\n", "Hello World!");
 }
 
 
