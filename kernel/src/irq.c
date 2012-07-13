@@ -36,6 +36,8 @@
 #include <idt.h>
 #include <io.h>
 #include <cpu.h>
+#include <panic.h>
+#include <printf.h>
 
 static struct IDT_Entry IDT[256];
 static struct idtpt idtp;
@@ -53,13 +55,13 @@ void EOI(int irq) {
 	}
 }
 
-
 void Set_IDT_Entry(uint32_t intnr, uint16_t selector,uint32_t Base, uint16_t flags) {
 	IDT[intnr].Base_low = (uint16_t)Base;
 	IDT[intnr].selector = selector;
 	IDT[intnr].flags = flags;
 	IDT[intnr].Base_hi = (uint16_t)(Base>>16);
 }
+
 
 static void (*irq[16])(void) = {
 	NULL, NULL,
@@ -75,6 +77,8 @@ static void (*irq[16])(void) = {
 struct cpu_state* irq_handler(struct cpu_state* cpu) {
 	if(((uint32_t)irq[cpu->intr]) != NULL) {
 		irq[cpu->intr]();
+	}else{
+		printf("No ISR for IRQ %d found.\n", cpu->intr);	
 	}
 	EOI(cpu->intr);
 	return cpu;
@@ -88,42 +92,17 @@ int install_irq(int intr,void (*handler)(void)) {
 
 void deinstall_irq(int intr) {irq[intr] = NULL;}
 
-static void (*exc[32])(void) = {
-	NULL, NULL,
-	NULL, NULL,
-	NULL, NULL,
-	NULL, NULL,
-	NULL, NULL,
-	NULL, NULL,
-	NULL, NULL,
-	NULL, NULL,
-	NULL, NULL,
-	NULL, NULL,
-	NULL, NULL,
-	NULL, NULL,
-	NULL, NULL,
-	NULL, NULL,
-	NULL, NULL,
-	NULL, NULL
-};
 
 struct cpu_state* exception_handler(struct cpu_state* cpu) {
-	if(((uint32_t)exc[cpu->intr]) != NULL) {
-		exc[cpu->intr]();
-	} else {
-		exc_panic(cpu);
-	}
+	/**
+	TODO wenn möglich fehler beheben, sonst aktuelles programm beenden.
+	*/
+	// CPU-beenden, weil noch keine Tasks laufen
+	exc_panic(cpu);
+
 	EOI(cpu->intr);
 	return cpu;
 }
-
-int install_exc(int excnum,void (*handler)(void)) {
-	if(((uint32_t)exc[excnum]) != NULL) return 1;
-	exc[excnum] = handler;
-	return 0;
-}
-
-void deinstall_exc(int excnum) {exc[excnum] = NULL;}
 
 void remap_pic(void) {
 	outb(0x20, 0x11);
