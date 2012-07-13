@@ -34,14 +34,13 @@
 
 
 [BITS 32]
-section .text
 FLAGS    equ 0
 MAGIC    equ 0x1BADB002       ; Magicnumber - Erkennungsmerkmal für GRUB
 CHECKSUM equ -(MAGIC + FLAGS) ; Checksum
 zeilen equ 10
 
  
-align 4
+section .multiboot
 MultiBootHeader:
   dd MAGIC       ; Magic number
   dd FLAGS       ; Flags
@@ -49,6 +48,7 @@ MultiBootHeader:
 
 
 
+section .text
 Global start
 start:
 cli
