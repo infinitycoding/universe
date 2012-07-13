@@ -17,7 +17,7 @@ kernel32.elf: $(OBJS)
 	$(CC) $(CFLAGS) -c -o $@ $^
 
 %.o: %.asm
-	$(ASM) $(ASFLAGS) -c -o $@ $^
+	$(ASM) $(ASFLAGS) -o $@ $^
 
 clean:
 	rm $(OBJS)
