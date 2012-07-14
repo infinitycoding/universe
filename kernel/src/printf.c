@@ -192,11 +192,11 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 
 		case 'n':
 			if (qualifier == 'l') {
-				long *ip = va_arg(args, long *);
-				*ip = (buf - str);
+				long *dest = va_arg(args, long *);
+				*dest = (buf - str);
 			} else {
-				int *ip = va_arg(args, int *);
-				*ip = (buf - str);
+				int *dest = va_arg(args, int *);
+				*dest = (buf - str);
 			}
 			continue;
 
@@ -209,24 +209,25 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 			base = 8;
 			break;
 
-		case 'x':
-			flags |= SMALL;
-		case 'X':
-			base = 16;
-			break;
-
 		case 'd':
 		case 'i':
 			flags |= SIGN;
 		case 'u':
 			break;
 
+		case 'x':
+			flags |= SMALL;
+		case 'X':
+			base = 16;
+			break;
+
 		default:
 			*str++ = '%';
-			if (*fmt)
+			if (*fmt) {
 				*str++ = *fmt;
-			else
+			} else {
 				--fmt;
+			}
 			continue;
 		}
 
