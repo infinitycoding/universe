@@ -138,7 +138,7 @@ paddr_t find_free_page(unsigned long lower_limit) {
     for (i++; i < pmm_mmap_size; i++) {
         if (pmm_mmap[i]) {
             z = bit_scan_forward(pmm_mmap[i]);
-            page = i * 32 + z) * PAGE_SIZE;
+            page = (i * 32 + z) * PAGE_SIZE;
             return page;
         }
     }
@@ -173,7 +173,7 @@ paddr_t find_free_page_range(unsigned long lower_limit, unsigned int num) {
             found += 32;
             
         } else {
-            for (z = 0; j < 32; z++) {
+            for (z = 0; z < 32; z++) {
                 if (pmm_mmap[i] & (1 << z)) {
                     if (found = 0) {
                         page = (i * 32 + z) * PAGE_SIZE;
@@ -224,7 +224,7 @@ paddr_t phys_alloc_page_limit(uint32_t lower_limit) {
     }
     
     if(page & (PAGE_SIZE - 1)) {
-        panic("Can not reserve momory.");
+        printf("Can not reserve momory.\n");
     }
     phys_mark_page_as_used(page);
     return page;
@@ -262,10 +262,11 @@ paddr_t phys_alloc_page_range(unsigned int num) {
 }
 
 void INIT_PMM(struct multiboot_struct* MBS){
-	int i,x;
+	unsigned long i; 
+	int x;
 	struct mmap_entry* GRUB_MMAP =(struct mmap_entry*)MBS->mmap_addr;
 	for(i=0;i<32768;i++){pmm_mmap[i]=0xFFFFFFFF;}
-	unsigned long i;
+	
 	while(i<=(MBS->mmap_length/24)){
 		if(GRUB_MMAP[i].Type == 1){
 			uint32_t base =(uint32_t) GRUB_MMAP[i].BaseAddr;
