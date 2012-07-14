@@ -34,11 +34,11 @@
  Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
-
-#include "pmm.h"
-#include "math.h"
-#include "multiboot.h"
+#include <pmm.h>
+#include <math.h>
+#include <multiboot.h>
+#include <printf.h>
+#include <panic.h>
 
 unsigned long pmm_mmap[32768];
 unsigned long pmm_mmap_size;
