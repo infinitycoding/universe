@@ -1,3 +1,5 @@
+#ifndef _pmm_h_
+#define _pmm_h_
 /*
  Copyright 2012 universe coding group (UCG) all rights reserved
  This file is part of the Universe Kernel.
@@ -34,26 +36,27 @@
  Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _pmm_h
-#define _pmm_h
 
-extern const void kernel_start;
-extern const void kernel_end;
+	#include <stdint.h>
+	#include <multiboot.h>
 
-// pages per byte
-#define PAGES_PER_BYTE      8
+	extern const void kernel_start;
+	extern const void kernel_end;
 
-// page size (4k)
-#define PAGE_SIZE           4096
+	// pages per byte
+	#define PAGES_PER_BYTE      8
 
-// page alignment
-#define PAGE_ALIGN          PAGE_SIZE
+	// page size (4k)
+	#define PAGE_SIZE           4096
 
-void INIT_PMM(struct multiboot_struct* MBS)
-void pmm_mark_page_as_free(paddr_t page);
-unsigned long pmm_count_free_pages(void);
+	// page alignment
+	#define PAGE_ALIGN          PAGE_SIZE
 
-paddr_t pmm_alloc_dma_page_range_64k(unsigned int num);
+	void INIT_PMM(struct multiboot_struct* MBS);
+	void pmm_mark_page_as_free(paddr_t page);
+	unsigned long pmm_count_free_pages(void);
 
+	paddr_t pmm_alloc_dma_page_range_64k(unsigned int num);
 
 #endif
+
