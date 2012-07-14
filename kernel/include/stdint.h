@@ -60,6 +60,8 @@ typedef uint64_t uintmax_t;
 
 typedef unsigned int size_t;
 
+typedef unsigned int paddr_t;
+
 typedef int bool;
 typedef int boolean;
 

@@ -52,4 +52,7 @@ double abs (      double x );
 /*
       float abs (       float x );
 long double abs ( long double x );*/
+
+static unsigned int bit_scan_forward(unsigned int i);
+
 #endif

@@ -67,3 +67,13 @@ double abs (double x)
 		return x;
 	}
 }
+
+static unsigned int bit_scan_forward(unsigned int i) {
+    unsigned int j;
+    
+    for (j = 0; j < 32; j++) {
+        if (i & (1 << j)) {
+            return j;
+        }
+    }
+}
