@@ -38,6 +38,7 @@
 #include <multiboot.h>
 #include <panic.h>
 #include <pmm.h>
+#include <vmm.h>
 #include <gdt.h>
 #include <idt.h>
 #include <io.h>
@@ -59,14 +60,12 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 {
 	clear_screen();
 	
-	int i;
-	
-	char test[] = "TEST";
 	if (magic_number != 0x2BADB002) {
 		panic("incompatible bootloader");
 	}
 	
 	INIT_PMM(mb_info);
+	INIT_VMM();
 	INIT_GDT();
 	INIT_IDT();
 	INIT_CPUID();
