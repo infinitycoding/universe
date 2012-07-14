@@ -64,6 +64,8 @@ typedef unsigned int paddr_t;
 
 typedef int bool;
 typedef int boolean;
+typedef void* paddr_t;
+typedef void* vaddr_t;
 
 
 #endif
