@@ -37,6 +37,11 @@
 */
 
 #include <stdarg.h>
+#include <ctype.h>
+#include <math.h>
+#include <stdarg.h>
+#include <string.h>
+#include <stdint.h>
 
 typedef struct {
 		char flags;
@@ -57,5 +62,8 @@ const char * ftag_scan(ftag_t *ftag, const char *format);
 
 void clear_screen(void);
 int printf(const char * format, ...);
+
+#define DEFAULT_FRONT_COLOR	GREEN
+#define DEFAULT_BACK_COLOR	BLACK
 
 #endif
