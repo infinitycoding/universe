@@ -40,7 +40,7 @@
 	#include <cpu.h>
 
 	void exc_panic(struct cpu_state* cpu);
-	void kernel_panic(char* message);
+	void panic(char* message);
 
 #endif
 
