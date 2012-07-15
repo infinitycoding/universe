@@ -76,9 +76,11 @@ void exc_panic(struct cpu_state* cpu){
 }
 
 //hope this function never will be used ;)
-void kernel_panic(char* message){
+void panic(char* message){
 	printf("%s occured\n",message);
 	//Dump System Structures
 	printf("System halted...\n");
-	while(1){}
+	while(1){
+		asm volatile("cli; hlt");	
+	}
 }

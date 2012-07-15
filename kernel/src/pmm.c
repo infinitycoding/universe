@@ -207,7 +207,7 @@ paddr_t pmm_alloc_page () {
     paddr_t page = find_free_page(16 * 1024 * 1024);
     
     if (page & (PAGE_SIZE - 1)) {
-        return pmm_alloc_dma_page();
+        return pmm_alloc_page();
     }
     pmm_mark_page_as_used(page);
     return page;
@@ -216,7 +216,7 @@ paddr_t pmm_alloc_page () {
 /**
  * Reserve a page not under a entered address
  */
-paddr_t phys_alloc_page_limit(uint32_t lower_limit) {
+paddr_t pmm_alloc_page_limit(uint32_t lower_limit) {
     paddr_t page = find_free_page(16 * 1024 * 1024 > lower_limit ? 16 * 1024 * 1024 : lower_limit);
     
     if(page & (PAGE_SIZE - 1)) {
@@ -224,9 +224,9 @@ paddr_t phys_alloc_page_limit(uint32_t lower_limit) {
     }
     
     if(page & (PAGE_SIZE - 1)) {
-        printf("Can not reserve momory.\n");
+        panic("Can not reserve momory.\n");
     }
-    phys_mark_page_as_used(page);
+    pmm_mark_page_as_used(page);
     return page;
 }
 
@@ -236,13 +236,12 @@ paddr_t phys_alloc_page_limit(uint32_t lower_limit) {
  *
  * @return Pointer on the begin of the first page.
  */
-
-paddr_t phys_alloc_dma_page_range(unsigned int num) {
+paddr_t pmm_alloc_dma_page_range(unsigned int num) {
     paddr_t page = find_free_page_range(0, num);
     if((uint32_t) page & (PAGE_SIZE - 1)) {
         panic("There is no free momory now.");
     }
-    phys_mark_page_range_as_used(page, num);
+    pmm_mark_page_range_as_used(page, num);
     return page;
 }
 
@@ -252,12 +251,12 @@ paddr_t phys_alloc_dma_page_range(unsigned int num) {
  * @return Pointer on the begin of the first page.
  */
 
-paddr_t phys_alloc_page_range(unsigned int num) {
+paddr_t pmm_alloc_page_range(unsigned int num) {
     paddr_t page = find_free_page_range(16 * 1024 * 1024, num);
     if((uint32_t) page & (PAGE_SIZE - 1)) {
-        return phys_alloc_dma_page_range(num);
+        return pmm_alloc_page_range(num);
     }
-    phys_mark_page_range_as_used(page, num);
+    pmm_mark_page_range_as_used(page, num);
     return page;
 }
 
