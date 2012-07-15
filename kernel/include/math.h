@@ -53,6 +53,15 @@ double abs (      double x );
       float abs (       float x );
 long double abs ( long double x );*/
 
-static unsigned int bit_scan_forward(unsigned int i);
+static unsigned int bit_scan_forward(unsigned int i){
+    unsigned int j;
+    for(j = 0; j < 32; j++)
+    {
+        if(i & (1 << j))
+        {
+            return j;
+        }
+    }
+}
 
 #endif
