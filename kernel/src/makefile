@@ -21,5 +21,6 @@ kernel32.elf: $(OBJS)
 
 clean:
 	rm $(OBJS)
+	rm kernel32.elf
 
 .PHONY: clean
