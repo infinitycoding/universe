@@ -68,7 +68,7 @@ double abs (double x)
 	}
 }
 
-static unsigned int bit_scan_forward(unsigned int i) {
+unsigned int bit_scan_forward(unsigned int i) {
     unsigned int j;
     
     for (j = 0; j < 32; j++) {
