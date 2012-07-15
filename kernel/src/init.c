@@ -44,6 +44,7 @@
 int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 {
 	clear_screen();
+	INIT_PMM(mb_info);
 	INIT_GDT();
 	INIT_IDT();
 	
