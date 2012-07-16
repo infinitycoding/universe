@@ -1,5 +1,5 @@
-#ifndef _printf_h_
-#define _printf_h_
+#ifndef _keyboard_h_
+#define _keyboard_h_
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
@@ -35,36 +35,10 @@
     Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
+	#include <stdint.h>
 
-#include <stdarg.h>
-#include <ctype.h>
-#include <math.h>
-#include <stdarg.h>
-#include <string.h>
-#include <stdint.h>
-
-typedef struct {
-		char flags;
-		int width;
-		int precision;
-		char length;
-		char specifier;
-} ftag_t;
-
-char * itoa(int value, char * str, int base);
-int atoi(const char *str);
-
-int vsprintf(char * str, const char * format, va_list arg);
-int sprintf(char * str, const char * format, ...);
-
-int ftag_format(char *buf, int len, void *obj, ftag_t ftag);
-const char * ftag_scan(ftag_t *ftag, const char *format);
-
-void scroll(void);
-void clear_screen(void);
-int printf(const char * format, ...);
-
-#define DEFAULT_FRONT_COLOR	GREEN
-#define DEFAULT_BACK_COLOR	BLACK
+	void kbd_irq_handler(void);
+	void INIT_KEYBOARD(void);
+	
 
 #endif
