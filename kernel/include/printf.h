@@ -17,8 +17,8 @@
     You should have received a copy of the GNU General Public License
     along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 
-	
-	
+
+
     Diese Datei ist ein Teil vom Universe Kernel.
 
     Das Universe Kernel ist Freie Software: Sie können es unter den Bedingungen
@@ -36,12 +36,18 @@
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
+
+#include <stdint.h>
+#include <stdarg.h>
+
+/*
+#include <printf.h>
 #include <stdarg.h>
 #include <ctype.h>
 #include <math.h>
-#include <stdarg.h>
 #include <string.h>
-#include <stdint.h>
+moved to printf.c
+*/
 
 typedef struct {
 		char flags;

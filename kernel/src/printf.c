@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 
-	
-	
+
+
     Diese Datei ist ein Teil vom Universe Kernel.
 
     Das Universe Kernel ist Freie Software: Sie können es unter den Bedingungen
@@ -35,10 +35,11 @@
 */
 
 #include <printf.h>
+#include <stdarg.h>
+#include <ctype.h>
+#include <math.h>
+#include <string.h>
 
-/*
-	text output
-*/
 
 static int x = 0;
 static int y = 0;
@@ -58,7 +59,7 @@ void putc(char c)
     video_mem[2 * (y * 80 + x)] = c;
     video_mem[2 * (y * 80 + x) + 1] = DEFAULT_FRONT_COLOR | DEFAULT_BACK_COLOR;
     x++;
-    
+
     if( (y * 80 + x) > (80 * 25) ){
       scroll();
     }
@@ -149,6 +150,7 @@ int printf(const char * format, ...)
 	puts(buffer);
 
 	va_end(arg);
+	return strlen(buffer); // return number of printed chars
 }
 
 int sprintf(char * str, const char * format, ...)
@@ -186,7 +188,7 @@ int ftag_format(char *buf, int len, void *obj, ftag_t ftag)
 	int base = 10;
 	int i, k;
 	char buffer[10];
-	char *ptrchr;
+	//char *ptrchr; //not used
 
 
 	switch (ftag.specifier)
@@ -204,18 +206,18 @@ int ftag_format(char *buf, int len, void *obj, ftag_t ftag)
 			} else {
 				base = 10;
 			}
-	
+
 			i = (int)obj;
 			itoa(i, buffer, base);
-		
+
 			k = strlen(buffer);
-	
+
 			if (ftag.specifier == 'x') {
 				for (i = 0; i < k; ++i) {
 					buffer[i] = tolower(buffer[i]);
 				}
 			}
-			
+
 			if (ftag.flags == '#' && base == 16) {
 				buf[len++] = '0';
 				buf[len++] = 'x';
@@ -224,7 +226,7 @@ int ftag_format(char *buf, int len, void *obj, ftag_t ftag)
 					buf[len++] = ftag.flags;
 				}
 			}
-	
+
 			strncpy(buf + len, buffer, k);
 			len += k;
 		break;
