@@ -136,7 +136,7 @@ add esp, 8
 iret
 
 %macro IRQ 1
-	Global int_%1
+	Global irq_%1
 	irq_%1:
 	push dword 0
 	push dword %1
