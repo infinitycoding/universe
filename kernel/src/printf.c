@@ -36,11 +36,6 @@
 
 #include <printf.h>
 
-#include <ctype.h>
-#include <math.h>
-#include <stdarg.h>
-#include <string.h>
-
 /*
 	text output
 */
@@ -61,7 +56,7 @@ void putc(char c)
     }
 
     video_mem[2 * (y * 80 + x)] = c;
-    video_mem[2 * (y * 80 + x) + 1] = 0x07;
+    video_mem[2 * (y * 80 + x) + 1] = DEFAULT_FRONT_COLOR | DEFAULT_BACK_COLOR;
 
     x++;
 }
