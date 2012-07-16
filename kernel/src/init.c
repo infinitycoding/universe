@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 
-	
-	
+
+
     Diese Datei ist ein Teil vom Universe Kernel.
 
     Das Universe Kernel ist Freie Software: Sie können es unter den Bedingungen
@@ -35,7 +35,9 @@
 */
 
 #include <stdint.h>
-
+#include <multiboot.h>
+#include <panic.h>
+#include <pmm.h>
 #include <gdt.h>
 #include <idt.h>
 #include <io.h>
@@ -44,11 +46,13 @@
 int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 {
 	clear_screen();
+	if(magic_number!=0x2BADB002){panic("incompatible Bootlaoder");}
 	INIT_PMM(mb_info);
 	INIT_GDT();
 	INIT_IDT();
-	
+
 	printf("%s\n", "Hello World!");
+	return 0;
 }
 
 
