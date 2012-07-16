@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 
-	
-	
+
+
     Diese Datei ist ein Teil vom Universe Kernel.
 
     Das Universe Kernel ist Freie Software: Sie können es unter den Bedingungen
@@ -53,13 +53,7 @@ char* exception_messages[] =
 
 // just used in case of untreated exceptions
 void exc_panic(struct cpu_state* cpu){
-	int i;
 	char* exception=exception_messages[cpu->intr];
-	/*for(i=0;i<cpu->intr;i++){
-		while(exception[0]){
-			exception++;
-		}
-	}*/
 	printf("%s  Errorcode:%-10x\n\n",exception,cpu->error);
 	printf("EAX: %-10x  EBX: %-10x\n",cpu->eax,cpu->ebx);
 	printf("ECX: %-10x  EDX: %-10x\n",cpu->ecx,cpu->edx);
@@ -71,7 +65,7 @@ void exc_panic(struct cpu_state* cpu){
 	printf("EIP: %-10x  EFLAGS: %-10x\n",cpu->eip,cpu->eflags);
 	printf("System halted...\n");
 	while(1){
-		asm volatile("cli; hlt");	
+		asm volatile("cli; hlt");
 	}
 }
 
@@ -81,6 +75,6 @@ void panic(char* message){
 	//Dump System Structures
 	printf("System halted...\n");
 	while(1){
-		asm volatile("cli; hlt");	
+		asm volatile("cli; hlt");
 	}
 }
