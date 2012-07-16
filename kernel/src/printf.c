@@ -57,8 +57,11 @@ void putc(char c)
 
     video_mem[2 * (y * 80 + x)] = c;
     video_mem[2 * (y * 80 + x) + 1] = DEFAULT_FRONT_COLOR | DEFAULT_BACK_COLOR;
-
     x++;
+    
+    if( (y * 80 + x) > (80 * 25) ){
+      scroll();
+    }
 }
 
 void puts(const char* s)
@@ -76,6 +79,14 @@ void clear_screen(void)
     }
 
     x = y = 0;
+}
+
+void scroll(void)
+{
+    int i;
+    y --;
+    for(i = 0; i < 3840; i++)
+      video_mem[i] = video_mem[i + 80];
 }
 
 /*

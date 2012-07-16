@@ -1,5 +1,3 @@
-#ifndef _printf_h_
-#define _printf_h_
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
@@ -35,36 +33,35 @@
     Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
-
-#include <stdarg.h>
-#include <ctype.h>
-#include <math.h>
-#include <stdarg.h>
-#include <string.h>
 #include <stdint.h>
+#include <io.h>
+#include <idt.h>
+#include <printf.h>
+#include <driver/keyboard.h>
 
-typedef struct {
-		char flags;
-		int width;
-		int precision;
-		char length;
-		char specifier;
-} ftag_t;
+void send_kbc_command(uint8_t port,uint8_t command){
+  	while(inb(0x64) & 0x2);//Warten bis Eigabepuffer leer ist
+  	outb(port, command);//KBC-Befehl senden
+  	while(inb(0x60) != 0xFA);
+}
 
-char * itoa(int value, char * str, int base);
-int atoi(const char *str);
+static inline void send_kbd_command(uint8_t command){
+	send_kbc_command(0x60, command);
+}
 
-int vsprintf(char * str, const char * format, va_list arg);
-int sprintf(char * str, const char * format, ...);
+void INIT_KEYBOARD(void){
+  	if(install_irq(0x1, &kbd_irq_handler)) printf("Fehler.\n");
+  	
+  	while(!(inb(0x64) & 0x4));
+  	// Puffer leeren
+  	while (inb(0x64) & 0x1){
+  		inb(0x60);
+  	}
+  	
+  	send_kbd_command(0xF4);// Tastatur aktivieren
+}
 
-int ftag_format(char *buf, int len, void *obj, ftag_t ftag);
-const char * ftag_scan(ftag_t *ftag, const char *format);
-
-void scroll(void);
-void clear_screen(void);
-int printf(const char * format, ...);
-
-#define DEFAULT_FRONT_COLOR	GREEN
-#define DEFAULT_BACK_COLOR	BLACK
-
-#endif
+void kbd_irq_handler(void){
+  	uint8_t scancode = inb(0x60);
+  	printf("KBD-scancode: %c\n",scancode);
+}
