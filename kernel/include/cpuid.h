@@ -41,19 +41,7 @@
 
 #ifndef	_cpuid_h_
 #define	_cpuid_h_
-	static char* cpu_manufactorys[]={
-	"AMD", "AMD", "Intel", "Centaur",
-	"Cyrix", "Transmeta", "Transmeta","National Semiconductor",
-	"NexGen", "Rise", "SiS", "UMC",
-	"VIA", "Vortex", "unknown"
-	};
 
-	static char* vendorID[]={
-	"AuthenticAMD",	"AMDisbetter!", "GenuineIntel", "CentaurHauls",
-	"CyrixInstead", "TransmetaCPU", "GenuineTMx86", "Geode by NSC",
-	"NexGenDriven", "RiseRiseRise", "SiS SiS SiS ", "UMC UMC UMC ",
-	"VIA VIA VIA ", "Vortex86 SoC"
-	};
 	typedef enum {
 	callgate =0,
 	sysenter =1,
@@ -85,29 +73,7 @@
 		asm volatile("cpuid":"=a" (output->eax), "=b"(output->ebx),"=c"(output->ecx),"=d"(output->edx):"a"(function));
 	}
 
-	static char* brandID_Intel[]={
-    "Intel Celeron", "Intel Pentium III", "Intel Pentium III Xeon",
-    "Intel Pentium III", "Mobile Intel Pentium III", "Mobile Intel Celeron",
-    "Intel Pentium 4", "Intel Pentium 4", "Intel Celeron",
-    "Intel Xeon", "Intel Xeon MP", "Intel Pentium 4M",
-    "Mobile Intel Celeron", "Mobile Genue Intel", "Intel Mobile Celeron M",
-    "Mobile Intel Celeron", "Intel Celeron", "Mobile Genue Intel",
-    "Intel Pentium M", "Mobile Intel Celeron"
-	};
-
-    //only K8 DDR1
-	static char* brandID_AMD[]={
-    "AMD engeneer sample", "","", "","AMD Athlon 64 XX00+", "AMD Athlon 64 X2 XX00+",
-    "AMD Athlon 64 FX-ZZ", "", "AMD Athlon 64 XX00+ mobile", "AMD Athlon 64 XX00+ mobile low power", "AMD Turion 64 ML-XX", "AMD Turion 64 MT-XX",
-    "AMD Opteron 1YY", "AMD Opteron 1YY", "AMD Opteron 1YY HE", "AMD Opteron 1YY EE", "AMD Opteron 2YY", "AMD Opteron 2YY",
-    "AMD Opteron 2YY HE", "AMD Opteron 2YY EE", "AMD Opteron 8YY", "AMD Opteron 8YY", "AMD Opteron 8YY HE", "AMD Opteron 8YY EE",
-    "AMD Athlon 64 EE00+", "", "", "", "", "AMD Athlon XP-M XX00+ mobile",
-    "AMD Athlon XP-M XX00+ mobile low power", "", "AMD Athlon XP XX00+", "AMD Sempron TT00+ mobile", "AMD Sempron TT00+", "AMD Sempron TT00+ mobile low power",
-    "AMD Athlon 64 FX-ZZ", "", "AMD Sempron X64 TT00+", "", "", "AMD Opteron DC 1RR SE",
-    "AMD Opteron DC 2RR SE", "AMD Opteron DC 8RR SE", "AMD Opteron DC 1RR", "AMD Opteron DC 1RR", "AMD Opteron DC 1RR HE", "AMD Opteron DC 1RR EE",
-    "AMD Opteron DC 2RR", "AMD Opteron DC 2RR", "AMD Opteron DC 2RR HE", "AMD Opteron DC 2RR EE", "AMD Opteron DC 8RR", "	AMD Opteron DC 8RR",
-    "AMD Opteron DC 8RR HE", "AMD Opteron DC 8RR EE", "AMD Opteron DC 1RR", "AMD Opteron DC 2RR", "AMD Opteron DC 8RR", "AMD Opteron DC 1RR",
-    "AMD Opteron DC 2RR", "	AMD Opteron DC 8RR", "unknown AMD X86 processor"
-	};
+	int INIT_CPUID(void);
+	void CPU_info(void);
 
 #endif
