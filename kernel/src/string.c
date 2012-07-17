@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 
-	
-	
+
+
     Diese Datei ist ein Teil vom Universe Kernel.
 
     Das Universe Kernel ist Freie Software: Sie können es unter den Bedingungen
@@ -128,7 +128,7 @@ char* strtok(char* st0, const char* st1){}
 
 void* memcpy(void* destination, const void* source, size_t size){
 	uint8_t* dest=destination;
-	uint8_t* sour=source;
+	const uint8_t* sour=source;
 	uint32_t i=0;
 	while(i<size){
 		dest[i]=sour[i];
@@ -137,7 +137,7 @@ void* memcpy(void* destination, const void* source, size_t size){
 	return destination;
 }
 
-void* memmove(void* destination, const void* source, size_t n){
+void* memmove(void* destination,void* source, size_t n){
 	char* dest=destination;
 	char* src=source;
     char* c, overlap = 0;
@@ -146,7 +146,7 @@ void* memmove(void* destination, const void* source, size_t n){
             overlap = 1;
 		}
 	}
-    if (overlap){              
+    if (overlap){
         for (c = src + n - 1; c >= src; c--){
             *(c + (dest - src)) = *c;
 		}

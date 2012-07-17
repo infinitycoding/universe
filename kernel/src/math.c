@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 
-	
-	
+
+
     Diese Datei ist ein Teil vom Universe Kernel.
 
     Das Universe Kernel ist Freie Software: Sie können es unter den Bedingungen
@@ -39,12 +39,12 @@
 double pow (double base, double exponent)
 {
 	double result = base;
-	
+
 	int i;
 	for (i = 0; i < exponent - 1; ++i) {
 		result *= base;
 	}
-	
+
 	return result;
 }
 
@@ -56,7 +56,7 @@ double log2 (double x)
         pot *= 2;
         ++log2;
     }
-    return log2 - 1; 
+    return log2 - 1;
 }
 
 double abs (double x)
@@ -70,10 +70,11 @@ double abs (double x)
 
 unsigned int bit_scan_forward(unsigned int i) {
     unsigned int j;
-    
+
     for (j = 0; j < 32; j++) {
         if (i & (1 << j)) {
             return j;
         }
     }
+    return -1;
 }
