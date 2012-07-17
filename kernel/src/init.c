@@ -42,7 +42,18 @@
 #include <idt.h>
 #include <io.h>
 #include <printf.h>
+#include <driver/keyboard.h>
+#include <driver/timer.h>
+#include <driver/cmos.h>
 
+/**
+ * Initalize the Kernel
+ *
+ * @param mb_info The pointer to the multiboot-struct from the bootloader
+ * @param magic_number Multiboot-magic
+ *
+ * @return 0
+ */
 int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 {
 	clear_screen();
@@ -50,8 +61,26 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	INIT_PMM(mb_info);
 	INIT_GDT();
 	INIT_IDT();
+	INIT_PIT(50);
+	INIT_CMOS();
+	asm volatile("sti");
 
-	printf("%s\n", "Hello World!");
+	INIT_KEYBOARD();
+	
+	time_t *time = get_time();
+	char *day_string;
+	switch(time->day_in_month % 7){
+		case 0: day_string = "Sontag";		break;
+		case 1: day_string = "Montag";		break;
+		case 2: day_string = "Dienstag";	break;
+		case 3: day_string = "Mittwoch";	break;
+		case 4: day_string = "Donnerstag";	break;
+		case 5: day_string = "Freitag";	break;
+		case 6: day_string = "Sonnabend";	break;
+		
+	}
+	printf("%s %s!\n", "Hello World am", day_string);
+	while(1);
 	return 0;
 }
 
