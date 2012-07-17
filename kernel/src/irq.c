@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 
-	
-	
+
+
     Diese Datei ist ein Teil vom Universe Kernel.
 
     Das Universe Kernel ist Freie Software: Sie können es unter den Bedingungen
@@ -78,7 +78,7 @@ struct cpu_state* irq_handler(struct cpu_state* cpu) {
 	if(((uint32_t)irq[cpu->intr]) != NULL) {
 		irq[cpu->intr]();
 	}else{
-		printf("No ISR for IRQ %d found.\n", cpu->intr);	
+		printf("No ISR for IRQ %d found.\n", cpu->intr);
 	}
 	EOI(cpu->intr);
 	return cpu;
@@ -92,14 +92,40 @@ int install_irq(int intr,void (*handler)(void)) {
 
 void deinstall_irq(int intr) {irq[intr] = NULL;}
 
+static void (*exc[32])(void) = {
+    NULL, NULL,
+    NULL, NULL,
+    NULL, NULL,
+    NULL, NULL,
+    NULL, NULL,
+    NULL, NULL,
+    NULL, NULL,
+    NULL, NULL,
+    NULL, NULL,
+    NULL, NULL,
+    NULL, NULL,
+    NULL, NULL,
+    NULL, NULL,
+    NULL, NULL,
+    NULL, NULL,
+    NULL, NULL
+};
+
+int install_exc(int excnum,void (*handler)(void)) {
+    if(((uint32_t)exc[excnum]) != NULL) return 1;
+    exc[excnum] = handler;
+    return 0;
+}
+
+void deinstall_exc(int excnum) {exc[excnum] = NULL;}
+
 
 struct cpu_state* exception_handler(struct cpu_state* cpu) {
-	/**
-	TODO wenn möglich fehler beheben, sonst aktuelles programm beenden.
-	*/
-	// CPU-beenden, weil noch keine Tasks laufen
-	exc_panic(cpu);
-
+	if(((uint32_t)exc[cpu->intr]) != NULL) {
+        exc[cpu->intr]();
+    }else{
+        exc_panic(cpu); // CPU-beenden, weil noch keine Tasks laufen
+    }
 	EOI(cpu->intr);
 	return cpu;
 }
@@ -124,21 +150,21 @@ void INIT_IDT(void) {
 	Set_IDT_Entry(3,0x8,(uint32_t)int_3,0xEE00); Set_IDT_Entry(4,0x8,(uint32_t)int_4,0xEE00); Set_IDT_Entry(5,0x8,(uint32_t)int_5,0xEE00);
 	Set_IDT_Entry(6,0x8,(uint32_t)int_6,0xEE00); Set_IDT_Entry(7,0x8,(uint32_t)int_7,0xEE00); Set_IDT_Entry(8,0x8,(uint32_t)int_8,0xEE00);
 	Set_IDT_Entry(9,0x8,(uint32_t)int_9,0xEE00); Set_IDT_Entry(10,0x8,(uint32_t)int_10,0xEE00); Set_IDT_Entry(11,0x8,(uint32_t)int_11,0xEE00);
-	Set_IDT_Entry(12,0x8,(uint32_t)int_12,0xEE00); Set_IDT_Entry(13,0x8,(uint32_t)int_13,0xEE00); Set_IDT_Entry(14,0x8,(uint32_t)int_14,0xEE00); 
-	Set_IDT_Entry(15,0x8,(uint32_t)int_15,0xEE00); Set_IDT_Entry(16,0x8,(uint32_t)int_16,0xEE00); Set_IDT_Entry(17,0x8,(uint32_t)int_17,0xEE00); 
-	Set_IDT_Entry(18,0x8,(uint32_t)int_18,0xEE00); Set_IDT_Entry(19,0x8,(uint32_t)int_19,0xEE00); Set_IDT_Entry(20,0x8,(uint32_t)int_20,0xEE00); 
-	Set_IDT_Entry(21,0x8,(uint32_t)int_21,0xEE00); Set_IDT_Entry(22,0x8,(uint32_t)int_22,0xEE00); Set_IDT_Entry(23,0x8,(uint32_t)int_23,0xEE00); 
-	Set_IDT_Entry(24,0x8,(uint32_t)int_24,0xEE00); Set_IDT_Entry(25,0x8,(uint32_t)int_25,0xEE00); Set_IDT_Entry(26,0x8,(uint32_t)int_26,0xEE00);   
-	Set_IDT_Entry(27,0x8,(uint32_t)int_27,0xEE00); Set_IDT_Entry(28,0x8,(uint32_t)int_28,0xEE00); Set_IDT_Entry(29,0x8,(uint32_t)int_29,0xEE00);   
-	Set_IDT_Entry(30,0x8,(uint32_t)int_30,0xEE00); Set_IDT_Entry(31,0x8,(uint32_t)int_31,0xEE00); 
+	Set_IDT_Entry(12,0x8,(uint32_t)int_12,0xEE00); Set_IDT_Entry(13,0x8,(uint32_t)int_13,0xEE00); Set_IDT_Entry(14,0x8,(uint32_t)int_14,0xEE00);
+	Set_IDT_Entry(15,0x8,(uint32_t)int_15,0xEE00); Set_IDT_Entry(16,0x8,(uint32_t)int_16,0xEE00); Set_IDT_Entry(17,0x8,(uint32_t)int_17,0xEE00);
+	Set_IDT_Entry(18,0x8,(uint32_t)int_18,0xEE00); Set_IDT_Entry(19,0x8,(uint32_t)int_19,0xEE00); Set_IDT_Entry(20,0x8,(uint32_t)int_20,0xEE00);
+	Set_IDT_Entry(21,0x8,(uint32_t)int_21,0xEE00); Set_IDT_Entry(22,0x8,(uint32_t)int_22,0xEE00); Set_IDT_Entry(23,0x8,(uint32_t)int_23,0xEE00);
+	Set_IDT_Entry(24,0x8,(uint32_t)int_24,0xEE00); Set_IDT_Entry(25,0x8,(uint32_t)int_25,0xEE00); Set_IDT_Entry(26,0x8,(uint32_t)int_26,0xEE00);
+	Set_IDT_Entry(27,0x8,(uint32_t)int_27,0xEE00); Set_IDT_Entry(28,0x8,(uint32_t)int_28,0xEE00); Set_IDT_Entry(29,0x8,(uint32_t)int_29,0xEE00);
+	Set_IDT_Entry(30,0x8,(uint32_t)int_30,0xEE00); Set_IDT_Entry(31,0x8,(uint32_t)int_31,0xEE00);
 	//IRQs
-//	Set_IDT_Entry(32,0x8,(uint32_t)irq_0,0xEE00); Set_IDT_Entry(33,0x8,(uint32_t)irq_1,0xEE00); 
-//	Set_IDT_Entry(34,0x8,(uint32_t)irq_2,0xEE00); Set_IDT_Entry(35,0x8,(uint32_t)irq_3,0xEE00); 
-//	Set_IDT_Entry(36,0x8,(uint32_t)irq_4,0xEE00); Set_IDT_Entry(37,0x8,(uint32_t)irq_5,0xEE00);
-//	Set_IDT_Entry(38,0x8,(uint32_t)irq_6,0xEE00); Set_IDT_Entry(39,0x8,(uint32_t)irq_7,0xEE00); 
-//	Set_IDT_Entry(40,0x8,(uint32_t)irq_8,0xEE00); Set_IDT_Entry(41,0x8,(uint32_t)irq_9,0xEE00);
-//	Set_IDT_Entry(42,0x8,(uint32_t)irq_10,0xEE00); Set_IDT_Entry(43,0x8,(uint32_t)irq_11,0xEE00);
-//	Set_IDT_Entry(44,0x8,(uint32_t)irq_12,0xEE00); Set_IDT_Entry(45,0x8,(uint32_t)irq_13,0xEE00);
-//	Set_IDT_Entry(46,0x8,(uint32_t)irq_14,0xEE00); Set_IDT_Entry(47,0x8,(uint32_t)irq_15,0xEE00);
+	Set_IDT_Entry(32,0x8,(uint32_t)irq_0,0xEE00); Set_IDT_Entry(33,0x8,(uint32_t)irq_1,0xEE00);
+	Set_IDT_Entry(34,0x8,(uint32_t)irq_2,0xEE00); Set_IDT_Entry(35,0x8,(uint32_t)irq_3,0xEE00);
+	Set_IDT_Entry(36,0x8,(uint32_t)irq_4,0xEE00); Set_IDT_Entry(37,0x8,(uint32_t)irq_5,0xEE00);
+	Set_IDT_Entry(38,0x8,(uint32_t)irq_6,0xEE00); Set_IDT_Entry(39,0x8,(uint32_t)irq_7,0xEE00);
+	Set_IDT_Entry(40,0x8,(uint32_t)irq_8,0xEE00); Set_IDT_Entry(41,0x8,(uint32_t)irq_9,0xEE00);
+	Set_IDT_Entry(42,0x8,(uint32_t)irq_10,0xEE00); Set_IDT_Entry(43,0x8,(uint32_t)irq_11,0xEE00);
+	Set_IDT_Entry(44,0x8,(uint32_t)irq_12,0xEE00); Set_IDT_Entry(45,0x8,(uint32_t)irq_13,0xEE00);
+	Set_IDT_Entry(46,0x8,(uint32_t)irq_14,0xEE00); Set_IDT_Entry(47,0x8,(uint32_t)irq_15,0xEE00);
 	lidt(48);
 }
