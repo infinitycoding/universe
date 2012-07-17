@@ -1,3 +1,5 @@
+#ifndef _timer_h_
+#define _timer_h_
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
@@ -33,62 +35,30 @@
     Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
-#include <stdint.h>
-#include <io.h>
-#include <idt.h>
-#include <printf.h>
-#include <driver/keyboard.h>
-
-/**
- * Send a command to the Keyboard Controler
- * 
- * @param port Port for the Command
- * @param command Command for the KBC
- *
- * @return void
- */
-void send_kbc_command(uint8_t port, uint8_t command){
-  	while(inb(0x64) & 0x2);//Warten bis Eigabepuffer leer ist
-  	outb(port, command);//KBC-Befehl senden
-  	while(inb(0x60) != 0xFA);
-}
-/**
- * Send a command to the Keyboard
- *
- * @param command Command for the Keyboard
- *
- * @return void
- */
-static inline void send_kbd_command(uint8_t command){
-	send_kbc_command(0x60, command);
-}
-/**
- * Initalize the Keyboard
- *
- * @param void
- * @return void
- */
-void INIT_KEYBOARD(void){
-	install_irq(0x1, &kbd_irq_handler);
-  	
-  	while(!(inb(0x64) & 0x4));
-  	// Puffer leeren
-  	while (inb(0x64) & 0x1){
-  		inb(0x60);
-  	}
 	
-  	send_kbd_command(0xF4);// Tastatur aktivieren
-}
-/**
- * IRQ handler for the Keyboard
- *
- * @param void
- * @return void
- */
-void kbd_irq_handler(void){
-	inb(0x60);
-	printf("Keyboard!\n");
-}
+	#include <stdint.h>
 
+	typedef struct time {
+		uint8_t second;
+		uint8_t alarm_sec;
+		uint8_t minute;
+		uint8_t alarm_min;
+		uint8_t hour;
+		uint8_t alarm_hour;
+		uint8_t week_day;
+		uint8_t day_in_month;
+		uint8_t month;
+		uint8_t year;
+		uint8_t century;
+	} time_t;
+	
+	void INIT_PIT(int freq);
+	void INIT_RTC(void);
+	
+	void rtc_irq_handler(void);
+	int update_time(void);
+	int change_time(time_t time);
+	time_t *get_time(void);
 
+#endif
 
