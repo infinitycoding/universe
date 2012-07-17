@@ -38,11 +38,55 @@
  /*
     authors:
     -Simon Diepold aka. Tdotu (Universe Team) simon.diepold@infinitycoding.de
+
+    Total Verbuggt :D
  */
 
 #include <stdint.h>
 #include <cpuid.h>
 #include <string.h>
+#include <printf.h>
+
+char* brandID_Intel[]={
+   "Intel Celeron", "Intel Pentium III", "Intel Pentium III Xeon",
+   "Intel Pentium III", "Mobile Intel Pentium III", "Mobile Intel Celeron",
+   "Intel Pentium 4", "Intel Pentium 4", "Intel Celeron",
+   "Intel Xeon", "Intel Xeon MP", "Intel Pentium 4M",
+   "Mobile Intel Celeron", "Mobile Genue Intel", "Intel Mobile Celeron M",
+   "Mobile Intel Celeron", "Intel Celeron", "Mobile Genue Intel",
+   "Intel Pentium M", "Mobile Intel Celeron"
+};
+
+    //only K8 DDR1
+char* brandID_AMD[]={
+   "AMD engeneer sample", "","", "","AMD Athlon 64 XX00+", "AMD Athlon 64 X2 XX00+",
+   "AMD Athlon 64 FX-ZZ", "", "AMD Athlon 64 XX00+ mobile", "AMD Athlon 64 XX00+ mobile low power", "AMD Turion 64 ML-XX", "AMD Turion 64 MT-XX",
+   "AMD Opteron 1YY", "AMD Opteron 1YY", "AMD Opteron 1YY HE", "AMD Opteron 1YY EE", "AMD Opteron 2YY", "AMD Opteron 2YY",
+   "AMD Opteron 2YY HE", "AMD Opteron 2YY EE", "AMD Opteron 8YY", "AMD Opteron 8YY", "AMD Opteron 8YY HE", "AMD Opteron 8YY EE",
+   "AMD Athlon 64 EE00+", "", "", "", "", "AMD Athlon XP-M XX00+ mobile",
+   "AMD Athlon XP-M XX00+ mobile low power", "", "AMD Athlon XP XX00+", "AMD Sempron TT00+ mobile", "AMD Sempron TT00+", "AMD Sempron TT00+ mobile low power",
+   "AMD Athlon 64 FX-ZZ", "", "AMD Sempron X64 TT00+", "", "", "AMD Opteron DC 1RR SE",
+   "AMD Opteron DC 2RR SE", "AMD Opteron DC 8RR SE", "AMD Opteron DC 1RR", "AMD Opteron DC 1RR", "AMD Opteron DC 1RR HE", "AMD Opteron DC 1RR EE",
+   "AMD Opteron DC 2RR", "AMD Opteron DC 2RR", "AMD Opteron DC 2RR HE", "AMD Opteron DC 2RR EE", "AMD Opteron DC 8RR", "	AMD Opteron DC 8RR",
+   "AMD Opteron DC 8RR HE", "AMD Opteron DC 8RR EE", "AMD Opteron DC 1RR", "AMD Opteron DC 2RR", "AMD Opteron DC 8RR", "AMD Opteron DC 1RR",
+   "AMD Opteron DC 2RR", "	AMD Opteron DC 8RR", "unknown AMD X86 processor"
+};
+
+	static char* vendorID[]={
+	"AuthenticAMD",	"AMDisbetter!", "GenuineIntel", "CentaurHauls",
+	"CyrixInstead", "TransmetaCPU", "GenuineTMx86", "Geode by NSC",
+	"NexGenDriven", "RiseRiseRise", "SiS SiS SiS ", "UMC UMC UMC ",
+	"VIA VIA VIA ", "Vortex86 SoC"
+	};
+
+		static char* cpu_manufactorys[]={
+	"AMD", "AMD", "Intel", "Centaur",
+	"Cyrix", "Transmeta", "Transmeta","National Semiconductor",
+	"NexGen", "Rise", "SiS", "UMC",
+	"VIA", "Vortex", "unknown"
+	};
+
+	static char* scall[]={"Callgate","Sysenter","Syscall"};
 
 
 
@@ -72,12 +116,16 @@ int INIT_CPUID(void){
 
 	struct cpuid_regs reg;
 	uint32_t i;
+	char vendor[13];
 	cpuid(0,&reg);
-	for(i=0;strncmp((char*)&reg+4,vendorID[i],12)&& i<15;i++){}
+    strncpy(vendor,(char*)&reg.ebx,4);
+    strncpy(vendor+4,(char*)&reg.edx,4);
+    strncpy(vendor+8,(char*)&reg.ecx,4);
+	for(i=0;strncmp(vendor,vendorID[i],12)&& i<15;i++){}
 	current_CPU.manufactor=i;
 	current_CPU.max_std_func=reg.eax;
     cpuid(0x80000000,&reg);
-	current_CPU.max_std_func=reg.eax;
+	current_CPU.max_spec_func=reg.eax;
 
 	cpuid(1,&reg);
 	current_CPU.family = (reg.eax & 0x00000F00)>>8;
@@ -85,7 +133,16 @@ int INIT_CPUID(void){
 	current_CPU.stepping = reg.eax & 0x0000000F;
 	current_CPU.brandID = (uint8_t)reg.ebx;
 
-	if(current_CPU.max_std_func>0x80000000){
+	if( (!(reg.edx & 0x800)) && (current_CPU.family == 6) && (current_CPU.model < 3) && (current_CPU.stepping < 3)){
+		current_CPU.dsysc=sysenter;
+	} else if(current_CPU.max_spec_func>0x80000000){
+        cpuid(0x80000001,&reg);
+        if(reg.edx& 0x1000){
+            current_CPU.dsysc=syscall;
+        }
+	}
+
+	if(current_CPU.max_spec_func>0x80000000){
         cpuid(0x80000001,&reg);
         current_CPU.ext_brandID=(uint16_t)reg.ebx;
 	}else{
@@ -94,7 +151,7 @@ int INIT_CPUID(void){
 
 
     //Get CPU name/series
-	if(current_CPU.max_std_func>0x80000004){ // via Brand String
+	if(current_CPU.max_spec_func>0x80000004){ // via Brand String
         for(i=0x80000002;i<=0x80000004;i++){
             cpuid(i,&reg);
             memcpy((current_CPU.cpu_type+(i-0x80000002)*16),((void*)&reg),16);
@@ -117,19 +174,22 @@ int INIT_CPUID(void){
     // TODO: identify CPU through family,model,stepping, socket
 	// TODO: check and save APIC, SMP infos
 
-	current_CPU.dsysc=callgate;
 
-	if( !(reg.edx & 0x800) && (current_CPU.family == 6) && (current_CPU.model < 3) && (current_CPU.stepping < 3)){
-		current_CPU.dsysc=sysenter;
-		return 0;
-	}
+	cpuid(1,&reg);
 
-	if(current_CPU.max_std_func>0x80000000){
-        cpuid(0x80000001,&reg);
-        if(reg.edx& 0x1000){
-            current_CPU.dsysc=syscall;
-        }
-	}
 
 	return 0;
 }
+
+/*
+ * prints CPU Information
+ * @return void
+ */
+
+ void CPU_info(void){
+    printf("CPU Manufactur: %s\n",cpu_manufactorys[current_CPU.manufactor]);
+    printf("Model: %s\n",current_CPU.cpu_type);
+    printf("Static Syscall: Int $0x80\nDynamic Syscall: %s\n",scall[current_CPU.dsysc]);
+ }
+
+
