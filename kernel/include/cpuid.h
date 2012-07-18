@@ -43,22 +43,46 @@
 #define	_cpuid_h_
 
 	typedef enum {
-	callgate =0,
-	sysenter =1,
-	syscall =2,
+        callgate =0,
+        sysenter =1,
+        syscall =2,
 	}dynamic_syscall;
+
+	typedef enum {
+        X86 = 0,
+        X64 = 1,
+	}arch;
+
+	typedef enum {
+        no_sse = 0,
+        sse = 1,
+        sse2 = 2,
+        sse3 = 3,
+        sse41 = 4,
+        sse42 = 5,
+	}SSE;
+
+	// CPU Propertie Flags
+    #define ACPI 1
+    #define Hyper_threading 2
+    #define MMX 4
+    #define PSE 8 //Page size extension
+    #define LAPIC 16
+    #define AMD3DNOW 32
 
 	struct cpu_properties{
 	    bool cpuid_support;
 		uint32_t manufactor; //position in cpu_manufactorys array
-		uint32_t family;
-		uint32_t model;
-		uint32_t stepping;
 		uint8_t brandID;
 		uint16_t ext_brandID;
 		uint32_t max_std_func;
 		uint32_t max_spec_func;
 		dynamic_syscall dsysc;
+		arch architecture;
+		SSE sse_support;
+		uint32_t flag;
+		uint8_t logic_cores;
+        uint8_t APIC_ID;
 		char cpu_type[48];
 	};
 
@@ -69,9 +93,6 @@
 		uint32_t edx;
 	};
 
-	static void cpuid(uint32_t function,struct cpuid_regs* output){
-		asm volatile("cpuid":"=a" (output->eax), "=b"(output->ebx),"=c"(output->ecx),"=d"(output->edx):"a"(function));
-	}
 
 	int INIT_CPUID(void);
 	void CPU_info(void);
