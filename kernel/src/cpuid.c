@@ -72,25 +72,36 @@ char* brandID_AMD[]={
    "AMD Opteron DC 2RR", "	AMD Opteron DC 8RR", "unknown AMD X86 processor"
 };
 
-	static char* vendorID[]={
-	"AuthenticAMD",	"AMDisbetter!", "GenuineIntel", "CentaurHauls",
-	"CyrixInstead", "TransmetaCPU", "GenuineTMx86", "Geode by NSC",
-	"NexGenDriven", "RiseRiseRise", "SiS SiS SiS ", "UMC UMC UMC ",
-	"VIA VIA VIA ", "Vortex86 SoC"
-	};
+static char* vendorID[]={
+    "AuthenticAMD",	"AMDisbetter!", "GenuineIntel", "CentaurHauls",
+    "CyrixInstead", "TransmetaCPU", "GenuineTMx86", "Geode by NSC",
+    "NexGenDriven", "RiseRiseRise", "SiS SiS SiS ", "UMC UMC UMC ",
+    "VIA VIA VIA ", "Vortex86 SoC"
+};
 
-		static char* cpu_manufactorys[]={
+static char* cpu_manufactorys[]={
 	"AMD", "AMD", "Intel", "Centaur",
 	"Cyrix", "Transmeta", "Transmeta","National Semiconductor",
 	"NexGen", "Rise", "SiS", "UMC",
 	"VIA", "Vortex", "unknown"
-	};
+};
 
-	static char* scall[]={"Callgate","Sysenter","Syscall"};
+static char* scall[]={"Callgate","Sysenter","Syscall"};
+static char* architecture[]={"X86","X64"};
 
 
 
 struct cpu_properties current_CPU;
+
+/*
+ * Inline function of CPUID
+ * @param uint32_t cpuid function number
+ * @param pointer to output register structure
+ * @return sucess (0=sucess, 1=CPUID is not supported)
+ */
+static void cpuid(uint32_t function,struct cpuid_regs* output){
+	asm volatile("cpuid":"=a" (output->eax), "=b"(output->ebx),"=c"(output->ecx),"=d"(output->edx):"a"(function));
+}
 
 /*
  * Creates structures containing CPU Informations
@@ -115,25 +126,28 @@ int INIT_CPUID(void){
 	}
 
 	struct cpuid_regs reg;
-	uint32_t i;
+	uint32_t i,family, model, stepping;
 	char vendor[13];
+	// Copy Vebdir String
 	cpuid(0,&reg);
     strncpy(vendor,(char*)&reg.ebx,4);
     strncpy(vendor+4,(char*)&reg.edx,4);
     strncpy(vendor+8,(char*)&reg.ecx,4);
 	for(i=0;strncmp(vendor,vendorID[i],12)&& i<15;i++){}
+
 	current_CPU.manufactor=i;
 	current_CPU.max_std_func=reg.eax;
     cpuid(0x80000000,&reg);
 	current_CPU.max_spec_func=reg.eax;
 
 	cpuid(1,&reg);
-	current_CPU.family = (reg.eax & 0x00000F00)>>8;
-	current_CPU.model = (reg.eax & 0x000000F0)>>4;
-	current_CPU.stepping = reg.eax & 0x0000000F;
+	family = (reg.eax & 0x00000F00)>>8;
+	model = (reg.eax & 0x000000F0)>>4;
+	stepping = reg.eax & 0x0000000F;
 	current_CPU.brandID = (uint8_t)reg.ebx;
 
-	if( (!(reg.edx & 0x800)) && (current_CPU.family == 6) && (current_CPU.model < 3) && (current_CPU.stepping < 3)){
+    //Detect Dynamic Syscall
+	if((!(reg.edx & 0x800)) && (family == 6) && (model < 3) && (stepping < 3)){
 		current_CPU.dsysc=sysenter;
 	} else if(current_CPU.max_spec_func>0x80000000){
         cpuid(0x80000001,&reg);
@@ -142,6 +156,7 @@ int INIT_CPUID(void){
         }
 	}
 
+    //get extendet BrandID
 	if(current_CPU.max_spec_func>0x80000000){
         cpuid(0x80000001,&reg);
         current_CPU.ext_brandID=(uint16_t)reg.ebx;
@@ -169,27 +184,68 @@ int INIT_CPUID(void){
 
 	}else{ //standart name
         strcpy(current_CPU.cpu_type,cpu_manufactorys[current_CPU.manufactor]);
-        strcat(current_CPU.cpu_type," X86 CPU");
+        strcat(current_CPU.cpu_type,architecture[current_CPU.architecture]);
+        strcat(current_CPU.cpu_type," CPU");
 	}
     // TODO: identify CPU through family,model,stepping, socket
 	// TODO: check and save APIC, SMP infos
 
+    cpuid(1,&reg);
+    if(reg.edx&(1<<22)){
+        current_CPU.flag |=ACPI;
+        current_CPU.APIC_ID = (uint8_t) (reg.ebx>>24);
+    }
 
-	cpuid(1,&reg);
+    if(reg.edx&(1<<28)){
+        current_CPU.flag |=Hyper_threading;
+        current_CPU.logic_cores= (uint8_t)(reg.ebx & 0xFF0000)>>16;
+    }
+    if(reg.edx&(1<<30)){
+        current_CPU.architecture=X64;
+    }
+    if(reg.edx&(1<<25)){
+        current_CPU.sse_support=sse;
+    }
+    if(reg.edx&(1<<26)){
+        current_CPU.sse_support=sse2;
+    }
+    if(reg.ecx&1){
+        current_CPU.sse_support=sse3;
+    }
+    if(reg.ecx&(1<<19)){
+        current_CPU.sse_support=sse41;
+    }
+    if(reg.ecx&(1<<20)){
+        current_CPU.sse_support=sse42;
+    }
+    if(reg.edx&(1<<23)){
+        current_CPU.flag |= MMX;
+    }
+    if(reg.edx&(1<<17)){
+        current_CPU.flag |= PSE;
+    }
+    if(reg.edx&(1<<9)){
+        current_CPU.flag |= LAPIC;
+    }
+    if(current_CPU.max_spec_func>0x80000000 && current_CPU.manufactor<2){
+        current_CPU.flag |= AMD3DNOW;
+    }
 
 
 	return 0;
 }
 
+
 /*
  * prints CPU Information
  * @return void
  */
-
  void CPU_info(void){
     printf("CPU Manufactur: %s\n",cpu_manufactorys[current_CPU.manufactor]);
+    printf("CPU Architecture: %s\n",architecture[current_CPU.architecture]);
     printf("Model: %s\n",current_CPU.cpu_type);
     printf("Static Syscall: Int $0x80\nDynamic Syscall: %s\n",scall[current_CPU.dsysc]);
+    printf("Logical CPUs: %d\n",current_CPU.logic_cores);
  }
 
 
