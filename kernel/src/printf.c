@@ -137,8 +137,8 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 				++fmt;
 				precision = va_arg(args, int);
 			}
-			if (width < 0) {
-				width = 0;
+			if (precision < 0) {
+				precision = 0;
 			}
 		}
 
