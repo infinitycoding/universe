@@ -87,8 +87,10 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 		case 6: day_string = "Samstag";		break;
 	}
 	
+	set_color(LIGHT_CYAN, NULL);
 	printf("Welcome to Universe!\n\n");
 	
+	set_color(YELLOW, NULL);
 	printf("System Date: %02d/%02d/%02d (%s)\n", time->day_in_month, time->month, time->year, day_string);
 	printf("System Time: %02d:%02d:%02d\n\n", time->hour, time->minute, time->second);
 	

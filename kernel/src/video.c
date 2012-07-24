@@ -36,6 +36,8 @@
 
 #include <video.h>
 
+static uint8_t color = CYAN | (BLACK << 4);
+
 static int x = 0;
 static int y = 0;
 
@@ -52,7 +54,7 @@ int putchar(int c)
     }
 
     video_mem[2 * (y * 80 + x)] = c;
-    video_mem[2 * (y * 80 + x) + 1] = DEFAULT_FRONT_COLOR | DEFAULT_BACK_COLOR;
+    video_mem[2 * (y * 80 + x) + 1] = color;
 	
     x++;
 
@@ -88,8 +90,9 @@ int fputs(const char* s, int fd)
 void clear_screen(void)
 {
     int i;
-    for (i = 0; i < 2 * 25 * 80; i++) {
-        video_mem[i] = 0;
+    for (i = 0; i < 25 * 80; i++) {
+        video_mem[2 * i] = 0;
+		video_mem[2 * i + 1] = color;
     }
 
     x = y = 0;
@@ -101,4 +104,14 @@ void scroll(void)
     y --;
     for(i = 0; i < 3840; i++)
       video_mem[i] = video_mem[i + 80];
+}
+
+void set_color(uint8_t foreground, uint8_t background)
+{
+	if (foreground) {
+		color = foreground | (color & (0b1111 << 4));
+	}
+	if (background) {
+		color = (color & 0b1111) | (background << 4);
+	}
 }
