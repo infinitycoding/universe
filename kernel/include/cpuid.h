@@ -72,7 +72,7 @@
 
 	struct cpu_properties{
 	    bool cpuid_support;
-		uint32_t manufactor; //position in cpu_manufactorys array
+		uint32_t manufactory; //position in cpu_manufactorys array
 		uint8_t brandID;
 		uint16_t ext_brandID;
 		uint32_t max_std_func;

@@ -49,7 +49,7 @@
 #define SPECIAL	64
 
 char * itoa_ex(int value, char * str, int base, int flags, int width);
-char * itoa(int value, char * str, int base);
+inline char * itoa(int value, char * str, int base);
 int atoi(const char *str);
 
 #endif

@@ -36,9 +36,9 @@
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
-double pow(double base, double exponent);
-double log(double x);
-int abs(int x);
+int powi(int base, int exponent);
+int logi(int x);
+int absi(int x);
 
 unsigned int bit_scan_forward(unsigned int);
 

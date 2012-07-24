@@ -74,7 +74,7 @@ int puts(const char* s)
 	return printed;
 }
 
-static int fputs(const char* s, int fd)
+int fputs(const char* s, int fd)
 {
 	if (fd == STDOUT) {
 		while (*s) {
@@ -95,7 +95,7 @@ void clear_screen(void)
     x = y = 0;
 }
 
-static void scroll(void)
+void scroll(void)
 {
     int i;
     y --;

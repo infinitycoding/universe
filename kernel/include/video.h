@@ -46,8 +46,8 @@
 
 int putchar(int c);
 int puts(const char* s);
-static int fputs(const char* s, int fd);
+int fputs(const char* s, int fd);
 void clear_screen(void);
-static void scroll(void);
+void scroll(void);
 
 #endif

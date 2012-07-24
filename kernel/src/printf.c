@@ -52,7 +52,7 @@ int printf(const char *fmt, ...)
 
 	size = vsprintf(buffer, fmt, args);
 
-	puts(buffer);
+	fputs(buffer, STDOUT);
 
 	va_end(args);
 	return size;

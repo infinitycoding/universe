@@ -36,9 +36,9 @@
 
 #include <math.h>
 
-double pow(double base, double exponent)
+int powi(int base, int exponent)
 {
-	double result = base;
+	int result = base;
 	int i;
 
 	if (exponent == 0) {
@@ -52,7 +52,7 @@ double pow(double base, double exponent)
 	return result;
 }
 
-double log(double x)
+int logi(int x)
 {
 	int log2 = 0;
 	int pot = 1;
@@ -63,7 +63,7 @@ double log(double x)
 	return log2 - 1;
 }
 
-int abs(int x)
+int absi(int x)
 {
 	if (x < 0) {
 		return - x;

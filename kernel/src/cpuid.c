@@ -135,7 +135,7 @@ int INIT_CPUID(void){
     strncpy(vendor+8,(char*)&reg.ecx,4);
 	for(i=0;strncmp(vendor,vendorID[i],12)&& i<15;i++){}
 
-	current_CPU.manufactor=i;
+	current_CPU.manufactory=i;
 	current_CPU.max_std_func=reg.eax;
     cpuid(0x80000000,&reg);
 	current_CPU.max_spec_func=reg.eax;
@@ -156,7 +156,7 @@ int INIT_CPUID(void){
         }
 	}
 
-    //get extendet BrandID
+    //get extended BrandID
 	if(current_CPU.max_spec_func>0x80000000){
         cpuid(0x80000001,&reg);
         current_CPU.ext_brandID=(uint16_t)reg.ebx;
@@ -172,10 +172,10 @@ int INIT_CPUID(void){
             memcpy((current_CPU.cpu_type+(i-0x80000002)*16),((void*)&reg),16);
         }
 	}else if(current_CPU.brandID){ //via Brand ID
-        if(current_CPU.manufactor==2){ //Intel CPU
+        if(current_CPU.manufactory==2){ //Intel CPU
             strcpy(current_CPU.cpu_type,brandID_Intel[current_CPU.brandID-1]);
         }
-	}else if(current_CPU.manufactor<2){ //AMD CPU
+	}else if(current_CPU.manufactory<2){ //AMD CPU
         int ID=(current_CPU.ext_brandID>>6)& 0x3ff;
         if(ID>0x3e){ID=0x3e;}
         //uint8_t NN=current_CPU.ext_brandID &0x3F;
@@ -183,7 +183,7 @@ int INIT_CPUID(void){
         strcpy(current_CPU.cpu_type,brandID_AMD[ID]);
 
 	}else{ //standart name
-        strcpy(current_CPU.cpu_type,cpu_manufactorys[current_CPU.manufactor]);
+        strcpy(current_CPU.cpu_type,cpu_manufactorys[current_CPU.manufactory]);
         strcat(current_CPU.cpu_type,architecture[current_CPU.architecture]);
         strcat(current_CPU.cpu_type," CPU");
 	}
@@ -227,7 +227,7 @@ int INIT_CPUID(void){
     if(reg.edx&(1<<9)){
         current_CPU.flag |= LAPIC;
     }
-    if(current_CPU.max_spec_func>0x80000000 && current_CPU.manufactor<2){
+    if(current_CPU.max_spec_func>0x80000000 && current_CPU.manufactory<2){
         current_CPU.flag |= AMD3DNOW;
     }
 
@@ -241,9 +241,9 @@ int INIT_CPUID(void){
  * @return void
  */
  void CPU_info(void){
-    printf("CPU Manufactur: %s\n",cpu_manufactorys[current_CPU.manufactor]);
+    printf("CPU Manufactory: %s\n",cpu_manufactorys[current_CPU.manufactory]);
     printf("CPU Architecture: %s\n",architecture[current_CPU.architecture]);
-    printf("Model: %s\n",current_CPU.cpu_type);
+    printf("CPU Model: %s\n\n",current_CPU.cpu_type);
     printf("Static Syscall: Int $0x80\nDynamic Syscall: %s\n",scall[current_CPU.dsysc]);
     printf("Logical CPUs: %d\n",current_CPU.logic_cores);
  }
