@@ -59,7 +59,7 @@ void send_kbc_command(uint8_t port, uint8_t command){
  *
  * @return void
  */
-static inline void send_kbd_command(uint8_t command){
+inline void send_kbd_command(uint8_t command){
 	send_kbc_command(0x60, command);
 }
 /**

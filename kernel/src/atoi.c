@@ -39,6 +39,8 @@
 char * itoa_ex(int value, char * str, int base, int flags, int width)
 {
 	char *result = str;
+	int size;
+	
 	int len = 0;
 	int temp = 0;
 	int negative = 0;
@@ -50,16 +52,17 @@ char * itoa_ex(int value, char * str, int base, int flags, int width)
 	}
 
 	if (value < 0) {
-		value = abs(value);
+		value = - value;
 		++negative;
 	}
 
 	temp = value;
 	do {temp /= base; ++len;} while (temp);
+	size = len;
 
 	if (!(flags & LEFT))
-		while (len < width--)
-			*str++ = ' ';
+		while (size < width--)
+			*str++ = flags & ZEROPAD ? '0' : ' ';
 
 	if (negative) {
 		*str++ = '-';
@@ -67,12 +70,11 @@ char * itoa_ex(int value, char * str, int base, int flags, int width)
 		*str++ = '+';
 	}
 	if (flags & SPECIAL) {
-		*str++ = '0';
-		*str++ = 'x';
+		*str++ = '0'; *str++ = 'x';
 	}
 
 	do {
-		int power = pow(base, --len);
+		int power = powi(base, --len);
 		int digit = value / power;
 		
 		*str++ = digits[digit];
@@ -80,7 +82,7 @@ char * itoa_ex(int value, char * str, int base, int flags, int width)
 		value -= digit * power;
 	} while (len > 0);
 
-	while (len < width--)
+	while (size < width--)
 		*str++ = ' ';
 	
 	*str++ = '\0';
@@ -88,34 +90,9 @@ char * itoa_ex(int value, char * str, int base, int flags, int width)
 	return result;
 }
 
-char * itoa(int value, char * str, int base)
+inline char * itoa(int value, char * str, int base)
 {
-	static const char digits[16] = "0123456789ABCDEF";
-	
-	int i = 0;
-	int length = 0;
-	int temp = 0;
-
-	if (value < 0) {
-		value = abs(value);
-		str[i++] = '-';
-	}
-
-	temp = value;
-	do {temp /= base; ++length;} while (temp);
-
-	do {
-		int power = pow(base, --length);
-		int digit = value / power;
-		
-		str[i++] = digits[digit];
-		
-		value -= digit * power;
-	} while (length > 0);
-
-	str[i++] = '\0';
-
-	return str;
+	return itoa_ex(value, str, base, 0, 1);
 }
 
 int atoi(const char *str)
@@ -129,7 +106,7 @@ int atoi(const char *str)
 	str -= length + 1;
 
 	while (length > 0)
-		result += pow(10.00f, --length) * (*str++ - '0');
+		result += powi(10, --length) * (*str++ - '0');
 
 	return result;
 }
