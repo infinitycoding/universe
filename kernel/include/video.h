@@ -39,8 +39,8 @@
 
 #include <stdint.h>
 
-#define DEFAULT_FRONT_COLOR	GREEN
-#define DEFAULT_BACK_COLOR BLACK
+#define DEFAULT_FRONT_COLOR	BLACK
+#define DEFAULT_BACK_COLOR CYAN
 
 #define STDOUT 1
 
@@ -49,5 +49,6 @@ int puts(const char* s);
 int fputs(const char* s, int fd);
 void clear_screen(void);
 void scroll(void);
+void set_color(uint8_t foreground, uint8_t background);
 
 #endif
