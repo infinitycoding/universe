@@ -34,11 +34,11 @@
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 #include <stdint.h>
+#include <bcd.h>
 #include <io.h>
 #include <idt.h>
 #include <driver/cmos.h>
 #include <driver/timer.h>
-
 
 time_t current_time;
 cmos_data_t *cmos;
@@ -81,6 +81,7 @@ void rtc_irq_handler(void){
 	cmos->registers.register_c = cmos_read_byte(0x0C);
 	update_time();
 }
+
 /**
  * Updates the time from CMOS-RTC
  *
@@ -88,18 +89,19 @@ void rtc_irq_handler(void){
  *
  * @return success
  */
-int update_time(void){
-	current_time.second =       cmos_read_byte(0x00);
-	current_time.alarm_sec =    cmos_read_byte(0x01);
-	current_time.minute =       cmos_read_byte(0x02);
-	current_time.alarm_min =    cmos_read_byte(0x03);
-	current_time.hour =         cmos_read_byte(0x04);
-	current_time.alarm_hour =   cmos_read_byte(0x05);
-	current_time.week_day =     cmos_read_byte(0x06);
-	current_time.day_in_month = cmos_read_byte(0x07);
-	current_time.month =        cmos_read_byte(0x08);
-	current_time.year =         cmos_read_byte(0x09);
-	current_time.century =      cmos_read_byte(0x32);
+int update_time(void)
+{
+	current_time.second =       BCD_DECODE(cmos_read_byte(0x00));
+	current_time.alarm_sec =    BCD_DECODE(cmos_read_byte(0x01));
+	current_time.minute =       BCD_DECODE(cmos_read_byte(0x02));
+	current_time.alarm_min =    BCD_DECODE(cmos_read_byte(0x03));
+	current_time.hour =         BCD_DECODE(cmos_read_byte(0x04));
+	current_time.alarm_hour =   BCD_DECODE(cmos_read_byte(0x05));
+	current_time.week_day =     BCD_DECODE(cmos_read_byte(0x06)) - 1;
+	current_time.day_in_month = BCD_DECODE(cmos_read_byte(0x07));
+	current_time.month =        BCD_DECODE(cmos_read_byte(0x08));
+	current_time.year =         BCD_DECODE(cmos_read_byte(0x09));
+	current_time.century =      BCD_DECODE(cmos_read_byte(0x32));
 
 	return 0;
 }
@@ -110,6 +112,7 @@ int update_time(void){
  *
  * @return success
  */
+/* TODO: BCD_ENCODE */
 int change_time(time_t time){
 	cmos_write_byte(0x00, time.second);
 	cmos_write_byte(0x01, time.alarm_sec);
