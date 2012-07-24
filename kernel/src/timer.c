@@ -139,3 +139,23 @@ time_t *get_time(void){
 	return &current_time;
 }
 
+/**
+ * Print datetime
+ */
+void print_time(time_t * time) 
+{
+	char *day_string;
+	switch (time->week_day) {
+		case 0: day_string = "Sonntag";		break;
+		case 1: day_string = "Montag";		break;
+		case 2: day_string = "Dienstag";	break;
+		case 3: day_string = "Mittwoch";	break;
+		case 4: day_string = "Donnerstag";	break;
+		case 5: day_string = "Freitag";		break;
+		case 6: day_string = "Samstag";		break;
+	}
+	
+	printf("System Date: %02d/%02d/%02d (%s)\n", time->day_in_month, time->month, time->year, day_string);
+	printf("System Time: %02d:%02d:%02d\n\n", time->hour, time->minute, time->second);
+}
+
