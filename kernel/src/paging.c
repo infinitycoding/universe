@@ -34,33 +34,50 @@
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
-#include <vmm.h>
+#include <paging.h>
+#include <pmm.h>
 
-ptable_t vmm_pdir[1024];
-
-int INIT_VMM(void)
+int INIT_PAGING(void)
 {
-	/* install page directory */
-	//asm (
-	//	"mov %0, %eax" : : "q" (vmm_pdir)
-	//	"shl %eax, $12"
-	//	"mov %eax, %cr3"
-	//);
+	pd_t *pd = pd_create();
+	
+	pd_install(pd, PD_NOCACHE);
+	
+	return 1;
 	
 	/* activate paging */
-	//asm (
-	//	"mov %cr0, %eax"
-	//	"or %eax, $1"
-	//	"shr %eax, $1"
-	//);
+	asm volatile (
+		"mov %cr0, %eax;"
+		"or $0x80000000, %eax;"
+		"mov %eax, %cr0"
+	);
 	
 	return 0;
 }
 
-ptable_t vmm_alloc_ptable(void)
+pd_t *pd_create()
 {
-	ptable_t table;
-	table |= WRITABLE;
+	pd_t *pd = (pd_t *)pmm_alloc_page();
+	pt_t *pt = NULL;
 	
-	return table;
+	int i;
+	
+	for (i = 0; i < 1024; ++i) {
+		//pt = (pt_t *)pmm_alloc_page();
+	}
+	
+	return pd;
+}
+
+void pd_destroy(pd_t *pd) /* why do we need this? */
+{
+	pmm_mark_page_as_free((paddr_t)pd);
+}
+
+void pd_install(pd_t *pd, uint8_t flags)
+{
+	printf("Installing Pagedir %#X\n", (unsigned int)pd);
+	
+	uint32_t descriptor = ((unsigned int)pd & PD_FRAME) | flags;
+	asm volatile ("mov %0, %%cr3" : : "r" (descriptor));
 }

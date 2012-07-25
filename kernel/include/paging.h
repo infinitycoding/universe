@@ -1,5 +1,5 @@
-#ifndef _vmm_h_
-#define _vmm_h_
+#ifndef _paging_h_
+#define _paging_h_
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
@@ -38,21 +38,52 @@
 
 #include <stdint.h>
 
-#define ATTACHED	1
-#define WRITABLE	2
-#define ACCESSABLE 	4
-#define WTC			8
-#define NOCACHE		16
-#define USED		32
-#define WRITEPAGE	64
-#define BIGPAGE		128
-#define BIT_G		256
-#define IGNORE_TLB	256
+#define PD_WT			8
+#define PD_NOCACHE		16
+#define PD_FRAME		0x7FFFF000
 
-typedef int ptable_t;
-typedef int pentry_t;
+#define PDE_PRESENT		1
+#define PDE_WRITABLE	2
+#define PDE_USER	 	4
+#define PDE_WRITETHOUGH	8
+#define PDE_NOCACHE		16
+#define PDE_ACCESSED	32
+#define PDE_DIRTY		64
+#define PDE_4MB			128
+#define PDE_GLOBAL		256
+#define PDE_AVAIL		0xE00
+#define PDE_FRAME		0x7FFFF000
 
-int INIT_VMM(void);
-ptable_t vmm_alloc_ptable(void);
+#define PTE_PRESENT		1
+#define PTE_WRITABLE	2
+#define PTE_USER	 	4
+#define PTE_WRITETHOUGH	8
+#define PTE_NOCACHE		16
+#define PTE_ACCESSED	32
+#define PTE_DIRTY		64
+#define PTE_GLOBAL		256
+#define PTE_AVAIL		0xE00
+#define PTE_FRAME		0x7FFFF000
+
+typedef uint32_t pd_entry_t;
+typedef uint32_t pt_entry_t;
+
+typedef pd_entry_t pd_t[1024];
+typedef pt_entry_t pt_t[1024];
+
+pd_t *pd_create();
+void pd_destroy(pd_t *pd);
+void pd_install(pd_t *pd, uint8_t flags);
+
+void map_page_kernel(paddr_t phys_frame, vaddr_t virt_frame, uint8_t flags);
+void unmap_page_kernel(vaddr_t frame);
+
+void map_page(pd_t *pd, paddr_t phys_frame, vaddr_t virt_frame, uint8_t flags);
+void unmap_page(pd_t *pd, vaddr_t frame);
+
+vaddr_t map_fast(paddr_t frame);
+void unmap_fast(vaddr_t frame);
+
+int INIT_PAGING(void);
 
 #endif
