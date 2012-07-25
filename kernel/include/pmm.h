@@ -56,6 +56,7 @@
 	void pmm_mark_page_as_free(paddr_t page);
 	unsigned long pmm_count_free_pages(void);
 
+	paddr_t pmm_alloc_page ();
 	paddr_t pmm_alloc_dma_page_range_64k(unsigned int num);
 
 #endif

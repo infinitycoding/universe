@@ -38,7 +38,7 @@
 #include <multiboot.h>
 #include <panic.h>
 #include <pmm.h>
-#include <vmm.h>
+#include <paging.h>
 #include <gdt.h>
 #include <idt.h>
 #include <io.h>
@@ -61,11 +61,11 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	clear_screen();
 	
 	if (magic_number != 0x2BADB002) {
-		panic("incompatible bootloader");
+		panic("Incompatible Bootloader");
 	}
 	
 	INIT_PMM(mb_info);
-	INIT_VMM();
+	INIT_PAGING();
 	INIT_GDT();
 	INIT_IDT();
 	INIT_CPUID();
@@ -73,7 +73,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	INIT_CMOS();
 	INIT_KEYBOARD();
 	
-	//asm volatile("sti");
+	asm volatile("sti");
 	
 	set_color(LIGHT_CYAN, NULL);
 	printf("Welcome to Universe!\n\n");

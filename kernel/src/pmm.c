@@ -203,7 +203,8 @@ paddr_t find_free_page_range(unsigned long lower_limit, unsigned int num) {
  *
  * @return Pointer on the begin of the page.
  */
-paddr_t pmm_alloc_page () {
+paddr_t pmm_alloc_page ()
+{
     paddr_t page = find_free_page(16 * 1024 * 1024);
     
     if (page & (PAGE_SIZE - 1)) {
