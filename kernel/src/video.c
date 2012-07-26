@@ -35,19 +35,24 @@
  */
 
 #include <video.h>
+#include <io.h>
 
-static uint8_t color = CYAN | (BLACK << 4);
+#define CRT_INDEX_PORT 0x3D4
+#define CRT_DATA_PORT 0x3D5
+#define CRT_CURSOR_HIGH 0xE
+#define CRT_CURSOR_LOW 0xF
 
 static int x = 0;
 static int y = 0;
 
+static uint8_t color = CYAN | (BLACK << 4);
 static char *video_mem = (char *)0xb8000;
 
 int putchar(int c)
 {
     if ((x > 79) || (c == '\n')) {
-        x = 0;
-        y++;
+		gotoxy(0, ++y);
+		
         if (c == '\n') {
             return;
         }
@@ -56,7 +61,7 @@ int putchar(int c)
     video_mem[2 * (y * 80 + x)] = c;
     video_mem[2 * (y * 80 + x) + 1] = color;
 	
-    x++;
+	gotoxy(++x, y);
 
     if ((y * 80 + x) > (80 * 25)) {
       scroll();
@@ -95,13 +100,13 @@ void clear_screen(void)
 		video_mem[2 * i + 1] = color;
     }
 
-    x = y = 0;
+	gotoxy(0, 0);
 }
 
 void scroll(void)
 {
     int i;
-    y --;
+	gotoxy(x, --y);
     for(i = 0; i < 3840; i++)
       video_mem[i] = video_mem[i + 80];
 }
@@ -114,4 +119,20 @@ void set_color(uint8_t foreground, uint8_t background)
 	if (background) {
 		color = (color & 0b1111) | (background << 4);
 	}
+}
+
+void gotoxy(uint8_t _x, uint8_t _y)
+{
+	uint16_t offset = _y * 80 + _x;
+	x = _x; y = _y;
+	
+	if (video_mem[2 * offset] == 0) {
+		video_mem[2 * offset + 1] = color;
+	}
+	
+	outb(CRT_INDEX_PORT, CRT_CURSOR_HIGH);
+ 	outb(CRT_DATA_PORT, (uint8_t*)(offset >> 8));
+	
+	outb(CRT_INDEX_PORT, CRT_CURSOR_LOW);
+	outb(CRT_DATA_PORT, (uint8_t)offset);
 }
