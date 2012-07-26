@@ -50,5 +50,6 @@ int fputs(const char* s, int fd);
 void clear_screen(void);
 void scroll(void);
 void set_color(uint8_t foreground, uint8_t background);
+void gotoxy(uint8_t _x, uint8_t _y);
 
 #endif
