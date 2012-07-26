@@ -36,9 +36,9 @@
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
-
 #include <stdint.h>
 #include <stdarg.h>
+#include <video.h>
 
 int printf(const char *fmt, ...);
 int sprintf(char *buf, const char *fmt, ...);
