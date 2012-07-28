@@ -105,10 +105,10 @@ void clear_screen(void)
 
 void scroll(void)
 {
-    int i;
+	int i;
+	for (i = 0; i < 3840; i++)
+		video_mem[i] = video_mem[i + 80 * 2];
 	gotoxy(x, --y);
-    for(i = 0; i < 3840; i++)
-      video_mem[i] = video_mem[i + 80];
 }
 
 void set_color(uint8_t foreground, uint8_t background)
