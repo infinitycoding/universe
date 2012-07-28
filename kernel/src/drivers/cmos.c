@@ -35,8 +35,8 @@
 */
 #include <stdint.h>
 #include <io.h>
-#include <driver/timer.h>
-#include <driver/cmos.h>
+#include <drivers/timer.h>
+#include <drivers/cmos.h>
 
 cmos_data_t cmos;
 

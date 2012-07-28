@@ -7,7 +7,7 @@ ASM = nasm
 LD = ld
 
 ASFLAGS =  -f elf32
-CFLAGS = -m32 -Wall -g -nostdinc -fno-stack-protector -I ../include
+CFLAGS = -m32 -Wall -g -nostdinc -fno-stack-protector -I ../../include
 LDFLAGS = -melf_i386 -Tkernel.ld
 
 kernel32.elf: $(OBJS)
@@ -21,6 +21,5 @@ kernel32.elf: $(OBJS)
 
 clean:
 	rm $(OBJS)
-	rm kernel32.elf
 
 .PHONY: clean

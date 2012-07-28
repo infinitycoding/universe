@@ -36,8 +36,6 @@
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
-#include <video.h>
-
 #include <stdint.h>
 
 #define ZEROPAD 1
