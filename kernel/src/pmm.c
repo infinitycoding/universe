@@ -40,6 +40,8 @@
 #include <printf.h>
 #include <panic.h>
 
+#define PMM_LOWER_LIMIT 16 * 1024 * 1024 // 16 MB
+
 unsigned long pmm_mmap[32768];
 unsigned long pmm_mmap_usable_pages;
 
@@ -204,7 +206,7 @@ paddr_t find_free_page_range(unsigned long lower_limit, unsigned int num) {
  */
 paddr_t pmm_alloc_page ()
 {
-    paddr_t page = find_free_page(16 * 1024 * 1024);
+    paddr_t page = find_free_page(PMM_LOWER_LIMIT);
 
     if (page & (PAGE_SIZE - 1)) {
         return pmm_alloc_page();
@@ -217,8 +219,8 @@ paddr_t pmm_alloc_page ()
  * Reserve a page not under a entered address
  */
 paddr_t pmm_alloc_page_limit(uint32_t lower_limit) {
-    paddr_t page = find_free_page(16 * 1024 * 1024 > lower_limit ? 16 * 1024 * 1024 : lower_limit);
-
+    paddr_t page = find_free_page(PMM_LOWER_LIMIT > lower_limit ? PMM_LOWER_LIMIT : lower_limit);
+    
     if(page & (PAGE_SIZE - 1)) {
         page = find_free_page(lower_limit);
     }
@@ -252,7 +254,7 @@ paddr_t pmm_alloc_dma_page_range(unsigned int num) {
  */
 
 paddr_t pmm_alloc_page_range(unsigned int num) {
-    paddr_t page = find_free_page_range(16 * 1024 * 1024, num);
+    paddr_t page = find_free_page_range(PMM_LOWER_LIMIT, num);
     if((uint32_t) page & (PAGE_SIZE - 1)) {
         return pmm_alloc_page_range(num);
     }
