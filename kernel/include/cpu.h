@@ -17,8 +17,8 @@
     You should have received a copy of the GNU General Public License
     along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 
-	
-	
+
+
     Diese Datei ist ein Teil vom Universe Kernel.
 
     Das Universe Kernel ist Freie Software: Sie können es unter den Bedingungen
@@ -35,8 +35,8 @@
     Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
-#include <stdint.h>	
-		
+#include <stdint.h>
+
 	struct cpu_state {
 		uint32_t   gs;
 		uint32_t   fs;
@@ -49,8 +49,8 @@
 		uint32_t   esi;
 		uint32_t   edi;
 		uint32_t   ebp;
-		uint32_t   intr;
 		uint32_t   error;
+		uint32_t   intr;
 		uint32_t   eip;
 		uint32_t   cs;
 		uint32_t   eflags;

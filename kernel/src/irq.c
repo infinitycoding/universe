@@ -77,9 +77,10 @@ static void (*irq[16])(void) = {
 struct cpu_state* irq_handler(struct cpu_state* cpu) {
 	if(((uint32_t)irq[cpu->intr]) != NULL) {
 		irq[cpu->intr]();
-	}else{
-		//printf("No ISR for IRQ %d found.\n", cpu->intr);
+	}/*else{
+		printf("No ISR for IRQ %d found.\n", cpu->intr);
 	}
+	*/
 	EOI(cpu->intr);
 	return cpu;
 }
