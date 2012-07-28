@@ -38,7 +38,7 @@
 
 #include <stdint.h>
 #include <stdarg.h>
-#include <video.h>
+#include <drivers/video.h>
 
 int printf(const char *fmt, ...);
 int sprintf(char *buf, const char *fmt, ...);

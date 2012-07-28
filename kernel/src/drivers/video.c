@@ -34,7 +34,7 @@
 	 Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
  */
 
-#include <video.h>
+#include <drivers/video.h>
 #include <io.h>
 
 #define CRT_INDEX_PORT 0x3D4

@@ -1,5 +1,3 @@
-#ifndef _cmos_h_
-#define _cmos_h_
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
@@ -35,56 +33,62 @@
     Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
-	#include <stdint.h>
-	#include <driver/timer.h>
+#include <stdint.h>
+#include <io.h>
+#include <idt.h>
+#include <printf.h>
+#include <drivers/keyboard.h>
 
-	typedef struct cmos_register  {
-		uint8_t register_a;
-		uint8_t register_b;
-		uint8_t register_c;
-		uint8_t register_d;
-	} cmos_register_t;
+/**
+ * Send a command to the Keyboard Controler
+ * 
+ * @param port Port for the Command
+ * @param command Command for the KBC
+ *
+ * @return void
+ */
+void send_kbc_command(uint8_t port, uint8_t command){
+  	while(inb(0x64) & 0x2);//Warten bis Eigabepuffer leer ist
+  	outb(port, command);//KBC-Befehl senden
+  	while(inb(0x60) != 0xFA);
+}
+/**
+ * Send a command to the Keyboard
+ *
+ * @param command Command for the Keyboard
+ *
+ * @return void
+ */
+inline void send_kbd_command(uint8_t command){
+	send_kbc_command(0x60, command);
+}
+/**
+ * Initalize the Keyboard
+ *
+ * @param void
+ * @return void
+ */
+void INIT_KEYBOARD(void){
+	install_irq(0x1, &kbd_irq_handler);
+  	
+  	while(!(inb(0x64) & 0x4));
+  	// Puffer leeren
+  	while (inb(0x64) & 0x1){
+  		inb(0x60);
+  	}
+	
+  	send_kbd_command(0xF4);// Tastatur aktivieren
+}
+/**
+ * IRQ handler for the Keyboard
+ *
+ * @param void
+ * @return void
+ */
+void kbd_irq_handler(void){
+	inb(0x60);
+	printf("Keyboard!\n");
+}
 
-	typedef struct cmos_hardware_data {
-		uint8_t post_diagnostig_status_byte;
-		uint8_t shutdown_status_byte;
-		uint8_t floppy_disk_type;
-//		uint8_t reserved0;
-		uint8_t hd_type;
-//		uint8_t reserved1;
-		uint8_t device_byte;
-		
-		uint8_t basememory_size_low;
-		uint8_t basememory_size_high;
-		uint8_t expandablememory_size_low;
-		uint8_t expandablememory_size_high;
-		uint8_t extension_byte_hd1;
-		uint8_t extension_byte_hd2;
 
-//		uint16_t reserved2;
-//		uint8_t reserved3 : 2;
-		
-		uint8_t cmos_magic_low;
-		uint8_t cmos_magic_high;
-
-		uint8_t extendedmemory_low;
-		uint8_t extendedmenory_high;
-
-//		uint16_t reserved3 : 13;
-	} cmos_hardware_data_t;
-
-	typedef struct cmos_data {
-		time_t *time;
-		cmos_register_t registers;
-		cmos_hardware_data_t hardware;
-	} cmos_data_t;
-
-
-	void INIT_CMOS(void);
-	cmos_data_t* get_cmos_data(void);
-
-	uint8_t cmos_read_byte(uint8_t offset);
-	void cmos_write_byte(uint8_t offset,uint8_t value);
-
-#endif
 
