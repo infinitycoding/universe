@@ -39,7 +39,7 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <atoi.h>
-#include <video.h>
+#include <drivers/video.h>
 
 int printf(const char *fmt, ...)
 {

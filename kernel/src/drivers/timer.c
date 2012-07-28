@@ -37,8 +37,8 @@
 #include <bcd.h>
 #include <io.h>
 #include <idt.h>
-#include <driver/cmos.h>
-#include <driver/timer.h>
+#include <drivers/cmos.h>
+#include <drivers/timer.h>
 
 time_t current_time;
 cmos_data_t *cmos;
