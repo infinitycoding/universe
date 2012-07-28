@@ -65,11 +65,15 @@
 #define PTE_AVAIL		0xE00
 #define PTE_FRAME		0x7FFFF000
 
-typedef uint32_t pd_entry_t;
-typedef uint32_t pt_entry_t;
+typedef uint32_t pde_t;
+typedef uint32_t pte_t;
 
-typedef pd_entry_t pd_t[1024];
-typedef pt_entry_t pt_t[1024];
+typedef struct {
+	pde_t entries[1024];
+} pd_t;
+typedef struct {
+	pte_t entries[1024];
+} pt_t;
 
 pd_t *pd_create();
 void pd_destroy(pd_t *pd);

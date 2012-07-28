@@ -42,10 +42,8 @@ int INIT_PAGING(void)
 	pd_t *pd = pd_create();
 	
 	pd_install(pd, PD_NOCACHE);
-	
-	return 1;
-	
-	/* activate paging */
+return 0;
+	/* enable paging */
 	asm volatile (
 		"mov %cr0, %eax;"
 		"or $0x80000000, %eax;"
@@ -61,23 +59,23 @@ pd_t *pd_create()
 	pt_t *pt = NULL;
 	
 	int i;
-	
 	for (i = 0; i < 1024; ++i) {
-		//pt = (pt_t *)pmm_alloc_page();
+		pt = (pt_t *)pmm_alloc_page();
+		//pd->entries[i] = (pde_t)((uintptr_t)pt & PDE_FRAME) | PDE_PRESENT;
 	}
 	
 	return pd;
 }
 
-void pd_destroy(pd_t *pd) /* why do we need this? */
+void pd_destroy(pd_t *pd)
 {
 	pmm_mark_page_as_free((paddr_t)pd);
 }
 
 void pd_install(pd_t *pd, uint8_t flags)
 {
-	printf("Installing Pagedir %#X\n", (unsigned int)pd);
+	printf("Installing Pagedir %#X\n", (uintptr_t)pd);
 	
-	uint32_t descriptor = ((unsigned int)pd & PD_FRAME) | flags;
+	uint32_t descriptor = ((uintptr_t)pd & PD_FRAME) | flags;
 	asm volatile ("mov %0, %%cr3" : : "r" (descriptor));
 }

@@ -79,6 +79,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	printf("Welcome to Universe!\n\n");
 	
 	set_color(YELLOW, NULL);
+
 	print_time(get_time());
 	
 	CPU_info();
