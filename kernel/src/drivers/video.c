@@ -45,7 +45,7 @@
 static int x = 0;
 static int y = 0;
 
-static uint8_t color = CYAN | (BLACK << 4);
+static color_t color = CYAN | BLACK << 4;
 static char *video_mem = (char *)0xb8000;
 
 int putchar(int c)
@@ -111,14 +111,14 @@ void scroll(void)
 	gotoxy(x, --y);
 }
 
-void set_color(uint8_t foreground, uint8_t background)
+void set_color(color_t _color)
 {
-	if (foreground) {
-		color = foreground | (color & (0b1111 << 4));
-	}
-	if (background) {
-		color = (color & 0b1111) | (background << 4);
-	}
+	color = _color;
+}
+
+color_t get_color(void)
+{
+	return color;
 }
 
 void gotoxy(uint8_t _x, uint8_t _y)

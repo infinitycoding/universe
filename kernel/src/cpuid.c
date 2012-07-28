@@ -223,9 +223,9 @@ int identify_cpu(struct cpu_properties *cpu){
         printf("CPU Architecture: %s\n",architecture[cpu->architecture]);
         printf("CPU Model: %s\n",cpu->cpu_type);
         printf("Static Syscall: Int $0x80\nDynamic Syscall: %s\n",scall[cpu->dsysc]);
-        printf("Logical CPU: %d\n",cpu->logic_cores);
+        printf("Logical CPUs: %d\n",cpu->logic_cores);
     }else{
-        printf("curret cpu does not support CPUID\n");
+        printf("current cpu does not support CPUID\n");
     }
  }
 
