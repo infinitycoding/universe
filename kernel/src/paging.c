@@ -34,6 +34,10 @@
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
+/*
+	not working yet
+*/
+
 #include <paging.h>
 #include <pmm.h>
 
@@ -42,7 +46,11 @@ int INIT_PAGING(void)
 	pd_t *pd = pd_create();
 	
 	pd_install(pd, PD_NOCACHE);
-return 0;
+	
+	pd_map(pd, (paddr_t)&kernel_start, 0x0, PTE_PRESENT);
+	
+	return;
+	
 	/* enable paging */
 	asm volatile (
 		"mov %cr0, %eax;"
@@ -58,10 +66,10 @@ pd_t *pd_create()
 	pd_t *pd = (pd_t *)pmm_alloc_page();
 	pt_t *pt = NULL;
 	
-	int i;
-	for (i = 0; i < 1024; ++i) {
+	int pd_index;
+	for (pd_index = 0; pd_index < 1; ++pd_index) {
 		pt = (pt_t *)pmm_alloc_page();
-		//pd->entries[i] = (pde_t)((uintptr_t)pt & PDE_FRAME) | PDE_PRESENT;
+		pd->entries[pd_index] = (uint32_t)pt | PDE_PRESENT;
 	}
 	
 	return pd;
@@ -72,10 +80,32 @@ void pd_destroy(pd_t *pd)
 	pmm_mark_page_as_free((paddr_t)pd);
 }
 
+void pd_map(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags)
+{
+	int pd_index = vframe >> 22;
+	int pt_index = vframe >> 12 & 0x03FF;
+	
+	pt_t *pt = pd->entries[pd_index] & PDE_FRAME;
+	
+	pt->entries[pt_index] = (uint32_t)pframe | (flags & 0xFFF);
+	
+	pd_flush_tlb(vframe);
+}
+
+void pd_unmap(pd_t *pd, vaddr_t frame)
+{
+	
+}
+
 void pd_install(pd_t *pd, uint8_t flags)
 {
-	printf("Installing Pagedir %#X\n", (uintptr_t)pd);
+	printf("Installing Pagedir %#X\n", (paddr_t)pd);
 	
-	uint32_t descriptor = ((uintptr_t)pd & PD_FRAME) | flags;
+	uint32_t descriptor = ((paddr_t)pd & PD_FRAME) | flags;
 	asm volatile ("mov %0, %%cr3" : : "r" (descriptor));
+}
+
+static inline void pd_flush_tlb(vaddr_t addr)
+{
+	asm volatile("invlpg (%0)" : : "r"(addr) : "memory");
 }
