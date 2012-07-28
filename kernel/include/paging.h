@@ -43,11 +43,11 @@
 #define PD_FRAME		0x7FFFF000
 
 #define PDE_PRESENT		1
-#define PDE_WRITABLE	2
-#define PDE_USER	 	4
-#define PDE_WRITETHOUGH	8
+#define PDE_WRITABLE		2
+#define PDE_USER		4
+#define PDE_WRITETHOUGH		8
 #define PDE_NOCACHE		16
-#define PDE_ACCESSED	32
+#define PDE_ACCESSED		32
 #define PDE_DIRTY		64
 #define PDE_4MB			128
 #define PDE_GLOBAL		256
@@ -55,15 +55,17 @@
 #define PDE_FRAME		0x7FFFF000
 
 #define PTE_PRESENT		1
-#define PTE_WRITABLE	2
-#define PTE_USER	 	4
-#define PTE_WRITETHOUGH	8
+#define PTE_WRITABLE		2
+#define PTE_USER		4
+#define PTE_WRITETHOUGH		8
 #define PTE_NOCACHE		16
-#define PTE_ACCESSED	32
+#define PTE_ACCESSED		32
 #define PTE_DIRTY		64
 #define PTE_GLOBAL		256
 #define PTE_AVAIL		0xE00
 #define PTE_FRAME		0x7FFFF000
+
+
 
 typedef uint32_t pde_t;
 typedef uint32_t pte_t;
@@ -75,19 +77,23 @@ typedef struct {
 	pte_t entries[1024];
 } pt_t;
 
-pd_t *pd_create();
-void pd_destroy(pd_t *pd);
-void pd_install(pd_t *pd, uint8_t flags);
 
-void map_page_kernel(paddr_t phys_frame, vaddr_t virt_frame, uint8_t flags);
-void unmap_page_kernel(vaddr_t frame);
-
-void map_page(pd_t *pd, paddr_t phys_frame, vaddr_t virt_frame, uint8_t flags);
-void unmap_page(pd_t *pd, vaddr_t frame);
-
-vaddr_t map_fast(paddr_t frame);
-void unmap_fast(vaddr_t frame);
 
 int INIT_PAGING(void);
+
+pd_t *pd_create();
+void pd_destroy(pd_t *pd);
+
+void pd_map(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags);
+void pd_unmap(pd_t *pd, vaddr_t frame);
+
+void pd_install(pd_t *pd, uint8_t flags);
+static inline void pd_flush_tlb(vaddr_t addr);
+
+//vaddr_t map_fast(paddr_t frame);
+//void unmap_fast(vaddr_t frame);
+
+//void map_page_kernel(paddr_t phys_frame, vaddr_t virt_frame, uint8_t flags);
+//void unmap_page_kernel(vaddr_t frame);
 
 #endif

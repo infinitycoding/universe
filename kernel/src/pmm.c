@@ -207,7 +207,6 @@ paddr_t find_free_page_range(unsigned long lower_limit, unsigned int num) {
 paddr_t pmm_alloc_page ()
 {
     paddr_t page = find_free_page(PMM_LOWER_LIMIT);
-    printf("pmm_alloc_page: %#X\n", (uintptr_t)page);
 
     if (page & (PAGE_SIZE - 1)) {
         return pmm_alloc_page();
