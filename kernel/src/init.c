@@ -48,6 +48,7 @@
 #include <driver/cmos.h>
 #include <cpuid.h>
 
+
 /**
  * Initalize the Kernel
  *
@@ -59,31 +60,29 @@
 int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 {
 	clear_screen();
-	
+
 	if (magic_number != 0x2BADB002) {
 		panic("Incompatible Bootloader");
 	}
-	
+
 	INIT_PMM(mb_info);
 	INIT_GDT();
 	INIT_IDT();
-	INIT_PAGING();
+	//INIT_PAGING();
 	INIT_CPUID();
 	INIT_PIT(50);
 	INIT_CMOS();
 	INIT_KEYBOARD();
-	
 	asm volatile("sti");
-	
-	set_color(LIGHT_CYAN, NULL);
-	printf("Welcome to Universe!\n\n");
-	
+
+	set_color(BLUE, NULL);
+	//printlogo();
+
 	set_color(YELLOW, NULL);
 	print_time(get_time());
-	
-	CPU_info();
-	
+
+
 	for(;;);
-	
+
 	return 0;
 }
