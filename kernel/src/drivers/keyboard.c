@@ -86,8 +86,8 @@ void INIT_KEYBOARD(void){
  * @return void
  */
 void kbd_irq_handler(void){
-	inb(0x60);
-	printf("Keyboard!\n");
+	uint8_t c = inb(0x60);
+	//putchar(c);
 }
 
 

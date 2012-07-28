@@ -65,6 +65,7 @@
 int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 {
 	clear_screen();
+	set_color(WHITE | BLACK << 4);
 
 	if (magic_number != 0x2BADB002) {
 		panic("Incompatible Bootloader");
@@ -74,17 +75,20 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	INIT_GDT();
 	INIT_IDT();
 	//INIT_PAGING();
-	set_color(BLUE, NULL);
+	
+	puts("");
 	printlogo();
-	set_color(LIGHT_GRAY, NULL);
-	INIT_CPUID();
+	puts("");
+	puts("Universe wird gestartet...\n");
+	
+	//INIT_CPUID();
+	
 	INIT_PIT(50);
 	INIT_CMOS();
 	INIT_KEYBOARD();
 	asm volatile("sti");
-	set_color(YELLOW, NULL);
+	
 	print_time(get_time());
-
 
 	for(;;);
 
