@@ -39,6 +39,7 @@
 
 void INIT_PAGING(void)
 {
+	int i;
 	pd_t *pd = pd_create();
 	pd_install(pd, 0);
 	pd_map_range(pd, 0x00000000, 0x00000000, PTE_WRITABLE, 1024);
@@ -93,6 +94,38 @@ void pd_map_range(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags, unsig
 	for (p = 0; p < pages; ++p) {
 		pd_map(pd, pframe + PAGE_ADDR(p), vframe + PAGE_ADDR(p), flags);
 	}
+}
+
+vaddr_t pd_map_fast(pd_t *pd, paddr_t frame, uint8_t flags)
+{
+	int t, e;
+	
+	for (t = 0; t < PD_LENGTH; ++t)
+	{
+		vaddr_t vframe;
+		
+		if (pd->entries[t] & PDE_PRESENT)
+		{
+			pt_t *pt = (pt_t *)(pd->entries[t] & PDE_FRAME);
+			
+			for (e = 0; e < PT_LENGTH; ++e)
+			{
+				if (!(pt->entries[e] & PTE_PRESENT))
+				{
+					vframe = (t << 22) + (e << 12);
+					pd_map(pd, frame, vframe, flags);
+					return vframe;
+				}
+			}
+		} else {
+			vframe = (t << 22);
+			pd_map(pd, frame, vframe, flags);
+			return vframe;
+		}
+	}
+	
+	/* too less memory */
+	return -1;
 }
 
 void pd_install(pd_t *pd, uint8_t flags)

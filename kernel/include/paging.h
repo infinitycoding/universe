@@ -65,8 +65,8 @@
 #define PTE_AVAIL		0xE00
 #define PTE_FRAME		0x7FFFF000
 
-#define PD_LENGTH 1024
-#define PT_LENGTH 1024
+#define PD_LENGTH 	1024
+#define PT_LENGTH 	1024
 
 #define PAGE_ADDR(x) ((x) << 12)
 #define PAGE_INDEX(x) ((x) >> 12)
@@ -79,11 +79,11 @@ typedef uint32_t pde_t;
 typedef uint32_t pte_t;
 
 typedef struct {
-	pde_t entries[1024];
+	pde_t entries[PD_LENGTH];
 } pd_t;
 
 typedef struct {
-	pte_t entries[1024];
+	pte_t entries[PT_LENGTH];
 } pt_t;
 
 pd_t *pd_kernel;
@@ -96,14 +96,12 @@ void pd_destroy(pd_t *pd);
 void pd_map(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags);
 void pd_unmap(pd_t *pd, vaddr_t frame);
 void pd_map_range(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags, unsigned int pages);
+vaddr_t pd_map_fast(pd_t *pd, paddr_t frame, uint8_t flags);
 
 void pd_install(pd_t *pd, uint8_t flags);
 
 static inline void pd_enable_paging(void);
 static inline void pd_flush_tlb(vaddr_t addr);
-
-//vaddr_t map_fast(paddr_t frame);
-//void unmap_fast(vaddr_t frame);
 
 //void map_page_kernel(paddr_t phys_frame, vaddr_t virt_frame, uint8_t flags);
 //void unmap_page_kernel(vaddr_t frame);
