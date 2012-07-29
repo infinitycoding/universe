@@ -92,6 +92,7 @@ void pd_unmap(pd_t *pd, vaddr_t frame)
 {
 	pt_t *pt = (pt_t *)((uint32_t)pd->entries[PDE_INDEX(frame)] & PDE_FRAME);
 	pt->entries[PTE_INDEX(frame)] = 0;
+	pd_flush_tlb(frame);
 }
 
 void pd_map_range(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags, unsigned int pages)
