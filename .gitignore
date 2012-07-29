@@ -1,4 +1,4 @@
-#Windows Thumbnails ignorieren
+﻿#Windows Thumbnails ignorieren
 Thumbs.db
 
 #Objektdateien ignorieren
@@ -6,3 +6,6 @@ Thumbs.db
 
 #Kernel Ausführbare Dateien ignoriere
 *.elf
+
+#Andere unerwünschte Daten
+.directory
