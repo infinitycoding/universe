@@ -43,13 +43,15 @@
 
 int INIT_PAGING(void)
 {
+	int i;
 	pd_t *pd = pd_create();
 	
 	pd_install(pd, PD_NOCACHE);
 	
-	pd_map(pd, (paddr_t)&kernel_start, 0x0, PTE_PRESENT);
-	
-	return;
+	/* map kernel */
+	for (i = 0; i < ((&kernel_end - &kernel_start) >> 12); ++i) {
+		pd_map(pd, (paddr_t)&kernel_start + (i << 12), 0xC0000000 + (i << 12), PTE_PRESENT);
+	}
 	
 	/* enable paging */
 	asm volatile (
@@ -66,9 +68,12 @@ pd_t *pd_create()
 	pd_t *pd = (pd_t *)pmm_alloc_page();
 	pt_t *pt = NULL;
 	
+	memset(pd, 0, sizeof(pd_t));
+	
 	int pd_index;
 	for (pd_index = 0; pd_index < 1; ++pd_index) {
 		pt = (pt_t *)pmm_alloc_page();
+		memset(pt, 0, sizeof(pt_t));
 		pd->entries[pd_index] = (uint32_t)pt | PDE_PRESENT;
 	}
 	
@@ -83,9 +88,9 @@ void pd_destroy(pd_t *pd)
 void pd_map(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags)
 {
 	int pd_index = vframe >> 22;
-	int pt_index = vframe >> 12 & 0x03FF;
+	int pt_index = vframe >> 12;
 	
-	pt_t *pt = pd->entries[pd_index] & PDE_FRAME;
+	pt_t *pt = (pt_t *)(pd->entries[pd_index] & PDE_FRAME);
 	
 	pt->entries[pt_index] = (uint32_t)pframe | (flags & 0xFFF);
 	
@@ -107,5 +112,5 @@ void pd_install(pd_t *pd, uint8_t flags)
 
 static inline void pd_flush_tlb(vaddr_t addr)
 {
-	asm volatile("invlpg (%0)" : : "r"(addr) : "memory");
+	asm volatile("invlpg (%0)" : : "r" (addr) : "memory");
 }

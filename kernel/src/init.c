@@ -47,7 +47,6 @@
 #include <cpuid.h>
 #include <logo.h>
 
-
 #include <drivers/keyboard.h>
 #include <drivers/timer.h>
 #include <drivers/cmos.h>
@@ -72,22 +71,23 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	}
 
 	INIT_PMM(mb_info);
+	
 	INIT_GDT();
 	INIT_IDT();
-	//INIT_PAGING();
-	
-	puts("");
-	printlogo();
-	puts("");
-	puts("Universe wird gestartet...\n");
-	
+	//INIT_PAGING();	
 	//INIT_CPUID();
-	
 	INIT_PIT(50);
 	INIT_CMOS();
 	INIT_KEYBOARD();
 	asm volatile("sti");
 	
+	puts("");
+	printlogo();
+	puts("");
+	
+	puts("Universe wird gestartet...\n");
+	uint32_t pages = pmm_count_free_pages();
+	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
 	print_time(get_time());
 
 	for(;;);
