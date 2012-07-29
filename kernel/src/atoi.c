@@ -35,7 +35,9 @@
 */
 
 #include <atoi.h>
-
+/*
+	TODO: Make it compatible with both unsigned int and signed int
+*/
 char * itoa_ex(int value, char * str, int base, int flags, int width)
 {
 	char *result = str;
