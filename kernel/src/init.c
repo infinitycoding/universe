@@ -71,10 +71,9 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	}
 
 	INIT_PMM(mb_info);
-	
 	INIT_GDT();
 	INIT_IDT();
-	INIT_PAGING();	
+	INIT_PAGING();
 	//INIT_CPUID();
 	INIT_PIT(50);
 	INIT_CMOS();
@@ -89,7 +88,6 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	uint32_t pages = pmm_count_free_pages();
 	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
 	print_time(get_time());
-
 	for(;;);
 
 	return 0;
