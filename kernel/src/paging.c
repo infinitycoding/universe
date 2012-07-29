@@ -41,12 +41,15 @@
 #include <paging.h>
 #include <pmm.h>
 
+pd_t *pd_kernel;
+pd_t *pd_current;
+
 void INIT_PAGING(void)
 {
-	pd_t *pd = pd_create();
-	pd_install(pd, 0);
-	pd_map_range(pd, 0x00000000, 0x00000000, PTE_WRITABLE, 1024);
- 	pd_map_range(pd, &kernel_start, 0xC0000000, PTE_WRITABLE, PAGE_INDEX(&kernel_end - &kernel_start));
+	pd_kernel = pd_create();
+	pd_switch(pd_kernel, 0);
+	pd_map_range(pd_kernel, 0x00000000, 0x00000000, PTE_WRITABLE, 1024);
+ 	pd_map_range(pd_kernel, &kernel_start, 0xC0000000, PTE_WRITABLE, PAGE_INDEX(&kernel_end - &kernel_start));
 	pd_enable_paging();
 }
 
@@ -99,7 +102,7 @@ void pd_map_range(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags, unsig
 	}
 }
 
-vaddr_t pd_map_fast(pd_t *pd, paddr_t frame, uint8_t flags)
+vaddr_t pd_map_fast(paddr_t frame, uint8_t flags)
 {
 	int t, e;
 	
@@ -107,22 +110,22 @@ vaddr_t pd_map_fast(pd_t *pd, paddr_t frame, uint8_t flags)
 	{
 		vaddr_t vframe;
 		
-		if (pd->entries[t] & PDE_PRESENT)
+		if (pd_current->entries[t] & PDE_PRESENT)
 		{
-			pt_t *pt = (pt_t *)(pd->entries[t] & PDE_FRAME);
+			pt_t *pt = (pt_t *)(pd_current->entries[t] & PDE_FRAME);
 			
 			for (e = 0; e < PT_LENGTH; ++e)
 			{
 				if (!(pt->entries[e] & PTE_PRESENT))
 				{
 					vframe = (t << 22) + (e << 12);
-					pd_map(pd, frame, vframe, flags);
+					pd_map(pd_current, frame, vframe, flags);
 					return vframe;
 				}
 			}
 		} else {
 			vframe = (t << 22);
-			pd_map(pd, frame, vframe, flags);
+			pd_map(pd_current, frame, vframe, flags);
 			return vframe;
 		}
 	}
@@ -131,8 +134,9 @@ vaddr_t pd_map_fast(pd_t *pd, paddr_t frame, uint8_t flags)
 	return -1;
 }
 
-void pd_install(pd_t *pd, uint8_t flags)
+void pd_switch(pd_t *pd, uint8_t flags)
 {
+	pd_current = pd;
 	uint32_t descriptor = ((paddr_t)pd & PD_FRAME) | flags;
 	asm volatile ("mov %0, %%cr3" : : "r" (descriptor));
 }

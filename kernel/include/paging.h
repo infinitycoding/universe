@@ -90,8 +90,6 @@ typedef struct {
 	pte_t entries[PT_LENGTH];
 } pt_t;
 
-pd_t *pd_kernel;
-
 void INIT_PAGING(void);
 
 pd_t *pd_create(void);
@@ -100,10 +98,9 @@ void pd_destroy(pd_t *pd);
 void pd_map(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags);
 void pd_unmap(pd_t *pd, vaddr_t frame);
 void pd_map_range(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags, unsigned int pages);
-vaddr_t pd_map_fast(pd_t *pd, paddr_t frame, uint8_t flags);
+vaddr_t pd_map_fast(paddr_t frame, uint8_t flags);
 
-void pd_install(pd_t *pd, uint8_t flags);
-
+void pd_switch(pd_t *pd, uint8_t flags);
 static inline void pd_enable_paging(void);
 static inline void pd_flush_tlb(vaddr_t addr);
 
