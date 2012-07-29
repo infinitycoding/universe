@@ -34,80 +34,80 @@
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
-/*
-	not working yet
-*/
-
 #include <paging.h>
 #include <pmm.h>
 
-int INIT_PAGING(void)
+void INIT_PAGING(void)
 {
-	int i;
 	pd_t *pd = pd_create();
-	
-	pd_install(pd, PD_NOCACHE);
-	
-	/* map kernel */
-	for (i = 0; i < ((&kernel_end - &kernel_start) >> 12); ++i) {
-		pd_map(pd, (paddr_t)&kernel_start + (i << 12), 0xC0000000 + (i << 12), PTE_PRESENT);
-	}
-	
-	/* enable paging */
-	asm volatile (
-		"mov %cr0, %eax;"
-		"or $0x80000000, %eax;"
-		"mov %eax, %cr0"
-	);
-	
-	return 0;
+	pd_install(pd, 0);
+	pd_map_range(pd, 0x00000000, 0x00000000, PTE_WRITABLE, 1024);
+ 	pd_map_range(pd, &kernel_start, 0xC0000000, PTE_WRITABLE, PAGE_INDEX(&kernel_end - &kernel_start));
+	pd_enable_paging();
 }
 
-pd_t *pd_create()
+pd_t *pd_create(void)
 {
 	pd_t *pd = (pd_t *)pmm_alloc_page();
-	pt_t *pt = NULL;
-	
 	memset(pd, 0, sizeof(pd_t));
-	
-	int pd_index;
-	for (pd_index = 0; pd_index < 1; ++pd_index) {
-		pt = (pt_t *)pmm_alloc_page();
-		memset(pt, 0, sizeof(pt_t));
-		pd->entries[pd_index] = (uint32_t)pt | PDE_PRESENT;
-	}
-	
 	return pd;
 }
 
 void pd_destroy(pd_t *pd)
 {
+	int pt;
+	for (pt = 0; pt < PD_LENGTH; ++pt) {
+		if (pd->entries[pt] & PDE_PRESENT) {
+			pmm_mark_page_as_free((paddr_t)pd->entries[pt]);
+		}
+	}
 	pmm_mark_page_as_free((paddr_t)pd);
 }
 
 void pd_map(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags)
 {
-	int pd_index = vframe >> 22;
-	int pt_index = vframe >> 12;
+	pt_t *pt = NULL;
 	
-	pt_t *pt = (pt_t *)(pd->entries[pd_index] & PDE_FRAME);
+	if (pd->entries[PDE_INDEX(vframe)] & PDE_PRESENT) {
+		pt = (pt_t *)((uint32_t)pd->entries[PDE_INDEX(vframe)] & PDE_FRAME);
+	} else {
+		pt = (pt_t *)pmm_alloc_page();
+		memset(pt, 0, sizeof(pt_t));
+		pd->entries[PDE_INDEX(vframe)] = (uint32_t)pt | PDE_PRESENT;
+	}
 	
-	pt->entries[pt_index] = (uint32_t)pframe | (flags & 0xFFF);
+	pt->entries[PTE_INDEX(vframe)] = (uint32_t)pframe | PTE_PRESENT | (flags & 0xFFF);
 	
 	pd_flush_tlb(vframe);
 }
 
 void pd_unmap(pd_t *pd, vaddr_t frame)
 {
-	
+	pt_t *pt = (pt_t *)((uint32_t)pd->entries[PDE_INDEX(frame)] & PDE_FRAME);
+	pt->entries[PTE_INDEX(frame)] = 0;
+}
+
+void pd_map_range(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags, unsigned int pages)
+{
+	int p;
+	for (p = 0; p < pages; ++p) {
+		pd_map(pd, pframe + PAGE_ADDR(p), vframe + PAGE_ADDR(p), flags);
+	}
 }
 
 void pd_install(pd_t *pd, uint8_t flags)
 {
-	printf("Installing Pagedir %#X\n", (paddr_t)pd);
-	
 	uint32_t descriptor = ((paddr_t)pd & PD_FRAME) | flags;
 	asm volatile ("mov %0, %%cr3" : : "r" (descriptor));
+}
+
+static inline void pd_enable_paging(void)
+{
+	asm volatile (
+		"mov %cr0, %eax;"
+		"or $0x80000000, %eax;"
+		"mov %eax, %cr0"
+	);
 }
 
 static inline void pd_flush_tlb(vaddr_t addr)
