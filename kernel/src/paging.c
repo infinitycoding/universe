@@ -34,12 +34,15 @@
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
+/**
+	@author Tom Slawik <tom.slawik@gmail.com>
+*/
+
 #include <paging.h>
 #include <pmm.h>
 
 void INIT_PAGING(void)
 {
-	int i;
 	pd_t *pd = pd_create();
 	pd_install(pd, 0);
 	pd_map_range(pd, 0x00000000, 0x00000000, PTE_WRITABLE, 1024);

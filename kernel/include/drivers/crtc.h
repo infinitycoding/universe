@@ -36,6 +36,10 @@
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
+/**
+	@author Tom Slawik <tom.slawik@gmail.com>
+*/
+
 #include <stdint.h>
 
 #define CRTC_INDEX_PORT 		0x3D4

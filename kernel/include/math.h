@@ -36,6 +36,10 @@
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
+/**
+	@author Tom Slawik <tom.slawik@gmail.com>
+*/
+
 int powi(int base, int exponent);
 int logi(int x);
 int absi(int x);

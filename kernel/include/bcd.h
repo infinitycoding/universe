@@ -1,5 +1,5 @@
-#ifndef _helper_h_
-#define _helper_h_
+#ifndef _bcd_h_
+#define _bcd_h_
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
@@ -34,6 +34,10 @@
 
     Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
+*/
+
+/**
+	@author Tom Slawik <tom.slawik@gmail.com>
 */
 
 // WARNING: ONLY values up to 99
