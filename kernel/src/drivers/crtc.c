@@ -1,5 +1,4 @@
-#ifndef _video_h_
-#define _video_h_
+
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
@@ -40,37 +39,11 @@
 	@author Tom Slawik <tom.slawik@gmail.com>
 */
 
+#include <drivers/crtc.h>
+#include <io.h>
 
-#include <stdint.h>
-
-#define BLACK		0x0
-#define BLUE		0x1
-#define GREEN		0x2
-#define CYAN		0x3
-#define RED 		0x4
-#define MAGENTA		0x5
-#define BROWN		0x6
-#define LIGHT_GRAY	0x7
-#define DARK_GRAY	0x8
-#define LIGHT_BLUE	0x9
-#define LIGHT_GREEN	0xA
-#define LIGHT_CYAN	0xB
-#define LIGHT_RED	0xC
-#define LIGHT_MAGENTA	0xD
-#define YELLOW		0xE
-#define WHITE		0xF
-
-typedef uint8_t color_t;
-
-#define STDOUT 1
-
-int putchar(int c);
-int puts(const char* s);
-int fputs(const char* s, int fd);
-void clear_screen(void);
-void scroll(void);
-void set_color(color_t _color);
-color_t get_color(void);
-void gotoxy(uint8_t _x, uint8_t _y);
-
-#endif
+void crtc_write(uint8_t index, uint8_t value)
+{
+	outb(CRTC_INDEX_PORT, index);
+	outb(CRTC_DATA_PORT, value);
+}

@@ -32,15 +32,15 @@
 
 	 Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
 	 Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
- */
+*/
 
+/**
+	@author Tom Slawik <tom.slawik@gmail.com>
+*/
+
+#include <drivers/crtc.h>
 #include <drivers/video.h>
 #include <io.h>
-
-#define CRT_INDEX_PORT 0x3D4
-#define CRT_DATA_PORT 0x3D5
-#define CRT_CURSOR_HIGH 0xE
-#define CRT_CURSOR_LOW 0xF
 
 static int x = 0;
 static int y = 0;
@@ -130,9 +130,6 @@ void gotoxy(uint8_t _x, uint8_t _y)
 		video_mem[2 * offset + 1] = color;
 	}
 	
-	outb(CRT_INDEX_PORT, CRT_CURSOR_HIGH);
- 	outb(CRT_DATA_PORT, (uint8_t*)(offset >> 8));
-	
-	outb(CRT_INDEX_PORT, CRT_CURSOR_LOW);
-	outb(CRT_DATA_PORT, (uint8_t)offset);
+	crtc_write(CRTC_CURSOR_LOCATION_HIGH, (uint8_t)(offset >> 8));
+	crtc_write(CRTC_CURSOR_LOCATION_LOW, (uint8_t)offset);
 }

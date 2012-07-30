@@ -1,5 +1,5 @@
-#ifndef _video_h_
-#define _video_h_
+#ifndef _crtc_h_
+#define _crtc_h_
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
@@ -40,37 +40,38 @@
 	@author Tom Slawik <tom.slawik@gmail.com>
 */
 
-
 #include <stdint.h>
 
-#define BLACK		0x0
-#define BLUE		0x1
-#define GREEN		0x2
-#define CYAN		0x3
-#define RED 		0x4
-#define MAGENTA		0x5
-#define BROWN		0x6
-#define LIGHT_GRAY	0x7
-#define DARK_GRAY	0x8
-#define LIGHT_BLUE	0x9
-#define LIGHT_GREEN	0xA
-#define LIGHT_CYAN	0xB
-#define LIGHT_RED	0xC
-#define LIGHT_MAGENTA	0xD
-#define YELLOW		0xE
-#define WHITE		0xF
+#define CRTC_INDEX_PORT 		0x3D4
+#define CRTC_DATA_PORT 			0x3D5
 
-typedef uint8_t color_t;
+#define CRTC_HTOTAL 			0x00
+#define CRTC_HDISPLAY_END 		0x01
+#define CRTC_HBLANKING_START 		0x02
+#define CRTC_HBLANKING_END 		0x03
+#define CRTC_HRETRACE_START 		0x04
+#define CRTC_HRETRACE_END 		0x05
+#define CRTC_VTOTAL 			0x06
+#define CRTC_OVERFLOW 			0x07
+#define CRTC_ROWSCAN_PRESET 		0x08
+#define CRTC_MAX_SCANLINE 		0x09
+#define CRTC_CURSOR_START 		0x0A
+#define CRTC_CURSOR_END 		0x0B
+#define CRTC_START_ADDRESS_HIGH 	0x0C
+#define CRTC_START_ADDRESS_LOW 		0x0D
+#define CRTC_CURSOR_LOCATION_HIGH 	0x0E
+#define CRTC_CURSOR_LOCATION_LOW 	0x0F
+#define CRTC_VRETRACE_START 		0x10
+#define CRTC_VRETRACE_END 		0x11
+#define CRTC_VDISPLAY_END 		0x12
+#define CRTC_OFFSET 			0x13
+#define CRTC_UNDERLINE_LOCATION 	0x14
+#define CRTC_VBLANKING_START 		0x15
+#define CRTC_VBLANKING_END 		0x16
+#define CRTC_MODE_CONTROL 		0x17
+#define CRTC_LINE_COMPARE 		0x18
 
-#define STDOUT 1
-
-int putchar(int c);
-int puts(const char* s);
-int fputs(const char* s, int fd);
-void clear_screen(void);
-void scroll(void);
-void set_color(color_t _color);
-color_t get_color(void);
-void gotoxy(uint8_t _x, uint8_t _y);
+void crtc_write(uint8_t index, uint8_t value);
+uint8_t crtc_read(uint8_t index);
 
 #endif
