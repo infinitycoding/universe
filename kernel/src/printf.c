@@ -34,6 +34,10 @@
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
+/**
+	@author Tom Slawik <tom.slawik@gmail.com>
+*/
+
 #include <printf.h>
 #include <string.h>
 #include <stdarg.h>

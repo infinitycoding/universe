@@ -34,8 +34,14 @@
 	 Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
-#include <atoi.h>
+/**
+	@author Tom Slawik <tom.slawik@gmail.com>
+*/
 
+#include <atoi.h>
+/*
+	TODO: Make it compatible with both unsigned int and signed int
+*/
 char * itoa_ex(int value, char * str, int base, int flags, int width)
 {
 	char *result = str;

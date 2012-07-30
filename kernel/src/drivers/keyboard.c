@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 
-	
-	
+
+
     Diese Datei ist ein Teil vom Universe Kernel.
 
     Das Universe Kernel ist Freie Software: Sie können es unter den Bedingungen
@@ -38,10 +38,19 @@
 #include <idt.h>
 #include <printf.h>
 #include <drivers/keyboard.h>
+#include <drivers/keymap_de.h>
 
+static uint8_t shifted = 0;
+static uint8_t numlocked = 0;
+static uint8_t lastscode=0;
+
+char keybuffer[513];
+char* head=keybuffer;
+char* tail=keybuffer;
+int put=0;
 /**
  * Send a command to the Keyboard Controler
- * 
+ *
  * @param port Port for the Command
  * @param command Command for the KBC
  *
@@ -70,13 +79,13 @@ inline void send_kbd_command(uint8_t command){
  */
 void INIT_KEYBOARD(void){
 	install_irq(0x1, &kbd_irq_handler);
-  	
+
   	while(!(inb(0x64) & 0x4));
   	// Puffer leeren
   	while (inb(0x64) & 0x1){
   		inb(0x60);
   	}
-	
+
   	send_kbd_command(0xF4);// Tastatur aktivieren
 }
 /**
@@ -86,9 +95,56 @@ void INIT_KEYBOARD(void){
  * @return void
  */
 void kbd_irq_handler(void){
-	uint8_t c = inb(0x60);
-	//putchar(c);
+	uint8_t input=0,ASCII=0;
+	char output[2]={0,0};
+	while (inb(0x64)&1){
+		input=inb(0x60);
+		if(input==0xC5){
+			numlocked = !numlocked;
+		}
+		else if(input==0x45){}
+		else{
+			if(input==0x2A || input==0x36){
+				shifted=1;
+			}
+			else if(input==0xAA || input==0xB6){
+				shifted=0;
+			}
+			else{
+				if(input == 0x49 || input == 0x47 || input == 0x4B || input == 0x51 || input == 0x48 || input == 0x4F || input == 0x50 || input == 0x52 || input == 0x53 || input == 0x4D){
+					if(numlocked == 0){
+						ASCII=asciinormal[input];
+					}
+					else if(numlocked == 1){
+						ASCII=asciishift[input];
+					}
+				}
+				else{
+					if(shifted==0 ){
+						if((input & 0x80) != 0x80){
+							ASCII=asciinormal[input];
+						}
+					}
+					if(shifted==1){
+						ASCII=asciishift[input];
+					}
+				}
+			}
+		}
+	}
+
+    *tail=ASCII;
+    tail--;
+    put++;
+    if(tail==keybuffer+512){
+        tail=keybuffer;
+    }
+    output[0]=ASCII;
+    printf(output);
 }
+
+
+
 
 
 
