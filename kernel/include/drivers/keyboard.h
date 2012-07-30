@@ -17,8 +17,8 @@
     You should have received a copy of the GNU General Public License
     along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 
-	
-	
+
+
     Diese Datei ist ein Teil vom Universe Kernel.
 
     Das Universe Kernel ist Freie Software: Sie können es unter den Bedingungen
@@ -39,6 +39,8 @@
 
 	void kbd_irq_handler(void);
 	void INIT_KEYBOARD(void);
-	
+	void seek_head(void);
+	uint8_t input(void);
+
 
 #endif
