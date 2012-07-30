@@ -33,6 +33,7 @@
     Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
+
 #include <stdint.h>
 #include <io.h>
 #include <idt.h>
@@ -44,10 +45,10 @@ static uint8_t shifted = 0;
 static uint8_t numlocked = 0;
 static uint8_t lastscode=0;
 
-char keybuffer[513];
+char keybuffer[512];
 char* head=keybuffer;
 char* tail=keybuffer;
-int put=0;
+
 /**
  * Send a command to the Keyboard Controler
  *
@@ -61,6 +62,7 @@ void send_kbc_command(uint8_t port, uint8_t command){
   	outb(port, command);//KBC-Befehl senden
   	while(inb(0x60) != 0xFA);
 }
+
 /**
  * Send a command to the Keyboard
  *
@@ -71,6 +73,7 @@ void send_kbc_command(uint8_t port, uint8_t command){
 inline void send_kbd_command(uint8_t command){
 	send_kbc_command(0x60, command);
 }
+
 /**
  * Initalize the Keyboard
  *
@@ -88,6 +91,7 @@ void INIT_KEYBOARD(void){
 
   	send_kbd_command(0xF4);// Tastatur aktivieren
 }
+
 /**
  * IRQ handler for the Keyboard
  *
@@ -96,55 +100,72 @@ void INIT_KEYBOARD(void){
  */
 void kbd_irq_handler(void){
 	uint8_t input=0,ASCII=0;
-	char output[2]={0,0};
 	while (inb(0x64)&1){
 		input=inb(0x60);
-		if(input==0xC5){
-			numlocked = !numlocked;
-		}
-		else if(input==0x45){}
-		else{
-			if(input==0x2A || input==0x36){
-				shifted=1;
-			}
-			else if(input==0xAA || input==0xB6){
-				shifted=0;
-			}
-			else{
-				if(input == 0x49 || input == 0x47 || input == 0x4B || input == 0x51 || input == 0x48 || input == 0x4F || input == 0x50 || input == 0x52 || input == 0x53 || input == 0x4D){
-					if(numlocked == 0){
-						ASCII=asciinormal[input];
-					}
-					else if(numlocked == 1){
-						ASCII=asciishift[input];
-					}
-				}
-				else{
-					if(shifted==0 ){
-						if((input & 0x80) != 0x80){
-							ASCII=asciinormal[input];
-						}
-					}
-					if(shifted==1){
-						ASCII=asciishift[input];
-					}
-				}
-			}
+		if((input & 0x80) != 0x80){
+            if(input==0xC5){
+                numlocked = !numlocked;
+            }
+            else if(input==0x2A || input==0x36){
+                    shifted=1;
+            }
+            else if(input==0xAA || input==0xB6){
+                    shifted=0;
+            }
+            else if(input == 0x49 || input == 0x47 || input == 0x4B || input == 0x51 || input == 0x48 || input == 0x4F || input == 0x50 || input == 0x52 || input == 0x53 || input == 0x4D){
+                if(numlocked == 0){
+                    ASCII=asciinormal[input];
+                }
+                else if(numlocked == 1){
+                    ASCII=asciishift[input];
+                }
+            }
+            else{
+                if(shifted==0 ){
+                    ASCII=asciinormal[input];
+                }else{
+                    ASCII=asciishift[input];
+                }
+            }
 		}
 	}
 
     *tail=ASCII;
-    tail--;
-    put++;
-    if(tail==keybuffer+512){
+    tail++;
+    if (tail==keybuffer+512) {
         tail=keybuffer;
     }
-    output[0]=ASCII;
-    printf(output);
+	if (head==keybuffer+512) {
+		head=keybuffer;
+	}
+	if (tail==head) {
+		head++;
+	}
+
 }
 
 
+/**
+ * get chars from the Keyboard buffer
+ *
+ * @param void
+ * @return character
+ **/
+uint8_t input(void) {
+	if (head==keybuffer+512) {
+		head=keybuffer;
+	}
+	while(head==tail){}
+	return *(head++);
+}
 
 
-
-
+/**
+ * set head to tail
+ *
+ * @param void
+ * @return void
+ **/
+void seek_head(void) {
+    head = tail;
+}
