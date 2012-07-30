@@ -1,6 +1,6 @@
 
 #include "memory_layout.h"
-#include "elf.h"
+//#include "elf.h"
 
 ENTRY (start)
 
@@ -10,20 +10,28 @@ SECTIONS
 	
     kernel_start = .; // to be removed
 
-    .text ALIGN(PAGE_SIZE) : {
+    .boot ALIGN(PAGE_SIZE) : {
         *(.multiboot .multiboot.*)
-        *(.text)
-    }
-    .data ALIGN(4096) : {
-        *(.data)
-    }
-    .rodata ALIGN(4096) : {
-        *(.rodata)
-    }
-    .bss ALIGN(4096) : {
-        *(.bss)
     }
 
-    . = ALIGN(4096);
-    kernel_end = .;
+	_MEMORY_LAYOUT_KERNEL_PSTART = ALIGN(PAGE_SIZE);
+
+    .text _MEMORY_LAYOUT_KERNEL_PSTART + MEMORY_LAYOUT_KERNEL_START : AT (_MEMORY_LAYOUT_KERNEL_PSTART) {
+        *(.text .text.*)
+    }
+
+    .rodata ALIGN(PAGE_SIZE) : {
+        *(.rodata .rodata.*)
+    }
+
+    .data ALIGN(PAGE_SIZE) : {
+        *(.data .data.*)
+    }
+
+    .bss ALIGN(PAGE_SIZE) : {
+        *(.bss .bss.*)
+    }
+
+    . = ALIGN(PAGE_SIZE);
+    kernel_end = .; // to be removed
 }
