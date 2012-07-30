@@ -8,8 +8,6 @@ SECTIONS
 {
 	. = MEMORY_LAYOUT_KERNEL_EXEC_START - MEMORY_LAYOUT_KERNEL_START + SIZEOF_HEADERS;
 	
-    kernel_start = .; // to be removed
-
     .boot ALIGN(PAGE_SIZE) : {
         *(.multiboot .multiboot.*)
     }
@@ -17,6 +15,7 @@ SECTIONS
 	_MEMORY_LAYOUT_KERNEL_PSTART = ALIGN(PAGE_SIZE);
 
     .text _MEMORY_LAYOUT_KERNEL_PSTART + MEMORY_LAYOUT_KERNEL_START : AT (_MEMORY_LAYOUT_KERNEL_PSTART) {
+        kernel_start = .; // to be removed
         *(.text .text.*)
     }
 

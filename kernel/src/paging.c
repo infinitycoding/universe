@@ -373,9 +373,22 @@ pd_t *pd_current;
 void INIT_PAGING(void)
 {
 	pd_kernel = pd_create();
+	pd_map_range(
+			pd_kernel,
+			0x00000000,
+			0x00000000,
+			PTE_WRITABLE,
+			MEMORY_LAYOUT_DIRECT_MAPPED / PAGE_SIZE
+	);
+	pd_map_range(
+			pd_kernel,
+			0x00000000,
+			MEMORY_LAYOUT_KERNEL_START,
+			PTE_WRITABLE,
+			MEMORY_LAYOUT_DIRECT_MAPPED / PAGE_SIZE
+	);
+//	pd_map_range(pd_kernel, &kernel_start, 0xC0000000, PTE_WRITABLE, PAGE_INDEX(&kernel_end - &kernel_start));
 	pd_switch(pd_kernel, 0);
-	pd_map_range(pd_kernel, 0x00000000, 0x00000000, PTE_WRITABLE, 1024);
- 	pd_map_range(pd_kernel, &kernel_start, 0xC0000000, PTE_WRITABLE, PAGE_INDEX(&kernel_end - &kernel_start));
 	pd_enable_paging();
 }
 
