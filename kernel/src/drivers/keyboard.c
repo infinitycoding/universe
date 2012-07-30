@@ -129,18 +129,19 @@ void kbd_irq_handler(void){
             }
 		}
 	}
-
-    *tail=ASCII;
-    tail++;
-    if (tail==keybuffer+512) {
-        tail=keybuffer;
+    if(ASCII){
+        *tail=ASCII;
+        tail++;
+        if (tail==keybuffer+512) {
+            tail=keybuffer;
+        }
+        if (head==keybuffer+512) {
+            head=keybuffer;
+        }
+        if (tail==head) {
+            head++;
+        }
     }
-	if (head==keybuffer+512) {
-		head=keybuffer;
-	}
-	if (tail==head) {
-		head++;
-	}
 
 }
 
