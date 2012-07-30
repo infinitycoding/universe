@@ -8,19 +8,25 @@ LD = ld
 
 ASFLAGS =  -f elf32
 CFLAGS = -m32 -Wall -g -nostdinc -fno-stack-protector -I ../include
-LDFLAGS = -melf_i386 -Tkernel.ld
+LDFLAGS = -melf_i386 -Tlinkerscript.x
 
-kernel32.elf: $(OBJS)
+kernel32.elf: $(OBJS) linkerscript.x
 	$(LD) $(LDFLAGS) -o $@ $^
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $^
 
-%.o: %.asm
+%.ppasm: %.asm
+	$(CC) $(CFLAGS) -x assembler-with-cpp -P -E -o $@ $^
+
+%.o: %.ppasm
 	$(ASM) $(ASFLAGS) -o $@ $^
 
+%.x: %.gen
+	$(CC) $(CFLAGS) -x assembler-with-cpp -P -E -o $@ $^
+
 clean:
-	rm $(OBJS)
-	rm kernel32.elf
+	rm -f $(OBJS)
+	rm -f kernel32.elf
 
 .PHONY: clean
