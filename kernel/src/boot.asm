@@ -18,16 +18,16 @@
 ;	
 ;    Diese Datei ist ein Teil vom Universe Kernel.
 ;
-;    Das Universe Kernel ist Freie Software: Sie können es unter den Bedingungen
+;    Das Universe Kernel ist Freie Software: Sie kï¿½nnen es unter den Bedingungen
 ;    der GNU General Public License, wie von der Free Software Foundation,
-;    Version 3 der Lizenz oder jeder späteren
-;    veröffentlichten Version, weiterverbreiten und/oder modifizieren.
+;    Version 3 der Lizenz oder jeder spï¿½teren
+;    verï¿½ffentlichten Version, weiterverbreiten und/oder modifizieren.
 ;
-;    Das Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
-;    Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
-;    OHNE JEDE GEWÄHELEISTUNG, bereitgestellt; sogar ohne die implizite
-;    Gewährleistung der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
-;    Siehe die GNU General Public License für weitere Details.
+;    Das Universe Kernel wird in der Hoffnung, dass es nï¿½tzlich sein wird, aber
+;    Universe Kernel wird in der Hoffnung, dass es nï¿½tzlich sein wird, aber
+;    OHNE JEDE GEWï¿½HELEISTUNG, bereitgestellt; sogar ohne die implizite
+;    Gewï¿½hrleistung der MARKTFï¿½HIGKEIT oder EIGNUNG Fï¿½R EINEN BESTIMMTEN ZWECK.
+;    Siehe die GNU General Public License fï¿½r weitere Details.
 ;
 ;    Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
 ;    Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
@@ -35,7 +35,7 @@
 
 [BITS 32]
 FLAGS    equ 0
-MAGIC    equ 0x1BADB002       ; Magicnumber - Erkennungsmerkmal für GRUB
+MAGIC    equ 0x1BADB002       ; Magicnumber - Erkennungsmerkmal fï¿½r GRUB
 CHECKSUM equ -(MAGIC + FLAGS) ; Checksum
 zeilen equ 10
 
@@ -47,10 +47,14 @@ MultiBootHeader:
   dd CHECKSUM    ; Checksu
 
 
+.align 16
+.type	start, @function
+.global start
+.section	.multiboot.start,"ax",@progbits
+start:
 
 section .text
 Global start
-start:
 cli
 mov esp,stack
 push eax
