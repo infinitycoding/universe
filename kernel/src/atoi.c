@@ -42,7 +42,7 @@
 /*
 	TODO: Make it compatible with both unsigned int and signed int
 */
-char * itoa_ex(int value, char * str, int base, int flags, int width)
+char * itoa_ex(unsigned int value, char * str, int base, int flags, int width)
 {
 	char *result = str;
 	int size;
@@ -96,7 +96,7 @@ char * itoa_ex(int value, char * str, int base, int flags, int width)
 	return result;
 }
 
-inline char * itoa(int value, char * str, int base)
+inline char * itoa(unsigned int value, char * str, int base)
 {
 	return itoa_ex(value, str, base, 0, 1);
 }
