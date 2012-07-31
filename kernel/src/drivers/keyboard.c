@@ -41,9 +41,9 @@
 #include <drivers/keyboard.h>
 #include <drivers/keymap_de.h>
 
-static uint8_t shifted = 0;
-static uint8_t numlocked = 0;
-static uint8_t lastscode=0;
+static bool shift = false;
+static bool numlock = false;
+static bool caps=false;
 
 char keybuffer[512];
 char* head=keybuffer;
@@ -102,33 +102,44 @@ void kbd_irq_handler(void){
 	uint8_t input=0,ASCII=0;
 	while (inb(0x64)&1){
 		input=inb(0x60);
-		if((input & 0x80) != 0x80){
-            if(input==0xC5){
-                numlocked = !numlocked;
-            }
-            else if(input==0x2A || input==0x36){
-                    shifted=1;
-            }
-            else if(input==0xAA || input==0xB6){
-                    shifted=0;
-            }
-            else if(input == 0x49 || input == 0x47 || input == 0x4B || input == 0x51 || input == 0x48 || input == 0x4F || input == 0x50 || input == 0x52 || input == 0x53 || input == 0x4D){
-                if(numlocked == 0){
-                    ASCII=asciinormal[input];
-                }
-                else if(numlocked == 1){
-                    ASCII=asciishift[input];
-                }
-            }
-            else{
-                if(shifted==0 ){
-                    ASCII=asciinormal[input];
-                }else{
-                    ASCII=asciishift[input];
-                }
-            }
-		}
+
+        if(input==0xC5){ //pressed numlock
+            numlock = !numlock;
+            continue;
+        }
+
+        if(input==0x3A){ //pressed capslock
+            caps = !caps;
+            continue;
+        }
+
+
+		if((input&0x80)==0x80){ //release Key
+		    input &=0x7F;
+
+		    if(input == 0x2A || input == 0x36){ //released shift key
+		        shift=false;
+		    }
+            continue;
+        }
+
+        if(input == 0x2A || input == 0x36){ //pressed shift
+            shift=true;
+            continue;
+        }
+
+        if(input > 0x46 && input < 0x55 && input != 0x4A && input !=0x4C && input !=0x4E && numlock) { //Numblock Key
+            ASCII=asciishift[input];
+        }
+
+        else if(shift || caps){ //Common Key
+            ASCII=asciishift[input];
+        }else{
+            ASCII=asciinormal[input];
+        }
+
 	}
+
     if(ASCII){
         *tail=ASCII;
         tail++;
