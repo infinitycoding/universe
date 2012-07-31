@@ -62,10 +62,6 @@ int putchar(int c)
     video_mem[2 * (y * 80 + x) + 1] = color;
 
 	gotoxy(++x, y);
-
-    if ((y * 80 + x) > (80 * 25)) {
-      scroll();
-    }
 }
 
 int puts(const char* s)
@@ -106,7 +102,7 @@ void clear_screen(void)
 void scroll(void)
 {
 	int i;
-	for (i = 0; i < 3840; i++)
+	for (i = 0; i < 2 * 25 * 80; i++)
 		video_mem[i] = video_mem[i + 80 * 2];
 	gotoxy(x, --y);
 }
@@ -125,6 +121,10 @@ void gotoxy(uint8_t _x, uint8_t _y)
 {
 	uint16_t offset = _y * 80 + _x;
 	x = _x; y = _y;
+
+    if ((y * 80 + x) > (80 * 25)) {
+      scroll();
+    }
 
 	if (video_mem[2 * offset] == 0) {
 		video_mem[2 * offset + 1] = color;
