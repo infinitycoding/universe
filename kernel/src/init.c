@@ -63,38 +63,30 @@
 */
 int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 {
-
+	clear_screen();
 
 	if (magic_number != 0x2BADB002) {
 		panic("Incompatible Bootloader");
 	}
+	
     set_color(WHITE | BLACK << 4);
-	printf("WTF!");
+	
 	INIT_PMM(mb_info);
 	INIT_GDT();
 	INIT_IDT();
 	INIT_PAGING();
-	clear_screen();
 	INIT_CPUID();
 	INIT_PIT(50);
 	INIT_CMOS();
 	INIT_KEYBOARD();
-	//INIT_MALLOC();
+	INIT_MALLOC();
 	asm volatile("sti");
 
-	puts("");
-	printlogo();
-	puts("");
-
+	print_logo(YELLOW);
 	puts("Universe wird gestartet...\n");
 	uint32_t pages = pmm_count_free_pages();
 	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
 	print_time(get_time());
-	
-// 	uint32_t *test = malloc(sizeof(uint32_t));
-// 	printf("%#d\n", test);
-// 	uint32_t *test2 = malloc(sizeof(uint32_t));
-// 	printf("%#d", test2);
 	
 	for (;;) {
         putchar(input());

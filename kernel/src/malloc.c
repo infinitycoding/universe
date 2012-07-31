@@ -36,6 +36,8 @@
 
 /**
 	@author Tom Slawik <tom.slawik@gmail.com>
+	
+	improvisoric :D will be rewritten in the next days
 */
 
 #include <stdint.h>
@@ -48,23 +50,29 @@ struct mem_header {
 	struct mem_header *next;
 };
 
-static const void *heap = 0x00000000;
-static struct mem_header *mlist_head = (struct mem_header *)0x00000000;
+static void *heap;
+static struct mem_header *mlist_head;
 
 void INIT_MALLOC(void)
 {
-	paddr_t page = pmm_alloc_page();
-	pd_map(pd_get(), page, heap, PTE_WRITABLE);
+	//paddr_t page = pmm_alloc_page();
+	heap = pmm_alloc_page_limit(0xC0000000);
+	mlist_head = heap;
 }
 
 void* malloc(size_t size)
 {
 	struct mem_header *mlist = mlist_head;
-	mlist_head += sizeof(struct mem_header) + size;
+	mlist_head = (void *)((uint32_t)mlist_head + sizeof(struct mem_header) + size);
 	mlist_head->prev = mlist;
 	
 	mlist->size = size;
 	mlist->next = mlist_head;
 	
-	return mlist + sizeof(struct mem_header);
+	return (uint32_t)mlist + sizeof(struct mem_header);
+}
+
+void free(void *ptr)
+{
+	/* not implemented */
 }

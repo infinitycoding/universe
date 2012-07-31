@@ -50,8 +50,8 @@
 #define SMALL	32
 #define SPECIAL	64
 
-char * itoa_ex(int value, char * str, int base, int flags, int width);
-inline char * itoa(int value, char * str, int base);
+char * itoa_ex(unsigned int value, char * str, int base, int flags, int width);
+inline char * itoa(unsigned int value, char * str, int base);
 int atoi(const char *str);
 
 #endif
