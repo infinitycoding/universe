@@ -79,6 +79,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	INIT_PIT(50);
 	INIT_CMOS();
 	INIT_KEYBOARD();
+	//INIT_MALLOC();
 	asm volatile("sti");
 
 	puts("");
@@ -90,10 +91,10 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
 	print_time(get_time());
 	
-	uint32_t *test = malloc(sizeof(uint32_t));
-	printf("%#d\n", test);
-	uint32_t *test2 = malloc(sizeof(uint32_t));
-	printf("%#d", test2);
+// 	uint32_t *test = malloc(sizeof(uint32_t));
+// 	printf("%#d\n", test);
+// 	uint32_t *test2 = malloc(sizeof(uint32_t));
+// 	printf("%#d", test2);
 	
 	for (;;) {
         putchar(input());
