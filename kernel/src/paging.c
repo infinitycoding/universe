@@ -373,13 +373,13 @@ pd_t *pd_current;
 void INIT_PAGING(void)
 {
 	pd_kernel = pd_create();
-	pd_map_range(
+	/*pd_map_range(
 			pd_kernel,
 			0x00000000,
 			0x00000000,
 			PTE_WRITABLE,
 			MEMORY_LAYOUT_DIRECT_MAPPED / PAGE_SIZE
-	);
+	);*/
 	pd_map_range(
 			pd_kernel,
 			0x00000000,
@@ -387,7 +387,6 @@ void INIT_PAGING(void)
 			PTE_WRITABLE,
 			MEMORY_LAYOUT_DIRECT_MAPPED / PAGE_SIZE
 	);
-//	pd_map_range(pd_kernel, &kernel_start, 0xC0000000, PTE_WRITABLE, PAGE_INDEX(&kernel_end - &kernel_start));
 	pd_switch(pd_kernel, 0);
 	pd_enable_paging();
 }
@@ -413,7 +412,7 @@ void pd_destroy(pd_t *pd)
 void pd_map(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags)
 {
 	pt_t *pt = NULL;
-	
+
 	if (pd->entries[PDE_INDEX(vframe)] & PDE_PRESENT) {
 		pt = (pt_t *)((uint32_t)pd->entries[PDE_INDEX(vframe)] & PDE_FRAME);
 	} else {
@@ -421,9 +420,9 @@ void pd_map(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags)
 		memset(pt, 0, sizeof(pt_t));
 		pd->entries[PDE_INDEX(vframe)] = (uint32_t)pt | PDE_PRESENT;
 	}
-	
+
 	pt->entries[PTE_INDEX(vframe)] = (uint32_t)pframe | PTE_PRESENT | (flags & 0xFFF);
-	
+
 	pd_flush_tlb(vframe);
 }
 
@@ -445,15 +444,15 @@ void pd_map_range(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags, unsig
 vaddr_t pd_map_fast(paddr_t frame, uint8_t flags)
 {
 	int t, e;
-	
+
 	for (t = 0; t < PD_LENGTH; ++t)
 	{
 		vaddr_t vframe;
-		
+
 		if (pd_current->entries[t] & PDE_PRESENT)
 		{
 			pt_t *pt = (pt_t *)(pd_current->entries[t] & PDE_FRAME);
-			
+
 			for (e = 0; e < PT_LENGTH; ++e)
 			{
 				if (!(pt->entries[e] & PTE_PRESENT))
@@ -469,7 +468,7 @@ vaddr_t pd_map_fast(paddr_t frame, uint8_t flags)
 			return vframe;
 		}
 	}
-	
+
 	/* too less memory */
 	return -1;
 }
