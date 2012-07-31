@@ -1,5 +1,6 @@
-#ifndef _keyboard_h_
-#define _keyboard_h_
+#ifndef MEMORY_LAYOUT_H_
+#define MEMORY_LAYOUT_H_
+
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
@@ -35,12 +36,12 @@
     Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
-	#include <stdint.h>
 
-	void kbd_irq_handler(void);
-	void INIT_KEYBOARD(void);
-	void seek_head(void);
-	uint8_t input(void);
+#define MEMORY_LAYOUT_DIRECT_MAPPED			0x02000000
 
+#define PAGE_SIZE							4096
 
-#endif
+#define MEMORY_LAYOUT_KERNEL_START			0xC0000000
+#define MEMORY_LAYOUT_KERNEL_EXEC_START		0xC0100000
+
+#endif /* MEMORY_LAYOUT_H_ */
