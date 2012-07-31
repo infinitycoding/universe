@@ -135,6 +135,11 @@ vaddr_t pd_map_fast(paddr_t frame, uint8_t flags)
 	return -1;
 }
 
+pd_t *pd_get(void)
+{
+	return pd_current;
+}
+
 void pd_switch(pd_t *pd, uint8_t flags)
 {
 	pd_current = pd;

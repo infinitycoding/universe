@@ -42,10 +42,29 @@
 #include <pmm.h>
 #include <paging.h>
 
+struct mem_header {
+	size_t size;
+	struct mem_header *prev;
+	struct mem_header *next;
+};
 
+static const void *heap = 0x00000000;
+static struct mem_header *mlist_head = (struct mem_header *)0x00000000;
 
 void INIT_MALLOC(void)
 {
-	paddr_t *heap = pmm_alloc_page();
-	pd_map_fast(heap, PTE_WRITABLE);
+	paddr_t page = pmm_alloc_page();
+	pd_map(pd_get(), page, heap, PTE_WRITABLE);
+}
+
+void* malloc(size_t size)
+{
+	struct mem_header *mlist = mlist_head;
+	mlist_head += sizeof(struct mem_header) + size;
+	mlist_head->prev = mlist;
+	
+	mlist->size = size;
+	mlist->next = mlist_head;
+	
+	return mlist + sizeof(struct mem_header);
 }
