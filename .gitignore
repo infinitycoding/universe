@@ -9,3 +9,5 @@ Thumbs.db
 
 #Andere unerwünschte Daten
 .directory
+.cproject
+.project

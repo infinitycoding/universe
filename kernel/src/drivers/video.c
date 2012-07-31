@@ -46,13 +46,13 @@ static int x = 0;
 static int y = 0;
 
 static color_t color = CYAN | BLACK << 4;
-static char *video_mem = (char *)0xb8000;
+static char *video_mem = (char *)0xc00b8000;
 
 int putchar(int c)
 {
     if ((x > 79) || (c == '\n')) {
 		gotoxy(0, ++y);
-		
+
         if (c == '\n') {
             return;
         }
@@ -60,7 +60,7 @@ int putchar(int c)
 
     video_mem[2 * (y * 80 + x)] = c;
     video_mem[2 * (y * 80 + x) + 1] = color;
-	
+
 	gotoxy(++x, y);
 
     if ((y * 80 + x) > (80 * 25)) {
@@ -71,13 +71,13 @@ int putchar(int c)
 int puts(const char* s)
 {
 	int printed = 1;
-	
+
     while (*s) {
         putchar(*s++);
 		++printed;
     }
     putchar('\n');
-	
+
 	return printed;
 }
 
@@ -88,7 +88,7 @@ int fputs(const char* s, int fd)
 			putchar(*s++);
 		}
 	}
-	
+
 	return 0;
 }
 
@@ -125,11 +125,11 @@ void gotoxy(uint8_t _x, uint8_t _y)
 {
 	uint16_t offset = _y * 80 + _x;
 	x = _x; y = _y;
-	
+
 	if (video_mem[2 * offset] == 0) {
 		video_mem[2 * offset + 1] = color;
 	}
-	
+
 	crtc_write(CRTC_CURSOR_LOCATION_HIGH, (uint8_t)(offset >> 8));
 	crtc_write(CRTC_CURSOR_LOCATION_LOW, (uint8_t)offset);
 }

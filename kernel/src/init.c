@@ -1,4 +1,4 @@
-/*
+/**
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
 
@@ -32,7 +32,7 @@
 
 	Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
 	Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
-*/
+**/
 
 #include <stdint.h>
 #include <printf.h>
@@ -63,36 +63,41 @@
 */
 int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 {
-	clear_screen();
-	set_color(WHITE | BLACK << 4);
+
 
 	if (magic_number != 0x2BADB002) {
 		panic("Incompatible Bootloader");
 	}
-
+    set_color(WHITE | BLACK << 4);
+	printf("WTF!");
 	INIT_PMM(mb_info);
 	INIT_GDT();
 	INIT_IDT();
 	INIT_PAGING();
-	//INIT_CPUID();
+	clear_screen();
+	INIT_CPUID();
 	INIT_PIT(50);
 	INIT_CMOS();
 	INIT_KEYBOARD();
 	asm volatile("sti");
-	
+
 	puts("");
 	printlogo();
 	puts("");
-	
+
 	puts("Universe wird gestartet...\n");
 	uint32_t pages = pmm_count_free_pages();
 	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
 	print_time(get_time());
+	
 	uint32_t *test = malloc(sizeof(uint32_t));
 	printf("%#d\n", test);
 	uint32_t *test2 = malloc(sizeof(uint32_t));
 	printf("%#d", test2);
-	for(;;);
+	
+	for (;;) {
+        putchar(input());
+	}
 
 	return 0;
 }
