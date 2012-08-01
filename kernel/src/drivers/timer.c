@@ -156,6 +156,6 @@ void print_time(time_t * time)
 	}
 	
 	printf("System Date: %02d/%02d/%02d (%s)\n", time->day_in_month, time->month, time->year, day_string);
-	printf("System Time: %02d:%02d:%02d\n\n", time->hour, time->minute, time->second);
+	printf("System Time: %02d:%02d:%02d\n", time->hour, time->minute, time->second);
 }
 

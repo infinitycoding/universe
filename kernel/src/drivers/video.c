@@ -42,6 +42,9 @@
 #include <drivers/video.h>
 #include <io.h>
 
+static int lines = 25;
+static int columns = 80;
+
 static int x = 0;
 static int y = 0;
 
@@ -50,7 +53,19 @@ static char *video_mem = (char *)0xc00b8000;
 
 int putchar(int c)
 {
-    if ((x > 79) || (c == '\n')) {
+	if (c == '\b') {
+		if (x > 0) {
+			gotoxy(--x, y);
+		} else {
+			gotoxy(columns - 1, --y);
+		}
+		
+		video_mem[2 * (y * columns + x)] = 0;
+		
+		return c;
+	}
+	
+    if ((x > columns - 1) || (c == '\n')) {
 		gotoxy(0, ++y);
 
         if (c == '\n') {
@@ -58,8 +73,8 @@ int putchar(int c)
         }
     }
 
-    video_mem[2 * (y * 80 + x)] = c;
-    video_mem[2 * (y * 80 + x) + 1] = color;
+    video_mem[2 * (y * columns + x)] = c;
+    video_mem[2 * (y * columns + x) + 1] = color;
 
 	gotoxy(++x, y);
 	
@@ -93,7 +108,7 @@ int fputs(const char* s, int fd)
 void clear_screen(void)
 {
     int i;
-    for (i = 0; i < 25 * 80; i++) {
+    for (i = 0; i < lines * columns; i++) {
         video_mem[2 * i] = 0;
 		video_mem[2 * i + 1] = color;
     }
@@ -115,14 +130,14 @@ void gotoxy(uint8_t _x, uint8_t _y)
 {
 	uint16_t offset;
 
-    if ((_y * 80 + _x) > (80 * 25)) { /* scroll if neccessary */
-		memmove(video_mem, video_mem + 2*80, 2 * 25 * 80);
-		memset(video_mem + 2 * 25 * 80, 0, 2 * 80);
+    if ((_y * columns + _x) >= (columns * lines)) { /* scroll if neccessary */
+		memmove(video_mem, video_mem + 2 * columns, 2 * lines * columns);
+		memset(video_mem + 2 * lines * columns, 0, 2 * columns);
 		--_y;
     }
     
 	x = _x; y = _y;
-    offset = _y * 80 + _x;
+    offset = _y * columns + _x;
 
 	if (video_mem[2 * offset] == 0) {
 		video_mem[2 * offset + 1] = color;
