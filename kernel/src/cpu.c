@@ -1,5 +1,3 @@
-#ifndef _cpu_h_
-#define _cpu_h_
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
@@ -36,33 +34,17 @@
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
-#include <stdint.h>
+/**
+	@author Tom Slawik <tom.slawik@gmail.com>
+*/
 
-struct cpu_state
+void cpu_halt(void)
 {
-	uint32_t   gs;
-	uint32_t   fs;
-	uint32_t   es;
-	uint32_t   ds;
-	
-	uint32_t   edi;
-	uint32_t   esi;
-	uint32_t   ebp;
-	uint32_t   esp;
-	
-	uint32_t   ebx;
-	uint32_t   edx;
-	uint32_t   ecx;
-	uint32_t   eax;
-	
-	uint32_t   intr;
-	uint32_t   error;
-	
-	uint32_t   eip;
-	uint32_t   cs;
-	uint32_t   eflags;
-	
-	uint32_t   ss;
-};
-
-#endif
+	for (;;)
+	{
+		asm volatile (
+			"cli;"
+			"hlt;"
+		);
+	}
+}

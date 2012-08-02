@@ -108,4 +108,6 @@ static inline void pd_flush_tlb(vaddr_t addr);
 //void map_page_kernel(paddr_t phys_frame, vaddr_t virt_frame, uint8_t flags);
 //void unmap_page_kernel(vaddr_t frame);
 
+void pd_fault_handler(struct cpu_state *cpu);
+
 #endif

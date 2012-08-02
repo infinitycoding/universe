@@ -19,62 +19,151 @@
 
     Diese Datei ist ein Teil vom Universe Kernel.
 
-    Das Universe Kernel ist Freie Software: Sie können es unter den Bedingungen
+    Das Universe Kernel ist Freie Software: Sie kÃ¶nnen es unter den Bedingungen
     der GNU General Public License, wie von der Free Software Foundation,
-    Version 3 der Lizenz oder jeder späteren
-    veröffentlichten Version, weiterverbreiten und/oder modifizieren.
+    Version 3 der Lizenz oder jeder spÃ¤teren
+    verÃ¶ffentlichten Version, weiterverbreiten und/oder modifizieren.
 
-    Das Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
-    Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
-    OHNE JEDE GEWÄHELEISTUNG, bereitgestellt; sogar ohne die implizite
-    Gewährleistung der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
-    Siehe die GNU General Public License für weitere Details.
+    Das Universe Kernel wird in der Hoffnung, dass es nÃ¼tzlich sein wird, aber
+    Universe Kernel wird in der Hoffnung, dass es nÃ¼tzlich sein wird, aber
+    OHNE JEDE GEWÃ„HELEISTUNG, bereitgestellt; sogar ohne die implizite
+    GewÃ¤hrleistung der MARKTFÃ„HIGKEIT oder EIGNUNG FÃœR EINEN BESTIMMTEN ZWECK.
+    Siehe die GNU General Public License fÃ¼r weitere Details.
 
     Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
+*/
+
+/**
+	@author Tom Slawik <tom.slawik@gmail.com>
+	@author Someone Else
 */
 
 #include <idt.h>
 #include <cpu.h>
 #include <printf.h>
 
-char* exception_messages[] =
+char *exception_messages[] =
 {
-    "Division By Zero",        "Debug",                         "Non Maskable Interrupt",    "Breakpoint",
-    "Into Detected Overflow",  "Out of Bounds",                 "Invalid Opcode",            "No Coprocessor",
-    "Double Fault",            "Coprocessor Segment Overrun",   "Bad TSS",                   "Segment Not Present",
-    "Stack Fault",             "General Protection Fault",      "Page Fault",                "Unknown Interrupt",
-    "Coprocessor Fault",       "Alignment Check",               "Machine Check",             "SIMD Floating Point",
-    "Reserved",                "Reserved",                      "Reserved",                  "Reserved",
-    "Reserved",                "Reserved",                      "Reserved",                  "Reserved",
-    "Reserved",                "Reserved",                      "Reserved",                  "Reserved"
+	"Division By Zero",        "Debug",                         "Non Maskable Interrupt",    "Breakpoint",
+	"Into Detected Overflow",  "Out of Bounds",                 "Invalid Opcode",            "No Coprocessor",
+	"Double Fault",            "Coprocessor Segment Overrun",   "Bad TSS",                   "Segment Not Present",
+	"Stack Fault",             "General Protection Fault",      "Page Fault",                "Unknown Interrupt",
+	"Coprocessor Fault",       "Alignment Check",               "Machine Check",             "SIMD Floating Point",
+	"Reserved",                "Reserved",                      "Reserved",                  "Reserved",
+	"Reserved",                "Reserved",                      "Reserved",                  "Reserved",
+	"Reserved",                "Reserved",                      "Reserved",                  "Reserved"
 };
+
+int cpu_dump(struct cpu_state* cpu, char *str)
+{
+	int len = 0;
+	
+	len += sprintf(str + len, "EAX:  %#010X    EBX:     %#010X\n",  cpu->eax, 	cpu->ebx);
+	len += sprintf(str + len, "ECX:  %#010X    EDX:     %#010X\n",  cpu->ecx, 	cpu->edx);
+	len += sprintf(str + len, "ESI:  %#010X    EDI:     %#010X\n",  cpu->esi, 	cpu->edi);
+	len += sprintf(str + len, "ESP:  %#010X    EBP:     %#010X\n",  cpu->esp, 	cpu->ebp);
+	len += sprintf(str + len, "CS:   %#010X    DS:      %#010X\n",  cpu->cs, 	cpu->ds);
+	len += sprintf(str + len, "SS:   %#010X    ES:      %#010X\n",  cpu->ss, 	cpu->es);
+	len += sprintf(str + len, "GS:   %#010X    FS:      %#010X\n",  cpu->gs, 	cpu->fs);
+	len += sprintf(str + len, "EIP:  %#010X    EFLAGS:  %#010X\n",  cpu->eip, 	cpu->eflags);
+	
+	return len;
+}
 
 
 // just used in case of untreated exceptions
-void exc_panic(struct cpu_state* cpu){
-	char* exception=exception_messages[cpu->intr];
-	printf("%s  Errorcode:%-10x\n\n",exception,cpu->error);
-	printf("EAX: %-10x  EBX: %-10x\n",cpu->eax,cpu->ebx);
-	printf("ECX: %-10x  EDX: %-10x\n",cpu->ecx,cpu->edx);
-	printf("ESI: %-10x  EDI: %-10x\n",cpu->esi,cpu->edi);
-	printf("ESP: %-10x  EBP: %-10x\n",cpu->esp,cpu->ebp);
-	printf("CS: %-10x  DS: %-10x\n",cpu->cs,cpu->ds);
-	printf("SS: %-10x  ES: %-10x\n",cpu->ss,cpu->es);
-	printf("GS: %-10x  FS: %-10x\n",cpu->gs,cpu->fs);
-	printf("EIP: %-10x  EFLAGS: %-10x\n",cpu->eip,cpu->eflags);
-	printf("System halted...\n");
-	while(1){
-		asm volatile("cli; hlt");
-	}
+void exc_panic(struct cpu_state* cpu)
+{
+	char dump[512];
+	char *exception = exception_messages[cpu->intr];
+	
+	cpu_dump(cpu, dump);
+	
+	printf("%s Errorcode: %-10x\n\n", exception, cpu->error);
+	puts(dump);
+	
+	printf("\nSystem halted...\n");
+	cpu_halt();
 }
 
-//hope this function never will be used ;)
-void panic(char* message){
-	printf("%s occured\n",message);
-	//Dump System Structures
-	printf("System halted...\n");
-	while(1){
-		asm volatile("cli; hlt");
+void panic(char *message)
+{
+	int c;
+	
+	set_color(WHITE | RED << 4);
+	clear_screen();
+	
+// 	set_color(0x00);
+// 	for (c = 0; c < 80 * 8; ++c) {
+// 		putchar(' ');
+// 	}
+// 	set_color(WHITE | RED << 4);
+	
+	gotoxy(0, 6);
+	
+	puts (
+		"      |==================================================================|      \n"
+		"      |                             Universe                             |      \n"
+		"      |==================================================================|      \n"
+		"\n\n"
+		"      Universe has crashed. You have to restart your computer.\n"
+	);
+	
+	printf("      ");
+	while (*message != '\0') {
+		putchar(*message);
+		
+		if (*message == '\n') {
+			printf("      ");
+		}
+		
+		++message;
 	}
+	
+	puts("\n      To help us improving our systems, please report this incident to us.");
+	gotoxy(6, 20);
+	
+// 	set_color(0x00);
+// 	gotoxy(0, 21);
+// 	for (c = 0; c < 80 * 5; ++c) {
+// 		putchar(' ');
+// 	}
+
+	cpu_halt();
+}
+
+void asspanic(char *message)
+{
+	set_color(WHITE | BLUE << 4);
+	clear_screen();
+	
+	puts(
+		"|==================================| Asshole |=================================|\n\n"
+		"Universe just crashed. Please report this incident to our team!\n"
+	);
+		
+	printf("%s\n", message);
+	
+	printf("\nSystem halted.\n");
+	cpu_halt();
+}
+
+/* easter egg! */
+void winpanic(char *message)
+{
+	set_color(WHITE | BLUE << 4);
+	clear_screen();
+	
+	gotoxy(37, 8);
+	set_color(BLUE | LIGHT_GRAY << 4);
+	printf(" Windows");
+	set_color(WHITE | BLUE << 4);
+	printf("\n\n      %s\n", message);
+	//printf("%s\n", message);
+	
+	printf("\n      *  Druecken Sie eine beliebige Taste, um die Anwendung abzubrechen.\n");
+	printf("\n      *  Druecken Sie Strg+Alt+Entf, um den Computer neu zu\n");
+	printf("      starten. nicht gespeicherte Daten gehen dabei verloren.\n");
+	cpu_halt();
 }

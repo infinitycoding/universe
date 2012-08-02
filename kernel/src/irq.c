@@ -19,20 +19,21 @@
 
     Diese Datei ist ein Teil vom Universe Kernel.
 
-    Das Universe Kernel ist Freie Software: Sie können es unter den Bedingungen
+    Das Universe Kernel ist Freie Software: Sie kÃ¶nnen es unter den Bedingungen
     der GNU General Public License, wie von der Free Software Foundation,
-    Version 3 der Lizenz oder jeder späteren
-    veröffentlichten Version, weiterverbreiten und/oder modifizieren.
+    Version 3 der Lizenz oder jeder spÃ¤teren
+    verÃ¶ffentlichten Version, weiterverbreiten und/oder modifizieren.
 
-    Das Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
-    Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
-    OHNE JEDE GEWÄHELEISTUNG, bereitgestellt; sogar ohne die implizite
-    Gewährleistung der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
-    Siehe die GNU General Public License für weitere Details.
+    Das Universe Kernel wird in der Hoffnung, dass es nÃ¼tzlich sein wird, aber
+    Universe Kernel wird in der Hoffnung, dass es nÃ¼tzlich sein wird, aber
+    OHNE JEDE GEWÃ„HELEISTUNG, bereitgestellt; sogar ohne die implizite
+    GewÃ¤hrleistung der MARKTFÃ„HIGKEIT oder EIGNUNG FÃœR EINEN BESTIMMTEN ZWECK.
+    Siehe die GNU General Public License fÃ¼r weitere Details.
 
     Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
+
 #include <idt.h>
 #include <io.h>
 #include <cpu.h>
@@ -93,7 +94,7 @@ int install_irq(int intr,void (*handler)(void)) {
 
 void deinstall_irq(int intr) {irq[intr] = NULL;}
 
-static void (*exc[32])(void) = {
+static void (*exc[32])(struct cpu_state *cpu) = {
     NULL, NULL,
     NULL, NULL,
     NULL, NULL,
@@ -112,8 +113,12 @@ static void (*exc[32])(void) = {
     NULL, NULL
 };
 
-int install_exc(int excnum,void (*handler)(void)) {
-    if(((uint32_t)exc[excnum]) != NULL) return 1;
+int install_exc(int excnum, void (*handler)(struct cpu_state *cpu))
+{
+    if ((uint32_t)exc[excnum] != NULL) {
+	    return 1;
+    }
+    
     exc[excnum] = handler;
     return 0;
 }
@@ -121,12 +126,14 @@ int install_exc(int excnum,void (*handler)(void)) {
 void deinstall_exc(int excnum) {exc[excnum] = NULL;}
 
 
-struct cpu_state* exception_handler(struct cpu_state* cpu) {
-	if(((uint32_t)exc[cpu->intr]) != NULL) {
-        exc[cpu->intr]();
-    }else{
-        exc_panic(cpu); // CPU-beenden, weil noch keine Tasks laufen
-    }
+struct cpu_state* exception_handler(struct cpu_state* cpu)
+{
+	if ((uint32_t)exc[cpu->intr] != NULL) {
+		exc[cpu->intr](cpu);
+	} else {
+		exc_panic(cpu); // CPU-beenden, weil noch keine Tasks laufen
+	}
+	
 	EOI(cpu->intr);
 	return cpu;
 }
