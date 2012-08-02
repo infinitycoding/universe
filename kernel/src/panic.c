@@ -75,61 +75,55 @@ int cpu_dump(struct cpu_state* cpu, char *str)
 // just used in case of untreated exceptions
 void exc_panic(struct cpu_state* cpu)
 {
-	char dump[512];
+	char message[512];
 	char *exception = exception_messages[cpu->intr];
+	int len = 0;
 	
-	cpu_dump(cpu, dump);
+	len = sprintf(message, "%s\n\n", exception, cpu->error);
+	cpu_dump(cpu, message + len);
 	
-	printf("%s Errorcode: %-10x\n\n", exception, cpu->error);
-	puts(dump);
-	
-	printf("\nSystem halted...\n");
-	cpu_halt();
+	panic(message);
 }
 
 void panic(char *message)
 {
-	int c;
+	char buffer[1024];
+	int lines = 8;
+	int len = 0;
 	
-	set_color(WHITE | RED << 4);
-	clear_screen();
-	
-// 	set_color(0x00);
-// 	for (c = 0; c < 80 * 8; ++c) {
-// 		putchar(' ');
-// 	}
-// 	set_color(WHITE | RED << 4);
-	
-	gotoxy(0, 6);
-	
-	puts (
+	len += sprintf (buffer + len,
 		"      |==================================================================|      \n"
 		"      |                             Universe                             |      \n"
 		"      |==================================================================|      \n"
-		"\n\n"
+		"\n"
+		"\n"
 		"      Universe has crashed. You have to restart your computer.\n"
+		"\n"
+		"      "
 	);
 	
-	printf("      ");
 	while (*message != '\0') {
-		putchar(*message);
+		buffer[len++] = *message;
 		
 		if (*message == '\n') {
-			printf("      ");
+			len += sprintf(buffer + len, "      ");
+			++lines;
 		}
 		
 		++message;
 	}
 	
-	puts("\n      To help us improving our systems, please report this incident to us.");
-	gotoxy(6, 20);
+	len += sprintf (buffer + len,
+		       "\n      To help us improving our systems, please report this incident to us."
+	);
 	
-// 	set_color(0x00);
-// 	gotoxy(0, 21);
-// 	for (c = 0; c < 80 * 5; ++c) {
-// 		putchar(' ');
-// 	}
-
+	set_color(WHITE | RED << 4);
+	clear_screen();
+	
+	gotoxy(0, (25 / 2) - (lines / 2) - 1);
+	puts(buffer);
+	printf("\n\n      ");
+	
 	cpu_halt();
 }
 
@@ -159,11 +153,20 @@ void winpanic(char *message)
 	set_color(BLUE | LIGHT_GRAY << 4);
 	printf(" Windows");
 	set_color(WHITE | BLUE << 4);
-	printf("\n\n      %s\n", message);
+	printf("\n\n      ");
+	while (*message != '\0') {
+		putchar(*message);
+		
+		if (*message == '\n') {
+			printf("      ");
+		}
+		
+		++message;
+	}
 	//printf("%s\n", message);
 	
 	printf("\n      *  Druecken Sie eine beliebige Taste, um die Anwendung abzubrechen.\n");
-	printf("\n      *  Druecken Sie Strg+Alt+Entf, um den Computer neu zu\n");
+	printf("      *  Druecken Sie Strg+Alt+Entf, um den Computer neu zu\n");
 	printf("      starten. nicht gespeicherte Daten gehen dabei verloren.\n");
 	cpu_halt();
 }
