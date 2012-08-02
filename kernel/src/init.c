@@ -88,7 +88,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
 	print_time(get_time());
 	
-	int32_t *test = 1337;
+	int32_t *test = 0x1337;
 	*test = 10;
 	
 	for (;;) {

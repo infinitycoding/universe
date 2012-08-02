@@ -508,17 +508,13 @@ static inline void pd_flush_tlb(vaddr_t addr)
 void pd_fault_handler(struct cpu_state *cpu)
 {
 	char message[512];
-	int pos = 0;
+	int len = 0;
 	
 	uint32_t addr;
 	asm ("mov %%cr2, %0" : "=r" (addr));
 	
-	pos = sprintf(message, "Fehler beim %s an Adresse %#010X.\n", ((cpu->error & 2) ? "Schreiben" : "Lesen"), addr);
-	if (cpu->error & 1) {
-		pos += sprintf(message + pos, "Fehlende Berechtigung.\n");
-	} else {
-		pos += sprintf(message + pos, "Die Page ist nicht im %s gemapped.\n", (cpu->error & 4) ? "Userspace" : "Kernelspace");
-	}
+	len = sprintf(message, "Page fault in %s space:\nError %s address %#010X: %s.\n", ((cpu->error & 4) ? "user" : "kernel"),
+		      ((cpu->error & 2) ? "writing to" : "reading at"), addr, ((cpu->error & 1) ? "Access denied" : "Nonpaged area"));
 	
 	panic(message);
 }

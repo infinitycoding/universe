@@ -97,7 +97,7 @@ void panic(char *message)
 		"      |==================================================================|      \n"
 		"\n"
 		"\n"
-		"      Universe has crashed. You have to restart your computer.\n"
+		"      Universe has been crashed. You have to restart your computer.\n"
 		"\n"
 		"      "
 	);
@@ -124,22 +124,6 @@ void panic(char *message)
 	puts(buffer);
 	printf("\n\n      ");
 	
-	cpu_halt();
-}
-
-void asspanic(char *message)
-{
-	set_color(WHITE | BLUE << 4);
-	clear_screen();
-	
-	puts(
-		"|==================================| Asshole |=================================|\n\n"
-		"Universe just crashed. Please report this incident to our team!\n"
-	);
-		
-	printf("%s\n", message);
-	
-	printf("\nSystem halted.\n");
 	cpu_halt();
 }
 
