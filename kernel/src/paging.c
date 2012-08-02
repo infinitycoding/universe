@@ -38,13 +38,17 @@
 	@author Tom Slawik <tom.slawik@gmail.com>
 */
 
+#include <cpu.h>
+#include <idt.h>
 #include <paging.h>
 #include <pmm.h>
+#include <drivers/video.h>
 #include "memory_layout.h"
 
 #define BP_MACRO2(X) ((X) < (MEMORY_LAYOUT_DIRECT_MAPPED / 0x00400000) ? (((X) * 0x00400000) | PDE_4MB | PDE_WRITABLE | PDE_PRESENT) : 0)
 #define BP_MACRO(X) (X >= (MEMORY_LAYOUT_KERNEL_START / 0x00400000) ? BP_MACRO2(X - MEMORY_LAYOUT_KERNEL_START / 0x00400000) : BP_MACRO2(X))
 
+/* TODO: try to simplify that */
 pde_t const BOOT_PDE[1024] __attribute__ ((aligned (PAGE_SIZE))) = {
 		BP_MACRO(0x000), BP_MACRO(0x001), BP_MACRO(0x002), BP_MACRO(0x003),
 		BP_MACRO(0x004), BP_MACRO(0x005), BP_MACRO(0x006), BP_MACRO(0x007),
@@ -372,6 +376,8 @@ pd_t *pd_current;
 
 void INIT_PAGING(void)
 {
+	install_exc(14, pd_fault_handler);
+	
 	pd_kernel = pd_create();
 	/*pd_map_range(
 			pd_kernel,
@@ -497,4 +503,22 @@ static inline void pd_enable_paging(void)
 static inline void pd_flush_tlb(vaddr_t addr)
 {
 	asm volatile("invlpg (%0)" : : "r" (addr) : "memory");
+}
+
+void pd_fault_handler(struct cpu_state *cpu)
+{
+	char message[512];
+	int pos = 0;
+	
+	uint32_t addr;
+	asm ("mov %%cr2, %0" : "=r" (addr));
+	
+	pos = sprintf(message, "Fehler beim %s an Adresse %#010X.\n", ((cpu->error & 2) ? "Schreiben" : "Lesen"), addr);
+	if (cpu->error & 1) {
+		pos += sprintf(message + pos, "Fehlende Berechtigung.\n");
+	} else {
+		pos += sprintf(message + pos, "Die Page ist nicht im %s gemapped.\n", (cpu->error & 4) ? "Userspace" : "Kernelspace");
+	}
+	
+	panic(message);
 }

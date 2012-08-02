@@ -51,7 +51,7 @@ char * itoa_ex(unsigned int value, char * str, int base, int flags, int width)
 	int temp = 0;
 	int negative = 0;
 
-	static const char *digits = "0123456789ABCDEF";
+	const char *digits = "0123456789ABCDEF";
 
 	if (flags & SMALL) {
 		digits = "0123456789abcdef";
@@ -66,9 +66,9 @@ char * itoa_ex(unsigned int value, char * str, int base, int flags, int width)
 	do {temp /= base; ++len;} while (temp);
 	size = len;
 
-	if (!(flags & LEFT))
+	if (!(flags & LEFT) && !(flags & ZEROPAD))
 		while (size < width--)
-			*str++ = flags & ZEROPAD ? '0' : ' ';
+			*str++ = ' ';
 
 	if (negative) {
 		*str++ = '-';
@@ -77,7 +77,12 @@ char * itoa_ex(unsigned int value, char * str, int base, int flags, int width)
 	}
 	if (flags & SPECIAL) {
 		*str++ = '0'; *str++ = 'x';
+		width -= 2;
 	}
+	
+	if (!(flags & LEFT) && (flags & ZEROPAD))
+		while (size < width--)
+			*str++ = '0';
 
 	do {
 		int power = powi(base, --len);
