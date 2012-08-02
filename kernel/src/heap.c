@@ -34,66 +34,43 @@
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
-#include <stdint.h>
-#include <printf.h>
-#include <multiboot.h>
-#include <panic.h>
-
+#include <heap.h>
 #include <pmm.h>
 #include <paging.h>
-#include <gdt.h>
-#include <idt.h>
-#include <io.h>
-#include <cpuid.h>
-#include <logo.h>
 
-#include <drivers/keyboard.h>
-#include <drivers/timer.h>
-#include <drivers/cmos.h>
-#include <drivers/video.h>
-
-
-/**
-* Initalize the Kernel
-*
-* @param mb_info The pointer to the multiboot-struct from the bootloader
-* @param magic_number Multiboot-magic
-*
-* @return 0
-*/
-int init (struct multiboot_struct *mb_info, uint32_t magic_number)
+void heap_test()
 {
-	clear_screen();
-
-	if (magic_number != 0x2BADB002) {
-		panic("Incompatible Bootloader");
-	}
+	heap_t kernel_heap;
+	heap_init(&kernel_heap);
 	
-	set_color(WHITE | BLACK << 4);
+	uint32_t *test = heap_alloc(&kernel_heap, sizeof(uint32_t));
+	printf("%#X", test);
+	test = heap_alloc(&kernel_heap, sizeof(uint32_t));
+	printf("%#X", test);
 	
-	INIT_PMM(mb_info);
-	INIT_GDT();
-	INIT_IDT();
-	INIT_PAGING();
-	INIT_CPUID();
-	INIT_PIT(50);
-	INIT_CMOS();
-	INIT_KEYBOARD();
-	INIT_MALLOC();
-	asm volatile("sti");
-
-	print_logo(YELLOW);
-	puts("Universe wird gestartet...\n");
-	uint32_t pages = pmm_count_free_pages();
-	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
-	print_time(get_time());
-	
-	heap_test();
-	
-	for (;;) {
-		putchar(input());
-	}
-
-	return 0;
+	//heap_destroy(&kernel_heap);
 }
 
+void heap_init(heap_t *heap)
+{
+	//heap->pages[0] = pd_map_fast(pmm_alloc_page(), PTE_WRITABLE);
+	heap->pages[0] = pmm_alloc_page_limit(0xC0000000);
+	heap->page_count = 1;
+}
+
+void heap_destroy(heap_t *heap)
+{
+	while (heap->page_count != 0) {
+		pmm_mark_page_as_used(heap->pages[--heap->page_count]);
+	}
+}
+
+void * heap_alloc(heap_t *heap, size_t size)
+{
+	struct alloc_t alloc;
+	alloc.size = size;
+	
+	memcpy(heap->pages[0], &alloc, sizeof(struct alloc_t));
+	
+	return heap->pages[0] + sizeof(struct alloc_t);
+}
