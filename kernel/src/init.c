@@ -46,6 +46,7 @@
 #include <io.h>
 #include <cpuid.h>
 #include <logo.h>
+#include <scheduler.h>
 
 #include <drivers/keyboard.h>
 #include <drivers/timer.h>
@@ -61,6 +62,12 @@
 *
 * @return 0
 */
+void test (void){
+printf("Hello World from Kernel Mode");
+while(1){}
+}
+
+
 int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 {
 	clear_screen();
@@ -68,9 +75,9 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	if (magic_number != 0x2BADB002) {
 		panic("Incompatible Bootloader");
 	}
-	
+
 	set_color(WHITE | BLACK << 4);
-	
+
 	INIT_PMM(mb_info);
 	INIT_GDT();
 	INIT_IDT();
@@ -80,6 +87,8 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	INIT_CMOS();
 	INIT_KEYBOARD();
 	INIT_MALLOC();
+	INIT_SCEDULER();
+
 	asm volatile("sti");
 
 	print_logo(YELLOW);
@@ -87,9 +96,9 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	uint32_t pages = pmm_count_free_pages();
 	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
 	print_time(get_time());
-	
-	heap_test();
-	
+
+
+
 	for (;;) {
 		putchar(input());
 	}

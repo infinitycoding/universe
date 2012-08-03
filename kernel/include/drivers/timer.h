@@ -17,8 +17,8 @@
     You should have received a copy of the GNU General Public License
     along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 
-	
-	
+
+
     Diese Datei ist ein Teil vom Universe Kernel.
 
     Das Universe Kernel ist Freie Software: Sie können es unter den Bedingungen
@@ -35,7 +35,7 @@
     Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
-	
+
 	#include <stdint.h>
 
 	typedef struct time {
@@ -51,14 +51,15 @@
 		uint8_t year;
 		uint8_t century;
 	} time_t;
-	
+
 	void INIT_PIT(int freq);
 	void INIT_RTC(void);
-	
+
 	void rtc_irq_handler(void);
 	int update_time(void);
 	int change_time(time_t time);
 	time_t *get_time(void);
+    void set_pit_freq(int freq);
 
 #endif
 

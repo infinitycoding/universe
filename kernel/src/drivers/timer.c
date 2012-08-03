@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 
-	
-	
+
+
     Diese Datei ist ein Teil vom Universe Kernel.
 
     Das Universe Kernel ist Freie Software: Sie können es unter den Bedingungen
@@ -44,16 +44,28 @@ time_t current_time;
 cmos_data_t *cmos;
 
 /**
+ * set PIT Fequency
+ *
+ * @param freqency
+ * @return void
+ */
+void set_pit_freq(int freq) {
+	int counter = 1193182 / freq;
+   	outb(0x40,counter & 0xFF);
+   	outb(0x40,counter >> 8);
+}
+
+
+
+/**
  * Initalize the Programmable Intervall Timer
  *
- * @param void
+ * @param frequency
  * @return void
  */
 void INIT_PIT(int freq) {
-	int counter = 1193182 / freq;
 	outb(0x43, 0x34);
-   	outb(0x40,counter & 0xFF);
-   	outb(0x40,counter >> 8);
+    set_pit_freq(freq);
 }
 
 /**
@@ -64,11 +76,11 @@ void INIT_PIT(int freq) {
  */
 void INIT_RTC(void) {
 	install_irq(0x8, &rtc_irq_handler);
-	
+
 	cmos = get_cmos_data();
 	cmos_write_byte(0x0A, (cmos->registers.register_a & 0xF0) | 0x0F);
 	cmos_write_byte(0x0B, cmos->registers.register_b | 0x40);
-	
+
 	update_time();
 }
 /**
@@ -142,7 +154,7 @@ time_t *get_time(void){
 /**
  * Print datetime
  */
-void print_time(time_t * time) 
+void print_time(time_t * time)
 {
 	char *day_string;
 	switch (time->week_day) {
@@ -154,7 +166,7 @@ void print_time(time_t * time)
 		case 5: day_string = "Freitag";		break;
 		case 6: day_string = "Samstag";		break;
 	}
-	
+
 	printf("System Date: %02d/%02d/%02d (%s)\n", time->day_in_month, time->month, time->year, day_string);
 	printf("System Time: %02d:%02d:%02d\n", time->hour, time->minute, time->second);
 }
