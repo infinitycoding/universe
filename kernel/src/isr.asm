@@ -144,7 +144,6 @@ iret
 	jmp int_save
 %endmacro
 
-IRQ 0
 IRQ 1
 IRQ 2
 IRQ 3
@@ -175,6 +174,32 @@ mov fs, dx
 mov gs, dx
 push esp
 call irq_handler
+mov esp,eax
+pop gs
+pop fs
+pop es
+pop ds
+popa
+add esp, 8
+iret
+
+extern task_schedul
+Global irq_0
+irq_0:
+push dword 0
+push dword 0
+pusha
+push ds
+push es
+push fs
+push gs
+mov dx,0x10
+mov ds, dx
+mov es, dx
+mov fs, dx
+mov gs, dx
+push esp
+call task_schedul
 mov esp,eax
 pop gs
 pop fs

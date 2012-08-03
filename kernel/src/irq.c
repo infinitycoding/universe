@@ -118,7 +118,7 @@ int install_exc(int excnum, void (*handler)(struct cpu_state *cpu))
     if ((uint32_t)exc[excnum] != NULL) {
 	    return 1;
     }
-    
+
     exc[excnum] = handler;
     return 0;
 }
@@ -133,8 +133,7 @@ struct cpu_state* exception_handler(struct cpu_state* cpu)
 	} else {
 		exc_panic(cpu); // CPU-beenden, weil noch keine Tasks laufen
 	}
-	
-	EOI(cpu->intr);
+
 	return cpu;
 }
 
