@@ -59,6 +59,8 @@
 
 	paddr_t pmm_alloc_page ();
 	paddr_t pmm_alloc_dma_page_range_64k(unsigned int num);
+	paddr_t pmm_alloc_page_limit(uint32_t lower_limit);
+	paddr_t pmm_alloc_page_range(unsigned int num);
 
 #endif
 
