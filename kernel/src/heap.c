@@ -14,63 +14,129 @@
 
     You should have received a copy of the GNU General Public License
     along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
-
-
-
-    Diese Datei ist ein Teil vom Universe Kernel.
-
-    Das Universe Kernel ist Freie Software: Sie können es unter den Bedingungen
-    der GNU General Public License, wie von der Free Software Foundation,
-    Version 3 der Lizenz oder jeder späteren
-    veröffentlichten Version, weiterverbreiten und/oder modifizieren.
-
-    Das Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
-    Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
-    OHNE JEDE GEWÄHELEISTUNG, bereitgestellt; sogar ohne die implizite
-    Gewährleistung der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
-    Siehe die GNU General Public License für weitere Details.
-
-    Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
-    Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
+/**
+	@author Tom Slawik <tom.slawik@gmail.com>
+*/
+
+#include <stdint.h>
 #include <heap.h>
 #include <pmm.h>
 #include <paging.h>
 
-void heap_test()
+heap_t kernel_heap;
+
+void INIT_HEAP(void)
 {
-	heap_t kernel_heap;
 	heap_init(&kernel_heap);
-	
-	uint32_t *test = heap_alloc(&kernel_heap, sizeof(uint32_t));
-	printf("%#X", test);
-	test = heap_alloc(&kernel_heap, sizeof(uint32_t));
-	printf("%#X", test);
-	
-	//heap_destroy(&kernel_heap);
 }
+
+/* c standard interface. do some preparation here! */
+
+void * malloc ( size_t size )
+{
+	return heap_alloc(&kernel_heap, size);
+}
+
+void free ( void * ptr )
+{
+	heap_free(&kernel_heap, ptr);
+}
+
+void * calloc ( size_t num, size_t size )
+{
+	void *data = heap_alloc(&kernel_heap, size);
+	
+	memset(data, 0, size);
+	
+	return data;
+}
+
+void * realloc ( void * ptr, size_t size )
+{
+	void *dest = heap_alloc(&kernel_heap, size);
+	struct alloc_t *source_alloc = ptr - sizeof(struct alloc_t);
+	
+	memmove(dest, ptr, source_alloc->size);
+	free(ptr);
+	
+	return dest;
+}
+
+/* implementation */
 
 void heap_init(heap_t *heap)
 {
-	//heap->pages[0] = pd_map_fast(pmm_alloc_page(), PTE_WRITABLE);
-	heap->pages[0] = pmm_alloc_page_limit(0xC0000000);
-	heap->page_count = 1;
+	heap->page_count = 0;
+	heap_expand(heap, 1);
+	
+	heap->alloc_list = heap->pages[0];
+	heap->alloc_list->size = 0;
+	heap->alloc_list->prev = heap->alloc_list;
+	heap->alloc_list->next = heap->alloc_list;
+}
+
+void heap_expand(heap_t *heap, int pages)
+{
+	/* TODO : Range Allocation + Virtual Memory */
+	/* BUG: After 10 Allocations, it overwrites the heap structure */
+	heap->pages[heap->page_count++] = (void *)pmm_alloc_page_limit(0xC0000000);
 }
 
 void heap_destroy(heap_t *heap)
 {
 	while (heap->page_count != 0) {
-		pmm_mark_page_as_used(heap->pages[--heap->page_count]);
+		pmm_mark_page_as_free((paddr_t)heap->pages[--heap->page_count]);
 	}
 }
 
 void * heap_alloc(heap_t *heap, size_t size)
 {
-	struct alloc_t alloc;
-	alloc.size = size;
+	struct alloc_t *header;
+	void *data;
 	
-	memcpy(heap->pages[0], &alloc, sizeof(struct alloc_t));
+	/* step 1: get destination address */
+	if (heap->alloc_list->size == 0) { /* first alloc */
+		header = heap->alloc_list;
+	} else {
+		/* TODO: "Best fit" search algorithm for less memory waste */
+		header = (struct alloc_t *)((uintptr_t)heap->alloc_list->prev + sizeof(struct alloc_t) + heap->alloc_list->prev->size);
+	}
 	
-	return heap->pages[0] + sizeof(struct alloc_t);
+	data = (void *)((uintptr_t)header + sizeof(struct alloc_t));
+	
+	/* step 2: expand heap (if neccessary) */
+	unsigned int page = heap->page_count - 1;
+	while (data + size > heap->pages[heap->page_count - 1] + PAGE_SIZE) {
+		heap_expand(heap, 1);
+		header = heap->pages[page];
+		data = (void *)((uintptr_t)header + sizeof(struct alloc_t));
+	}
+	
+	/* step 3: set header */
+	header->size = size;
+	header->prev = heap->alloc_list->prev;
+	header->next = heap->alloc_list;
+	
+	/* step 4: update nodes */
+	heap->alloc_list->prev = header;
+	
+	/* step 5: print debug information */
+	#ifdef HEAP_DEBUG
+		printf("heap_alloc(): reserving %d bytes of memory: %p - %p\n", header->size, data, data + header->size);
+	#endif
+	
+	return data;
+}
+
+void heap_free(heap_t *heap, void *ptr)
+{
+	struct alloc_t *header = (struct alloc_t *)((uintptr_t)ptr - sizeof(struct alloc_t));
+	header->prev->next = header->next;
+	header->next->prev = header->prev;
+	
+	#ifdef HEAP_DEBUG
+		printf("heap_free(): freeing %d bytes of memory: %p - %p\n", header->size, ptr, ptr + header->size);
+	#endif
 }

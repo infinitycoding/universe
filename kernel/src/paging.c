@@ -394,7 +394,6 @@ void INIT_PAGING(void)
 			MEMORY_LAYOUT_DIRECT_MAPPED / PAGE_SIZE
 	);
 	pd_switch(pd_kernel, 0);
-	pd_enable_paging();
 }
 
 pd_t *pd_create(void)

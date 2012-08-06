@@ -21,7 +21,6 @@
 #include <tss.h>
 #include <gdt.h>
 #include <printf.h>
-#include <malloc.h>
 #include <string.h>
 #include <pmm.h>
 
