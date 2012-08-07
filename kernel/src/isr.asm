@@ -33,136 +33,155 @@
 ;    Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
 ;    Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 
-%macro EXCEPTION 1
-	Global int_%1
-	int_%1:
+%macro ISR 1
+	Global isr_%1
+	isr_%1:
 	push dword 0
 	push dword %1
-	jmp exception_save
+	jmp isr_save
 %endmacro
 
-%macro EXCEPTION_ERROR_CODE 1
-	Global int_%1
-	int_%1:
+%macro ISR_ERROR_CODE 1
+	Global isr_%1
+	isr_%1:
 	push dword %1
-	jmp exception_save
+	jmp isr_save
 %endmacro
 
 ;Divide by Zero
-	EXCEPTION 0
+	ISR 0
 ;Debug Exception
-	EXCEPTION 1
+	ISR 1
 ;Non Maskable Interrupt
-	EXCEPTION 2
+	ISR 2
 ;Breakpoint Exception
-	EXCEPTION 3
+	ISR 3
 ;Overflow Exception
-	EXCEPTION 4
+	ISR 4
 ;Bound Range Exception
-	EXCEPTION 5
+	ISR 5
 ;Invalid Opcode
-	EXCEPTION 6
+	ISR 6
 ;Device Not Available
-	EXCEPTION 7
+	ISR 7
 ;Double Fault
-	EXCEPTION_ERROR_CODE 8
+	ISR_ERROR_CODE 8
 ;Coprocessor Segment Overrun Exception
-	EXCEPTION 9
+	ISR 9
 ;Invalid TSS
-	EXCEPTION_ERROR_CODE 10
+	ISR_ERROR_CODE 10
 ;Segment not Present
-	EXCEPTION_ERROR_CODE 11
+	ISR_ERROR_CODE 11
 ;Stack Fault
-	EXCEPTION_ERROR_CODE 12
+	ISR_ERROR_CODE 12
 ;General Protection Fault
-	EXCEPTION_ERROR_CODE 13
+	ISR_ERROR_CODE 13
 ;Page Fault
-	EXCEPTION_ERROR_CODE 14
+	ISR_ERROR_CODE 14
 ;Reserved
-	EXCEPTION 15
+	ISR 15
 ;x87 Floating Point Exception
-	EXCEPTION 16
+	ISR 16
 ;Alignment Check
-	EXCEPTION_ERROR_CODE 17
+    ISR_ERROR_CODE 17
 ;Machine Check
-	EXCEPTION 18
+	ISR 18
 ;SIMD Floating Point
-	EXCEPTION 19
+	ISR 19
 ;Reserved
-	EXCEPTION 20
+	ISR 20
 ;Reserved
-	EXCEPTION 21
+	ISR 21
 ;Reserved
-	EXCEPTION 22
+	ISR 22
 ;Reserved
-	EXCEPTION 23
+	ISR 23
 ;Reserved
-	EXCEPTION 24
+	ISR 24
 ;Reserved
-	EXCEPTION 25
+	ISR 25
 ;Reserved
-	EXCEPTION 26
+	ISR 26
 ;Reserved
-	EXCEPTION 27
+	ISR 27
 ;Reserved
-	EXCEPTION 28
+	ISR 28
 ;Reserved
-	EXCEPTION 29
+	ISR 29
 ;Reserved
-	EXCEPTION 30
+	ISR 30
 ;Reserved
-	EXCEPTION 31
+	ISR 31
 
-extern exception_handler
-exception_save:
-pusha
-push ds
-push es
-push fs
-push gs
-mov dx,0x10
-mov ds, dx
-mov es, dx
-mov fs, dx
-mov gs, dx
-push esp
-call exception_handler
-mov esp,eax
-pop gs
-pop fs
-pop es
-pop ds
-popa
-add esp, 8
-iret
 
-%macro IRQ 1
-	Global irq_%1
-	irq_%1:
-	push dword 0
-	push dword %1
-	jmp int_save
-%endmacro
+;Timer Interrupt / Task Scheduler
+    extern task_schedul
+    Global isr_32
+    isr_32:
+    push dword 0
+    push dword 0
+    push eax
+    push ecx
+    push edx
+    push ebx
+    push ebp
+    push esi
+    push edi
+    push ds
+    push es
+    push fs
+    push gs
+    mov dx,0x10
+    mov ds, dx
+    mov es, dx
+    mov fs, dx
+    mov gs, dx
+    push esp
+    call task_schedul
+    mov esp,eax
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    pop edi
+    pop esi
+    pop ebp
+    pop ebx
+    pop edx
+    pop ecx
+    pop eax
+    add esp, 8
+    iret
 
-IRQ 1
-IRQ 2
-IRQ 3
-IRQ 4
-IRQ 5
-IRQ 6
-IRQ 7
-IRQ 8
-IRQ 9
-IRQ 10
-IRQ 11
-IRQ 12
-IRQ 13
-IRQ 14
-IRQ 15
+    ISR 33
+    ISR 34
+    ISR 35
+    ISR 36
+    ISR 37
+    ISR 38
+    ISR 39
+    ISR 40
+    ISR 41
+    ISR 42
+    ISR 43
+    ISR 44
+    ISR 45
+    ISR 46
+    ISR 47
+
+
+
+
 
 extern irq_handler
-int_save:
-pusha
+isr_save:
+push eax
+push ecx
+push edx
+push ebx
+push ebp
+push esi
+push edi
 push ds
 push es
 push fs
@@ -179,32 +198,12 @@ pop gs
 pop fs
 pop es
 pop ds
-popa
-add esp, 8
-iret
-
-extern task_schedul
-Global irq_0
-irq_0:
-push dword 0
-push dword 0
-pusha
-push ds
-push es
-push fs
-push gs
-mov dx,0x10
-mov ds, dx
-mov es, dx
-mov fs, dx
-mov gs, dx
-push esp
-call task_schedul
-mov esp,eax
-pop gs
-pop fs
-pop es
-pop ds
-popa
+pop edi
+pop esi
+pop ebp
+pop ebx
+pop edx
+pop ecx
+pop eax
 add esp, 8
 iret

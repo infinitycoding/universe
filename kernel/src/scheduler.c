@@ -29,6 +29,7 @@ uint32_t *kernelstack;
 
 static struct task_state *proc0;
 static struct task_state *currentprocess;
+static struct zombepid *freepid=0;
 static uint32_t pit_counter = 0;
 static bool lock= false;
 
@@ -59,6 +60,7 @@ void INIT_SCEDULER(void){
 }
 
 struct cpu_state *task_schedul(struct cpu_state *cpu){
+    /* TODO: Use Threads */
     currentprocess->main_state = *cpu;
     currentprocess = currentprocess->next;
     while(!(currentprocess->flags & (ACTIV|FREEZED))){
@@ -83,7 +85,7 @@ struct cpu_state *task_schedul(struct cpu_state *cpu){
 
 
 pid_t proc_create(prev_t prev,vaddr_t vrt_base,paddr_t phy_base,size_t size,vaddr_t entrypoint,char* name,char* desc,priority_t priority) {
-     struct task_state *proc_new = malloc(624);
+     struct task_state *proc_new = malloc(628);
      proc_new->pagedir = pd_create();
      memcpy(proc_new->pagedir, pd_kernel, 4096);
 
@@ -135,7 +137,7 @@ pid_t proc_create(prev_t prev,vaddr_t vrt_base,paddr_t phy_base,size_t size,vadd
             .eip      = entrypoint,
             .cs       = 0x23,
             .eflags   = 0x202,
-            .user_esp = STACK_HEAD,
+            .esp = STACK_HEAD,
             .ss       = 0x2b,
             };
 
@@ -147,12 +149,14 @@ pid_t proc_create(prev_t prev,vaddr_t vrt_base,paddr_t phy_base,size_t size,vadd
      strncpy((char*)&proc_new->description, desc, 255);
      proc_new->port          = NULL;
      proc_new->threads       = NULL;
+     proc_new->currentthread = NULL;
      proc_new->proc_children = NULL;
      proc_new->proc_parent   = currentprocess;
 
      while(lock){}
      lock=true;
      asm volatile("cli");
+     //use zombe PIDs
      proc_new->pid         = pit_counter;
      proc_new->next        = proc0;
      proc_new->prev        = proc0->prev;
@@ -166,20 +170,29 @@ pid_t proc_create(prev_t prev,vaddr_t vrt_base,paddr_t phy_base,size_t size,vadd
     return proc_new->pid;
 }
 
-/*
-int proc_kill(){
 
+void proc_kill(struct task_state *proc){
+    while(lock){}
+    lock=true;
+
+    proc->prev->next = proc->next;
+    proc->next->prev = proc->prev;
+
+    if(!freepid){
+        freepid = malloc(12);
+        freepid->prev = freepid;
+        freepid->next = freepid;
+        freepid->pid = proc->pid;
+    }else{
+        struct zombepid *zombepid_new = malloc(12);
+        zombepid_new->prev = freepid->prev;
+        zombepid_new->next = freepid;
+        freepid->prev->next = zombepid_new;
+        freepid->prev = zombepid_new;
+    }
+    //todo:
+    //free structure memory
+    //free PD memory
+
+    lock=false;
 }
-
-thread_creade
-
-thread_kill
-
-get_proc
-
-get_pid
-
-
-fork
-*/
-
