@@ -100,14 +100,18 @@ void pd_unmap(pd_t *pd, vaddr_t frame);
 void pd_map_range(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags, unsigned int pages);
 vaddr_t pd_map_fast(paddr_t frame, uint8_t flags);
 
-pd_t *pd_get(void);
 void pd_switch(pd_t *pd, uint8_t flags);
-static inline void pd_enable_paging(void);
 static inline void pd_flush_tlb(vaddr_t addr);
+
+static inline void paging_enable(void);
+static inline void paging_disable(void);
 
 //void map_page_kernel(paddr_t phys_frame, vaddr_t virt_frame, uint8_t flags);
 //void unmap_page_kernel(vaddr_t frame);
 
 void pd_fault_handler(struct cpu_state *cpu);
+
+inline pd_t * pd_get_current(void);
+inline pd_t * pd_get_kernel(void);
 
 #endif

@@ -40,9 +40,12 @@
 #include <cpu.h>
 
 /*
-	TODO: Define IRQs here
+	TODO: Define INTs here
 */
-#define IRQ_PAGE_FAULT 0x0E
+
+enum INT_NUM {
+	INT_PAGE_FAULT = 0x0E
+};
 
 extern void int_0(void);
 extern void int_1(void);
