@@ -73,9 +73,16 @@ struct child
     struct task_state *proc;
 };
 
+struct zombepid
+{
+    struct zombepid *prev;
+    struct zombepid *next;
+    uint32_t pid;
+};
 
 
-//size: 624B
+
+//size: 628B
 struct task_state
 {
     struct task_state *prev;
@@ -88,6 +95,7 @@ struct task_state
     struct port_access *port;
     struct task_state* proc_parent;
     struct thread *threads;
+    struct thread *currentthread;
     struct child *proc_children;
     uint32_t flags;
 
@@ -97,7 +105,7 @@ struct task_state
 void INIT_SCEDULER(void);
 struct cpu_state *task_schedul(struct cpu_state *cpu);
 pid_t proc_create(prev_t prev,vaddr_t vrt_base,paddr_t phy_base,size_t size,vaddr_t entrypoint,char* name,char* desc,priority_t priority) ;
-
+void proc_kill(struct task_state *proc);
 
 
 
