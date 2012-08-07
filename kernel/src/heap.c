@@ -114,12 +114,13 @@ void * heap_alloc(heap_t *heap, size_t size)
 		data = (void *)((uintptr_t)header + sizeof(struct alloc_t));
 	}
 	
-	/* step 3: set header */
+	/* step 3: setup header */
 	header->size = size;
 	header->prev = heap->alloc_list->prev;
 	header->next = heap->alloc_list;
 	
 	/* step 4: update nodes */
+	//header->prev->next = header;
 	heap->alloc_list->prev = header;
 	
 	/* step 5: print debug information */
