@@ -41,6 +41,8 @@
 #include <atoi.h>
 /*
 	TODO: Make it compatible with both unsigned int and signed int
+	TODO: implement 64-bit values
+	TODO: Implement floating point values
 */
 char * itoa_ex(unsigned int value, char * str, int base, int flags, int width)
 {

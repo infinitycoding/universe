@@ -32,7 +32,8 @@ static inline void paging_enable(void);
 static inline void paging_disable(void);
 static inline void paging_flush_tlb(vaddr_t addr);
 
-pt_t *pt_fast;
+volatile pd_t pd_fast __attribute__ ((aligned (PAGE_SIZE)));
+volatile pt_t pt_fast __attribute__ ((aligned (PAGE_SIZE)));
 
 pd_t *pd_kernel;
 pd_t *pd_current;
@@ -41,8 +42,14 @@ void INIT_PAGING(void)
 {
 	install_exc(INT_PAGE_FAULT, pd_fault_handler);
 	
-	pd_kernel = pd_create();
-	pt_fast = 0x1991000; /* WARNING: Random memory address, not protected. */
+	pd_map(
+			&pd_fast,
+			&pt_fast,
+			MEMORY_LAYOUT_PAGING_STRUCTURES_START,
+			PTE_WRITABLE
+	);
+	
+	pd_kernel = &pd_fast;
 	
 	pd_map_range(
 			pd_kernel,
@@ -95,7 +102,7 @@ void pd_map(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags) /* FIXME: D
 		pd->entries[pd_index] = (uint32_t)pt | PDE_PRESENT;
 	}
 
-	pt->entries[pt_index] = (uint32_t)pframe | PTE_PRESENT | (flags & 0xFFF);
+	pt->entries[pt_index] = (uint32_t)(pframe & PTE_FRAME) | PTE_PRESENT | (flags & 0xFFF);
 
 	paging_flush_tlb(vframe);
 }
@@ -122,10 +129,10 @@ vaddr_t pd_map_fast(paddr_t frame, uint32_t flags)
 	} else {
 		int i;
 		for (i = 0; i < 1024; ++i) {
-			if (!(pt_fast->entries[i] & PDE_PRESENT)) {
-				pt_fast->entries[i] = (uint32_t)frame | PTE_PRESENT | (flags & 0xFFF);
+			if (!(pt_fast.entries[i] & PDE_PRESENT)) {
+				pt_fast.entries[i] = (uint32_t)(frame & PTE_FRAME) | PTE_PRESENT | (flags & 0xFFF);
 				
-				return i << 12;
+				return MEMORY_LAYOUT_PAGING_STRUCTURES_START + (frame & 0xFFF) + i * PAGE_SIZE;
 			}
 		}
 		return 0; /* mapping not possible */		
