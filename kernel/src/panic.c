@@ -114,7 +114,7 @@ void panic(char *message)
 	}
 	
 	len += sprintf (buffer + len,
-		       "\n      To help us improving our systems, please report this incident to us."
+		       "\n\n      To help us improving our systems, please report this incident to us."
 	);
 	
 	set_color(WHITE | RED << 4);
@@ -124,7 +124,7 @@ void panic(char *message)
 	puts(buffer);
 	printf("\n\n      ");
 	
-	cpu_halt();
+	halt();
 }
 
 /* easter egg! */
@@ -149,8 +149,8 @@ void winpanic(char *message)
 	}
 	//printf("%s\n", message);
 	
-	printf("\n      *  Druecken Sie eine beliebige Taste, um die Anwendung abzubrechen.\n");
+	printf("\n\n      *  Druecken Sie eine beliebige Taste, um die Anwendung abzubrechen.\n");
 	printf("      *  Druecken Sie Strg+Alt+Entf, um den Computer neu zu\n");
 	printf("      starten. nicht gespeicherte Daten gehen dabei verloren.\n");
-	cpu_halt();
+	halt();
 }

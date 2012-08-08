@@ -42,48 +42,55 @@
 
 #include <stdint.h>
 
-#define PD_WT			8
-#define PD_NOCACHE		16
-#define PD_FRAME		0x7FFFF000
+enum CR3_Flags {
+	CR3_WRITETHOUGH	= 8,
+	CR3_NOCACHE	= 16,
+	CR3_FRAME	= 0x7FFFF000
+};
 
-#define PDE_PRESENT		1
-#define PDE_WRITABLE		2
-#define PDE_USER		4
-#define PDE_WRITETHOUGH		8
-#define PDE_NOCACHE		16
-#define PDE_ACCESSED		32
-#define PDE_DIRTY		64
-#define PDE_4MB			128
-#define PDE_GLOBAL		256
-#define PDE_AVAIL		0xE00
-#define PDE_FRAME		0x7FFFF000
+enum PDE_Flags {
+	PDE_PRESENT	= 1,
+	PDE_WRITABLE	= 2,
+	PDE_USER	= 4,
+	PDE_WRITETHOUGH	= 8,
+	PDE_NOCACHE	= 16,
+	PDE_ACCESSED	= 32,
+	PDE_DIRTY	= 64,
+	PDE_4MB		= 128,
+	PDE_GLOBAL	= 256,
+	PDE_AVAIL	= 0xE00,
+	PDE_FRAME	= 0x7FFFF000,
+};
 
-#define PTE_PRESENT		1
-#define PTE_WRITABLE		2
-#define PTE_USER		4
-#define PTE_WRITETHOUGH		8
-#define PTE_NOCACHE		16
-#define PTE_ACCESSED		32
-#define PTE_DIRTY		64
-#define PTE_GLOBAL		256
-#define PTE_AVAIL		0xE00
-#define PTE_FRAME		0x7FFFF000
+enum PTE_Flags {
+	PTE_PRESENT	= 1,
+	PTE_WRITABLE	= 2,
+	PTE_USER	= 4,
+	PTE_WRITETHOUGH	= 8,
+	PTE_NOCACHE	= 16,
+	PTE_ACCESSED	= 32,
+	PTE_DIRTY	= 64,
+	PTE_PAT		= 128,
+	PTE_GLOBAL	= 256,
+	PTE_AVAIL	= 0xE00,
+	PTE_FRAME	= 0x7FFFF000
+};
 
-#define PD_LENGTH 	1024
-#define PT_LENGTH 	1024
+#define PD_LENGTH 1024
+#define PT_LENGTH 1024
 
-#define PAGE_ADDR(x) ((x) << 12)
-#define PAGE_INDEX(x) ((x) >> 12)
+#define PAGE_FRAME_NUMBER(x) ((x) >> 12)
+#define PAGE_FRAME_ADDR(x) ((x) << 12)
 
 #define PDE_INDEX(x) ((x) >> 22)
 #define PTE_INDEX(x) ((x) >> 12 & 0x03FF)
 
 typedef uint32_t pde_t;
-
 typedef uint32_t pte_t;
 
 typedef struct {
 	pde_t entries[PD_LENGTH];
+	paddr_t phys_addr;
 } pd_t;
 
 typedef struct {
@@ -97,14 +104,15 @@ void pd_destroy(pd_t *pd);
 
 void pd_map(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags);
 void pd_unmap(pd_t *pd, vaddr_t frame);
-void pd_map_range(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags, unsigned int pages);
+void pd_map_range(pd_t *pd, paddr_t pframe, vaddr_t vframe, unsigned int pages, uint8_t flags);
 vaddr_t pd_map_fast(paddr_t frame, uint8_t flags);
 
 void pd_switch(pd_t *pd, uint8_t flags);
-static inline void pd_flush_tlb(vaddr_t addr);
 
 static inline void paging_enable(void);
 static inline void paging_disable(void);
+static inline void paging_flush_tlb(vaddr_t addr);
+paddr_t vaddr2paddr(pd_t *pd, vaddr_t vaddr);
 
 //void map_page_kernel(paddr_t phys_frame, vaddr_t virt_frame, uint8_t flags);
 //void unmap_page_kernel(vaddr_t frame);

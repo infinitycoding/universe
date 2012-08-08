@@ -92,9 +92,9 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	uint32_t pages = pmm_count_free_pages();
 	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
 	print_time(get_time());
-
+	
 	for (;;) {
-		putchar(input());
+		//putchar(input());
 	}
 	
 	return 0;
