@@ -54,6 +54,8 @@
 #include <drivers/cmos.h>
 #include <drivers/video.h>
 
+#include "memory_layout.h"
+
 #define HEAP_DEBUG
 
 /**
@@ -92,6 +94,8 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	uint32_t pages = pmm_count_free_pages();
 	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
 	print_time(get_time());
+	
+	printf("%u", ((uint8_t *)MEMORY_LAYOUT_PAGING_STRUCTURES_START)[1]);
 	
 	for (;;) {
 		putchar(input());
