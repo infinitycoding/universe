@@ -94,7 +94,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	print_time(get_time());
 	
 	for (;;) {
-		//putchar(input());
+		putchar(input());
 	}
 	
 	return 0;
