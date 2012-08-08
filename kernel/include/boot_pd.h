@@ -22,7 +22,7 @@
 #define BP_MACRO(X) (X >= (MEMORY_LAYOUT_KERNEL_START / 0x00400000) ? BP_MACRO2(X - MEMORY_LAYOUT_KERNEL_START / 0x00400000) : BP_MACRO2(X))
 
 /* TODO: try to simplify that */
-pde_t const BOOT_PDE[1024] __attribute__ ((aligned (PAGE_SIZE))) = {
+pde_t BOOT_PDE[1024] __attribute__ ((aligned (PAGE_SIZE))) = {
 		BP_MACRO(0x000), BP_MACRO(0x001), BP_MACRO(0x002), BP_MACRO(0x003),
 		BP_MACRO(0x004), BP_MACRO(0x005), BP_MACRO(0x006), BP_MACRO(0x007),
 		BP_MACRO(0x008), BP_MACRO(0x009), BP_MACRO(0x00A), BP_MACRO(0x00B),

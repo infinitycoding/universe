@@ -28,38 +28,21 @@
 #include <memory_layout.h>
 #include <boot_pd.h>
 
-struct pdt_ptr {
-	uint32_t *ptr;
-};
-
-static uint32_t structure_mmap = 0;
-
 pd_t *pd_kernel;
 pd_t *pd_current;
 
 void INIT_PAGING(void)
-{	
+{
 	install_exc(INT_PAGE_FAULT, pd_fault_handler);
 	
-	
-	/* pmm_alloc_page_range(PAGING_STRUCTURES_COUNT); : range malloc is broken, however..  */
-	paddr_t structures = MEMORY_LAYOUT_PAGING_STRUCTURES_START;
 	pd_kernel = pd_create();
-	
-// 	pd_map_range(
-// 			pd_kernel,
-// 			structures,
-// 			MEMORY_LAYOUT_PAGING_STRUCTURES_START,
-// 			PTE_WRITABLE,
-// 			PAGING_STRUCTURES_COUNT * PAGE_SIZE
-// 	);	
 	
 	pd_map_range(
 			pd_kernel,
 			0x00000000,
 			MEMORY_LAYOUT_KERNEL_START,
-			PTE_WRITABLE,
-			MEMORY_LAYOUT_DIRECT_MAPPED / PAGE_SIZE
+			MEMORY_LAYOUT_DIRECT_MAPPED / PAGE_SIZE,
+			PTE_WRITABLE
 	);
 	
 	pd_switch(pd_kernel, 0);
@@ -67,12 +50,14 @@ void INIT_PAGING(void)
 
 pd_t *pd_create(void)
 {
-	paddr_t pframe = pmm_alloc_page();
-	vaddr_t vframe = 0xFF800000; /* test */
-	pd_t *pd = (pd_t *)pframe; /* illegal, to be corrected */
+	pd_t *pd;
+	paddr_t pframe = 0x1990000; /* WARNING: Random memory address, not protected. */
+	vaddr_t vframe = pd_map_fast(pframe, PTE_WRITABLE);
 	
-	//pd_map(0xFF800000, pframe, vframe, PTE_WRITABLE);
-	//memset(pd, 0, sizeof(pd_t));
+	pd = (pd_t *)vframe;
+	pd->phys_addr = pframe; /* WARNING: Overflow */
+	
+	paging_flush_tlb(vframe);
 	
 	return pd;
 }
@@ -88,7 +73,7 @@ void pd_destroy(pd_t *pd)
 	pmm_mark_page_as_free((paddr_t)pd);
 }
 
-void pd_map(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags)
+void pd_map(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags) /* FIXME: Differentiate PDE flags and PTE flags */
 {
 	uint32_t pd_index = PDE_INDEX(vframe);
 	uint32_t pt_index = PTE_INDEX(vframe);
@@ -105,84 +90,41 @@ void pd_map(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags)
 
 	pt->entries[pt_index] = (uint32_t)pframe | PTE_PRESENT | (flags & 0xFFF);
 
-	pd_flush_tlb(vframe);
+	paging_flush_tlb(vframe);
 }
 
 void pd_unmap(pd_t *pd, vaddr_t frame)
 {
 	pt_t *pt = (pt_t *)((uint32_t)pd->entries[PDE_INDEX(frame)] & PDE_FRAME);
 	pt->entries[PTE_INDEX(frame)] = 0;
-	pd_flush_tlb(frame);
+	paging_flush_tlb(frame);
 }
 
-void pd_map_range(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags, unsigned int pages)
+void pd_map_range(pd_t *pd, paddr_t pframe, vaddr_t vframe, unsigned int pages, uint8_t flags)
 {
 	int p;
 	for (p = 0; p < pages; ++p) {
-		pd_map(pd, pframe + PAGE_ADDR(p), vframe + PAGE_ADDR(p), flags);
+		pd_map(pd, pframe + PAGE_FRAME_ADDR(p), vframe + PAGE_FRAME_ADDR(p), flags);
 	}
 }
 
 vaddr_t pd_map_fast(paddr_t frame, uint8_t flags)
 {
-	int t, e;
-
-	for (t = 0; t < PD_LENGTH; ++t)
-	{
-		vaddr_t vframe;
-
-		if (pd_current->entries[t] & PDE_PRESENT)
-		{
-			pt_t *pt = (pt_t *)(pd_current->entries[t] & PDE_FRAME);
-
-			for (e = 0; e < PT_LENGTH; ++e)
-			{
-				if (!(pt->entries[e] & PTE_PRESENT))
-				{
-					vframe = (t << 22) + (e << 12);
-					pd_map(pd_current, frame, vframe, flags);
-					return vframe;
-				}
-			}
-		} else {
-			vframe = (t << 22);
-			pd_map(pd_current, frame, vframe, flags);
-			return vframe;
-		}
+	if (frame < MEMORY_LAYOUT_DIRECT_MAPPED) {
+		return MEMORY_LAYOUT_KERNEL_START + frame;
+	} else {
+		return 0x00000000; /* TODO: Implement something here */
 	}
-
-	/* too less memory */
-	return -1;
 }
 
 void pd_switch(pd_t *pd, uint8_t flags)
 {
+	paddr_t frame = (uintptr_t)pd - MEMORY_LAYOUT_KERNEL_START; /* FIXME: Reconsider vaddr -> paddr conversion */
+	//printf("[PAGING] Switching to pagedir %p", frame);
+	
 	pd_current = pd;
-	uint32_t descriptor = ((paddr_t)pd & PD_FRAME) | flags;
+	uint32_t descriptor = (frame & CR3_FRAME) | flags;
 	asm volatile ("mov %0, %%cr3" : : "r" (descriptor));
-}
-
-static inline void pd_flush_tlb(vaddr_t addr)
-{
-	asm volatile("invlpg (%0)" : : "r" (addr) : "memory");
-}
-
-static inline void paging_enable(void)
-{
-	asm volatile (
-		"mov %cr0, %eax;"
-		"or $0x80000000, %eax;"
-		"mov %eax, %cr0"
-	);
-}
-
-static inline void paging_disable(void)
-{
-	asm volatile (
-		"mov %cr0, %eax;"
-		"and $0x7FFFFFFF, %eax;"
-		"mov %eax, %cr0"
-	);
 }
 
 void pd_fault_handler(struct cpu_state *cpu)
@@ -207,4 +149,37 @@ inline pd_t * pd_get_current(void)
 inline pd_t * pd_get_kernel(void)
 {
 	return pd_kernel;
+}
+
+static inline void paging_flush_tlb(vaddr_t addr)
+{
+	asm volatile("invlpg (%0)" : : "r" (addr) : "memory");
+}
+
+static inline void paging_enable(void)
+{
+	asm volatile (
+		"mov %cr0, %eax;"
+		"or $0x80000000, %eax;"
+		"mov %eax, %cr0"
+	);
+}
+
+static inline void paging_disable(void)
+{
+	asm volatile (
+		"mov %cr0, %eax;"
+		"and $0x7FFFFFFF, %eax;"
+		"mov %eax, %cr0"
+	);
+}
+
+paddr_t vaddr2paddr(pd_t *pd, vaddr_t vaddr)
+{
+	unsigned int pd_index = PDE_INDEX(vaddr);
+	unsigned int pt_index = PTE_INDEX(vaddr);
+	
+	pt_t *pt = (pt_t *)(pd->entries[pd_index] & PDE_FRAME);
+	
+	return (paddr_t)((pt->entries[pt_index] & PTE_FRAME) + (vaddr & 0xFFF));
 }
