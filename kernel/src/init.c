@@ -126,7 +126,3 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 }
 
 
-void test (void){
-printf("Hello World from Kernel Mode");
-while(1){}
-}
