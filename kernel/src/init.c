@@ -53,6 +53,7 @@
 #include <drivers/timer.h>
 #include <drivers/cmos.h>
 #include <drivers/video.h>
+#include <drivers/vfs.h>
 
 #include "memory_layout.h"
 
@@ -96,7 +97,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	INIT_CMOS();
 	INIT_KEYBOARD();
 	INIT_SCEDULER();
-
+	INIT_VFS();
 	asm volatile("sti");
 
 	print_logo(YELLOW);

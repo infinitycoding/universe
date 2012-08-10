@@ -33,6 +33,11 @@
     Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
+
+/**
+	@author Michael Sippel <micha.linuxfreak@gmail.com>
+*/
+
 #include <stdint.h>
 #include <bcd.h>
 #include <io.h>
