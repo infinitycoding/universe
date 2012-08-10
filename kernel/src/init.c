@@ -59,6 +59,15 @@
 #define HEAP_DEBUG
 
 /**
+ * Test Process
+ **/
+void testproc(void){
+printf("hello World from kernel Mode");
+exit(0);
+}
+
+
+/**
 * Initalize the Kernel
 *
 * @param mb_info The pointer to the multiboot-struct from the bootloader
@@ -66,6 +75,7 @@
 *
 * @return 0
 */
+
 int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 {
 	clear_screen();
@@ -94,13 +104,24 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	uint32_t pages = pmm_count_free_pages();
 	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
 	print_time(get_time());
-	
-	printf("%u", ((uint8_t *)MEMORY_LAYOUT_PAGING_STRUCTURES_START)[1]);
-	
+
+	printf("%u\n", ((uint8_t *)MEMORY_LAYOUT_PAGING_STRUCTURES_START)[1]);
+
+	  proc_create(
+                kernel_mode,
+                (vaddr_t)&testproc,
+                (paddr_t)&testproc-0xC0000000,
+                4096,
+                testproc,
+                "testprocess",
+                "scheduler test",
+                NORMAL_PRIORITY
+                );
+
 	for (;;) {
 		putchar(input());
 	}
-	
+
 	return 0;
 }
 

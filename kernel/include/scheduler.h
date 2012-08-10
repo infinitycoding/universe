@@ -23,19 +23,24 @@
 #include <cpu.h>
 #include <paging.h>
 
-//Flags
+//Flags for Threads and Procs
 #define ACTIV 1
 #define FREEZED 2
 #define KERNELMODE 4
 #define NORMAL_PRIORITY 8
 #define REALTIME_PRIORITY 16
-//to be continued
+#define TRASH 32
+
+//just for threads
+#define MAIN_THREAD 64
 
 #define FREQ_REALTIME 18
 #define FREQ_NORMAL 1000
 #define FREQ_BACKGRUND 10000
 
+//Definitions
 #define STACK_HEAD 0xBFFFFFFF
+#define KERNEL_STACK_SIZE 4096
 
 typedef uint32_t pid_t;
 
@@ -51,6 +56,7 @@ typedef enum{
 	kernel_mode = 1,
 }prev_t;
 
+#define PORT_ACCESS_STRUCT_SIZE 10
 struct port_access
 {
     struct port_access *prev;
@@ -58,14 +64,17 @@ struct port_access
     uint16_t portnum;
 };
 
+#define THREAD_STRUCT_SIZE 92
 struct thread
 {
     struct thread *prev;
     struct thread *next;
     struct cpu_state thred_state;
     uint32_t flags;
+    uint32_t tid; //Thread ID
 };
 
+#define CHILD_STRUCT_SIZE 12
 struct child
 {
     struct child *prev;
@@ -73,16 +82,16 @@ struct child
     struct task_state *proc;
 };
 
-struct zombepid
+#define ZOMBIEPID_STRUCT_SIZE 12
+struct zombiepid
 {
-    struct zombepid *prev;
-    struct zombepid *next;
+    struct zombiepid *prev;
+    struct zombiepid *next;
     uint32_t pid;
 };
 
 
-
-//size: 628B
+#define TASK_STATE_STRUCT_SIZE 628
 struct task_state
 {
     struct task_state *prev;
@@ -106,7 +115,8 @@ void INIT_SCEDULER(void);
 struct cpu_state *task_schedul(struct cpu_state *cpu);
 pid_t proc_create(prev_t prev,vaddr_t vrt_base,paddr_t phy_base,size_t size,vaddr_t entrypoint,char* name,char* desc,priority_t priority) ;
 void proc_kill(struct task_state *proc);
-
+void exit(int);
+struct task_state* proc_get(uint32_t pid);
 
 
 #endif
