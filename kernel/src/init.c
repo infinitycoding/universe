@@ -60,11 +60,11 @@
 #define HEAP_DEBUG
 
 /**
- * Test Process
+ * Test Thread
  **/
-void testproc(void){
-printf("hello World from kernel Mode");
-exit(0);
+int testproc(void){
+printf("Hello World from Kernel Thread\n");
+thread_exit(0);
 }
 
 
@@ -106,18 +106,8 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
 	print_time(get_time());
 
-	printf("%u\n", ((uint8_t *)MEMORY_LAYOUT_PAGING_STRUCTURES_START)[1]);
+    thread_create(&testproc);
 
-	  proc_create(
-                kernel_mode,
-                (vaddr_t)&testproc,
-                (paddr_t)&testproc-0xC0000000,
-                4096,
-                testproc,
-                "testprocess",
-                "scheduler test",
-                NORMAL_PRIORITY
-                );
 
 	for (;;) {
 		putchar(input());

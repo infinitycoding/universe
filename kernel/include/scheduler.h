@@ -33,6 +33,7 @@
 
 //just for threads
 #define MAIN_THREAD 64
+#define ZOMBIE 128
 
 #define FREQ_REALTIME 18
 #define FREQ_NORMAL 1000
@@ -41,8 +42,17 @@
 //Definitions
 #define STACK_HEAD 0xBFFFFFFF
 #define KERNEL_STACK_SIZE 4096
+#define PROC_STACK_SIZE 4096
+#define PORT_ACCESS_STRUCT_SIZE 10
+#define THREAD_STRUCT_SIZE 24
+#define CHILD_STRUCT_SIZE 20
+#define ZOMBIEPID_STRUCT_SIZE 12
+#define CPU_STATE_STRUCT_SIZE 76
+
+
 
 typedef uint32_t pid_t;
+typedef uint32_t tid_t;
 
 typedef enum{
     background = 0,
@@ -56,7 +66,7 @@ typedef enum{
 	kernel_mode = 1,
 }prev_t;
 
-#define PORT_ACCESS_STRUCT_SIZE 10
+
 struct port_access
 {
     struct port_access *prev;
@@ -64,25 +74,27 @@ struct port_access
     uint16_t portnum;
 };
 
-#define THREAD_STRUCT_SIZE 92
+
 struct thread
 {
     struct thread *prev;
     struct thread *next;
-    struct cpu_state thred_state;
+    struct cpu_state *thread_state;
     uint32_t flags;
-    uint32_t tid; //Thread ID
+    int return_value;
+    tid_t tid; //Thread ID
 };
 
-#define CHILD_STRUCT_SIZE 12
 struct child
 {
     struct child *prev;
     struct child *next;
+    int return_value;
+    pid_t pid;
     struct task_state *proc;
 };
 
-#define ZOMBIEPID_STRUCT_SIZE 12
+
 struct zombiepid
 {
     struct zombiepid *prev;
@@ -90,14 +102,20 @@ struct zombiepid
     uint32_t pid;
 };
 
+struct zombietid
+{
+    struct zombietid *prev;
+    struct zombietid *next;
+    tid_t tid;
+};
 
-#define TASK_STATE_STRUCT_SIZE 628
+#define TASK_STATE_STRUCT_SIZE 564
 struct task_state
 {
     struct task_state *prev;
 	struct task_state *next;
 	pid_t pid;
-    struct cpu_state main_state;
+    struct cpu_state *main_state;
     pd_t *pagedir;
     char name[256];
 	char description[256];
@@ -105,6 +123,8 @@ struct task_state
     struct task_state* proc_parent;
     struct thread *threads;
     struct thread *currentthread;
+    uint32_t tid_counter;
+    struct zombietid *freetid;
     struct child *proc_children;
     uint32_t flags;
 
@@ -114,9 +134,15 @@ struct task_state
 void INIT_SCEDULER(void);
 struct cpu_state *task_schedul(struct cpu_state *cpu);
 pid_t proc_create(prev_t prev,vaddr_t vrt_base,paddr_t phy_base,size_t size,vaddr_t entrypoint,char* name,char* desc,priority_t priority) ;
-void proc_kill(struct task_state *proc);
+int proc_kill(struct task_state *proc);
 void exit(int);
 struct task_state* proc_get(uint32_t pid);
+uint32_t thread_create(uint32_t eip);
+int thread_kill(struct thread *thr);
+void thread_exit(int errorcode);
+struct thread *thread_get(tid_t tid);
+
+
 
 
 #endif
