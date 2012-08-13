@@ -23,6 +23,8 @@
 #include <printf.h>
 #include <string.h>
 #include <pmm.h>
+#include <paging.h>
+#include <heap.h>
 
 tss_s tss ={.ss0=0x10};
 uint32_t *kernelstack;
@@ -40,11 +42,11 @@ void INIT_SCEDULER(void){
 	set_GDT_entry(5,(uint32_t) &tss, sizeof(tss),0x89,0x8);
 	load_gdt(5);
 	asm ("ltr %%ax" : : "a" (5 << 3));
-	kernelstack = malloc(4096);
-	tss.esp = (uint32_t)kernelstack+4096;
+	kernelstack = malloc(KERNEL_STACK_SIZE)+KERNEL_STACK_SIZE;
+	tss.esp = (uint32_t)kernelstack;
 
 	//Kernel-init Process
-	proc0                 = malloc(624);
+	proc0                 = malloc(TASK_STATE_STRUCT_SIZE);
 	proc0->prev           = proc0;
 	proc0->next           = proc0;
 	proc0->pid            = pit_counter;
@@ -53,6 +55,8 @@ void INIT_SCEDULER(void){
 	proc0->threads        = NULL;
 	proc0->proc_children  = NULL;
 	proc0->flags          = ACTIV|REALTIME_PRIORITY|KERNELMODE;
+	proc0->tid_counter    = 0;
+	proc0->freetid        = NULL;
 	strcpy((char*)&proc0->name,"Kernel32.elf");
 	strcpy((char*)&proc0->description,"Kernel initialization");
     currentprocess = proc0;
@@ -60,23 +64,38 @@ void INIT_SCEDULER(void){
 }
 
 struct cpu_state *task_schedul(struct cpu_state *cpu){
-    /* TODO: Use Threads */
-
-
     if(currentprocess->flags&TRASH){
-        //TODO: Free allocated memory and pagdir
+        pd_destroy(currentprocess->pagedir);
         free(currentprocess);
     }else{
         //save state
-        currentprocess->main_state = *cpu;
+        if(currentprocess->threads){
+            if(!(currentprocess->currentthread->flags & ZOMBIE)){
+                currentprocess->currentthread->thread_state = cpu;
+                currentprocess->currentthread = currentprocess->currentthread->next;
+            }
+        }else{
+            currentprocess->main_state = cpu;
+        }
     }
+
     currentprocess = currentprocess->next;
     while(!(currentprocess->flags & (ACTIV|FREEZED))){
         currentprocess=currentprocess->next;
     }
-    pd_current =  currentprocess->pagedir;
-    *cpu=currentprocess->main_state;
+
     pd_switch(currentprocess->pagedir,0);
+    pd_current =  currentprocess->pagedir;
+
+    if(currentprocess->threads){
+        while(!(currentprocess->currentthread->flags & (ACTIV|FREEZED))){
+            currentprocess->currentthread = currentprocess->currentthread->next;
+        }
+        cpu = currentprocess->currentthread->thread_state;
+    }else{
+        cpu=currentprocess->main_state;
+    }
+
 
     if(currentprocess->flags & NORMAL_PRIORITY){
         set_pit_freq(FREQ_NORMAL);
@@ -91,11 +110,31 @@ struct cpu_state *task_schedul(struct cpu_state *cpu){
     return cpu;
 }
 
+pid_t get_freepid(void){
+    pid_t new_pid;
+    if(freepid){
+        new_pid = freepid->pid;
+        if(freepid->next == freepid){
+            free(freepid);
+            freepid=NULL;
+        }else{
+            freepid->prev->next = freepid->next;
+            freepid->next->prev = freepid->prev;
+            struct zombiepid *freepid_new = freepid->next;
+            free(freepid);
+            freepid = freepid_new;
+        }
+    }else{
+       new_pid = pit_counter;
+       pit_counter++;
+    }
+    return new_pid;
+}
 
 pid_t proc_create(prev_t prev,vaddr_t vrt_base,paddr_t phy_base,size_t size,vaddr_t entrypoint,char* name,char* desc,priority_t priority) {
-     struct task_state *proc_new = malloc(628);
+     struct task_state *proc_new = malloc(TASK_STATE_STRUCT_SIZE);
     proc_new->pagedir = pd_create();
-    memcpy(proc_new->pagedir, pd_kernel, 4096);
+    memcpy(proc_new->pagedir, pd_kernel, PD_LENGTH<<2);
 
      if(prev){ //kernelmode
         if(size){
@@ -120,13 +159,14 @@ pid_t proc_create(prev_t prev,vaddr_t vrt_base,paddr_t phy_base,size_t size,vadd
             .cs       = 0x8,
             .eflags   = 0x202,
             };
-
-            proc_new->main_state = new_state;
+            uint32_t* stack=malloc(PROC_STACK_SIZE)+PROC_STACK_SIZE;
+            struct cpu_state* state = (void*) (stack - sizeof(new_state));
+            *state=new_state;
+            proc_new->main_state = state;
 
      }else{ // Usermode
 
          pd_map_range(proc_new->pagedir,phy_base,vrt_base,PTE_WRITABLE|PTE_USER,size/PAGE_SIZE);
-         pd_map(proc_new->pagedir,pmm_alloc_page(),0xBFFFF000, PTE_WRITABLE|PDE_USER);
          proc_new->flags = 0;
          struct cpu_state new_state = {
             .gs       = 0x2b,
@@ -149,7 +189,7 @@ pid_t proc_create(prev_t prev,vaddr_t vrt_base,paddr_t phy_base,size_t size,vadd
             .ss       = 0x2b,
             };
 
-            proc_new->main_state = new_state;
+            /*TODO: create Stack and save state on Kernel heap  */
 
      }
 
@@ -161,33 +201,40 @@ pid_t proc_create(prev_t prev,vaddr_t vrt_base,paddr_t phy_base,size_t size,vadd
      proc_new->currentthread = NULL;
      proc_new->proc_children = NULL;
      proc_new->proc_parent   = currentprocess;
+     proc_new->tid_counter   = 0;
+     proc_new->freetid       = NULL;
+
 
      while(lock){}
      lock=true;
      asm volatile("cli");
-     //use zombie PIDs
-     if(freepid){
-        proc_new->pid = freepid->pid;
-        if(freepid->next == freepid){
-            free(freepid);
-            freepid=0;
-        }else{
-            freepid->prev->next = freepid->next;
-            freepid->next->prev = freepid->prev;
-            struct zombiepid *freepid_new = freepid->next;
-            free(freepid);
-            freepid = freepid_new;
-        }
-     }else{
-        proc_new->pid = pit_counter;
-     }
 
+     proc_new->pid         = get_freepid();
      proc_new->next        = proc0;
      proc_new->prev        = proc0->prev;
      proc0->prev           = proc_new;
      proc_new->prev->next  = proc_new;
      proc_new->flags      |= priority|ACTIV;
-     pit_counter++;
+
+     if(!currentprocess->proc_children){
+        currentprocess->proc_children = malloc(CHILD_STRUCT_SIZE);
+        currentprocess->proc_children->prev = currentprocess->proc_children;
+        currentprocess->proc_children->next = currentprocess->proc_children;
+        currentprocess->proc_children->proc = proc_new;
+        currentprocess->proc_children->return_value = 0;
+        currentprocess->proc_children->pid = proc_new->pid;
+     }else{
+        struct child *new_child = malloc(CHILD_STRUCT_SIZE);
+        new_child->proc = proc_new;
+        new_child->return_value = 0;
+        new_child->pid = proc_new->pid;
+        new_child->next = currentprocess->proc_children;
+        new_child->prev = currentprocess->proc_children->prev;
+        currentprocess->proc_children->prev->next = new_child;
+        currentprocess->proc_children->prev = new_child;
+     }
+
+
      asm volatile("sti");
      lock=false;
 
@@ -230,8 +277,7 @@ static void proc_structure_free(struct task_state *proc){
 
 }
 
-
-void proc_kill(struct task_state *proc){
+int proc_kill(struct task_state *proc){
     if(proc){
         while(lock){}
         lock=true;
@@ -239,6 +285,11 @@ void proc_kill(struct task_state *proc){
 
         proc->prev->next = proc->next;
         proc->next->prev = proc->prev;
+        struct child *temp = proc->proc_parent->proc_children;
+        while(temp->proc !=proc){
+            temp->next;
+        }
+        temp->proc = NULL;
 
         if(!freepid){
             freepid = malloc(12);
@@ -261,14 +312,20 @@ void proc_kill(struct task_state *proc){
         }
         asm volatile("sti");
         lock=false;
+        return 0;
     }
+    return 1;
 }
 
 void exit(int errorcode){
+    struct child *temp = currentprocess->proc_parent->proc_children;
+        while(temp->proc !=currentprocess){
+            temp->next;
+        }
+        temp->return_value = errorcode;
     proc_kill(currentprocess);
     asm volatile("int $32");
 }
-
 
 struct task_state* proc_get(uint32_t pid){
     if(proc0->pid == pid){
@@ -283,21 +340,142 @@ struct task_state* proc_get(uint32_t pid){
 	return temp;
 }
 
-uint32_t thread_create(uint32_t eip){
 
+
+tid_t get_freetid(void){
+    tid_t new_tid;
+    if(currentprocess->freetid){
+        new_tid = currentprocess->freetid->tid;
+        if(currentprocess->freetid->next == currentprocess->freetid){
+            free(currentprocess->freetid);
+            currentprocess->freetid=NULL;
+        }else{
+            currentprocess->freetid->prev->next = currentprocess->freetid->next;
+            currentprocess->freetid->next->prev = currentprocess->freetid->prev;
+            struct zombietid *freetid_new = currentprocess->freetid->next;
+            free(currentprocess->freetid);
+            currentprocess->freetid = freetid_new;
+        }
+    }else{
+       new_tid = currentprocess->tid_counter;
+       currentprocess->tid_counter++;
+    }
+    return new_tid;
 }
 
-void thread_kill(struct thread *thr){
+uint32_t thread_create(uint32_t eip){
+    while(lock){}
+    lock=true;
+    asm volatile("cli");
 
+    if(!currentprocess->threads){
+        currentprocess->threads = malloc(THREAD_STRUCT_SIZE);
+        currentprocess->threads->flags  = ACTIV|MAIN_THREAD;
+        currentprocess->threads->thread_state = currentprocess->main_state;
+        currentprocess->threads->next = currentprocess->threads;
+        currentprocess->threads->prev = currentprocess->threads;
+        currentprocess->threads->tid = get_freetid();
+        currentprocess->currentthread = currentprocess->threads;
+    }
 
+    struct thread * new_thread = malloc(THREAD_STRUCT_SIZE);
+    new_thread->next = currentprocess->threads;
+    new_thread->prev = currentprocess->threads->prev;
+    currentprocess->threads->prev->next = new_thread;
+    currentprocess->threads->prev = new_thread;
+    new_thread->flags = ACTIV;
+    new_thread->tid = get_freetid();
+
+    if(currentprocess->flags&KERNELMODE){
+    struct cpu_state new_state = {
+            .gs       = 0x10,
+            .fs       = 0x10,
+            .es       = 0x10,
+            .ds       = 0x10,
+            .edi      = 0,
+            .esi      = 0,
+            .ebp      = 0,
+            .ebx      = 0,
+            .edx      = 0,
+            .ecx      = 0,
+            .eax      = 0,
+            .intr     = 0,
+            .error    = 0,
+            .eip      = eip,
+            .cs       = 0x8,
+            .eflags   = 0x202,
+            };
+    uint32_t* stack=malloc(PROC_STACK_SIZE)+PROC_STACK_SIZE;
+    struct cpu_state* state = (void*) (stack - sizeof(new_state));
+    *state=new_state;
+    new_thread->thread_state = state;
+    }else{
+         struct cpu_state new_state = {
+            .gs       = 0x2b,
+            .fs       = 0x2b,
+            .es       = 0x2b,
+            .ds       = 0x2b,
+            .edi      = 0,
+            .esi      = 0,
+            .ebp      = 0,
+            .ebx      = 0,
+            .edx      = 0,
+            .ecx      = 0,
+            .eax      = 0,
+            .intr     = 0,
+            .error    = 0,
+            .eip      = eip,
+            .cs       = 0x23,
+            .eflags   = 0x202,
+            .esp = STACK_HEAD,
+            .ss       = 0x2b,
+            };
+
+    /*TODO: create Stack and save state on Kernel Stack  */
+    }
+
+    asm volatile("sti");
+    lock=false;
+    return new_thread->tid;
+}
+
+int thread_kill(struct thread *thr){
+    if(thr){
+    while(lock){}
+    lock=true;
+    asm volatile("cli");
+
+    thr->flags = ZOMBIE;
+
+    asm volatile("sti");
+    lock=false;
+
+        return 0;
+    }else{
+        return 1;
+    }
 }
 
 void thread_exit(int errorcode){
-
+    currentprocess->currentthread->return_value = errorcode;
+    thread_kill(currentprocess->currentthread);
+    asm volatile("int $32");
 }
 
-void thread_get(uint32_t tid){
-
-
+struct thread *thread_get(tid_t tid){
+    if(tid){
+        struct thread *temp=currentprocess->threads->next;
+        while(temp->next!=currentprocess->threads->next && temp->tid != tid ){temp=temp->next;}
+        if(temp->tid != tid){
+            return NULL;
+        }
+        return temp;
+    }else{
+        return NULL;
+    }
 }
 
+/*int get_return_value(tid_t tid){
+TODO: Search ZOMBIE, return value, free struct and tid
+
+}*/
