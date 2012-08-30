@@ -1,5 +1,5 @@
-#ifndef _vfs_h_
-#define _vfs_h_
+#ifndef _stat_h_
+#define _stat_h_
 /*
 	 Copyright 2012 universe coding group (UCG) all rights reserved
 	 This file is part of the Universe Kernel.
@@ -40,30 +40,49 @@
 	@author Michael Sippel <micha.linuxfreak@gmail.com>
 */
   #include <stdint.h>
-  #include <sys/stat.h>
   #include <unistd.h>
+  #include <drivers/timer.h>
+  #include <sys/types.h>
   
-  typedef struct vfs_node {
-    char *name;
-    struct stat stat;
-    void *base;
-    uint32_t alloc;
-    struct vfs_node *parent;
-  } vfs_node_t;
+  #define S_MODE_DIR 0x1
+  #define S_MODE_CHR 0x2
+  #define S_MODE_LNK 0x4
   
-  typedef struct vfs_dir_entry {
-    ino_t ino;
-    vfs_node_t *entry_node;
-  } vfs_dir_entry_t;
+  #define S_MAO 0x4 // st_mode: access offset
   
-  void INIT_VFS(void);
-  void set_vfs_uid(uid_t new_uid);
-  void set_vfs_gid(gid_t new_gid);
-  vfs_node_t* vfs_create_node(char *name, mode_t mode, vfs_node_t *parent);
-  vfs_dir_entry_t* vfs_create_dir_entry(vfs_node_t *entry_node);
-  int vfs_write(vfs_node_t *node, void *base, int bytes);
-  void* vfs_read(vfs_node_t *node, uintptr_t offset);
-  int vfs_stat(vfs_node_t *node, struct stat *buffer);
-  int vfs_access(vfs_node_t *node, mode_t modus);
+  #define S_IRUSR (0x001 + S_MAO) //user-read
+  #define S_IWUSR (0x002 + S_MAO) // -write
+  #define S_IXUSR (0x004 + S_MAO) // -execute
+  #define S_IRGRP (0x008 + S_MAO) //group-read
+  #define S_IWGRP (0x010 + S_MAO) // -write
+  #define S_IXGRP (0x020 + S_MAO) // -execute
+  #define S_IROTH (0x040 + S_MAO) //other-read
+  #define S_IWOTH (0x080 + S_MAO) // -write
+  #define S_IXOTH (0x100 + S_MAO) // -execute
   
+  #define S_ISREG(x) (x.st_mode & S_MODE_DIR) ? 0 : 1
+  #define S_ISDIR(x) (x.st_mode & S_MODE_DIR) ? 1 : 0
+  #define S_ISCHR(x) (x.st_mode & S_MODE_CHR) ? 1 : 0
+  #define S_ISBLK(x) (x.st_mode & S_MODE_CHR) ? 0 : 1
+  #define S_ISLNK(x) (x.st_mode & S_MODE_LNK) ? 1 : 0
+  
+  struct stat {
+      mode_t 	st_mode; // access rights
+      ino_t	st_ino;
+//       dev_t	st_dev; // filesystem
+//       dev_t	st_rdev;
+      
+      nlink_t	st_nlink;
+      uid_t	st_uid;
+      gid_t	st_gid;
+      off_t	st_size;
+      
+      time_t	st_atime; // access time
+      time_t	st_mtime; // modification time
+      time_t	st_ctime;
+      
+      long	st_blksize;
+      long	st_blocks;
+  };
+
 #endif

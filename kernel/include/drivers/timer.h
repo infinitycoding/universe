@@ -36,6 +36,11 @@
     Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
+/**
+	@author Michael Sippel <micha.linuxfreak@gmail.com>
+*/
+
+
 	#include <stdint.h>
 
 	typedef struct time {
@@ -54,12 +59,12 @@
 
 	void INIT_PIT(int freq);
 	void INIT_RTC(void);
-
+	
 	void rtc_irq_handler(void);
 	int update_time(void);
 	int change_time(time_t time);
 	time_t *get_time(void);
-    void set_pit_freq(int freq);
+	void set_pit_freq(int freq);
 
 #endif
 
