@@ -51,7 +51,7 @@
 
 	// page alignment
 	#define PAGE_ALIGN          PAGE_SIZE
-	#define pmm_mmap_size       32768
+	#define PMM_MMAP_SIZE        32768
 
 	void INIT_PMM(struct multiboot_struct* MBS);
 	void pmm_mark_page_as_free(paddr_t page);
@@ -63,4 +63,3 @@
 	paddr_t pmm_alloc_page_range(unsigned int num);
 
 #endif
-
