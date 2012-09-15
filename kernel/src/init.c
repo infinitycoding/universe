@@ -26,7 +26,7 @@
 
     Das Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
     Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
-    OHNE JEDE GEWÄHELEISTUNG, bereitgestellt; sogar ohne die implizite
+    OHNE JEDE GEWÄHRLEISTUNG, bereitgestellt; sogar ohne die implizite
     Gewährleistung der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
     Siehe die GNU General Public License für weitere Details.
 
@@ -63,8 +63,8 @@
  * Test Thread
  **/
 int testproc(void){
-printf("Hello World from Kernel Thread\n");
-thread_exit(0);
+	printf("Hello World from Kernel Thread\n");
+	thread_exit(0);
 }
 
 
@@ -106,10 +106,10 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
 	print_time(get_time());
 
-    thread_create(&testproc);
+	thread_create(&testproc);
 
 
-	for (;;) {
+	while (1) {
 		putchar(input());
 	}
 
