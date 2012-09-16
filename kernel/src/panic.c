@@ -90,8 +90,8 @@ void panic(char *message)
 	char buffer[1024];
 	int lines = 8;
 	int len = 0;
-	
-	len += sprintf (buffer + len,
+
+	len += sprintf(buffer + len,
 		"      |==================================================================|      \n"
 		"      |                             Universe                             |      \n"
 		"      |==================================================================|      \n"
