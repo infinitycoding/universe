@@ -109,6 +109,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	thread_create(&testproc);
 
 
+//	panic("test"); /* FIXME: causes reboot */
 	while (1) {
 		putchar(input());
 	}
