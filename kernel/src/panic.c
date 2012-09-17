@@ -123,7 +123,7 @@ void panic(char *message)
 	gotoxy(0, (25 / 2) - (lines / 2) - 1);
 	puts(buffer);
 	printf("\n\n      ");
-	
+
 	halt();
 }
 
