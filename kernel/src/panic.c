@@ -36,12 +36,17 @@
 
 /**
 	@author Tom Slawik <tom.slawik@gmail.com>
-	@author Someone Else
+	@author Simon Diepold <simon.diepold@infinitycoding.de>
 */
 
 #include <idt.h>
 #include <cpu.h>
 #include <printf.h>
+
+void halt(void){
+    asm volatile("cli");
+    while(1){}
+}
 
 char *exception_messages[] =
 {
@@ -58,7 +63,7 @@ char *exception_messages[] =
 int cpu_dump(struct cpu_state* cpu, char *str)
 {
 	int len = 0;
-	
+
 	len += sprintf(str + len, "EAX:  %#010X    EBX:     %#010X\n",  cpu->eax, 	cpu->ebx);
 	len += sprintf(str + len, "ECX:  %#010X    EDX:     %#010X\n",  cpu->ecx, 	cpu->edx);
 	len += sprintf(str + len, "ESI:  %#010X    EDI:     %#010X\n",  cpu->esi, 	cpu->edi);
@@ -67,7 +72,7 @@ int cpu_dump(struct cpu_state* cpu, char *str)
 	len += sprintf(str + len, "SS:   %#010X    ES:      %#010X\n",  cpu->ss, 	cpu->es);
 	len += sprintf(str + len, "GS:   %#010X    FS:      %#010X\n",  cpu->gs, 	cpu->fs);
 	len += sprintf(str + len, "EIP:  %#010X    EFLAGS:  %#010X\n",  cpu->eip, 	cpu->eflags);
-	
+
 	return len;
 }
 
@@ -78,10 +83,10 @@ void exc_panic(struct cpu_state* cpu)
 	char message[512];
 	char *exception = exception_messages[cpu->intr];
 	int len = 0;
-	
+
 	len = sprintf(message, "%s\n\n", exception, cpu->error);
 	cpu_dump(cpu, message + len);
-	
+
 	panic(message);
 }
 
@@ -101,29 +106,28 @@ void panic(char *message)
 		"\n"
 		"      "
 	);
-	
+
 	while (*message != '\0') {
 		buffer[len++] = *message;
-		
+
 		if (*message == '\n') {
 			len += sprintf(buffer + len, "      ");
 			++lines;
 		}
-		
+
 		++message;
 	}
-	
+
 	len += sprintf (buffer + len,
 		       "\n\n      To help us improving our systems, please report this incident to us."
 	);
-	
+
 	set_color(WHITE | RED << 4);
 	clear_screen();
-	
+
 	gotoxy(0, (25 / 2) - (lines / 2) - 1);
 	puts(buffer);
 	printf("\n\n      ");
-
 	halt();
 }
 
@@ -132,7 +136,7 @@ void winpanic(char *message)
 {
 	set_color(WHITE | BLUE << 4);
 	clear_screen();
-	
+
 	gotoxy(37, 8);
 	set_color(BLUE | LIGHT_GRAY << 4);
 	printf(" Windows");
@@ -140,15 +144,15 @@ void winpanic(char *message)
 	printf("\n\n      ");
 	while (*message != '\0') {
 		putchar(*message);
-		
+
 		if (*message == '\n') {
 			printf("      ");
 		}
-		
+
 		++message;
 	}
 	//printf("%s\n", message);
-	
+
 	printf("\n\n      *  Druecken Sie eine beliebige Taste, um die Anwendung abzubrechen.\n");
 	printf("      *  Druecken Sie Strg+Alt+Entf, um den Computer neu zu\n");
 	printf("      starten. nicht gespeicherte Daten gehen dabei verloren.\n");
