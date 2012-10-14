@@ -70,13 +70,8 @@ extern BOOT_PDE
 // init aufrufen
 extern init
   call init
+  jmp $
 
-// init sollte nicht zurückkehren, cpu anhalten
-global halt
-halt:
-  cli
-  hlt
-  jmp halt
 
 // thomas: ich würde den stack nicht hier anlegen sondern im C code
 section .bss
