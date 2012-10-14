@@ -60,11 +60,11 @@
 #define HEAP_DEBUG
 
 /**
- * Test Thread
+ * Test task
  **/
 int testproc(void){
-	printf("Hello World from Kernel Thread\n");
-	thread_exit(0);
+	printf("Hello World from Userspace-Task\n");
+	exit(0);
 }
 
 
@@ -106,10 +106,10 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
 	print_time(get_time());
 
-	thread_create(&testproc);
+// 	thread_create(&testproc);
+	proc_create(user_mode, 0, 0, 0, &testproc, "testproc", "", normal);
 
-
-//	panic("test"); /* FIXME: causes reboot */
+// 	panic("test"); /* FIXME: causes reboot */
 	while (1) {
 		putchar(input());
 	}
