@@ -136,7 +136,9 @@ pid_t proc_create(prev_t prev,vaddr_t vrt_base,paddr_t phy_base,size_t size,vadd
     proc_new->pagedir = pd_create();
     memcpy(proc_new->pagedir, pd_kernel, PD_LENGTH<<2);
 
-     if(prev){ //kernelmode
+    uint32_t* stack=malloc(PROC_STACK_SIZE)+PROC_STACK_SIZE;
+    
+    if(prev){ //kernelmode
         if(size){
             pd_map_range(proc_new->pagedir,phy_base,vrt_base,PTE_WRITABLE,size/PAGE_SIZE);
         }
@@ -159,15 +161,19 @@ pid_t proc_create(prev_t prev,vaddr_t vrt_base,paddr_t phy_base,size_t size,vadd
             .cs       = 0x8,
             .eflags   = 0x202,
             };
-            uint32_t* stack=malloc(PROC_STACK_SIZE)+PROC_STACK_SIZE;
+            
             struct cpu_state* state = (void*) (stack - sizeof(new_state));
             *state=new_state;
             proc_new->main_state = state;
 
-     }else{ // Usermode
+    }else{ // Usermode
 
          pd_map_range(proc_new->pagedir,phy_base,vrt_base,PTE_WRITABLE|PTE_USER,size/PAGE_SIZE);
          proc_new->flags = 0;
+	 
+	 uint32_t *user_stack=malloc(PROC_STACK_SIZE)+PROC_STACK_SIZE;
+	 pd_map_range(proc_new->pagedir,user_stack,STACK_HEAD-PROC_STACK_SIZE,PTE_WRITABLE|PTE_USER,PROC_STACK_SIZE);
+	 
          struct cpu_state new_state = {
             .gs       = 0x2b,
             .fs       = 0x2b,
@@ -189,8 +195,9 @@ pid_t proc_create(prev_t prev,vaddr_t vrt_base,paddr_t phy_base,size_t size,vadd
             .ss       = 0x2b,
             };
 
-            /*TODO: create Stack and save state on Kernel heap  */
-
+          struct cpu_state* state = (void*) (stack - sizeof(new_state));
+          *state=new_state;
+          proc_new->main_state = state;
      }
 
 
@@ -386,8 +393,9 @@ uint32_t thread_create(uint32_t eip){
     new_thread->flags = ACTIV;
     new_thread->tid = get_freetid();
 
+    uint32_t* stack=malloc(PROC_STACK_SIZE)+PROC_STACK_SIZE;
     if(currentprocess->flags&KERNELMODE){
-    struct cpu_state new_state = {
+      struct cpu_state new_state = {
             .gs       = 0x10,
             .fs       = 0x10,
             .es       = 0x10,
@@ -404,13 +412,16 @@ uint32_t thread_create(uint32_t eip){
             .eip      = eip,
             .cs       = 0x8,
             .eflags   = 0x202,
-            };
-    uint32_t* stack=malloc(PROC_STACK_SIZE)+PROC_STACK_SIZE;
-    struct cpu_state* state = (void*) (stack - sizeof(new_state));
-    *state=new_state;
-    new_thread->thread_state = state;
+        };
+    
+      struct cpu_state* state = (void*) (stack - sizeof(new_state));
+      *state=new_state;
+      new_thread->thread_state = state;
     }else{
-         struct cpu_state new_state = {
+      uint32_t *user_stack=malloc(PROC_STACK_SIZE)+PROC_STACK_SIZE;
+      pd_map_range(currentprocess->pagedir,user_stack,STACK_HEAD-PROC_STACK_SIZE,PTE_WRITABLE|PTE_USER,PROC_STACK_SIZE);
+         
+      struct cpu_state new_state = {
             .gs       = 0x2b,
             .fs       = 0x2b,
             .es       = 0x2b,
@@ -429,9 +440,11 @@ uint32_t thread_create(uint32_t eip){
             .eflags   = 0x202,
             .esp = STACK_HEAD,
             .ss       = 0x2b,
-            };
+      };
 
-    /*TODO: create Stack and save state on Kernel Stack  */
+      struct cpu_state* state = (void*) (stack - sizeof(new_state));
+      *state=new_state;
+      new_thread->thread_state = state;
     }
 
     asm volatile("sti");

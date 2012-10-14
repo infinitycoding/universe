@@ -11,3 +11,7 @@ Thumbs.db
 .directory
 .cproject
 .project
+*.c~
+*.h~
+.gitignore~
+
