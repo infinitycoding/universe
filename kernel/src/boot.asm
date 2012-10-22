@@ -14,18 +14,19 @@
 
     You should have received a copy of the GNU General Public License
     along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
+
 */
 
 /**
-  authors:
-  -Thomas Haller (Universe Team) thomas.haller@familie-haller.eu
+  @author Thomas Haller (Universe Team) <thomas.haller@familie-haller.eu>
+  @author Simon Diepold aka. Tdotu (Universe Team) <simon.diepold@infinitycoding.de>
 **/
 
 #include "memory_layout.h"
 
 [BITS 32]
 FLAGS    equ 0
-MAGIC    equ 0x1BADB002       ; Magicnumber - Erkennungsmerkmal für GRUB
+MAGIC    equ 0x1BADB002       ; Magicnumber
 CHECKSUM equ -(MAGIC + FLAGS) ; Checksum
 //zeilen equ 10
 
@@ -40,34 +41,41 @@ MultiBootHeader:
 
 section	.multiboot.start exec
 align 16
+
+/**
+ * setting up Paging and call the init function
+ * @param pointer to the multiboot structures
+ * @param Checksum
+ * @return void
+ **/
 global start
 start:
 
-// PD Adresse nach CR3 laden
+// Load PD adress to CR3
 extern BOOT_PDE
   mov  ecx, BOOT_PDE - MEMORY_LAYOUT_KERNEL_START
   mov  cr3, ecx
 
-// PSE aktivieren
+// activate PSE
   mov  ecx, cr4
   or   ecx, (1 << 4)
   mov  cr4, ecx
 
-// paging aktivieren
+// activate paging
   mov  ecx, cr0
   or   ecx, (1 << 31)
   mov  cr0, ecx
 
-// stack aktivieren
+// loading stackpointer
   mov  esp, stack
 
-// parameter übergeben und stack alignen
+// push parameters and align stack
   push 0
   push 0
   push eax
   push ebx
 
-// init aufrufen
+// call init
 extern init
   call init
   jmp $
