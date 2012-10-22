@@ -36,7 +36,7 @@
 
 /**
   authors:
-  -Simon Diepold aka. Tdotu (Universe Team) simon.diepold@infinitycoding.de
+  -Simon Diepold aka. Tdotu (Universe Team) <simon.diepold@infinitycoding.de>
 **/
 
 #include <stdint.h>
@@ -65,8 +65,8 @@ size_t strnlen(const char *s, size_t maxlen)
  * @param string pointer
  * @return string lengh
  **/
-size_t strlen(const char* string){
-	size_t i=0;
+size_t strlen(const char *string){
+	size_t i = 0;
 	while(string[i]){
 	    i++;
     }
@@ -80,13 +80,13 @@ size_t strlen(const char* string){
  * @param source string
  * @return destination string pointer
  **/
-char* strcpy(char* dest, const char* src){
-	uint32_t i=0;
+char *strcpy(char *dest, const char *src){
+	uint32_t i = 0;
 	while(src[i]){
-		dest[i]=src[i];
+		dest[i] = src[i];
 		i++;
 	}
-	dest[i]=src[i];
+	dest[i] = src[i];
 	return dest;
 }
 
@@ -98,17 +98,17 @@ char* strcpy(char* dest, const char* src){
  * @param maximal number of chars
  * @return destination string
  **/
-char* strncpy(char* dest, const char* src,size_t n){
+char *strncpy(char *dest, const char *src,size_t n){
 	uint32_t i;
-	bool eos=false;
-	for(i=0;i<n;i++){
-		if(eos==false){
-			if(src[i]==NULL){
-			    eos=true;
+	bool eos = false;
+	for(i = 0; i < n; i++){
+		if(eos == false){
+			if(src[i] == NULL){
+			    eos = true;
             }
-			dest[i]=src[i];
+			dest[i] = src[i];
 		}else{
-			dest[i]=NULL;
+			dest[i] = NULL;
 		}
 	}
 	return dest;
@@ -121,8 +121,8 @@ char* strncpy(char* dest, const char* src,size_t n){
  * @param source string
  * @return destination string
  **/
-char* strcat(char* dest, const char* src){
-	size_t n=strlen(dest);
+char *strcat(char *dest, const char *src){
+	size_t n = strlen(dest);
 	strcpy((char*)(dest+n),src);
 	return dest;
 }
@@ -135,8 +135,8 @@ char* strcat(char* dest, const char* src){
  * @param maximal number of chars
  * @return destination string
  **/
-char* strncat(char* dest, const char* src, size_t n){
-	size_t i=strlen(dest);
+char *strncat(char *dest, const char *src, size_t n){
+	size_t i = strlen(dest);
 	strncpy((char*)(dest+i),src,n);
 	return dest;
 }
@@ -150,17 +150,17 @@ char* strncat(char* dest, const char* src, size_t n){
  * @return 1=the value of the first different char of string0 is bigger
  * @return -1=the value of the first different char of string1 is bigger
  **/
-int strcmp(const char* st0, const char* st1){
+int strcmp(const char *st0, const char *st1){
 	uint32_t i;
 	int ret;
-	ret=NULL;
-	for (i=0; st0[i] == st1[i] && st0[i]!= 0; i++);
-	ret=st0[i]-st1[i];
-	if(ret<0){
-	    ret=-1;
+	ret = NULL;
+	for (i = 0; st0[i] == st1[i] && st0[i]!= 0; i++);
+	ret = st0[i] - st1[i];
+	if(ret < 0){
+	    ret =- 1;
     }
-	else if(ret>0){
-	    ret=1;
+	else if(ret > 0){
+	    ret = 1;
     }
 	return ret;
 }
@@ -175,17 +175,17 @@ int strcmp(const char* st0, const char* st1){
  * @return 1=the value of the first different char of string0 is bigger
  * @return -1=the value of the first different char of string1 is bigger
  **/
-int strncmp(const char* st0, const char* st1, size_t n){
+int strncmp(const char *st0, const char *st1, size_t n){
 	uint32_t i;
 	int ret;
-	ret=NULL;
-	for (i=0; st0[i] == st1[i] && st0[i] !=0 && i<n; i++);
-	ret=st0[i]-st1[i];
-	if(ret<0){
-	    ret=-1;
+	ret = NULL;
+	for (i = 0; st0[i] == st1[i] && st0[i] != 0 && i < n; i++);
+	ret = st0[i] - st1[i];
+	if(ret < 0){
+	    ret =- 1;
     }
-	else if(ret>0){
-	    ret=1;
+	else if(ret > 0){
+	    ret = 1;
     }
 	return ret;
 }
@@ -198,9 +198,9 @@ int strncmp(const char* st0, const char* st1, size_t n){
  * @return pointer to the first similar char
  * @return 0=no char in str is similar to c
  **/
-char* strchr(const char* str, int c){
-	int i=0;
-	while(str[i]!=(char)c && str[i]!=0){
+char *strchr(const char *str, int c){
+	int i = 0;
+	while(str[i] != (char)c && str[i] != 0){
 	    i++;
     }
 	if(str[i]){
@@ -216,12 +216,12 @@ char* strchr(const char* str, int c){
  * @return pointer to the last similar char
  * @return 0=no char in str is similar to c
  **/
-char* strrchr(const char* str, int c){
-	int i=0;
-	char* ret=NULL;
-	while( str[i]!=0){
-		if(str[i]==(char)c){
-		    ret=(char*)(str+i);
+char *strrchr(const char *str, int c){
+	int i = 0;
+	char* ret = NULL;
+	while( str[i] != 0){
+		if(str[i] == (char)c){
+		    ret = (char*)(str+i);
         }
 		i++;
 	}
@@ -247,12 +247,12 @@ char* strtok(char* st0, const char* st1){}
  * @param size of source area
  * @return pointer to destination area
  **/
-void* memcpy(void* destination, const void* source, size_t size){
-	uint8_t* dest=destination;
-	const uint8_t* sour=source;
-	uint32_t i=0;
-	while(i<size){
-		dest[i]=sour[i];
+void *memcpy(void *destination, const void *source, size_t size){
+	uint8_t *dest = destination;
+	const uint8_t *sour = source;
+	uint32_t i = 0;
+	while(i < size){
+		dest[i] = sour[i];
 		i++;
 	}
 	return destination;
@@ -266,10 +266,10 @@ void* memcpy(void* destination, const void* source, size_t size){
  * @param size of source area
  * @return pointer to destination area
  **/
-void* memmove(void* destination,void* source, size_t n){
-	char* dest=destination;
-	char* src=source;
-    char* c, overlap = 0;
+void *memmove(void *destination,void *source, size_t n){
+	char *dest = destination;
+	char *src = source;
+    char *c, overlap = 0;
     for (c = src; c < src + n; c++){
         if (c == dest){
             overlap = 1;
@@ -295,19 +295,19 @@ void* memmove(void* destination,void* source, size_t n){
  * @return 1=the value of the first different byte of area0 is bigger
  * @return -1=the value of the first different byte of area1 is bigger
  **/
-int memcmp(const void* mem0, const void* mem1, size_t n){
-	const char* st0=mem0;
-	const char* st1=mem1;
+int memcmp(const void *mem0, const void *mem1, size_t n){
+	const char *st0 = mem0;
+	const char *st1 = mem1;
 	uint32_t i;
 	int ret;
-	ret=NULL;
-	for (i=0; st0[i] == st1[i] && st0[i] !=0 && i<n; i++);
-	ret=st0[i]-st1[i];
-	if(ret<0){
-	    ret=-1;
+	ret = NULL;
+	for (i = 0; st0[i] == st1[i] && st0[i] !=0 && i<n; i++);
+	ret = st0[i] - st1[i];
+	if(ret < 0){
+	    ret =- 1;
     }
-	else if(ret>0){
-	    ret=1;
+	else if(ret > 0){
+	    ret = 1;
     }
 	return ret;
 }
@@ -321,10 +321,10 @@ int memcmp(const void* mem0, const void* mem1, size_t n){
  * @return pointer to the fist similar value
  * @return 0=no value in mem is similar to c
  **/
-void* memchr(const void* mem, int c, size_t n){
-	uint32_t i=0;
-	const unsigned char* str=mem;
-	while(str[i]!=(unsigned char)c && i<n){
+void *memchr(const void *mem, int c, size_t n){
+	uint32_t i = 0;
+	const unsigned char *str = mem;
+	while(str[i] != (unsigned char)c && i < n){
 	    i++;
     }
 	if(str[i]){
@@ -342,10 +342,10 @@ void* memchr(const void* mem, int c, size_t n){
  * @return pointer to the last similar value
  * @return 0=no value in mem is similar to c
  **/
-void* memset(void* mem, int c, size_t n){
-	unsigned char* str=mem;
+void *memset(void *mem, int c, size_t n){
+	unsigned char *str = mem;
 	uint32_t i;
-	for(i=0;i<n;i++){
+	for(i = 0; i < n; i++){
 	    str[i]=(unsigned char)c;
     }
 	return mem;
