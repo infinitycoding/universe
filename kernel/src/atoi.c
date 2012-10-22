@@ -21,13 +21,12 @@
 
 	 Das Universe Kernel ist Freie Software: Sie koennen es unter den Bedingungen
 	 der GNU General Public License, wie von der Free Software Foundation,
-	 Version 3 der Lizenz oder jeder sp‰teren
+	 Version 3 der Lizenz oder jeder spaeteren
 	 veroeffentlichten Version, weiterverbreiten und/oder modifizieren.
 
 	 Das Universe Kernel wird in der Hoffnung, dass es nuetzlich sein wird, aber
-	 Universe Kernel wird in der Hoffnung, dass es nuetzlich sein wird, aber
 	 OHNE JEDE GEWAEHELEISTUNG, bereitgestellt; sogar ohne die implizite
-	 Gew‰hrleistung der MARKTFAEHIGKEIT oder EIGNUNG FUER EINEN BESTIMMTEN ZWECK.
+	 Gewaehrleistung der MARKTFAEHIGKEIT oder EIGNUNG FUER EINEN BESTIMMTEN ZWECK.
 	 Siehe die GNU General Public License fuer weitere Details.
 
 	 Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
@@ -48,7 +47,7 @@ char * itoa_ex(unsigned int value, char * str, int base, int flags, int width)
 {
 	char *result = str;
 	int size;
-	
+
 	int len = 0;
 	int temp = 0;
 	int negative = 0;
@@ -81,7 +80,7 @@ char * itoa_ex(unsigned int value, char * str, int base, int flags, int width)
 		*str++ = '0'; *str++ = 'x';
 		width -= 2;
 	}
-	
+
 	if (!(flags & LEFT) && (flags & ZEROPAD))
 		while (size < width--)
 			*str++ = '0';
@@ -89,15 +88,15 @@ char * itoa_ex(unsigned int value, char * str, int base, int flags, int width)
 	do {
 		int power = powi(base, --len);
 		int digit = value / power;
-		
+
 		*str++ = digits[digit];
-		
+
 		value -= digit * power;
 	} while (len > 0);
 
 	while (size < width--)
 		*str++ = ' ';
-	
+
 	*str++ = '\0';
 
 	return result;
