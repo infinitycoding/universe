@@ -25,7 +25,6 @@
     veröffentlichten Version, weiterverbreiten und/oder modifizieren.
 
     Das Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
-    Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
     OHNE JEDE GEWÄHELEISTUNG, bereitgestellt; sogar ohne die implizite
     Gewährleistung der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
     Siehe die GNU General Public License für weitere Details.
