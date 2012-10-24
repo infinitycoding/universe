@@ -20,6 +20,8 @@
 /**
   @author Simon Diepold aka. Tdotu (Universe Team) <simon.diepold@infinitycoding.de>
   @author Michael Sippel <micha.linuxfreak@gmail.com>
+  @author Christian Klahn <christian.klahn1@gmail.com>
+  @author Tom Slawik <tom.slawik@gmail.com>
 
   - everyone else
  **/
