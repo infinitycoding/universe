@@ -115,10 +115,10 @@ void EOI(int irq);
 void Set_IDT_Entry(uint32_t intnr, uint16_t selector,uint32_t Base, uint16_t flags);
 
 struct cpu_state* irq_handler(struct cpu_state* cpu);
-int install_irq(int irqnum,void (*handler)(void));
+int install_irq(int irqnum,void *handler);
 void deinstall_irq(int irqnum);
 
-int install_exc(int excnum,void (*handler)(struct cpu_state **cpu));
+int install_exc(int excnum,void *handler);
 void deinstall_exc(int excnum);
 
 void remap_pic(void);
