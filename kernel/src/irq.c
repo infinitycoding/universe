@@ -194,10 +194,6 @@ struct cpu_state* irq_handler(struct cpu_state* cpu) {
         }
         EOI(irqnum);
         return cpu;
-	}else if(cpu->intr == 0x80){
-        handle_irq_syscall(&cpu);
-        EOI(0x80);
-        return cpu;
 	}
 	return cpu;
 }
