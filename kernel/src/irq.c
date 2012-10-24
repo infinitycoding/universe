@@ -21,12 +21,12 @@
   -Simon Diepold aka. Tdotu (Universe Team) <simon.diepold@infinitycoding.de>
  **/
 
+
 #include <idt.h>
 #include <io.h>
 #include <cpu.h>
 #include <panic.h>
 #include <printf.h>
-#include <syscall.h>
 
 static struct IDT_Entry IDT[256];
 static struct idtpt idtp;
@@ -249,5 +249,4 @@ void INIT_IDT(void) {
 	Set_IDT_Entry(44,0x8,(uint32_t)isr_44,0xEE00); Set_IDT_Entry(45,0x8,(uint32_t)isr_45,0xEE00);
 	Set_IDT_Entry(46,0x8,(uint32_t)isr_46,0xEE00); Set_IDT_Entry(47,0x8,(uint32_t)isr_47,0xEE00);
 	lidt(48);
-	Set_IDT_Entry(128,0x8,(uint32_t)isr_128,0xEE00);
 }
