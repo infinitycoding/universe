@@ -100,16 +100,16 @@ vfs_node_t* vfs_create_node(char *name, mode_t mode, vfs_node_t *parent) {
   vfs_node_t *node = malloc(sizeof(vfs_node_t));
   node->name = malloc(strlen(name));
   int i = 0;
-  while(*name) {
-    *node->name++ = *name++;
+  while (*name) {
+	*node->name++ = *name++;
   }
   node->name[i] = (char) '\0';
   node->alloc = 0;
   node->base = NULL;
-  if(parent == NULL) {
-    node->parent = root;
+  if (parent == NULL) {
+	node->parent = root;
   } else {
-    node->parent = parent;
+	node->parent = parent;
   }
   
   node->stat.st_mode = mode;
@@ -148,35 +148,35 @@ vfs_dir_entry_t* vfs_create_dir_entry(vfs_node_t *entry_node) {
 int vfs_write(vfs_node_t *node, void *base, int bytes) {
   int i = 0;
   int writable = 0;
-  if((node->stat.st_uid == uid) &&
-     (node->stat.st_mode & S_IWUSR)) 
+  if ((node->stat.st_uid == uid) &&
+	 (node->stat.st_mode & S_IWUSR)) 
   {
-      writable = 1;
+	  writable = 1;
   } 
   else if
-    ((node->stat.st_gid == gid) && 
-    (node->stat.st_mode & S_IWGRP))
+	((node->stat.st_gid == gid) && 
+	(node->stat.st_mode & S_IWGRP))
   {
-      writable = 1;
+	  writable = 1;
   } else {
-    if(node->stat.st_mode & S_IWOTH)
-      writable = 1;
+	if (node->stat.st_mode & S_IWOTH)
+	  writable = 1;
   }
   
-  if(writable) {
-    if(node->base == NULL) {
-      node->base = malloc(bytes);
-    } else {
-      node->base = realloc(node->base, node->alloc + bytes);
-    }
-    uint8_t *nbase = (uint8_t*) node->base + node->alloc;
-    uint8_t *wbase = (uint8_t*) base;
-    while(i++ < bytes) {
-      *nbase++ = *wbase++;
-      node->alloc++;
-    }
+  if (writable) {
+	if (node->base == NULL) {
+	  node->base = malloc(bytes);
+	} else {
+	  node->base = realloc(node->base, node->alloc + bytes);
+	}
+	uint8_t *nbase = (uint8_t*) node->base + node->alloc;
+	uint8_t *wbase = (uint8_t*) base;
+	while (i++ < bytes) {
+	  *nbase++ = *wbase++;
+	  node->alloc++;
+	}
   } else {
-    printf("vfs: node %d isn't writable!\n", node->stat.st_ino);
+	printf("vfs: node %d isn't writable!\n", node->stat.st_ino);
   }
   return i;
 }
@@ -205,8 +205,8 @@ int vfs_stat(vfs_node_t *node, struct stat *buffer) {
   uint8_t *node_stat = (uint8_t*) &node->stat;
   uint8_t *buf = (uint8_t*) buffer;
   int i = 0;
-  while(i++ < sizeof(struct stat)) {
-    *buf++ = *node_stat++;
+  while (i++ < sizeof(struct stat)) {
+	*buf++ = *node_stat++;
   }
   
   return 0;
@@ -221,41 +221,41 @@ int vfs_stat(vfs_node_t *node, struct stat *buffer) {
  * @return 
  */
 int vfs_access(vfs_node_t *node, mode_t modus) {
-  if(node->stat.st_uid == uid) 
+  if (node->stat.st_uid == uid) 
   {
-    if((modus & R_OK) &&
-       !(node->stat.st_mode & S_IRUSR))
-      return -1;
-    if((modus & W_OK) &&
-       !(node->stat.st_mode & S_IWUSR))
-      return -1;
-    if((modus & X_OK) &&
-       !(node->stat.st_mode & S_IXUSR))
-      return -1;
+	if ((modus & R_OK) &&
+	   !(node->stat.st_mode & S_IRUSR))
+	  return -1;
+	if ((modus & W_OK) &&
+	   !(node->stat.st_mode & S_IWUSR))
+	  return -1;
+	if ((modus & X_OK) &&
+	   !(node->stat.st_mode & S_IXUSR))
+	  return -1;
   } 
-  else if(node->stat.st_gid == gid) 
+  else if (node->stat.st_gid == gid) 
   {
-    if((modus & R_OK) &&
-       !(node->stat.st_mode & S_IRGRP))
-      return -1;
-    if((modus & W_OK) &&
-       !(node->stat.st_mode & S_IWGRP))
-      return -1;
-    if((modus & X_OK) &&
-       !(node->stat.st_mode & S_IXGRP))
-      return -1;
+	if ((modus & R_OK) &&
+	   !(node->stat.st_mode & S_IRGRP))
+	  return -1;
+	if ((modus & W_OK) &&
+	   !(node->stat.st_mode & S_IWGRP))
+	  return -1;
+	if ((modus & X_OK) &&
+	   !(node->stat.st_mode & S_IXGRP))
+	  return -1;
   }
   else
   {
-    if((modus & R_OK) &&
-       !(node->stat.st_mode & S_IROTH))
-      return -1;
-    if((modus & W_OK) &&
-       !(node->stat.st_mode & S_IWOTH))
-      return -1;
-    if((modus & X_OK) &&
-       !(node->stat.st_mode & S_IXOTH))
-      return -1;
+	if ((modus & R_OK) &&
+	   !(node->stat.st_mode & S_IROTH))
+	  return -1;
+	if ((modus & W_OK) &&
+	   !(node->stat.st_mode & S_IWOTH))
+	  return -1;
+	if ((modus & X_OK) &&
+	   !(node->stat.st_mode & S_IXOTH))
+	  return -1;
   }
   
   return 0;

@@ -92,7 +92,7 @@ static void pmm_mark_page_range_as_free(paddr_t page, unsigned int num)
 		panic("PMM: pmm_mark_page_range_as_free(): num is zero");
 
 	if (page / PAGE_SIZE + num > PMM_MMAP_SIZE * 32)
-        	panic("PMM: pmm_mark_page_range_as_free(): marking the given\n"
+			panic("PMM: pmm_mark_page_range_as_free(): marking the given\n"
 		"pages as free would cause a buffer overrun");
 
 
@@ -287,7 +287,7 @@ paddr_t pmm_alloc_page_range(unsigned int num)
 	if (!num)
 		panic("PMM: pmm_alloc_page_range(): num zero");
 	paddr_t page = pmm_find_free_page_range(PMM_DMA_LIMIT, num);
-	if(page & (PAGE_SIZE - 1)) {
+	if (page & (PAGE_SIZE - 1)) {
 		panic("PMM: pmm_alloc_page_range(): no memory left");
 	}
 	pmm_mark_page_range_as_used(page, num);
@@ -337,7 +337,7 @@ void INIT_PMM(struct multiboot_struct* MBS)
 	if (MBS->mods_count > 0) {
 		for (x = 0; x < MBS->mods_count; x++) {
 			uint32_t size = MBMA[x].mod_end-MBMA[x].mod_start;
-			if(size % 4096 != 0) {
+			if (size % 4096 != 0) {
 				size /= 4096;
 				size++;
 			} else {

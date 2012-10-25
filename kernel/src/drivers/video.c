@@ -65,16 +65,16 @@ int putchar(int c)
 		return c;
 	}
 	
-    if ((x > columns - 1) || (c == '\n')) {
+	if ((x > columns - 1) || (c == '\n')) {
 		gotoxy(0, ++y);
 
-        if (c == '\n') {
-            return c;
-        }
-    }
+		if (c == '\n') {
+			return c;
+		}
+	}
 
-    video_mem[2 * (y * columns + x)] = c;
-    video_mem[2 * (y * columns + x) + 1] = color;
+	video_mem[2 * (y * columns + x)] = c;
+	video_mem[2 * (y * columns + x) + 1] = color;
 
 	gotoxy(++x, y);
 	
@@ -85,11 +85,11 @@ int puts(const char* s)
 {
 	int printed = 1;
 
-    while (*s) {
-        putchar(*s++);
+	while (*s) {
+		putchar(*s++);
 		++printed;
-    }
-    putchar('\n');
+	}
+	putchar('\n');
 
 	return printed;
 }
@@ -107,11 +107,11 @@ int fputs(const char* s, int fd)
 
 void clear_screen(void)
 {
-    int i;
-    for (i = 0; i < lines * columns; i++) {
-        video_mem[2 * i] = 0;
+	int i;
+	for (i = 0; i < lines * columns; i++) {
+		video_mem[2 * i] = 0;
 		video_mem[2 * i + 1] = color;
-    }
+	}
 
 	gotoxy(0, 0);
 }
@@ -130,14 +130,14 @@ void gotoxy(uint8_t _x, uint8_t _y)
 {
 	uint16_t offset;
 
-    if ((_y * columns + _x) >= (columns * lines)) { /* scroll if neccessary */
+	if ((_y * columns + _x) >= (columns * lines)) { /* scroll if neccessary */
 		memmove(video_mem, video_mem + 2 * columns, 2 * lines * columns);
 		memset(video_mem + 2 * lines * columns, 0, 2 * columns);
 		--_y;
-    }
-    
+	}
+	
 	x = _x; y = _y;
-    offset = _y * columns + _x;
+	offset = _y * columns + _x;
 
 	if (video_mem[2 * offset] == 0) {
 		video_mem[2 * offset + 1] = color;

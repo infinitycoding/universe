@@ -131,8 +131,8 @@ struct task_state
 };
 
 
-void INIT_SCEDULER(void);
-struct cpu_state *task_schedul(struct cpu_state *cpu);
+void INIT_SCHEDULER(void);
+struct cpu_state *task_schedule(struct cpu_state *cpu);
 pid_t proc_create(prev_t prev,vaddr_t vrt_base,paddr_t phy_base,size_t size,vaddr_t entrypoint,char* name,char* desc,priority_t priority) ;
 int proc_kill(struct task_state *proc);
 void exit(int);

@@ -2,18 +2,18 @@
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
 
-    Universe Kernel is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    any later version.
+	Universe Kernel is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	any later version.
 
-    Universe Kernel is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	Universe Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 **/
 
 /**
@@ -62,7 +62,7 @@ void EOI(int irq) {
  * @param number of the IRQ which should be blocked
  * @return void
  **/
-void pic_mask_irqs(uint16_t mask){
+void pic_mask_irqs(uint16_t mask) {
    outb(0x21, (uint8_t) mask);
    outb(0xA1, (uint8_t) mask>>8);
 }
@@ -98,22 +98,22 @@ static void (*irq[16])(struct cpu_state **cpu) = {
 };
 
 static void (*exc[32])(struct cpu_state **cpu) = {
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL
+	NULL, NULL,
+	NULL, NULL,
+	NULL, NULL,
+	NULL, NULL,
+	NULL, NULL,
+	NULL, NULL,
+	NULL, NULL,
+	NULL, NULL,
+	NULL, NULL,
+	NULL, NULL,
+	NULL, NULL,
+	NULL, NULL,
+	NULL, NULL,
+	NULL, NULL,
+	NULL, NULL,
+	NULL, NULL
 };
 
 
@@ -126,7 +126,7 @@ static void (*exc[32])(struct cpu_state **cpu) = {
  * @return false -> Handler sucessfully installed
  **/
 int install_irq(int intr,void *handler) {
-	if(((uint32_t)irq[intr]) != NULL) {
+	if (((uint32_t)irq[intr]) != NULL) {
 	    return true;
 	}
 
@@ -144,12 +144,12 @@ int install_irq(int intr,void *handler) {
  **/
 int install_exc(int excnum, void *handler)
 {
-    if ((uint32_t)exc[excnum] != NULL) {
+	if ((uint32_t)exc[excnum] != NULL) {
 	    return true;
-    }
+	}
 
-    exc[excnum] = handler;
-    return false;
+	exc[excnum] = handler;
+	return false;
 }
 
 /**
@@ -158,7 +158,7 @@ int install_exc(int excnum, void *handler)
  * @return void
 **/
 void deinstall_irq(int intr) {
-    irq[intr] = NULL;
+	irq[intr] = NULL;
 }
 
 
@@ -168,7 +168,7 @@ void deinstall_irq(int intr) {
  * @return void
 **/
 void deinstall_exc(int excnum) {
-    exc[excnum] = NULL;
+	exc[excnum] = NULL;
 }
 
 
@@ -178,22 +178,22 @@ void deinstall_exc(int excnum) {
  * @return pointer to cpu_state struct of the interrupted Process
  **/
 struct cpu_state* irq_handler(struct cpu_state* cpu) {
-    //Exceptions
-    if(cpu->intr < 32){
-        if(((uint32_t)exc[cpu->intr]) != NULL) {
-            exc[cpu->intr](&cpu);
-            return cpu;
-        }else{
-            exc_panic(cpu);
-        }
-	}else if(cpu->intr < 46){
-    //IRQs
+	//Exceptions
+	if (cpu->intr < 32) {
+		if (((uint32_t)exc[cpu->intr]) != NULL) {
+			exc[cpu->intr](&cpu);
+			return cpu;
+		} else {
+			exc_panic(cpu);
+		}
+	} else if (cpu->intr < 46) {
+	//IRQs
 	    int irqnum=cpu->intr-32;
-        if(((uint32_t)irq[irqnum]) != NULL) {
-            irq[irqnum](&cpu);
-        }
-        EOI(irqnum);
-        return cpu;
+		if (((uint32_t)irq[irqnum]) != NULL) {
+			irq[irqnum](&cpu);
+		}
+		EOI(irqnum);
+		return cpu;
 	}
 	return cpu;
 }
