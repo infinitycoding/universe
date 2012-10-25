@@ -2,18 +2,18 @@
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
 
-    Universe Kernel is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    any later version.
+	Universe Kernel is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	any later version.
 
-    Universe Kernel is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	Universe Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 
 **/
 
@@ -54,7 +54,7 @@
 /**
  * Test task
  **/
-int testproc(void){
+int testproc(void) {
 	printf("Hello World from Kernelmode!\n");
 	exit(0);
 }
@@ -79,7 +79,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 
 	set_color(WHITE | BLACK << 4);
 
-    //Init Kernelmodules
+	//Init Kernelmodules
 	INIT_PMM(mb_info);
 	INIT_GDT();
 	INIT_IDT();
@@ -89,25 +89,25 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	INIT_PIT(50);
 	INIT_CMOS();
 	INIT_KEYBOARD();
-	INIT_SCEDULER();
+	INIT_SCHEDULER();
 	INIT_VFS();
 	asm volatile("sti");
 
-    //print Logo and loading message
+	//print Logo and loading message
 	print_logo(YELLOW);
 	puts("Universe wird gestartet...\n");
 
-    // count free memory and display it
+	// count free memory and display it
 	uint32_t pages = pmm_count_free_pages();
 	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
 
 	//print current time
 	print_time(get_time());
 
-    //create kernelmode testprocess
+	//create kernelmode testprocess
 	proc_create(kernel_mode, 0, 0, 0, &testproc, "testproc", "", normal);
 
-    //display  input just for Fun :D
+	//display  input just for Fun :D
 	while (1) {
 		putchar(input());
 	}

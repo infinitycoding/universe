@@ -14,34 +14,16 @@
 
 	 You should have received a copy of the GNU General Public License
 	 along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
-
-
-
-	 Diese Datei ist ein Teil vom Universe Kernel.
-
-	 Das Universe Kernel ist Freie Software: Sie koennen es unter den Bedingungen
-	 der GNU General Public License, wie von der Free Software Foundation,
-	 Version 3 der Lizenz oder jeder sp‰teren
-	 veroeffentlichten Version, weiterverbreiten und/oder modifizieren.
-
-	 Das Universe Kernel wird in der Hoffnung, dass es nuetzlich sein wird, aber
-	 Universe Kernel wird in der Hoffnung, dass es nuetzlich sein wird, aber
-	 OHNE JEDE GEWAEHELEISTUNG, bereitgestellt; sogar ohne die implizite
-	 Gew‰hrleistung der MARKTFAEHIGKEIT oder EIGNUNG FUER EINEN BESTIMMTEN ZWECK.
-	 Siehe die GNU General Public License fuer weitere Details.
-
-	 Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
-	 Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
  */
 
 
  /*
-    authors:
-    -Simon Diepold aka. Tdotu (Universe Team) simon.diepold@infinitycoding.de
+	authors:
+	-Simon Diepold aka. Tdotu (Universe Team) simon.diepold@infinitycoding.de
 
-    TODO:
-    - replace XX,YY,ZZ,TT,RR,EE in AMD Namestrings (http://www.sandpile.org/x86/cpuid.htm)
-    - CPU identification via model, name, stepping...
+	TODO:
+	- replace XX,YY,ZZ,TT,RR,EE in AMD Namestrings (http://www.sandpile.org/x86/cpuid.htm)
+	- CPU identification via model, name, stepping...
 
  */
 
@@ -60,7 +42,7 @@ char* brandID_Intel[]={
    "Intel Pentium M", "Mobile Intel Celeron"
 };
 
-    //only K8 DDR1
+	//only K8 DDR1
 char* brandID_AMD[]={
    "AMD engeneer sample", "","", "","AMD Athlon 64 XX00+", "AMD Athlon 64 X2 XX00+",
    "AMD Athlon 64 FX-ZZ", "", "AMD Athlon 64 XX00+ mobile", "AMD Athlon 64 XX00+ mobile low power", "AMD Turion 64 ML-XX", "AMD Turion 64 MT-XX",
@@ -76,10 +58,10 @@ char* brandID_AMD[]={
 };
 
 static char* vendorID[]={
-    "AuthenticAMD",	"AMDisbetter!", "GenuineIntel", "CentaurHauls",
-    "CyrixInstead", "TransmetaCPU", "GenuineTMx86", "Geode by NSC",
-    "NexGenDriven", "RiseRiseRise", "SiS SiS SiS ", "UMC UMC UMC ",
-    "VIA VIA VIA ", "Vortex86 SoC"
+	"AuthenticAMD",	"AMDisbetter!", "GenuineIntel", "CentaurHauls",
+	"CyrixInstead", "TransmetaCPU", "GenuineTMx86", "Geode by NSC",
+	"NexGenDriven", "RiseRiseRise", "SiS SiS SiS ", "UMC UMC UMC ",
+	"VIA VIA VIA ", "Vortex86 SoC"
 };
 
 static char* cpu_manufactorys[]={
@@ -102,7 +84,7 @@ struct cpu_properties current_CPU;
  * @param pointer to output register structure
  * @return sucess (0=sucess, 1=CPUID is not supported)
  */
-static void cpuid(uint32_t function,struct cpuid_regs* output){
+static void cpuid(uint32_t function,struct cpuid_regs* output) {
 	asm volatile("cpuid":"=a" (output->eax), "=b"(output->ebx),"=c"(output->ecx),"=d"(output->edx):"a"(function));
 }
 
@@ -112,8 +94,8 @@ static void cpuid(uint32_t function,struct cpuid_regs* output){
  * @param pointer to 128byte free bytes for cpu_prpoerties struct
  * @return sucess (0=sucess, 1=CPUID is not supported)
  */
-int identify_cpu(struct cpu_properties *cpu){
-    int ref,eflags;
+int identify_cpu(struct cpu_properties *cpu) {
+	int ref,eflags;
 	asm volatile(
 		"pushfl;"
 		"pop %%ecx;"
@@ -125,25 +107,25 @@ int identify_cpu(struct cpu_properties *cpu){
 		"pop %%eax;"
 		:"=a"(eflags), "=c"(ref):
 	);
-	if(eflags==ref){ //cpuid is not supported
+	if (eflags==ref) { //cpuid is not supported
 	    cpu->cpuid_support=false;
 	    return 1;
-	}else{
-        cpu->cpuid_support=true;
+	} else {
+		cpu->cpuid_support=true;
 	}
 
 	struct cpuid_regs reg;
 	uint32_t i;
 	// Copy Vebdir String
 	cpuid(0,&reg);
-    strncpy(cpu->vendor_id,(char*)&reg.ebx,4);
-    strncpy(cpu->vendor_id+4,(char*)&reg.edx,4);
-    strncpy(cpu->vendor_id+8,(char*)&reg.ecx,4);
-	for(i=0;strncmp(cpu->vendor_id,vendorID[i],12)&& i<15;i++){}
-    cpu->manufactory=i;
+	strncpy(cpu->vendor_id,(char*)&reg.ebx,4);
+	strncpy(cpu->vendor_id+4,(char*)&reg.edx,4);
+	strncpy(cpu->vendor_id+8,(char*)&reg.ecx,4);
+	for (i=0;strncmp(cpu->vendor_id,vendorID[i],12)&& i<15;i++) {}
+	cpu->manufactory=i;
 
 	cpu->max_std_func=reg.eax;
-    cpuid(0x80000000,&reg);
+	cpuid(0x80000000,&reg);
 	cpu->max_spec_func=reg.eax;
 
 	cpuid(1,&reg);
@@ -154,60 +136,60 @@ int identify_cpu(struct cpu_properties *cpu){
 	cpu->ext_model= (reg.eax &  0x000F0000)>>16;
 	cpu->brandID = (uint8_t)reg.ebx;
 
-    //Detect Dynamic Syscall
-	if((!(reg.edx & 0x800)) && !((cpu->family == 6) && (cpu->model < 3) && (cpu->stepping < 3))){
+	//Detect Dynamic Syscall
+	if ((!(reg.edx & 0x800)) && !((cpu->family == 6) && (cpu->model < 3) && (cpu->stepping < 3))) {
 		cpu->dsysc=sysenter;
-	} else if(cpu->max_spec_func>0x80000000){
-        cpuid(0x80000001,&reg);
-        if(reg.edx& 0x1000){
-            cpu->dsysc=syscall;
-        }
+	} else if (cpu->max_spec_func>0x80000000) {
+		cpuid(0x80000001,&reg);
+		if (reg.edx& 0x1000) {
+			cpu->dsysc=syscall;
+		}
 	}
 
-    //get extended BrandID
-	if(cpu->max_spec_func>0x80000000){
-        cpuid(0x80000001,&reg);
-        cpu->ext_brandID=(uint16_t)reg.ebx;
-	}else{
-        cpu->ext_brandID=0x3e;
+	//get extended BrandID
+	if (cpu->max_spec_func>0x80000000) {
+		cpuid(0x80000001,&reg);
+		cpu->ext_brandID=(uint16_t)reg.ebx;
+	} else {
+		cpu->ext_brandID=0x3e;
 	}
 
 
-    //Get CPU name/series
-	if(cpu->max_spec_func>0x80000004){ // via Brand String
-        for(i=0x80000002;i<=0x80000004;i++){
-            cpuid(i,&reg);
-            memcpy((cpu->cpu_type+(i-0x80000002)*16),((void*)&reg),16);
-        }
-	}else if(cpu->brandID){ //via Brand ID
-        if(cpu->manufactory==2){ //Intel CPU
-            strcpy(cpu->cpu_type,brandID_Intel[cpu->brandID-1]);
-        }
-	}else if(cpu->manufactory<2){ //AMD CPU
-        int ID=(cpu->ext_brandID>>6)& 0x3ff;
-        if(ID>0x3e){ID=0x3e;}
-        //uint8_t NN=current_CPU.ext_brandID &0x3F;
-        //TODO: replace XX,YY,ZZ,TT,RR,EE
-        strcpy(cpu->cpu_type,brandID_AMD[ID]);
+	//Get CPU name/series
+	if (cpu->max_spec_func>0x80000004) { // via Brand String
+		for (i=0x80000002;i<=0x80000004;i++) {
+			cpuid(i,&reg);
+			memcpy((cpu->cpu_type+(i-0x80000002)*16),((void*)&reg),16);
+		}
+	} else if (cpu->brandID) { //via Brand ID
+		if (cpu->manufactory==2) { //Intel CPU
+			strcpy(cpu->cpu_type,brandID_Intel[cpu->brandID-1]);
+		}
+	} else if (cpu->manufactory<2) { //AMD CPU
+		int ID=(cpu->ext_brandID>>6)& 0x3ff;
+		if (ID>0x3e) {ID=0x3e;}
+		//uint8_t NN=current_CPU.ext_brandID &0x3F;
+		//TODO: replace XX,YY,ZZ,TT,RR,EE
+		strcpy(cpu->cpu_type,brandID_AMD[ID]);
 
-	}else{ //standart name
-        strcpy(cpu->cpu_type,cpu_manufactorys[cpu->manufactory]);
-        strcat(cpu->cpu_type,architecture[cpu->architecture]);
-        strcat(cpu->cpu_type," CPU");
+	} else { //standart name
+		strcpy(cpu->cpu_type,cpu_manufactorys[cpu->manufactory]);
+		strcat(cpu->cpu_type,architecture[cpu->architecture]);
+		strcat(cpu->cpu_type," CPU");
 	}
-    // TODO: identify CPU through family,model,stepping, socket
+	// TODO: identify CPU through family,model,stepping, socket
 
-    cpuid(1,&reg);
+	cpuid(1,&reg);
 
-    cpu->APIC_ID = (uint8_t) (reg.ebx>>24);
-    cpu->logic_cores= (uint8_t)(reg.ebx & 0xFF0000)>>16;
-    if(reg.edx&(1<<30)){
-        cpu->architecture=X64;
-    }
-    cpu->cflush_size=(uint8_t)(reg.ebx & 0xFF00)>>8;
+	cpu->APIC_ID = (uint8_t) (reg.ebx>>24);
+	cpu->logic_cores= (uint8_t)(reg.ebx & 0xFF0000)>>16;
+	if (reg.edx&(1<<30)) {
+		cpu->architecture=X64;
+	}
+	cpu->cflush_size=(uint8_t)(reg.ebx & 0xFF00)>>8;
 
-    cpu->flagblock0=reg.ecx;
-    cpu->flagblock1=reg.edx;
+	cpu->flagblock0=reg.ecx;
+	cpu->flagblock1=reg.edx;
 
 	return 0;
 
@@ -217,16 +199,16 @@ int identify_cpu(struct cpu_properties *cpu){
  * prints CPU Information (not much)
  * @return void
  */
- void CPU_info(struct cpu_properties *cpu){
-    if(cpu->cpuid_support==true){
-        printf("CPU Manufactory: %s\n",cpu_manufactorys[cpu->manufactory]);
-        printf("CPU Architecture: %s\n",architecture[cpu->architecture]);
-        printf("CPU Model: %s\n",cpu->cpu_type);
-        printf("Static Syscall: Int $0x80\nDynamic Syscall: %s\n",scall[cpu->dsysc]);
-        printf("Logical CPUs: %d\n",cpu->logic_cores);
-    }else{
-        printf("current cpu does not support CPUID\n");
-    }
+ void CPU_info(struct cpu_properties *cpu) {
+	if (cpu->cpuid_support==true) {
+		printf("CPU Manufactory: %s\n",cpu_manufactorys[cpu->manufactory]);
+		printf("CPU Architecture: %s\n",architecture[cpu->architecture]);
+		printf("CPU Model: %s\n",cpu->cpu_type);
+		printf("Static Syscall: Int $0x80\nDynamic Syscall: %s\n",scall[cpu->dsysc]);
+		printf("Logical CPUs: %d\n",cpu->logic_cores);
+	} else {
+		printf("current cpu does not support CPUID\n");
+	}
  }
 
 
@@ -234,7 +216,7 @@ int identify_cpu(struct cpu_properties *cpu){
  * Creates structures containing CPU Informations
  * @return void
  */
-void INIT_CPUID(void){
-        identify_cpu((struct cpu_properties *)&current_CPU);
-        CPU_info((struct cpu_properties *)&current_CPU);
+void INIT_CPUID(void) {
+		identify_cpu((struct cpu_properties *)&current_CPU);
+		CPU_info((struct cpu_properties *)&current_CPU);
 }

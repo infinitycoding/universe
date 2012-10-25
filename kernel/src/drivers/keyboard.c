@@ -2,36 +2,36 @@
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
 
-    Universe Kernel is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    any later version.
+	Universe Kernel is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	any later version.
 
-    Universe Kernel is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	Universe Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 
 
 
-    Diese Datei ist ein Teil vom Universe Kernel.
+	Diese Datei ist ein Teil vom Universe Kernel.
 
-    Das Universe Kernel ist Freie Software: Sie können es unter den Bedingungen
-    der GNU General Public License, wie von der Free Software Foundation,
-    Version 3 der Lizenz oder jeder späteren
-    veröffentlichten Version, weiterverbreiten und/oder modifizieren.
+	Das Universe Kernel ist Freie Software: Sie können es unter den Bedingungen
+	der GNU General Public License, wie von der Free Software Foundation,
+	Version 3 der Lizenz oder jeder späteren
+	veröffentlichten Version, weiterverbreiten und/oder modifizieren.
 
-    Das Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
-    Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
-    OHNE JEDE GEWÄHELEISTUNG, bereitgestellt; sogar ohne die implizite
-    Gewährleistung der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
-    Siehe die GNU General Public License für weitere Details.
+	Das Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
+	Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
+	OHNE JEDE GEWÄHELEISTUNG, bereitgestellt; sogar ohne die implizite
+	Gewährleistung der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
+	Siehe die GNU General Public License für weitere Details.
 
-    Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
-    Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
+	Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
+	Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
 #include <stdint.h>
@@ -57,10 +57,10 @@ char* tail=keybuffer;
  *
  * @return void
  */
-void send_kbc_command(uint8_t port, uint8_t command){
-  	while(inb(0x64) & 0x2);//Warten bis Eigabepuffer leer ist
+void send_kbc_command(uint8_t port, uint8_t command) {
+  	while (inb(0x64) & 0x2);//Warten bis Eigabepuffer leer ist
   	outb(port, command);//KBC-Befehl senden
-  	while(inb(0x60) != 0xFA);
+  	while (inb(0x60) != 0xFA);
 }
 
 /**
@@ -70,7 +70,7 @@ void send_kbc_command(uint8_t port, uint8_t command){
  *
  * @return void
  */
-inline void send_kbd_command(uint8_t command){
+inline void send_kbd_command(uint8_t command) {
 	send_kbc_command(0x60, command);
 }
 
@@ -80,12 +80,12 @@ inline void send_kbd_command(uint8_t command){
  * @param void
  * @return void
  */
-void INIT_KEYBOARD(void){
+void INIT_KEYBOARD(void) {
 	install_irq(0x1, &kbd_irq_handler);
 
-  	while(!(inb(0x64) & 0x4));
+  	while (!(inb(0x64) & 0x4));
   	// Puffer leeren
-  	while (inb(0x64) & 0x1){
+  	while (inb(0x64) & 0x1) {
   		inb(0x60);
   	}
 
@@ -98,61 +98,61 @@ void INIT_KEYBOARD(void){
  * @param void
  * @return void
  */
-void kbd_irq_handler(void){
+void kbd_irq_handler(void) {
 	uint8_t input=0,ASCII=0;
-	while (inb(0x64)&1){
+	while (inb(0x64)&1) {
 		input=inb(0x60);
 
-        if(input==0xC5){ //pressed numlock
-            numlock = !numlock;
-            continue;
-        }
+		if (input==0xC5) { //pressed numlock
+			numlock = !numlock;
+			continue;
+		}
 
-        if(input==0x3A){ //pressed capslock
-            caps = !caps;
-            continue;
-        }
+		if (input==0x3A) { //pressed capslock
+			caps = !caps;
+			continue;
+		}
 
 
-		if((input&0x80)==0x80){ //release Key
+		if ((input&0x80)==0x80) { //release Key
 		    input &=0x7F;
 
-		    if(input == 0x2A || input == 0x36){ //released shift key
+		    if (input == 0x2A || input == 0x36) { //released shift key
 		        shift=false;
 		    }
-            continue;
-        }
+			continue;
+		}
 
-        if(input == 0x2A || input == 0x36){ //pressed shift
-            shift=true;
-            continue;
-        }
+		if (input == 0x2A || input == 0x36) { //pressed shift
+			shift=true;
+			continue;
+		}
 
-        if(input > 0x46 && input < 0x55 && input != 0x4A && input !=0x4C && input !=0x4E && numlock) { //Numblock Key
-            ASCII=asciishift[input];
-        }
+		if (input > 0x46 && input < 0x55 && input != 0x4A && input !=0x4C && input !=0x4E && numlock) { //Numblock Key
+			ASCII=asciishift[input];
+		}
 
-        else if(shift || caps){ //Common Key
-            ASCII=asciishift[input];
-        }else{
-            ASCII=asciinormal[input];
-        }
+		else if (shift || caps) { //Common Key
+			ASCII=asciishift[input];
+		} else {
+			ASCII=asciinormal[input];
+		}
 
 	}
 
-    if(ASCII){
-        *tail=ASCII;
-        tail++;
-        if (tail==keybuffer+512) {
-            tail=keybuffer;
-        }
-        if (head==keybuffer+512) {
-            head=keybuffer;
-        }
-        if (tail==head) {
-            head++;
-        }
-    }
+	if (ASCII) {
+		*tail=ASCII;
+		tail++;
+		if (tail==keybuffer+512) {
+			tail=keybuffer;
+		}
+		if (head==keybuffer+512) {
+			head=keybuffer;
+		}
+		if (tail==head) {
+			head++;
+		}
+	}
 
 }
 
@@ -167,7 +167,7 @@ uint8_t input(void) {
 	if (head==keybuffer+512) {
 		head=keybuffer;
 	}
-	while(head==tail){}
+	while (head==tail) {}
 	return *(head++);
 }
 
@@ -179,5 +179,5 @@ uint8_t input(void) {
  * @return void
  **/
 void seek_head(void) {
-    head = tail;
+	head = tail;
 }

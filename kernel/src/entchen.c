@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <sound.h>
 
-void entchen(){
+void entchen() {
 	sound(130, 1);
 	sound(146, 1);
 	sound(164, 1);

@@ -115,7 +115,7 @@
 
 
 ;Timer Interrupt / Task Scheduler
-    extern task_schedul
+    extern task_schedule
     Global isr_32
     isr_32:
     push dword 0
@@ -137,7 +137,7 @@
     mov fs, dx
     mov gs, dx
     push esp
-    call task_schedul
+    call task_schedule
     mov esp,eax
     pop gs
     pop fs
