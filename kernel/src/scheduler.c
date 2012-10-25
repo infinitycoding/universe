@@ -137,7 +137,7 @@ pid_t proc_create(prev_t prev,vaddr_t vrt_base,paddr_t phy_base,size_t size,vadd
     memcpy(proc_new->pagedir, pd_kernel, PD_LENGTH<<2);
 
     uint32_t* stack=malloc(PROC_STACK_SIZE)+PROC_STACK_SIZE;
-    
+
     if(prev){ //kernelmode
         if(size){
             pd_map_range(proc_new->pagedir,phy_base,vrt_base,PTE_WRITABLE,size/PAGE_SIZE);
@@ -161,7 +161,7 @@ pid_t proc_create(prev_t prev,vaddr_t vrt_base,paddr_t phy_base,size_t size,vadd
             .cs       = 0x8,
             .eflags   = 0x202,
             };
-            
+
             struct cpu_state* state = (void*) (stack - sizeof(new_state));
             *state=new_state;
             proc_new->main_state = state;
@@ -170,10 +170,10 @@ pid_t proc_create(prev_t prev,vaddr_t vrt_base,paddr_t phy_base,size_t size,vadd
 
          pd_map_range(proc_new->pagedir,phy_base,vrt_base,PTE_WRITABLE|PTE_USER,size/PAGE_SIZE);
          proc_new->flags = 0;
-	 
+
 	 uint32_t *user_stack=malloc(PROC_STACK_SIZE)+PROC_STACK_SIZE;
-	 pd_map_range(proc_new->pagedir,user_stack,STACK_HEAD-PROC_STACK_SIZE,PTE_WRITABLE|PTE_USER,PROC_STACK_SIZE);
-	 
+	 pd_map_range(proc_new->pagedir,vaddr2paddr(proc_new->pagedir, (vaddr_t) user_stack),STACK_HEAD-PROC_STACK_SIZE,PTE_WRITABLE|PTE_USER,PROC_STACK_SIZE);
+
          struct cpu_state new_state = {
             .gs       = 0x2b,
             .fs       = 0x2b,
@@ -210,7 +210,6 @@ pid_t proc_create(prev_t prev,vaddr_t vrt_base,paddr_t phy_base,size_t size,vadd
      proc_new->proc_parent   = currentprocess;
      proc_new->tid_counter   = 0;
      proc_new->freetid       = NULL;
-
 
      while(lock){}
      lock=true;
@@ -413,14 +412,14 @@ uint32_t thread_create(uint32_t eip){
             .cs       = 0x8,
             .eflags   = 0x202,
         };
-    
+
       struct cpu_state* state = (void*) (stack - sizeof(new_state));
       *state=new_state;
       new_thread->thread_state = state;
     }else{
       uint32_t *user_stack=malloc(PROC_STACK_SIZE)+PROC_STACK_SIZE;
       pd_map_range(currentprocess->pagedir,user_stack,STACK_HEAD-PROC_STACK_SIZE,PTE_WRITABLE|PTE_USER,PROC_STACK_SIZE);
-         
+
       struct cpu_state new_state = {
             .gs       = 0x2b,
             .fs       = 0x2b,
