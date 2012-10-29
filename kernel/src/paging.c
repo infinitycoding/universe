@@ -58,11 +58,7 @@ void INIT_PAGING(void) {
 	pd_kernel->phys_addr = pframe;
 	
 	paddr_t temp_pframe = pmm_alloc_page();
-	vaddr_t temp_vframe = vaddr_find(pd_kernel, 
-					 MEMORY_LAYOUT_RESERVED_AREA_END, 
-					 MEMORY_LAYOUT_KERNEL_END);
-	pd_map(pd_kernel, temp_pframe, temp_vframe, PTE_WRITABLE);
-	temp_mapped = temp_vframe;
+	temp_mapped = pd_automap_kernel(pd_kernel, temp_pframe, PTE_WRITABLE);
 	memset(pframe, 0, TEMP_SIZE);
 	
 	pd_map_range(
@@ -258,8 +254,51 @@ void pd_unmap(pd_t *pd, vaddr_t frame) {
 void pd_map_range(pd_t *pd, paddr_t pframe, vaddr_t vframe, unsigned int pages, uint8_t flags) {
 	int p;
 	for (p = 0; p < pages; ++p) {
-		pd_map(pd, pframe + PAGE_FRAME_ADDR(p), vframe + PAGE_FRAME_ADDR(p), flags);
+	  pd_map(pd, pframe + PAGE_FRAME_ADDR(p), vframe + PAGE_FRAME_ADDR(p), flags);
 	}
+}
+
+void pd_unmap_range(pd_t *pd, vaddr_t frame, unsigned int pages) {
+	int p;
+	for(p = 0; p < pages; p++) {
+	  pd_unmap(pd, frame + PAGE_FRAME_ADDR(p));
+	}
+}
+
+/**
+ * Auto-map pframe to a free virtual address in kernelspace
+ * 
+ * @param pd pagedirectory
+ * @param pframe phys. address
+ * @param flags flags
+ * 
+ * @return virtual address
+ */
+vaddr_t pd_automap_kernel(pd_t *pd, paddr_t pframe, uint8_t flags) {
+  vaddr_t vframe = vaddr_find(pd, 
+			      MEMORY_LAYOUT_RESERVED_AREA_END, 
+			      MEMORY_LAYOUT_KERNEL_END);
+  pd_map(pd, pframe, vframe, flags);
+
+  return vframe;
+}
+
+/**
+ * Auto-map pframe to a free virtual address in userspace
+ * 
+ * @param pd pagedirectory
+ * @param pframe phys. address
+ * @param flags flags
+ * 
+ * @return virtual address
+ */
+vaddr_t pd_automap_user(pd_t *pd, paddr_t pframe, uint8_t flags) {
+  vaddr_t vframe = vaddr_find(pd, 
+			      0x00000000, 
+			      MEMORY_LAYOUT_KERNEL_START);
+  pd_map(pd, pframe, vframe, flags);
+  
+  return vframe;
 }
 
 /**
@@ -320,12 +359,7 @@ paddr_t vaddr2paddr(pd_t * const pd, vaddr_t vaddr)
 void pd_switch(pd_t *pd) {
     if(pd != pd_current) {
 	if(pd_current != NULL) {
-	  int i;
-	  FOR_TEMP(i) {
-	    if(temp_mapped) {
-	      pd_unmap(pd_current, temp_mapped[i]);
-	    }
-	  }
+	  pd_unmap_range(pd_current, temp_mapped, TEMP_SIZE);
 	}
 	
 	pd_current = pd;
