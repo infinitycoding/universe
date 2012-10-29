@@ -38,6 +38,7 @@
 
 /**
 	@author Tom Slawik <tom.slawik@gmail.com>
+	@author Michael Sippel (Universe Team) <micha.linuxfreak@gmail.com>
 */
 
 #include <stdint.h>
@@ -87,29 +88,31 @@ enum PTE_Flags {
 
 typedef uint32_t pde_t;
 typedef uint32_t pte_t;
+typedef pte_t* pt_t;
 
 typedef struct {
-	pde_t entries[PD_LENGTH];
+	pde_t *entries;
 	paddr_t phys_addr;
 } pd_t;
-
-typedef struct {
-	pte_t entries[PT_LENGTH];
-} pt_t;
 
 void INIT_PAGING(void);
 
 pd_t *pd_create(void);
 void pd_destroy(pd_t *pd);
 
-void pd_map(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags);
+int pd_map(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags);
+vaddr_t pd_map_temp(paddr_t pframe, uint8_t flags);
 void pd_unmap(pd_t *pd, vaddr_t frame);
 void pd_map_range(pd_t *pd, paddr_t pframe, vaddr_t vframe, unsigned int pages, uint8_t flags);
 
-vaddr_t pd_map_fast(paddr_t frame, uint32_t flags);
-paddr_t vaddr2paddr(pd_t * const pd, vaddr_t vaddr);
+pt_t pt_get(pd_t *pd, int index, uint8_t flags);
+pt_t pt_create(pd_t *pd, int index, uint8_t flags);
+void pt_destroy(pd_t *pd, int index);
 
-void pd_switch(pd_t *pd, uint8_t flags);
+vaddr_t vaddr_find(pd_t *pd, int limit_low, int limit_high);
+paddr_t vaddr2paddr(pd_t * const pd, vaddr_t vaddr); // FIXME: really needed?
+
+void pd_switch(pd_t *pd);
 
 //void map_page_kernel(paddr_t phys_frame, vaddr_t virt_frame, uint8_t flags);
 //void unmap_page_kernel(vaddr_t frame);

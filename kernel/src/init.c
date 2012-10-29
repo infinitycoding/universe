@@ -92,7 +92,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	INIT_SCHEDULER();
 	INIT_VFS();
 	asm volatile("sti");
-
+	
 	//print Logo and loading message
 	print_logo(YELLOW);
 	puts("Universe wird gestartet...\n");
@@ -100,13 +100,13 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	// count free memory and display it
 	uint32_t pages = pmm_count_free_pages();
 	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
-
+	
 	//print current time
 	print_time(get_time());
 
 	//create kernelmode testprocess
-	proc_create(kernel_mode, 0, 0, 0, &testproc, "testproc", "", normal);
-
+// 	proc_create(kernel_mode, 0, 0, 0, &testproc, "testproc", "", normal);
+	
 	//display  input just for Fun :D
 	while (1) {
 		putchar(input());
