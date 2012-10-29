@@ -93,7 +93,7 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
 	currentprocess=currentprocess->next;
 	}
 
-	pd_switch(currentprocess->pagedir,0);
+	pd_switch(currentprocess->pagedir);
 	pd_current =  currentprocess->pagedir;
 
 	if (currentprocess->threads) {
