@@ -100,10 +100,13 @@ void INIT_PAGING(void);
 pd_t *pd_create(void);
 void pd_destroy(pd_t *pd);
 
-int pd_map(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags);
 vaddr_t pd_map_temp(paddr_t pframe, uint8_t flags);
+int pd_map(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags);
 void pd_unmap(pd_t *pd, vaddr_t frame);
 void pd_map_range(pd_t *pd, paddr_t pframe, vaddr_t vframe, unsigned int pages, uint8_t flags);
+void pd_unmap_range(pd_t *pd, vaddr_t frame, unsigned int pages);
+vaddr_t pd_automap_kernel(pd_t *pd, paddr_t pframe, uint8_t flags);
+vaddr_t pd_automap_user(pd_t *pd, paddr_t pframe, uint8_t flags);
 
 pt_t pt_get(pd_t *pd, int index, uint8_t flags);
 pt_t pt_create(pd_t *pd, int index, uint8_t flags);
