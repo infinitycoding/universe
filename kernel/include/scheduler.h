@@ -1,23 +1,23 @@
 #ifndef _scheduler_h_
 #define _scheduler_h_
+
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
 
-    Universe Kernel is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    any later version.
+	Universe Kernel is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	any later version.
 
-    Universe Kernel is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	Universe Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 
 #include <stdint.h>
 #include <cpu.h>
@@ -112,22 +112,21 @@ struct zombietid
 #define TASK_STATE_STRUCT_SIZE 564
 struct task_state
 {
-    struct task_state *prev;
+	struct task_state *prev;
 	struct task_state *next;
 	pid_t pid;
-    struct cpu_state *main_state;
-    pd_t *pagedir;
-    char name[256];
+	struct cpu_state *main_state;
+	pd_t *pagedir;
+	char name[256];
 	char description[256];
-    struct port_access *port;
-    struct task_state* proc_parent;
-    struct thread *threads;
-    struct thread *currentthread;
-    uint32_t tid_counter;
-    struct zombietid *freetid;
-    struct child *proc_children;
-    uint32_t flags;
-
+	struct port_access *port;
+	struct task_state* proc_parent;
+	struct thread *threads;
+	struct thread *currentthread;
+	uint32_t tid_counter;
+	struct zombietid *freetid;
+	struct child *proc_children;
+	uint32_t flags;
 };
 
 
@@ -141,8 +140,5 @@ uint32_t thread_create(uint32_t eip);
 int thread_kill(struct thread *thr);
 void thread_exit(int errorcode);
 struct thread *thread_get(tid_t tid);
-
-
-
 
 #endif

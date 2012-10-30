@@ -1,19 +1,19 @@
-/*-
-	 Copyright 2012 universe coding group (UCG) all rights reserved
-	 This file is part of the Universe Kernel.
+/*
+	Copyright 2012 universe coding group (UCG) all rights reserved
+	This file is part of the Universe Kernel.
 
-	 Universe Kernel is free software: you can redistribute it and/or modify
-	 it under the terms of the GNU General Public License as published by
-	 the Free Software Foundation, either version 3 of the License, or
-	 any later version.
+	Universe Kernel is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	any later version.
 
-	 Universe Kernel is distributed in the hope that it will be useful,
-	 but WITHOUT ANY WARRANTY; without even the implied warranty of
-	 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	 GNU General Public License for more details.
+	Universe Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-	 You should have received a copy of the GNU General Public License
-	 along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 /**
@@ -187,7 +187,8 @@ int strncmp(const char *st0, const char *st1, size_t n)
  * @return pointer to the first similar char
  * @return 0=no char in str is similar to c
  */
-char *strchr(const char *str, int c) {
+char *strchr(const char *str, int c)
+{
 	int i = 0;
 	while (str[i] != (char)c && str[i] != 0)
 	{
@@ -309,7 +310,7 @@ int memcmp(const void *mem0, const void *mem1, size_t n)
 
 /**
  * search value c in mem
- * @param memmory
+ * @param memory
  * @param serched value
  * @param size of mem
  * @return pointer to the fist similar value
@@ -331,7 +332,7 @@ void *memchr(const void *mem, int c, size_t n)
 
 /**
  * search value c in mem
- * @param memmory
+ * @param memory
  * @param serched value
  * @param size of mem
  * @return pointer to the last similar value

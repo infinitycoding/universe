@@ -1,39 +1,22 @@
 #ifndef _idt_h_
 #define _idt_h_
+
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
 
-    Universe Kernel is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    any later version.
+	Universe Kernel is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	any later version.
 
-    Universe Kernel is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	Universe Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
-
-
-
-    Diese Datei ist ein Teil vom Universe Kernel.
-
-    Das Universe Kernel ist Freie Software: Sie können es unter den Bedingungen
-    der GNU General Public License, wie von der Free Software Foundation,
-    Version 3 der Lizenz oder jeder späteren
-    veröffentlichten Version, weiterverbreiten und/oder modifizieren.
-
-    Das Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
-    Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
-    OHNE JEDE GEWÄHELEISTUNG, bereitgestellt; sogar ohne die implizite
-    Gewährleistung der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
-    Siehe die GNU General Public License für weitere Details.
-
-    Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
-    Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <stdint.h>
@@ -97,14 +80,14 @@ extern void isr_46(void);
 extern void isr_47(void);
 
 
-struct IDT_Entry{
-uint16_t Base_low;
-uint16_t selector;
-uint16_t flags;
-uint16_t Base_hi;
+struct IDT_Entry {
+	uint16_t Base_low;
+	uint16_t selector;
+	uint16_t flags;
+	uint16_t Base_hi;
 }__attribute__((packed));
 
-struct idtpt{
+struct idtpt {
 	uint16_t limit;
 	void* base;
 } __attribute__((packed));
@@ -112,13 +95,13 @@ struct idtpt{
 
 void lidt(uint16_t irq);
 void EOI(int irq);
-void Set_IDT_Entry(uint32_t intnr, uint16_t selector,uint32_t Base, uint16_t flags);
+void Set_IDT_Entry(uint32_t intnr, uint16_t selector, uint32_t Base, uint16_t flags);
 
 struct cpu_state* irq_handler(struct cpu_state* cpu);
-int install_irq(int irqnum,void *handler);
+int install_irq(int irqnum, void *handler);
 void deinstall_irq(int irqnum);
 
-int install_exc(int excnum,void *handler);
+int install_exc(int excnum, void *handler);
 void deinstall_exc(int excnum);
 
 void remap_pic(void);
