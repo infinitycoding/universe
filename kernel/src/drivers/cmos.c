@@ -14,24 +14,6 @@
 
 	You should have received a copy of the GNU General Public License
 	along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
-
-	
-	
-	Diese Datei ist ein Teil vom Universe Kernel.
-
-	Das Universe Kernel ist Freie Software: Sie können es unter den Bedingungen
-	der GNU General Public License, wie von der Free Software Foundation,
-	Version 3 der Lizenz oder jeder späteren
-	veröffentlichten Version, weiterverbreiten und/oder modifizieren.
-
-	Das Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
-	Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
-	OHNE JEDE GEWÄHELEISTUNG, bereitgestellt; sogar ohne die implizite
-	Gewährleistung der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
-	Siehe die GNU General Public License für weitere Details.
-
-	Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
-	Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
 /**
@@ -96,9 +78,9 @@ cmos_data_t* get_cmos_data(void) {
  * @return Read value from CMOS
  */
 uint8_t cmos_read_byte(uint8_t offset) {
-  uint8_t tmp = inb(0x70);
-  outb(0x70, (tmp & 0x80) | (offset & 0x7F));
-  return inb(0x71);
+	uint8_t tmp = inb(0x70);
+	outb(0x70, (tmp & 0x80) | (offset & 0x7F));
+	return inb(0x71);
 }
 /**
  * Write a byte to CMOS
@@ -109,9 +91,7 @@ uint8_t cmos_read_byte(uint8_t offset) {
  * @return void
  */
 void cmos_write_byte(uint8_t offset, uint8_t value) {
-  uint8_t tmp = inb(0x70);
-  outb(0x70, (tmp & 0x80) | (offset & 0x7F));
-  outb(0x71,value);
+	uint8_t tmp = inb(0x70);
+	outb(0x70, (tmp & 0x80) | (offset & 0x7F));
+	outb(0x71,value);
 }
-
-

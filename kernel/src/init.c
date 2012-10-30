@@ -1,4 +1,4 @@
-/**
+/*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
 
@@ -24,7 +24,7 @@
   @author Tom Slawik <tom.slawik@gmail.com>
 
   - everyone else
- **/
+ */
 
 
 #include <stdint.h>

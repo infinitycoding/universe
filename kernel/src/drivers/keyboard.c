@@ -14,24 +14,6 @@
 
 	You should have received a copy of the GNU General Public License
 	along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
-
-
-
-	Diese Datei ist ein Teil vom Universe Kernel.
-
-	Das Universe Kernel ist Freie Software: Sie können es unter den Bedingungen
-	der GNU General Public License, wie von der Free Software Foundation,
-	Version 3 der Lizenz oder jeder späteren
-	veröffentlichten Version, weiterverbreiten und/oder modifizieren.
-
-	Das Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
-	Universe Kernel wird in der Hoffnung, dass es nützlich sein wird, aber
-	OHNE JEDE GEWÄHELEISTUNG, bereitgestellt; sogar ohne die implizite
-	Gewährleistung der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
-	Siehe die GNU General Public License für weitere Details.
-
-	Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
-	Programm erhalten haben. Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 */
 
 #include <stdint.h>
@@ -43,11 +25,11 @@
 
 static bool shift = false;
 static bool numlock = false;
-static bool caps=false;
+static bool caps = false;
 
 char keybuffer[512];
-char* head=keybuffer;
-char* tail=keybuffer;
+char* head = keybuffer;
+char* tail = keybuffer;
 
 /**
  * Send a command to the Keyboard Controler
@@ -99,9 +81,9 @@ void INIT_KEYBOARD(void) {
  * @return void
  */
 void kbd_irq_handler(void) {
-	uint8_t input=0,ASCII=0;
+	uint8_t input = 0, ASCII = 0;
 	while (inb(0x64)&1) {
-		input=inb(0x60);
+		input = inb(0x60);
 
 		if (input==0xC5) { //pressed numlock
 			numlock = !numlock;
@@ -114,42 +96,42 @@ void kbd_irq_handler(void) {
 		}
 
 
-		if ((input&0x80)==0x80) { //release Key
-		    input &=0x7F;
+		if ((input & 0x80) == 0x80) { //release Key
+		    input &= 0x7F;
 
 		    if (input == 0x2A || input == 0x36) { //released shift key
-		        shift=false;
+		        shift = false;
 		    }
 			continue;
 		}
 
 		if (input == 0x2A || input == 0x36) { //pressed shift
-			shift=true;
+			shift = true;
 			continue;
 		}
 
-		if (input > 0x46 && input < 0x55 && input != 0x4A && input !=0x4C && input !=0x4E && numlock) { //Numblock Key
-			ASCII=asciishift[input];
+		if (input > 0x46 && input < 0x55 && input != 0x4A && input != 0x4C && input != 0x4E && numlock) { //Numblock Key
+			ASCII = asciishift[input];
 		}
 
 		else if (shift || caps) { //Common Key
-			ASCII=asciishift[input];
+			ASCII = asciishift[input];
 		} else {
-			ASCII=asciinormal[input];
+			ASCII = asciinormal[input];
 		}
 
 	}
 
 	if (ASCII) {
-		*tail=ASCII;
+		*tail = ASCII;
 		tail++;
-		if (tail==keybuffer+512) {
-			tail=keybuffer;
+		if (tail == keybuffer + 512) {
+			tail = keybuffer;
 		}
-		if (head==keybuffer+512) {
-			head=keybuffer;
+		if (head == keybuffer + 512) {
+			head = keybuffer;
 		}
-		if (tail==head) {
+		if (tail == head) {
 			head++;
 		}
 	}
@@ -164,10 +146,10 @@ void kbd_irq_handler(void) {
  * @return character
  **/
 uint8_t input(void) {
-	if (head==keybuffer+512) {
-		head=keybuffer;
+	if (head == keybuffer+512) {
+		head = keybuffer;
 	}
-	while (head==tail) {}
+	while (head == tail) {}
 	return *(head++);
 }
 

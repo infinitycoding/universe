@@ -1,4 +1,4 @@
-/**
+/*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
 
@@ -17,9 +17,8 @@
 **/
 
 /**
-  authors:
-  -Simon Diepold aka. Tdotu (Universe Team) <simon.diepold@infinitycoding.de>
- **/
+  @author Simon Diepold aka. Tdotu (Universe Team) <simon.diepold@infinitycoding.de>
+*/
 
 
 #include <idt.h>
@@ -37,7 +36,8 @@ static struct idtpt idtp;
  * @param nuber of the last defined Descriptor
  * @return void
  **/
-void lidt(uint16_t irq) {
+void lidt(uint16_t irq)
+{
 	idtp.limit = (8 * irq)-1;
 	idtp.base = IDT;
 	asm volatile("lidt %0" : : "m" (idtp));
@@ -49,7 +49,8 @@ void lidt(uint16_t irq) {
  * @param number of the runnig interrupt
  * @return void
  **/
-void EOI(int irq) {
+void EOI(int irq)
+{
 	outb(0x20, 0x20);
 	if (irq >= 8) {
 		outb(0xA0, 0x20);
@@ -62,9 +63,10 @@ void EOI(int irq) {
  * @param number of the IRQ which should be blocked
  * @return void
  **/
-void pic_mask_irqs(uint16_t mask) {
+void pic_mask_irqs(uint16_t mask)
+{
    outb(0x21, (uint8_t) mask);
-   outb(0xA1, (uint8_t) mask>>8);
+   outb(0xA1, (uint8_t) mask >> 8);
 }
 
 
@@ -76,7 +78,8 @@ void pic_mask_irqs(uint16_t mask) {
  * @param 3 Flags
  * @return void
  **/
-void Set_IDT_Entry(uint32_t intnr, uint16_t selector,uint32_t Base, uint16_t flags) {
+void Set_IDT_Entry(uint32_t intnr, uint16_t selector,uint32_t Base, uint16_t flags)
+{
 	IDT[intnr].Base_low = (uint16_t)Base;
 	IDT[intnr].selector = selector;
 	IDT[intnr].flags = flags;
@@ -125,7 +128,8 @@ static void (*exc[32])(struct cpu_state **cpu) = {
  * @return true  -> Handler is already seted-up
  * @return false -> Handler sucessfully installed
  **/
-int install_irq(int intr,void *handler) {
+int install_irq(int intr,void *handler)
+{
 	if (((uint32_t)irq[intr]) != NULL) {
 	    return true;
 	}
@@ -157,7 +161,8 @@ int install_exc(int excnum, void *handler)
  * @param interrupt number
  * @return void
 **/
-void deinstall_irq(int intr) {
+void deinstall_irq(int intr)
+{
 	irq[intr] = NULL;
 }
 
@@ -167,7 +172,8 @@ void deinstall_irq(int intr) {
  * @param exception number
  * @return void
 **/
-void deinstall_exc(int excnum) {
+void deinstall_exc(int excnum)
+{
 	exc[excnum] = NULL;
 }
 
@@ -177,7 +183,8 @@ void deinstall_exc(int excnum) {
  * @param pointer to cpu_state struct of the interrupted Process
  * @return pointer to cpu_state struct of the interrupted Process
  **/
-struct cpu_state* irq_handler(struct cpu_state* cpu) {
+struct cpu_state* irq_handler(struct cpu_state* cpu)
+{
 	//Exceptions
 	if (cpu->intr < 32) {
 		if (((uint32_t)exc[cpu->intr]) != NULL) {
@@ -203,7 +210,8 @@ struct cpu_state* irq_handler(struct cpu_state* cpu) {
  * @param void
  * @return void
  **/
-void remap_pic(void) {
+void remap_pic(void)
+{
 	outb(0x20, 0x11);
 	outb(0xA0, 0x11);
 	outb(0x21, 32);
@@ -221,7 +229,8 @@ void remap_pic(void) {
  * @param 0 void
  * @param 1 void
  **/
-void INIT_IDT(void) {
+void INIT_IDT(void)
+{
 	remap_pic();
 	//Exceptions
 	Set_IDT_Entry(0,0x8,(uint32_t)isr_0,0xEE00); Set_IDT_Entry(1,0x8,(uint32_t)isr_1,0xEE00); Set_IDT_Entry(2,0x8,(uint32_t)isr_2,0xEE00);

@@ -1,4 +1,4 @@
-/**
+/*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
 
@@ -14,11 +14,11 @@
 
 	You should have received a copy of the GNU General Public License
 	along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
-**/
+*/
 
 /**
   @author Simon Diepold aka. Tdotu (Universe Team) <simon.diepold@infinitycoding.de>
- **/
+*/
 
 #include <stdint.h>
 

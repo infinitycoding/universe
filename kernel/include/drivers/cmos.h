@@ -37,58 +37,58 @@
 */
 
 /**
-	@author Michael Sippel <micha.linuxfreak@gmail.com>
+@author Michael Sippel <micha.linuxfreak@gmail.com>
 */
-	#include <stdint.h>
-	#include <drivers/timer.h>
+#include <stdint.h>
+#include <drivers/timer.h>
 
-	typedef struct cmos_register  {
-		uint8_t register_a;
-		uint8_t register_b;
-		uint8_t register_c;
-		uint8_t register_d;
-	} cmos_register_t;
+typedef struct cmos_register  {
+	uint8_t register_a;
+	uint8_t register_b;
+	uint8_t register_c;
+	uint8_t register_d;
+} cmos_register_t;
 
-	typedef struct cmos_hardware_data {
-		uint8_t post_diagnostig_status_byte;
-		uint8_t shutdown_status_byte;
-		uint8_t floppy_disk_type;
+typedef struct cmos_hardware_data {
+	uint8_t post_diagnostig_status_byte;
+	uint8_t shutdown_status_byte;
+	uint8_t floppy_disk_type;
 //		uint8_t reserved0;
-		uint8_t hd_type;
+	uint8_t hd_type;
 //		uint8_t reserved1;
-		uint8_t device_byte;
-		
-		uint8_t basememory_size_low;
-		uint8_t basememory_size_high;
-		uint8_t expandablememory_size_low;
-		uint8_t expandablememory_size_high;
-		uint8_t extension_byte_hd1;
-		uint8_t extension_byte_hd2;
+	uint8_t device_byte;
+	
+	uint8_t basememory_size_low;
+	uint8_t basememory_size_high;
+	uint8_t expandablememory_size_low;
+	uint8_t expandablememory_size_high;
+	uint8_t extension_byte_hd1;
+	uint8_t extension_byte_hd2;
 
 //		uint16_t reserved2;
 //		uint8_t reserved3 : 2;
-		
-		uint8_t cmos_magic_low;
-		uint8_t cmos_magic_high;
+	
+	uint8_t cmos_magic_low;
+	uint8_t cmos_magic_high;
 
-		uint8_t extendedmemory_low;
-		uint8_t extendedmenory_high;
+	uint8_t extendedmemory_low;
+	uint8_t extendedmenory_high;
 
 //		uint16_t reserved3 : 13;
-	} cmos_hardware_data_t;
+} cmos_hardware_data_t;
 
-	typedef struct cmos_data {
-		time_t *time;
-		cmos_register_t registers;
-		cmos_hardware_data_t hardware;
-	} cmos_data_t;
+typedef struct cmos_data {
+	time_t *time;
+	cmos_register_t registers;
+	cmos_hardware_data_t hardware;
+} cmos_data_t;
 
 
-	void INIT_CMOS(void);
-	cmos_data_t* get_cmos_data(void);
+void INIT_CMOS(void);
+cmos_data_t* get_cmos_data(void);
 
-	uint8_t cmos_read_byte(uint8_t offset);
-	void cmos_write_byte(uint8_t offset,uint8_t value);
+uint8_t cmos_read_byte(uint8_t offset);
+void cmos_write_byte(uint8_t offset,uint8_t value);
 
 #endif
 
