@@ -279,25 +279,24 @@ paddr_t pmm_alloc_page_range(unsigned int num)
 
 void INIT_PMM(struct multiboot_struct* MBS)
 {
-	unsigned long i;
-	int x;
-	struct mmap_entry *GRUB_MMAP = (struct mmap_entry *)MBS->mmap_addr;
+    uint32_t i;
+
+    for (i = 0; i < PMM_MMAP_SIZE; i++)
+		pmm_mmap[i]=0x0;
+    MBS += 0xC0000000;
+    int x;
+	struct mmap_entry *GRUB_MMAP = (struct mmap_entry *)MBS->mmap_addr+0xC0000000;
 	uint32_t memsize; /* in bytes */
 
-	for (i = 0; i < PMM_MMAP_SIZE; i++)
-		pmm_mmap[i]=0xFFFFFFFF;
-
-	while (i <= (MBS->mmap_length / 24)) {
-		if (GRUB_MMAP[i].Type == 1) {
-			uint32_t base = (uint32_t)GRUB_MMAP[i].BaseAddr;
-			uint32_t limit = (((uint32_t)GRUB_MMAP[i].Length) + base);
-			while (base < limit) {
-				pmm_mark_page_as_used((paddr_t)base);
-				base += 0x1000;
-			}
-		}
-		i++;
-	}
+    uint32_t mmp =0;
+    i=0;
+    while(mmp < MBS->mmap_length){
+        mmp = GRUB_MMAP[i].size + 4;
+        if(GRUB_MMAP[i].Type == 1){
+            pmm_mark_page_range_as_free((paddr_t)GRUB_MMAP[i].BaseAddr, ((uint32_t) GRUB_MMAP[i].Length)/4096);
+        }
+        i++;
+    }
 
 	//protect Memory structures
 	pmm_mark_page_as_used(0); //IVT+BDA
@@ -307,8 +306,6 @@ void INIT_PMM(struct multiboot_struct* MBS)
 
 	uint16_t* BDA_size=0x0413;
 	pmm_mark_page_as_used((BDA_size[0] / 4) * 1024); //FPS (maybe)
-
-	printf("ROM-AREA\n");
 	pmm_mark_page_range_as_used(0xA0000, 96); //0xA0000 - 0xFFFFF ROM-AREA
 
 	//multiboot structures
@@ -326,30 +323,17 @@ void INIT_PMM(struct multiboot_struct* MBS)
 			} else {
 				size /= 4096;
 			}
-			pmm_mark_page_range_as_used((paddr_t) MBMA[x].mod_start, size);
-			pmm_mark_page_as_used((paddr_t) MBMA[x]. string);
+			pmm_mark_page_range_as_used((paddr_t) MBMA[x].mod_start,size);
+			pmm_mark_page_as_used((paddr_t) MBMA[x].string);
 		}
 	}
 
-/*
- * FIXME TODO XXX
- * kernel_start and kernel_end are currently broken, AND SO IS PMM
- * kernel_end is lower than kernel_start
- */
-	// Kernel
-	pmm_mark_page_range_as_used((paddr_t)&kernel_start, ((uint32_t)&kernel_end - (uint32_t)&kernel_start) / PAGE_SIZE);
+	pmm_mark_page_range_as_used((paddr_t)0x100000, 30); //fixme Static size
 
-	// end of phys. memory
-	if (MBS->flags & 0x1) {		/* check for high- and lowmem field */
-		printf("RAM: %uMB\n", (MBS->mem_low + MBS->mem_up) / 1024);
-		memsize = (MBS->mem_low + MBS->mem_up) * 1024;
-/*
- * FIXME TODO XXX
- * something with the paging is broken
- */
-//		pmm_mark_page_range_as_used(memsize, (PMM_MMAP_SIZE * 32 - (memsize / PAGE_SIZE)));
-	} else {
+	if (! (MBS->flags & 0x1)){
 		panic("PMM_INIT: no ram info in multiboot structure");
 	}
+
+
 }
 
