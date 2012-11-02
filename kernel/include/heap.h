@@ -21,6 +21,7 @@
 
 /**
 	@author Tom Slawik <tom.slawik@gmail.com>
+	@author Michael Sippel (Universe Team) <micha.linuxfreak@gmail.com>
 */
 
 #include <stdint.h>
@@ -29,35 +30,34 @@
 	cstdlib interface
 */
 
-void * malloc ( size_t size );
-void free ( void * ptr );
-void * calloc ( size_t num, size_t size );
-void * realloc ( void * ptr, size_t size );
+void *malloc(size_t size);
+void free(void *ptr);
+void *calloc(size_t num, size_t size);
+void *realloc(void *ptr, size_t size);
 
 /*
 	internal interface
 */
 
-struct alloc_t
-{
-	int size;
+typedef struct alloc {
+	size_t size;
+	vaddr_t start_addr;
 	
-	struct alloc_t *prev;
-	struct alloc_t *next;
-};
+	struct alloc *prev;
+	struct alloc *next;
+} alloc_t;
+#define MAX_ALLOC_SIZE ( PAGE_SIZE - sizeof(alloc_t) )
 
 typedef struct {
-	void *pages[8]; /* WARNING: Actually, it supports only 8 pages :S */
-	int page_count;
-	
-	struct alloc_t *alloc_list;
+	size_t list_count;
+	alloc_t *alloc_list;
 } heap_t;
 
 void INIT_HEAP(void);
 void heap_init(heap_t *heap);
-void heap_expand(heap_t *heap, int pages);
+void heap_expand(heap_t *heap);
 void heap_destroy(heap_t *heap);
-void * heap_alloc(heap_t *heap, size_t size);
+void *heap_alloc(heap_t *heap, size_t size);
 void heap_free(heap_t *heap, void *ptr);
 //void * heap_realloc(heap_t *heap, void *ptr, size_t size);
 
