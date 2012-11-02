@@ -54,8 +54,8 @@ void INIT_SCHEDULER(void)
 
 	//Kernel-init Process
 	proc0                 = malloc(TASK_STATE_STRUCT_SIZE);
-	proc0->prev           = &proc0;
-	proc0->next           = &proc0;
+	proc0->prev           = proc0;
+	proc0->next           = proc0;
 	proc0->pid            = pit_counter;
 	proc0->pagedir        = pd_kernel;
 	proc0->port           = NULL;
@@ -67,10 +67,10 @@ void INIT_SCHEDULER(void)
 
 	strcpy((char*)&proc0->name, "Kernel32.elf");
 	strcpy((char*)&proc0->description, "Kernel INIT");
-	currentprocess = &proc0;
+	currentprocess = proc0;
 	pd_current = pd_kernel;
 	pit_counter++;
-	printf("proc0: %#010X next: %#010X\n",&proc0, currentprocess->flags);
+	printf("proc0: %#010X next: %#010X\n",proc0, currentprocess);
 	//while(1){}
 }
 
@@ -91,11 +91,9 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
 		}
 	}
 
-	currentprocess = currentprocess->next;
-	//printf("%#010X  %#010X\n",&currentprocess, currentprocess->next);
-	//while(1){}
-	//printf("%d    %#010X\n",currentprocess->flags,currentprocess);
-	/*while (!(currentprocess->flags & ACTIV )) {
+
+	//currentprocess = currentprocess->next;
+    /*while (!(currentprocess->flags & ACTIV )) {
 		currentprocess=currentprocess->next;
 	}*/
 
