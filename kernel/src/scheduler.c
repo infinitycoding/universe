@@ -70,7 +70,8 @@ void INIT_SCHEDULER(void)
 	currentprocess = proc0;
 	pd_current = pd_kernel;
 	pit_counter++;
-	printf("proc0: %#010X next: %#010X\n",proc0, currentprocess);
+	printf("proc0: %#010X next: %#010X\n",currentprocess, currentprocess->next);
+	printf("flg: %d",currentprocess->flags);
 	//while(1){}
 }
 
@@ -91,7 +92,8 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
 		}
 	}
 
-
+    printf("proc0: %#010X next: %#010X\n",currentprocess, currentprocess->next);
+           while(1){}
 	//currentprocess = currentprocess->next;
     /*while (!(currentprocess->flags & ACTIV )) {
 		currentprocess=currentprocess->next;
