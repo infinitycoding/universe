@@ -26,8 +26,9 @@
 #include <printf.h>
 
 void halt(void) {
-	asm volatile("cli");
-	while (1) {}
+	while (1) {
+		asm volatile("cli; hlt");
+	}
 }
 
 char *exception_messages[] =

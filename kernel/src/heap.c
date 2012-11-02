@@ -18,6 +18,7 @@
 
 /**
 	@author Tom Slawik <tom.slawik@gmail.com>
+	@author Michael Sippel (Universe Team) <micha.linuxfreak@gmail.com>
 */
 
 #include <stdint.h>
@@ -27,36 +28,30 @@
 
 heap_t kernel_heap;
 
-void INIT_HEAP(void)
-{
+void INIT_HEAP(void) {
 	heap_init(&kernel_heap);
 }
 
 /* c standard interface. do some preparation here! */
 
-void * malloc ( size_t size )
-{
+void *malloc(size_t size) {
 	return heap_alloc(&kernel_heap, size);
 }
 
-void free ( void * ptr )
-{
+void free(void * ptr) {
 	heap_free(&kernel_heap, ptr);
 }
 
-void * calloc ( size_t num, size_t size )
-{
+void *calloc(size_t num, size_t size) {
 	void *data = heap_alloc(&kernel_heap, size);
-	
 	memset(data, 0, size);
 	
 	return data;
 }
 
-void * realloc ( void * ptr, size_t size )
-{
+void *realloc(void *ptr, size_t size) {
 	void *dest = heap_alloc(&kernel_heap, size);
-	struct alloc_t *source_alloc = ptr - sizeof(struct alloc_t);
+	alloc_t *source_alloc = ptr - sizeof(alloc_t);
 	
 	memmove(dest, ptr, source_alloc->size);
 	free(ptr);
@@ -66,76 +61,101 @@ void * realloc ( void * ptr, size_t size )
 
 /* implementation */
 
-void heap_init(heap_t *heap)
-{
-	heap->page_count = 0;
-	heap_expand(heap, 1);
+void heap_init(heap_t *heap) {
+	paddr_t pframe = pmm_alloc_page();
+	alloc_t list; 
+	list.size = PAGE_SIZE;
+	list.start_addr = pd_automap_kernel(pd_get_kernel(), pframe, PTE_WRITABLE);
 	
-	heap->alloc_list = heap->pages[0];
-	heap->alloc_list->size = 0;
-	heap->alloc_list->prev = heap->alloc_list;
-	heap->alloc_list->next = heap->alloc_list;
+	heap->list_count = 1;
+	heap->alloc_list = &list;
 }
 
-void heap_expand(heap_t *heap, int pages)
-{
-	/* TODO : Range Allocation + Virtual Memory */
-	/* BUG: After 10 Allocations, it overwrites the heap structure */
-	heap->pages[heap->page_count++] = (void *)pmm_alloc_page_limit(0xC0000000);
+void heap_expand(heap_t *heap) {
+	/* TODO : Range Allocation */
+	heap->list_count++;
+	paddr_t pframe = pmm_alloc_page();
+	vaddr_t vframe = pd_automap_kernel(pd_get_kernel(), pframe, PTE_WRITABLE);
+	
+	alloc_t *list = heap->alloc_list;
+	alloc_t new_list;
+	
+	while(list->next) {
+	  list = list->next;
+	}
+	
+	new_list.size = PAGE_SIZE - sizeof(alloc_t);
+	new_list.start_addr = vframe + sizeof(alloc_t);
+	new_list.prev = list;
+	new_list.next = NULL;
+
+	list->next = &new_list;
 }
 
-void heap_destroy(heap_t *heap)
-{
-	while (heap->page_count != 0) {
-		pmm_mark_page_as_free((paddr_t)heap->pages[--heap->page_count]);
+void heap_destroy(heap_t *heap) {
+	while (heap->list_count != 0) {
+		pd_unmap(pd_get_kernel(),
+			 heap->alloc_list[--heap->list_count].start_addr & ~0xFFF);
 	}
 }
 
-void * heap_alloc(heap_t *heap, size_t size)
-{
-	struct alloc_t *header;
-	void *data;
+void *heap_alloc(heap_t *heap, size_t size) {
+	alloc_t *header = NULL;
+	vaddr_t data;
 	
-	/* step 1: get destination address */
-	if (heap->alloc_list->size == 0) { /* first alloc */
-		header = heap->alloc_list;
-	} else {
-		/* TODO: "Best fit" search algorithm for less memory waste */
-		header = (struct alloc_t *)((uintptr_t)heap->alloc_list->prev + sizeof(struct alloc_t) + heap->alloc_list->prev->size);
+	if(size <= PAGE_SIZE) {
+		data = pd_automap_kernel(pd_get_kernel(), pmm_alloc_page(), PTE_WRITABLE);
+		return data;
 	}
 	
-	data = (void *)((uintptr_t)header + sizeof(struct alloc_t));
-	
-	/* step 2: expand heap (if neccessary) */
-	unsigned int page = heap->page_count - 1;
-	while (data + size > heap->pages[heap->page_count - 1] + PAGE_SIZE) {
-		heap_expand(heap, 1);
-		header = heap->pages[page];
-		data = (void *)((uintptr_t)header + sizeof(struct alloc_t));
+	if(size > MAX_ALLOC_SIZE) {
+		char msg[125];
+		sprintf(msg, "To much memory for malloc requested!\n"
+		      "Max. memory: 0x%x, Request: 0x%x\n", MAX_ALLOC_SIZE, size);
+		panic(msg);
 	}
 	
-	/* step 3: setup header */
-	header->size = size;
-	header->prev = heap->alloc_list->prev;
-	header->next = heap->alloc_list;
+	int i;
+	for(i = 0; i < heap->list_count; i++) {
+		header = &heap->alloc_list[i];
+		if(header->size >= size) {
+			data = header->start_addr;
+			if(header->size > size) {
+				alloc_t new_header;
+				new_header.size = header->size - size;
+				new_header.start_addr = header->start_addr + size + sizeof(alloc_t);
+				new_header.next = header->next;
+				new_header.prev = header->prev;
+				
+				if(header->prev) header->prev->next = &new_header;
+				if(header->next) header->next->prev = &new_header;
+				
+				header->prev = NULL;
+				header->next = NULL;
+			} else if(header->size == size) {
+				header->prev->next = header->next;
+				header->next->prev = header->prev;
+				header->prev = NULL;
+				header->next = NULL;
+			} 
+			
+			return data;
+		}
+	}
 	
-	/* step 4: update nodes */
-	//header->prev->next = header;
-	heap->alloc_list->prev = header;
-	
-	/* step 5: print debug information */
 	#ifdef HEAP_DEBUG
 		printf("heap_alloc(): reserving %d bytes of memory: %p - %p\n", header->size, data, data + header->size);
 	#endif
 	
-	return data;
+	return (void*) data;
 }
 
-void heap_free(heap_t *heap, void *ptr)
-{
-	struct alloc_t *header = (struct alloc_t *)((uintptr_t)ptr - sizeof(struct alloc_t));
-	header->prev->next = header->next;
-	header->next->prev = header->prev;
+void heap_free(heap_t *heap, void *ptr) {
+	alloc_t *header = (alloc_t*)((uintptr_t)ptr - sizeof(alloc_t));
+	alloc_t *prev = &heap->alloc_list[heap->list_count++];
+	header->next = NULL;
+	header->prev = prev;
+	prev->next = header;
 	
 	#ifdef HEAP_DEBUG
 		printf("heap_free(): freeing %d bytes of memory: %p - %p\n", header->size, ptr, ptr + header->size);

@@ -64,7 +64,7 @@ void pmm_mark_page_as_free(paddr_t page)
 /**
  * Mark num pages as free
  *
- * @praram page-pointer on the begin of the first page.
+ * @param page-pointer on the begin of the first page.
  * @param num of the pages which should be marked as free.
  */
 static void pmm_mark_page_range_as_free(paddr_t page, unsigned int num)
@@ -87,7 +87,7 @@ static void pmm_mark_page_range_as_free(paddr_t page, unsigned int num)
 /**
  * mark page as used
  *
- * @praram page-pointer on the begin of the first page.
+ * @param page-pointer on the begin of the first page.
  */
 static void pmm_mark_page_as_used(paddr_t page)
 {
@@ -97,7 +97,7 @@ static void pmm_mark_page_as_used(paddr_t page)
 /**
  * Mark num pages as used
  *
- * @praram page-pointer on the begin of the first page.
+ * @param page-pointer on the begin of the first page.
  * @param num of the pages which should be marked as free.
  */
 static void pmm_mark_page_range_as_used(paddr_t page, unsigned int num)
@@ -334,6 +334,6 @@ void INIT_PMM(struct multiboot_struct* MBS)
 		panic("PMM_INIT: no ram info in multiboot structure");
 	}
 
-
+	
 }
 

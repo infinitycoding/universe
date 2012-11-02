@@ -91,7 +91,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	INIT_KEYBOARD();
 	INIT_SCHEDULER();
 	INIT_VFS();
-	asm volatile("sti");
+// 	asm volatile("sti");
 	
 	//print Logo and loading message
 	print_logo(YELLOW);
