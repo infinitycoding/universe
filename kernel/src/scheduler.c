@@ -54,21 +54,24 @@ void INIT_SCHEDULER(void)
 
 	//Kernel-init Process
 	proc0                 = malloc(TASK_STATE_STRUCT_SIZE);
-	proc0->prev           = proc0;
-	proc0->next           = proc0;
+	proc0->prev           = &proc0;
+	proc0->next           = &proc0;
 	proc0->pid            = pit_counter;
 	proc0->pagedir        = pd_kernel;
 	proc0->port           = NULL;
 	proc0->threads        = NULL;
 	proc0->proc_children  = NULL;
-	proc0->flags          = ACTIV|REALTIME_PRIORITY | KERNELMODE;
+	proc0->flags          = (ACTIV|REALTIME_PRIORITY | KERNELMODE);
 	proc0->tid_counter    = 0;
 	proc0->freetid        = NULL;
 
 	strcpy((char*)&proc0->name, "Kernel32.elf");
-	strcpy((char*)&proc0->description, "Kernel initialization");
-	currentprocess = proc0;
+	strcpy((char*)&proc0->description, "Kernel INIT");
+	currentprocess = &proc0;
+	pd_current = pd_kernel;
 	pit_counter++;
+	printf("proc0: %#010X next: %#010X\n",&proc0, currentprocess->flags);
+	//while(1){}
 }
 
 struct cpu_state *task_schedule(struct cpu_state *cpu)
@@ -89,12 +92,15 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
 	}
 
 	currentprocess = currentprocess->next;
-	while (!(currentprocess->flags & (ACTIV | FREEZED))) {
+	//printf("%#010X  %#010X\n",&currentprocess, currentprocess->next);
+	//while(1){}
+	//printf("%d    %#010X\n",currentprocess->flags,currentprocess);
+	/*while (!(currentprocess->flags & ACTIV )) {
 		currentprocess=currentprocess->next;
-	}
+	}*/
 
-	pd_switch(currentprocess->pagedir);
-	pd_current = currentprocess->pagedir;
+	//pd_switch(currentprocess->pagedir);
+	//pd_current = currentprocess->pagedir;
 
 	if (currentprocess->threads) {
 		while (!(currentprocess->currentthread->flags & (ACTIV|FREEZED))) {
@@ -114,13 +120,13 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
 		set_pit_freq(FREQ_BACKGRUND);
 	}
 	EOI(0);
-	
+
 	return cpu;
 }
 
 pid_t get_freepid(void) {
 	pid_t new_pid;
-	
+
 	if (freepid) {
 		new_pid = freepid->pid;
 		if (freepid->next == freepid) {
@@ -137,7 +143,7 @@ pid_t get_freepid(void) {
 		new_pid = pit_counter;
 		pit_counter++;
 	}
-	
+
 	return new_pid;
 }
 
