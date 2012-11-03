@@ -92,8 +92,8 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
 		}
 	}
 
-    //printf("proc0: %#010X next: %#010X\n",currentprocess, currentprocess->next);
-        //   while(1){}
+    printf("proc0: %#010X next: %#010X\n",currentprocess, currentprocess->next);
+          while(1){}
 	//currentprocess = currentprocess->next;
     /*while (!(currentprocess->flags & ACTIV )) {
 		currentprocess=currentprocess->next;

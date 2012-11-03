@@ -61,37 +61,57 @@ void *realloc(void *ptr, size_t size) {
 
 /* implementation */
 
+/**
+ * Initalize a heap
+ * 
+ * @param heap heap to initalise
+ * @return void
+ */
 void heap_init(heap_t *heap) {
-	paddr_t pframe = pmm_alloc_page();
-	alloc_t list; 
-	list.size = PAGE_SIZE;
-	list.start_addr = pd_automap_kernel(pd_get_kernel(), pframe, PTE_WRITABLE);
-	
+	vaddr_t vframe = pd_automap_kernel(pd_get_kernel(), pmm_alloc_page(), PTE_WRITABLE);
+	alloc_t *header = vframe;
+	header->size = MAX_ALLOC_SIZE;
+	header->start_addr = vframe + sizeof(alloc_t);
+	header->next = NULL;
+	header->prev = NULL;
+
 	heap->list_count = 1;
-	heap->alloc_list = &list;
+	heap->alloc_list = header;
 }
 
+/**
+ * Add a page to the heap
+ * 
+ * @param heap heap
+ * @return void
+ */
 void heap_expand(heap_t *heap) {
 	/* TODO : Range Allocation */
 	heap->list_count++;
 	paddr_t pframe = pmm_alloc_page();
 	vaddr_t vframe = pd_automap_kernel(pd_get_kernel(), pframe, PTE_WRITABLE);
-	
-	alloc_t *list = heap->alloc_list;
-	alloc_t new_list;
-	
-	while(list->next) {
-	  list = list->next;
-	}
-	
-	new_list.size = PAGE_SIZE - sizeof(alloc_t);
-	new_list.start_addr = vframe + sizeof(alloc_t);
-	new_list.prev = list;
-	new_list.next = NULL;
 
-	list->next = &new_list;
+	alloc_t *header = heap->alloc_list;
+	alloc_t *new_header = vframe;
+
+	while(header->next) {
+	  header = header->next;
+	}
+
+	new_header->size = MAX_ALLOC_SIZE;
+	new_header->start_addr = vframe + sizeof(alloc_t);
+	new_header->prev = header;
+	new_header->next = NULL;
+
+	header->next = new_header;
 }
 
+/**
+ * Destroy a heap
+ * 
+ * @param heap heap
+ * @return void
+ */
 void heap_destroy(heap_t *heap) {
 	while (heap->list_count != 0) {
 		pd_unmap(pd_get_kernel(),
@@ -99,9 +119,17 @@ void heap_destroy(heap_t *heap) {
 	}
 }
 
+/**
+ * Find a free range of bytes in the heap and reserve this
+ * 
+ * @param heap heap
+ * @param size number of bytes
+ * 
+ * @return pointer to reserved bytes
+ */
 void *heap_alloc(heap_t *heap, size_t size) {
 	alloc_t *header = NULL;
-	vaddr_t data;
+	vaddr_t data = 0;
 	
 	if(size <= PAGE_SIZE) {
 		data = pd_automap_kernel(pd_get_kernel(), pmm_alloc_page(), PTE_WRITABLE);
@@ -123,7 +151,7 @@ void *heap_alloc(heap_t *heap, size_t size) {
 			if(header->size > size) {
 				alloc_t new_header;
 				new_header.size = header->size - size;
-				new_header.start_addr = header->start_addr + size + sizeof(alloc_t);
+				new_header.start_addr = header->start_addr + size;
 				new_header.next = header->next;
 				new_header.prev = header->prev;
 				
@@ -133,14 +161,23 @@ void *heap_alloc(heap_t *heap, size_t size) {
 				header->prev = NULL;
 				header->next = NULL;
 			} else if(header->size == size) {
-				header->prev->next = header->next;
-				header->next->prev = header->prev;
+				if(header->prev) header->prev->next = header->next;
+				if(header->next) header->next->prev = header->prev;
 				header->prev = NULL;
 				header->next = NULL;
 			} 
 			
 			return data;
 		}
+	}
+	
+	if(!data) {
+		heap_expand(heap);
+		/**
+		 * FIXME: Recursion!!
+		 * TODO: fix that
+		 */
+		data = heap_alloc(heap, size);
 	}
 	
 	#ifdef HEAP_DEBUG
@@ -150,6 +187,14 @@ void *heap_alloc(heap_t *heap, size_t size) {
 	return (void*) data;
 }
 
+/**
+ * Free a range of bytes in th heap
+ * 
+ * @param heap heap
+ * @param ptr pointer
+ * 
+ * @return void
+ */
 void heap_free(heap_t *heap, void *ptr) {
 	alloc_t *header = (alloc_t*)((uintptr_t)ptr - sizeof(alloc_t));
 	alloc_t *prev = &heap->alloc_list[heap->list_count++];
