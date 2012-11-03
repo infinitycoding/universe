@@ -151,7 +151,7 @@ void *heap_alloc(heap_t *heap, size_t size) {
 			if(header->size > size) {
 				alloc_t new_header;
 				new_header.size = header->size - size;
-				new_header.start_addr = header->start_addr + size;
+				new_header.start_addr = header->start_addr + size + sizeof(alloc_t);
 				new_header.next = header->next;
 				new_header.prev = header->prev;
 				
