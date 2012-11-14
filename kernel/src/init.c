@@ -68,9 +68,7 @@ int testproc(void) {
 *
 * @return 0
 */
-
-int init (struct multiboot_struct *mb_info, uint32_t magic_number)
-{
+int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	clear_screen();
 
 	if (magic_number != 0x2BADB002) {
@@ -85,13 +83,17 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	INIT_IDT();
 	INIT_PAGING();
 	INIT_HEAP();
+	printf("malloc(0x%x): 0x%x\n", 0xff0, malloc(0xff0));
+	printf("malloc(0x%x): 0x%x\n", 0x200, malloc(0x200));
+	
+	halt();
 	INIT_CPUID();
 	INIT_PIT(50);
 	INIT_CMOS();
 	INIT_KEYBOARD();
-	INIT_SCHEDULER();
-	INIT_VFS();
-	asm volatile("sti");
+// 	INIT_SCHEDULER();
+// 	INIT_VFS();
+// 	asm volatile("sti");
 	
 	//print Logo and loading message
 	print_logo(YELLOW);
