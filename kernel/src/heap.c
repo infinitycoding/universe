@@ -70,6 +70,7 @@ void *realloc(void *ptr, size_t size) {
 void heap_init(heap_t *heap) {
 	vaddr_t vframe = pd_automap_kernel(pd_get_kernel(), pmm_alloc_page(), PTE_WRITABLE);
 	alloc_t *header = vframe;
+
 	header->size = MAX_ALLOC_SIZE;
 	header->start_addr = vframe + sizeof(alloc_t);
 	header->next = NULL;
@@ -90,7 +91,7 @@ void heap_expand(heap_t *heap) {
 	heap->list_count++;
 	paddr_t pframe = pmm_alloc_page();
 	vaddr_t vframe = pd_automap_kernel(pd_get_kernel(), pframe, PTE_WRITABLE);
-
+	printf("heap-expand: vframe = 0x%x\n", vframe);
 	alloc_t *header = heap->alloc_list;
 	alloc_t *new_header = vframe;
 
@@ -131,12 +132,10 @@ void *heap_alloc(heap_t *heap, size_t size) {
 	alloc_t *header = NULL;
 	vaddr_t data = 0;
 	
-	if(size <= PAGE_SIZE) {
+	if(size <= PAGE_SIZE && size > MAX_ALLOC_SIZE) {
 		data = pd_automap_kernel(pd_get_kernel(), pmm_alloc_page(), PTE_WRITABLE);
 		return data;
-	}
-	
-	if(size > MAX_ALLOC_SIZE) {
+	} else if(size > MAX_ALLOC_SIZE) {
 		char msg[125];
 		sprintf(msg, "To much memory for malloc requested!\n"
 		      "Max. memory: 0x%x, Request: 0x%x\n", MAX_ALLOC_SIZE, size);
@@ -144,34 +143,39 @@ void *heap_alloc(heap_t *heap, size_t size) {
 	}
 	
 	int i;
-	for(i = 0; i < heap->list_count; i++) {
+	for(i = 0; i <= heap->list_count; i++) {
 		header = &heap->alloc_list[i];
 		if(header->size >= size) {
 			data = header->start_addr;
+			printf("     found a free node: 0x%x\n", header);
+			printf("         start_addr = 0x%x\n", data);
 			if(header->size > size) {
-				alloc_t new_header;
-				new_header.size = header->size - size;
-				new_header.start_addr = header->start_addr + size + sizeof(alloc_t);
-				new_header.next = header->next;
-				new_header.prev = header->prev;
+				alloc_t *new_header = header->start_addr + size;
+				new_header->size = header->size - size;
+				new_header->start_addr = new_header + sizeof(alloc_t);
+				new_header->next = header->next;
+				new_header->prev = header->prev;
 				
 				if(header->prev) header->prev->next = &new_header;
+				else heap->alloc_list = new_header;
 				if(header->next) header->next->prev = &new_header;
-				
-				header->prev = NULL;
-				header->next = NULL;
 			} else if(header->size == size) {
 				if(header->prev) header->prev->next = header->next;
+				else {
+					
+					heap_expand(heap);
+					
+				}
 				if(header->next) header->next->prev = header->prev;
 				header->prev = NULL;
 				header->next = NULL;
-			} 
+			}
 			
 			return data;
 		}
 	}
 	
-	if(!data) {
+	if(data) {
 		heap_expand(heap);
 		/**
 		 * FIXME: Recursion!!

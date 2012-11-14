@@ -131,14 +131,14 @@ pt_t pt_get(pd_t *pd, int index, uint8_t flags) {
 	    pt = (pt_t) PT_VADDR(index);
 	  }
 	} else {
-	  pt = (pt_t) PT_PADDR(index);
+	  pt = (pt_t) PT_PADDR(index) + MEMORY_LAYOUT_KERNEL_START;
 	}
 
 	return pt;
 }
 
 /**
- * Create a new pagetale
+ * Create a new pagetable
  *
  * @param pd pagedirectory
  * @param index index
@@ -148,11 +148,12 @@ pt_t pt_get(pd_t *pd, int index, uint8_t flags) {
  */
 pt_t pt_create(pd_t *pd, int index, uint8_t flags) {
 	pt_t pt = pmm_alloc_page();
-	pd->entries[index] = (int)pt | flags | PDE_PRESENT;
+	pd->entries[index] = (pde_t) pt | flags | PDE_PRESENT;
 
-	pt = pt_get(pd, index, flags);
+
+	pt = pt_get(pd, index, flags | PDE_PRESENT);
 	memset(pt, 0, PT_LENGTH);
-
+	
 	return pt;
 }
 
@@ -165,6 +166,7 @@ pt_t pt_create(pd_t *pd, int index, uint8_t flags) {
  * @return void
  */
 void pt_destroy(pd_t *pd, int index) {
+	pd_unmap(pd, PT_VADDR(index));
 	pd->entries[index] = 0;
 }
 
@@ -180,14 +182,14 @@ vaddr_t pd_map_temp(paddr_t pframe, uint8_t flags) {
 	vaddr_t vframe = vaddr_find(pd_current,
 				    MEMORY_LAYOUT_RESERVED_AREA_END,
 				    MEMORY_LAYOUT_KERNEL_END);
-	pd_map(pd_current, pframe, vframe, flags);
+	pd_map(pd_current, pframe, vframe, flags | PTE_PRESENT);
 
 	int i;
 	FOR_TEMP(i) {
 		if(temp_mapped[i] == NULL) {
 			/**
-			* FIXME: if temp_mapped is full the mapping won't be removed at pd_switch()!
-			*/
+			 * FIXME: if temp_mapped is full the mapping won't be removed at pd_switch()!
+			 */
 			temp_mapped[i] = vframe;
 			break;
 		}
@@ -219,12 +221,12 @@ int pd_map(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags) {
 	pde_t pde = pd->entries[pd_index];
 
 	if (pde & PDE_PRESENT) {
-		pt = pt_get(pd, pd_index, flags);
+		pt = pt_get(pd, pd_index, flags | PDE_PRESENT);
 	} else {
-		pt = pt_create(pd, pd_index, flags);
+		pt = pt_create(pd, pd_index, flags | PDE_PRESENT);
 	}
 
-	pt[pt_index] = (uint32_t)(pframe & PTE_FRAME) | PTE_PRESENT | (flags & 0xFFF);
+	pt[pt_index] = (pte_t)(pframe & ~0xFFF) | PTE_PRESENT | (flags & 0xFFF);
 	
 	if(pd == pd_current && pd_current) {
 		paging_flush_tlb(vframe);
@@ -286,7 +288,7 @@ vaddr_t pd_automap_kernel(pd_t *pd, paddr_t pframe, uint8_t flags) {
 				    MEMORY_LAYOUT_RESERVED_AREA_END,
 				    MEMORY_LAYOUT_KERNEL_END);
 	
-	pd_map(pd, pframe, vframe, flags);
+	pd_map(pd, pframe, vframe, flags | PTE_PRESENT);
 
 	return vframe;
 }
@@ -304,7 +306,7 @@ vaddr_t pd_automap_user(pd_t *pd, paddr_t pframe, uint8_t flags) {
 	vaddr_t vframe = vaddr_find(pd,
 				    0x00000000,
 				    MEMORY_LAYOUT_KERNEL_START);
-	pd_map(pd, pframe, vframe, flags);
+	pd_map(pd, pframe, vframe, flags | PTE_PRESENT);
 
 	return vframe;
 }
@@ -320,18 +322,19 @@ vaddr_t vaddr_find(pd_t *pd, int limit_low, int limit_high) {
 	pt_t pt;
 	pde_t pde;
 	uint32_t pd_index = PDE_INDEX(limit_low);
+// 	printf("pd_index = 0x%x\n", pd_index);
 	uint32_t pt_index = PTE_INDEX(limit_low);
 	uint32_t pd_end = PDE_INDEX(limit_high);
 	uint32_t pt_end = PTE_INDEX(limit_high);
 
 	while(pd_index <= pd_end) {
 		pde = (pde_t) pd->entries[pd_index];
-		
 		if(pde & PDE_PRESENT) {
+			printf("preset_pagetable\n");
 			pt = pt_get(pd, pd_index, PTE_WRITABLE);
 			uint32_t end = (pd_index == pd_end) ? pt_end : PT_LENGTH;
 			while(pt_index < end) {
-				if(! ((int)pt[pt_index++] & PTE_PRESENT) ) {
+				if(! ((uint32_t)pt[pt_index++] & PTE_PRESENT) ) {
 					vaddr = PAGE_FRAME_ADDR( pd_index*PT_LENGTH + pt_index );
 					return vaddr;
 				}
@@ -339,6 +342,7 @@ vaddr_t vaddr_find(pd_t *pd, int limit_low, int limit_high) {
 			pt_index = 0;
 		} else {
 			vaddr = PAGE_FRAME_ADDR( pd_index*PT_LENGTH + pt_index );
+			printf("vaddr_find(): frame 0x%x found! \n", vaddr);
 			return vaddr;
 		}
 		pd_index++;
