@@ -20,12 +20,26 @@
 */
 
 /**
+
+	Includes important mathematical functions such as sine or cosine
+	by using Taylor series.
+
 	@author Tom Slawik <tom.slawik@gmail.com>
+	@author Adrian Jablonski <support@quadsoft.org>
 */
 
-int powi(int base, int exponent);
-int logi(int x);
-int absi(int x);
+#define PI = 3.1415926535897931
+#define E  = 2.7182818284590451
+
+double exp(double x);
+double ln(double y);
+double pow(double base, double exp);
+double sin(double x);
+double cos(double x);
+
+double inline powi(double base, int exp);
+double inline factorial(long n);
+double inline abs(double x);
 
 unsigned int bit_scan_forward(unsigned int);
 
