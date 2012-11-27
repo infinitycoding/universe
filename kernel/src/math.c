@@ -34,7 +34,7 @@ double exp(double x)
 {
     double sigma = 0;
     for (int i = 0; i < 150; i++)
-        sigma += powi(x, i ) / Factorial(i);
+        sigma += powi(x, i ) / factorial(i);
     return sigma;
 }
 
@@ -65,7 +65,7 @@ double sin(double x)
 {
 	double sigma = 0;
 	for (int i = 0; i < 20; i++)
-		sigma += ((powi(-1, i) * powi(x, 2 * i + 1)) / Factorial(2 * i + 1));
+		sigma += ((powi(-1, i) * powi(x, 2 * i + 1)) / factorial(2 * i + 1));
 	return sigma;
 }
 
@@ -76,7 +76,7 @@ double cos(double x)
 {
     double sigma = 0;
     for (int i = 0; i < 20; i++)
-        sigma += ((powi(-1, i) * powi(x, 2 * i)) / Factorial(2 * i));
+        sigma += ((powi(-1, i) * powi(x, 2 * i)) / factorial(2 * i));
     return sigma;
 }
 
