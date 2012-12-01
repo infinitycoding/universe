@@ -33,7 +33,8 @@
 double exp(double x)
 {
     double sigma = 0;
-    for (int i = 0; i < 150; i++)
+    int i;
+    for (i = 0; i < 150; i++)
         sigma += powi(x, i ) / factorial(i);
     return sigma;
 }
@@ -45,7 +46,8 @@ double ln(double y)
 {
     double x = (y - 1) / (y + 1);
     double sigma = 0;
-    for (int i = 0; i < 150; i++)
+    int i;
+    for (i = 0; i < 150; i++)
         sigma += powi(x, 2*i+1) /(2*i+1);
     return 2*sigma;
 }
@@ -64,7 +66,8 @@ double pow(double base, double exponent)
 double sin(double x)
 {
 	double sigma = 0;
-	for (int i = 0; i < 20; i++)
+	int i;
+	for (i = 0; i < 20; i++)
 		sigma += ((powi(-1, i) * powi(x, 2 * i + 1)) / factorial(2 * i + 1));
 	return sigma;
 }
@@ -75,7 +78,8 @@ double sin(double x)
 double cos(double x)
 {
     double sigma = 0;
-    for (int i = 0; i < 20; i++)
+    int i;
+    for (i = 0; i < 20; i++)
         sigma += ((powi(-1, i) * powi(x, 2 * i)) / factorial(2 * i));
     return sigma;
 }
@@ -86,7 +90,8 @@ double cos(double x)
 double inline powi(double base, int exp)
 {
     double pi = 1;
-    for (int i = 0; i < exp; i++)
+    int i;
+    for (i = 0; i < exp; i++)
         pi *= base;
     return pi;
 }
@@ -97,7 +102,8 @@ double inline powi(double base, int exp)
 double inline factorial(long n)
 {
 	double res = 1;
-	for (int i = 1; i <= n; i++)
+	int i;
+	for (i = 1; i <= n; i++)
 		res *= i;
 	return res;
 }
