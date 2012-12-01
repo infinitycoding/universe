@@ -17,43 +17,98 @@
 */
 
 /**
+
+	Includes important mathematical functions such as sine or cosine.
+	Computation uses Taylor series.
+
 	@author Tom Slawik <tom.slawik@gmail.com>
+	@author Adrian Jablonski <support@quadsoft.org>
  */
 
 #include <math.h>
 
-
-int powi(int base, int exponent)
+/**
+	Exponential-Function
+**/
+double exp(double x)
 {
-	int result = base;
-	int i;
-
-	if (exponent == 0) {
-		result = 1;
-	} else {
-		for (i = 0; i < exponent - 1; ++i) {
-			result *= base;
-		}
-	}
-
-	return result;
+    double sigma = 0;
+    for (int i = 0; i < 150; i++)
+        sigma += powi(x, i ) / factorial(i);
+    return sigma;
 }
 
-int logi(int x)
+/**
+	Natural logarithm
+**/
+double ln(double y)
 {
-	int log2 = 0;
-	int pot = 1;
-	while (pot <= x) {
-		pot *= 2;
-		++log2;
-	}
-	return log2 - 1;
+    double x = (y - 1) / (y + 1);
+    double sigma = 0;
+    for (int i = 0; i < 150; i++)
+        sigma += powi(x, 2*i+1) /(2*i+1);
+    return 2*sigma;
 }
 
-int absi(int x)
+/**
+	Power for real exponents
+**/
+double pow(double base, double exponent)
 {
-	if (x < 0) {
-		return - x;
+    return exp(exponent * ln(base));
+}
+
+/**
+	Sine
+**/
+double sin(double x)
+{
+	double sigma = 0;
+	for (int i = 0; i < 20; i++)
+		sigma += ((powi(-1, i) * powi(x, 2 * i + 1)) / factorial(2 * i + 1));
+	return sigma;
+}
+
+/**
+	Cosine
+**/
+double cos(double x)
+{
+    double sigma = 0;
+    for (int i = 0; i < 20; i++)
+        sigma += ((powi(-1, i) * powi(x, 2 * i)) / factorial(2 * i));
+    return sigma;
+}
+
+/**
+	Power for integer exponents
+**/
+double inline powi(double base, int exp)
+{
+    double pi = 1;
+    for (int i = 0; i < exp; i++)
+        pi *= base;
+    return pi;
+}
+
+/**
+	Factorial function
+**/
+double inline factorial(long n)
+{
+	double res = 1;
+	for (int i = 1; i <= n; i++)
+		res *= i;
+	return res;
+}
+
+/**
+	Absolute value
+**/
+double inline abs(double x)
+{
+	if (x < 0.0) {
+		return -x;
 	} else {
 		return x;
 	}
