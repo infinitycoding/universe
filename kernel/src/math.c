@@ -93,7 +93,7 @@ double inline powi(double base, int exp)
     int i;
     if (exp == 0)
     	return pi;
-    for (i = 0; i < absi(exp); i++)
+    for (i = 0; i < abs(exp); i++)
         pi *= base;    
     if (exp < 0)
 	return 1/pi;
