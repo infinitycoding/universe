@@ -98,7 +98,7 @@ double inline powi(double base, int exp)
     if (exp < 0)
 	return 1/pi;
     else
-  	eturn pi;
+  	return pi;
 }
 
 /**
