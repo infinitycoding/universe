@@ -40,10 +40,9 @@
 char * itoa_ex(unsigned int value, char * str, int base, int flags, int width)
 {
 	char *result = str;
-	int size;
-
-	int len = 0;
-	int temp = 0;
+	unsigned int size;
+	unsigned int len = 0;
+	unsigned int temp = 0;
 	int negative = 0;
 
 	const char *digits = "0123456789ABCDEF";
