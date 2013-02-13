@@ -87,18 +87,20 @@ double cos(double x)
 /**
 	Power for integer exponents
 **/
-double inline powi(double base, int exp)
+int powi(int base, int exponent)
 {
-    double pi = 1;
-    int i;
-    if (exp == 0)
-    	return pi;
-    for (i = 0; i < abs(exp); i++)
-        pi *= base;    
-    if (exp < 0)
-	return 1/pi;
-    else
-  	return pi;
+  int result = base;
+  int i;
+
+  if (exponent == 0) {
+    result = 1;
+  } else {
+    for (i = 0; i < exponent - 1; ++i) {
+      result *= base;
+    }
+  }
+  
+  return result;
 }
 
 /**

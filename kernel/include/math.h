@@ -37,7 +37,7 @@ double pow(double base, double exp);
 double sin(double x);
 double cos(double x);
 
-double inline powi(double base, int exp);
+int powi(int base, int exponent);
 double inline factorial(long n);
 double inline abs(double x);
 

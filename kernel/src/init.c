@@ -76,16 +76,15 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	}
 
 	set_color(WHITE | BLACK << 4);
-
 	//Init Kernelmodules
-	INIT_PMM(mb_info);
-	INIT_GDT();
-	INIT_IDT();
-	INIT_PAGING();
-	INIT_HEAP();
-	printf("malloc(0x%x): 0x%x\n", 0xff0, malloc(0xff0));
-	printf("malloc(0x%x): 0x%x\n", 0x200, malloc(0x200));
-	
+// 	INIT_PMM(mb_info);
+// 	INIT_GDT();
+// 	INIT_IDT();
+// 	INIT_PAGING();
+// 	INIT_HEAP();
+// 	printf("malloc(0x%x): 0x%x\n", 0xff0, malloc(0xff0));
+// 	printf("malloc(0x%x): 0x%x\n", 0x200, malloc(0x200));
+	printf("Hello World!\nPrintf works again!\n0x%x\n",0x1234);
 	halt();
 	INIT_CPUID();
 	INIT_PIT(50);
