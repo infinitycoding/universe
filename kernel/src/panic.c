@@ -79,10 +79,23 @@ void panic(char *message)
 	int lines = 8;
 	int len = 0;
 
+	int i;
+	len += sprintf(buffer + len, "      %c", 201);
+	for(i=0;i<66;i++) len += sprintf(buffer + len, "%c", 205);
+	len += sprintf(buffer + len, "%c      \n", 187);
+	
+	len += sprintf(buffer + len, 
+		       "      %c                             Universe                             %c      \n",
+	       186, 186);
+	
+	len += sprintf(buffer + len, "      %c", 200);
+	for(i=0;i<66;i++) len += sprintf(buffer + len, "%c", 205);
+	len += sprintf(buffer + len, "%c      \n", 188);
+	
 	len += sprintf(buffer + len,
-		"      |==================================================================|      \n"
-		"      |                             Universe                             |      \n"
-		"      |==================================================================|      \n"
+// 		"      %c==================================================================%c      \n"
+// 		"      |                             Universe                             |      \n"
+// 		"      |==================================================================|      \n"
 		"\n"
 		"\n"
 		"      Universe has been crashed. You have to restart your computer.\n"
@@ -111,6 +124,7 @@ void panic(char *message)
 	gotoxy(0, (25 / 2) - (lines / 2) - 1);
 	puts(buffer);
 	printf("\n\n      ");
+	
 	halt();
 }
 
