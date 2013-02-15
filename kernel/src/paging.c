@@ -179,7 +179,7 @@ void pt_destroy(pd_t *pd, int index) {
  * @return virtual address
  */
 vaddr_t pd_map_temp(paddr_t pframe, uint8_t flags) {
-	vaddr_t vframe = vaddr_find(pd_current,
+	vaddr_t vframe = vaddr_find(pd_current, 1,
 				    MEMORY_LAYOUT_RESERVED_AREA_END,
 				    MEMORY_LAYOUT_KERNEL_END);
 	pd_map(pd_current, pframe, vframe, flags | PTE_PRESENT);
@@ -284,7 +284,7 @@ void pd_unmap_range(pd_t *pd, vaddr_t frame, unsigned int pages) {
  * @return virtual address
  */
 vaddr_t pd_automap_kernel(pd_t *pd, paddr_t pframe, uint8_t flags) {
-	vaddr_t vframe = vaddr_find(pd,
+	vaddr_t vframe = vaddr_find(pd, 1,
 				    MEMORY_LAYOUT_RESERVED_AREA_END,
 				    MEMORY_LAYOUT_KERNEL_END);
 	
@@ -303,7 +303,7 @@ vaddr_t pd_automap_kernel(pd_t *pd, paddr_t pframe, uint8_t flags) {
  * @return virtual address
  */
 vaddr_t pd_automap_user(pd_t *pd, paddr_t pframe, uint8_t flags) {
-	vaddr_t vframe = vaddr_find(pd,
+	vaddr_t vframe = vaddr_find(pd, 1,
 				    0x00000000,
 				    MEMORY_LAYOUT_KERNEL_START);
 	pd_map(pd, pframe, vframe, flags | PTE_PRESENT);
@@ -317,38 +317,49 @@ vaddr_t pd_automap_user(pd_t *pd, paddr_t pframe, uint8_t flags) {
  * @param pd pagedirectory
  * @return virtual adress
  */
-vaddr_t vaddr_find(pd_t *pd, int limit_low, int limit_high) {
-	vaddr_t vaddr = NULL;
-	pt_t pt;
-	pde_t pde;
-	uint32_t pd_index = PDE_INDEX(limit_low);
-// 	printf("pd_index = 0x%x\n", pd_index);
-	uint32_t pt_index = PTE_INDEX(limit_low);
-	uint32_t pd_end = PDE_INDEX(limit_high);
-	uint32_t pt_end = PTE_INDEX(limit_high);
-
-	while(pd_index <= pd_end) {
-		pde = (pde_t) pd->entries[pd_index];
-		if(pde & PDE_PRESENT) {
-			printf("preset_pagetable\n");
-			pt = pt_get(pd, pd_index, PTE_WRITABLE);
-			uint32_t end = (pd_index == pd_end) ? pt_end : PT_LENGTH;
-			while(pt_index < end) {
-				if(! ((uint32_t)pt[pt_index++] & PTE_PRESENT) ) {
-					vaddr = PAGE_FRAME_ADDR( pd_index*PT_LENGTH + pt_index );
-					return vaddr;
-				}
-			}
-			pt_index = 0;
-		} else {
-			vaddr = PAGE_FRAME_ADDR( pd_index*PT_LENGTH + pt_index );
-			printf("vaddr_find(): frame 0x%x found! \n", vaddr);
-			return vaddr;
-		}
-		pd_index++;
+vaddr_t vaddr_find(pd_t *pd, int num, int limit_low, int limit_high) {
+#define PAGES_FOUND(l) \
+	  if(vaddr == (vaddr_t)NULL) { \
+	    page = pd_index * PT_LENGTH + pt_index; \
+	    vaddr = page * PAGE_SIZE; \
+	  } \
+	  pages_found += l; \
+	  if(pages_found >= num) { \
+	    return vaddr; \
+	  }
+  
+  vaddr_t vaddr;
+  int page;
+  size_t pages_found = 0;
+  
+  int flags = PTE_PRESENT | PTE_WRITABLE;
+  
+  uint32_t pd_index = PDE_INDEX(limit_low);
+  uint32_t pt_index = PTE_INDEX(limit_low);
+  uint32_t pd_index_end = PDE_INDEX(limit_high);
+  uint32_t pt_index_end = PTE_INDEX(limit_high);
+  pt_t pt;
+  
+  while(pd_index <= pd_index_end) {
+    if(pd->entries[pd_index] & PTE_PRESENT) {
+      pt = pt_get(pd, pd_index, flags);
+      
+      uint32_t pt_end = (pd_index == pd_index_end) ? pt_index_end : PT_LENGTH; // last pd entry
+      for(pt_index = 0; pt_index < pt_end; pt_index++) {
+	if(! ((uint32_t)pt[pt_index] & PTE_PRESENT) ) {
+	  PAGES_FOUND(1);
+	} else {
+	  pages_found = 0;
+	  vaddr = (uintptr_t)NULL;
 	}
-
-	return NULL;
+      }
+    } else {
+      PAGES_FOUND(PT_LENGTH);
+    }
+    pd_index++;
+  }
+  
+  return NULL;
 }
 
 /** FIXME: really needed? */
