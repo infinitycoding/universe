@@ -287,7 +287,6 @@ vaddr_t pd_automap_kernel(pd_t *pd, paddr_t pframe, uint8_t flags) {
 	vaddr_t vframe = vaddr_find(pd, 1,
 				    MEMORY_LAYOUT_RESERVED_AREA_END,
 				    MEMORY_LAYOUT_KERNEL_END, flags);
-	printf("vframe = 0x%x\n", vframe);
 	pd_map(pd, pframe, vframe, flags | PTE_PRESENT);
 
 	return vframe;
