@@ -82,8 +82,6 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	INIT_IDT();
 	INIT_PAGING();
 	INIT_HEAP();
-// 	printf("malloc(0x%x): 0x%x\n", 0xff0, malloc(0xff0));
-// 	printf("malloc(0x%x): 0x%x\n", 0x200, malloc(0x200));
 	INIT_CPUID();
 	INIT_PIT(50);
 	INIT_CMOS();
