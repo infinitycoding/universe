@@ -46,7 +46,6 @@ typedef struct alloc {
 	struct alloc *prev;
 	struct alloc *next;
 } alloc_t;
-#define MAX_ALLOC_SIZE ( PAGE_SIZE - sizeof(alloc_t) )
 
 typedef struct {
 	size_t list_count;
@@ -55,10 +54,9 @@ typedef struct {
 
 void INIT_HEAP(void);
 void heap_init(heap_t *heap);
-void heap_expand(heap_t *heap);
+void heap_expand(heap_t *heap, int pages);
 void heap_destroy(heap_t *heap);
 void *heap_alloc(heap_t *heap, size_t size);
 void heap_free(heap_t *heap, void *ptr);
-//void * heap_realloc(heap_t *heap, void *ptr, size_t size);
 
 #endif

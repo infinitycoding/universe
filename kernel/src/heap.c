@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <heap.h>
 #include <pmm.h>
+#include <memory_layout.h>
 #include <paging.h>
 
 heap_t kernel_heap;
@@ -71,7 +72,7 @@ void heap_init(heap_t *heap) {
 	vaddr_t vframe = pd_automap_kernel(pd_get_kernel(), pmm_alloc_page(), PTE_WRITABLE);
 	alloc_t *header = vframe;
 
-	header->size = MAX_ALLOC_SIZE;
+	header->size = PAGE_SIZE - sizeof(alloc_t);
 	header->start_addr = vframe + sizeof(alloc_t);
 	header->next = NULL;
 	header->prev = NULL;
@@ -86,11 +87,21 @@ void heap_init(heap_t *heap) {
  * @param heap heap
  * @return void
  */
-void heap_expand(heap_t *heap) {
+void heap_expand(heap_t *heap, int pages) {
 	/* TODO : Range Allocation */
 	heap->list_count++;
-	paddr_t pframe = pmm_alloc_page();
-	vaddr_t vframe = pd_automap_kernel(pd_get_kernel(), pframe, PTE_WRITABLE);
+	paddr_t pframe = NULL;
+	vaddr_t vframe = vaddr_find(pd_get_kernel(), pages, 
+				    MEMORY_LAYOUT_RESERVED_AREA_END,
+				    MEMORY_LAYOUT_KERNEL_END, PTE_WRITABLE);
+	vaddr_t vframe_cur = vframe;
+	
+	int i;
+	for(i = 0; i < pages; i++) {
+	  pframe = pmm_alloc_page();
+	  pd_map(pd_get_kernel(), pframe, vframe_cur, PTE_WRITABLE);
+	}
+	
 	printf("heap-expand: vframe = 0x%x\n", vframe);
 	alloc_t *header = heap->alloc_list;
 	alloc_t *new_header = vframe;
@@ -99,7 +110,7 @@ void heap_expand(heap_t *heap) {
 	  header = header->next;
 	}
 
-	new_header->size = MAX_ALLOC_SIZE;
+	new_header->size = pages*PAGE_SIZE - sizeof(alloc_t);
 	new_header->start_addr = vframe + sizeof(alloc_t);
 	new_header->prev = header;
 	new_header->next = NULL;
@@ -132,14 +143,9 @@ void *heap_alloc(heap_t *heap, size_t size) {
 	alloc_t *header = NULL;
 	vaddr_t data = 0;
 	
-	if(size <= PAGE_SIZE && size > MAX_ALLOC_SIZE) {
+	if(size <= PAGE_SIZE && size > PAGE_SIZE - sizeof(alloc_t)) {
 		data = pd_automap_kernel(pd_get_kernel(), pmm_alloc_page(), PTE_WRITABLE);
 		return data;
-	} else if(size > MAX_ALLOC_SIZE) {
-		char msg[125];
-		sprintf(msg, "To much memory for malloc requested!\n"
-		      "Max. memory: 0x%x, Request: 0x%x\n", MAX_ALLOC_SIZE, size);
-		panic(msg);
 	}
 	
 	int i;
@@ -162,9 +168,7 @@ void *heap_alloc(heap_t *heap, size_t size) {
 			} else if(header->size == size) {
 				if(header->prev) header->prev->next = header->next;
 				else {
-					
-					heap_expand(heap);
-					
+					heap_expand(heap, 1);
 				}
 				if(header->next) header->next->prev = header->prev;
 				header->prev = NULL;
@@ -176,7 +180,7 @@ void *heap_alloc(heap_t *heap, size_t size) {
 	}
 	
 	if(data) {
-		heap_expand(heap);
+		heap_expand(heap, size/PAGE_SIZE +1);
 		/**
 		 * FIXME: Recursion!!
 		 * TODO: fix that
