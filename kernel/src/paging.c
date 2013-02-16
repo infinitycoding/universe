@@ -181,7 +181,7 @@ void pt_destroy(pd_t *pd, int index) {
 vaddr_t pd_map_temp(paddr_t pframe, uint8_t flags) {
 	vaddr_t vframe = vaddr_find(pd_current, 1,
 				    MEMORY_LAYOUT_RESERVED_AREA_END,
-				    MEMORY_LAYOUT_KERNEL_END);
+				    MEMORY_LAYOUT_KERNEL_END, flags);
 	pd_map(pd_current, pframe, vframe, flags | PTE_PRESENT);
 
 	int i;
@@ -286,8 +286,8 @@ void pd_unmap_range(pd_t *pd, vaddr_t frame, unsigned int pages) {
 vaddr_t pd_automap_kernel(pd_t *pd, paddr_t pframe, uint8_t flags) {
 	vaddr_t vframe = vaddr_find(pd, 1,
 				    MEMORY_LAYOUT_RESERVED_AREA_END,
-				    MEMORY_LAYOUT_KERNEL_END);
-	
+				    MEMORY_LAYOUT_KERNEL_END, flags);
+	printf("vframe = 0x%x\n", vframe);
 	pd_map(pd, pframe, vframe, flags | PTE_PRESENT);
 
 	return vframe;
@@ -304,8 +304,7 @@ vaddr_t pd_automap_kernel(pd_t *pd, paddr_t pframe, uint8_t flags) {
  */
 vaddr_t pd_automap_user(pd_t *pd, paddr_t pframe, uint8_t flags) {
 	vaddr_t vframe = vaddr_find(pd, 1,
-				    0x00000000,
-				    MEMORY_LAYOUT_KERNEL_START);
+				    0x0, MEMORY_LAYOUT_KERNEL_START, flags);
 	pd_map(pd, pframe, vframe, flags | PTE_PRESENT);
 
 	return vframe;
@@ -317,7 +316,7 @@ vaddr_t pd_automap_user(pd_t *pd, paddr_t pframe, uint8_t flags) {
  * @param pd pagedirectory
  * @return virtual adress
  */
-vaddr_t vaddr_find(pd_t *pd, int num, int limit_low, int limit_high) {
+vaddr_t vaddr_find(pd_t *pd, int num, vaddr_t limit_low, vaddr_t limit_high, int flags) {
 #define PAGES_FOUND(l) \
 	  if(vaddr == (vaddr_t)NULL) { \
 	    page = pd_index * PT_LENGTH + pt_index; \
@@ -328,11 +327,9 @@ vaddr_t vaddr_find(pd_t *pd, int num, int limit_low, int limit_high) {
 	    return vaddr; \
 	  }
   
-  vaddr_t vaddr;
-  int page;
-  size_t pages_found = 0;
-  
-  int flags = PTE_PRESENT | PTE_WRITABLE;
+  vaddr_t vaddr = NULL;
+  int page = 0;
+  int pages_found = 0;
   
   uint32_t pd_index = PDE_INDEX(limit_low);
   uint32_t pt_index = PTE_INDEX(limit_low);
