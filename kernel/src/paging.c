@@ -38,7 +38,7 @@ vaddr_t *temp_mapped = NULL;
 #define TEMP_SIZE PAGE_SIZE
 #define FOR_TEMP(x) \
     for(x = 0; x < TEMP_SIZE; x++)
-      
+
 #define PT_PADDR(i) (pd->entries[i] & ~0xFFF)
 #define PT_VADDR(i) (MEMORY_LAYOUT_PAGING_STRUCTURES_START + PT_LENGTH*sizeof(pte_t)*i)
 
@@ -153,7 +153,7 @@ pt_t pt_create(pd_t *pd, int index, uint8_t flags) {
 
 	pt = pt_get(pd, index, flags | PDE_PRESENT);
 	memset(pt, 0, PT_LENGTH);
-	
+
 	return pt;
 }
 
@@ -227,7 +227,7 @@ int pd_map(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags) {
 	}
 
 	pt[pt_index] = (pte_t)(pframe & ~0xFFF) | PTE_PRESENT | (flags & 0xFFF);
-	
+
 	if(pd == pd_current && pd_current) {
 		paging_flush_tlb(vframe);
 	}
@@ -325,21 +325,21 @@ vaddr_t vaddr_find(pd_t *pd, int num, vaddr_t limit_low, vaddr_t limit_high, int
 	  if(pages_found >= num) { \
 	    return vaddr; \
 	  }
-  
+
   vaddr_t vaddr = NULL;
   int page = 0;
   int pages_found = 0;
-  
+
   uint32_t pd_index = PDE_INDEX(limit_low);
   uint32_t pt_index = PTE_INDEX(limit_low);
   uint32_t pd_index_end = PDE_INDEX(limit_high);
   uint32_t pt_index_end = PTE_INDEX(limit_high);
   pt_t pt;
-  
+
   while(pd_index <= pd_index_end) {
     if(pd->entries[pd_index] & PTE_PRESENT) {
       pt = pt_get(pd, pd_index, flags);
-      
+
       uint32_t pt_end = (pd_index == pd_index_end) ? pt_index_end : PT_LENGTH; // last pd entry
       for(pt_index = 0; pt_index < pt_end; pt_index++) {
 	if(! ((uint32_t)pt[pt_index] & PTE_PRESENT) ) {
@@ -354,7 +354,7 @@ vaddr_t vaddr_find(pd_t *pd, int num, vaddr_t limit_low, vaddr_t limit_high, int
     }
     pd_index++;
   }
-  
+
   return NULL;
 }
 
@@ -423,3 +423,4 @@ inline pd_t * pd_get_kernel(void)
 static inline void paging_flush_tlb(vaddr_t addr) {
 	asm volatile ("invlpg %0" : : "m" (*(char*) addr));
 }
+

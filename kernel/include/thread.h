@@ -1,5 +1,6 @@
-#ifndef _scheduler_h_
-#define _scheduler_h_
+#ifndef _thread_h_
+#define _thread_h_
+
 
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
@@ -20,32 +21,40 @@
 */
 
 #include <stdint.h>
-#include <cpu.h>
-#include <paging.h>
+
+#define THREAD_ACTIV 1
+#define THREAD_FREEZED 2
+#define THREAD_KERNELMODE 4
+#define THREAD_NORMAL_PRIORITY 8
+#define THREAD_REALTIME_PRIORITY 16
+#define THREAD_ZOMBIE 32
+#define THREAD_STACK_SIZE 4096
+
+#define MAIN_THREAD 64
+#define ZOMBIE 128
+
+typedef uint32_t tid_t;
+
+struct thread
+{
+    struct thread *prev;
+    struct thread *next;
+    struct cpu_state *thread_state;
+    uint32_t flags;
+    int return_value;
+    tid_t tid; //Thread ID
+};
 
 
 
-
-//Definitions
-#define STACK_HEAD 0xBFFFFFFF
-#define KERNEL_STACK_SIZE 4096
-
-#define PORT_ACCESS_STRUCT_SIZE 10
-#define THREAD_STRUCT_SIZE 24
-#define CHILD_STRUCT_SIZE 20
-#define ZOMBIEPID_STRUCT_SIZE 12
-#define CPU_STATE_STRUCT_SIZE 76
+struct zombietid
+{
+    struct zombietid *prev;
+    struct zombietid *next;
+    tid_t tid;
+};
 
 
-
-
-
-
-
-
-
-void INIT_SCHEDULER(void);
-struct cpu_state *task_schedule(struct cpu_state *cpu);
 
 
 #endif
