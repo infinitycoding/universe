@@ -73,9 +73,9 @@ void heap_init(heap_t *heap) {
 	alloc_t *header = vframe;
 
 	header->size = PAGE_SIZE - sizeof(alloc_t);
-	header->start_addr = vframe + sizeof(alloc_t);
+	header->base = vframe + sizeof(alloc_t);
+	header->status = HEAP_STATUS_FREE;
 	header->next = NULL;
-	header->prev = NULL;
 
 	heap->list_count = 1;
 	heap->alloc_list = header;
@@ -87,7 +87,7 @@ void heap_init(heap_t *heap) {
  * @param heap heap
  * @return void
  */
-void heap_expand(heap_t *heap, int pages) {
+alloc_t *heap_expand(heap_t *heap, int pages) {
 	/* TODO : Range Allocation */
 	heap->list_count++;
 	paddr_t pframe = NULL;
@@ -98,24 +98,21 @@ void heap_expand(heap_t *heap, int pages) {
 	
 	int i;
 	for(i = 0; i < pages; i++) {
-	  pframe = pmm_alloc_page();
-	  pd_map(pd_get_kernel(), pframe, vframe_cur, PTE_WRITABLE);
+		pframe = pmm_alloc_page();
+		pd_map(pd_get_kernel(), pframe, vframe_cur, PTE_WRITABLE);
+		vframe_cur += PAGE_SIZE;
 	}
 	
-	printf("heap-expand: vframe = 0x%x\n", vframe);
-	alloc_t *header = heap->alloc_list;
 	alloc_t *new_header = vframe;
 
-	while(header->next) {
-	  header = header->next;
-	}
-
 	new_header->size = pages*PAGE_SIZE - sizeof(alloc_t);
-	new_header->start_addr = vframe + sizeof(alloc_t);
-	new_header->prev = header;
-	new_header->next = NULL;
+	new_header->base = vframe + sizeof(alloc_t);
+	new_header->status = HEAP_STATUS_FREE;
 
-	header->next = new_header;
+	new_header->next = heap->alloc_list;
+	heap->alloc_list = new_header;
+	heap->list_count ++;
+	return new_header;
 }
 
 /**
@@ -127,7 +124,7 @@ void heap_expand(heap_t *heap, int pages) {
 void heap_destroy(heap_t *heap) {
 	while (heap->list_count != 0) {
 		pd_unmap(pd_get_kernel(),
-			 heap->alloc_list[--heap->list_count].start_addr & ~0xFFF);
+			 heap->alloc_list[--heap->list_count].base & ~0xFFF);
 	}
 }
 
@@ -140,59 +137,45 @@ void heap_destroy(heap_t *heap) {
  * @return pointer to reserved bytes
  */
 void *heap_alloc(heap_t *heap, size_t size) {
-	alloc_t *header = NULL;
+	alloc_t *header = heap->alloc_list;
 	vaddr_t data = 0;
+	int n_size = size + sizeof(alloc_t);
 	
 	if(size <= PAGE_SIZE && size > PAGE_SIZE - sizeof(alloc_t)) {
 		data = pd_automap_kernel(pd_get_kernel(), pmm_alloc_page(), PTE_WRITABLE);
 		return data;
 	}
 	
-	int i;
-	for(i = 0; i <= heap->list_count; i++) {
-		header = &heap->alloc_list[i];
-		if(header->size >= size) {
-			data = header->start_addr;
-			printf("     found a free node: 0x%x\n", header);
-			printf("         start_addr = 0x%x\n", data);
-			if(header->size > size) {
-				alloc_t *new_header = header->start_addr + size;
-				new_header->size = header->size - size;
-				new_header->start_addr = new_header + sizeof(alloc_t);
-				new_header->next = header->next;
-				new_header->prev = header->prev;
-				
-				if(header->prev) header->prev->next = &new_header;
-				else heap->alloc_list = new_header;
-				if(header->next) header->next->prev = &new_header;
-			} else if(header->size == size) {
-				if(header->prev) header->prev->next = header->next;
-				else {
-					heap_expand(heap, 1);
-				}
-				if(header->next) header->next->prev = header->prev;
-				header->prev = NULL;
-				header->next = NULL;
+	while(header != NULL) {
+		if(header->size >= size && header->status == HEAP_STATUS_FREE) {
+			header->status = HEAP_STATUS_USED;
+			if(header->size > n_size) {
+				alloc_t *new_header = header->base + size;
+				new_header->base    = header->base + n_size;
+				new_header->size = header->size - n_size;
+				new_header->status = HEAP_STATUS_FREE;
+				header->size = size;
+
+				new_header->next = heap->alloc_list;
+				heap->alloc_list = new_header;
 			}
 			
-			return data;
+			return header->base;
 		}
+		header = header->next;
 	}
 	
-	if(data) {
-		heap_expand(heap, size/PAGE_SIZE +1);
-		/**
-		 * FIXME: Recursion!!
-		 * TODO: fix that
-		 */
-		data = heap_alloc(heap, size);
+	header = heap_expand(heap, NUM_PAGES(n_size));
+	if(header != NULL) {
+		header->status = HEAP_STATUS_USED;
+		return header->base;
 	}
 	
 	#ifdef HEAP_DEBUG
 		printf("heap_alloc(): reserving %d bytes of memory: %p - %p\n", header->size, data, data + header->size);
 	#endif
 	
-	return (void*) data;
+	return NULL;
 }
 
 /**
@@ -205,10 +188,7 @@ void *heap_alloc(heap_t *heap, size_t size) {
  */
 void heap_free(heap_t *heap, void *ptr) {
 	alloc_t *header = (alloc_t*)((uintptr_t)ptr - sizeof(alloc_t));
-	alloc_t *prev = &heap->alloc_list[heap->list_count++];
-	header->next = NULL;
-	header->prev = prev;
-	prev->next = header;
+	header->status = HEAP_STATUS_FREE;
 	
 	#ifdef HEAP_DEBUG
 		printf("heap_free(): freeing %d bytes of memory: %p - %p\n", header->size, ptr, ptr + header->size);

@@ -90,7 +90,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	INIT_KEYBOARD();
 	INIT_SCHEDULER();
 	INIT_VFS();
-	asm volatile("sti");
+	//asm volatile("sti");
 
 	//print Logo and loading message
 	print_logo(YELLOW);
@@ -101,7 +101,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
 
         while(1) {
-           char *i = malloc(0x1000); // TODO: fix heap
+           char *i = malloc(10);
            strcpy(i, "123456789");
            printf("0x%x\n", i);
         }
