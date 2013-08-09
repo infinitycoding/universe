@@ -43,17 +43,11 @@ bool sched_lock = false;
 extern pd_t *pd_kernel;
 extern pd_t *pd_current;
 
-void test(void)
-{
-
-    while(1){printf("wtf");}
-}
-
 void INIT_SCHEDULER(void)
 {
 	set_GDT_entry(5, (uint32_t) &tss, sizeof(tss), 0x89, 0x8);
 	load_gdt(5);
-	asm ("ltr %%ax" : : "a" (5 << 3));
+	asm volatile("ltr %%ax" : : "a" (5 << 3));
 	kernelstack = malloc(KERNEL_STACK_SIZE) + KERNEL_STACK_SIZE;
 	tss.esp = (uint32_t)kernelstack;
 
@@ -77,7 +71,6 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
 {
     currentprocess->currentthread->thread_state = cpu;
     currentprocess->currentthread = currentprocess->currentthread->next;
-    printf("%d",currentprocess->currentthread->tid);
     //while(!currentprocess->currentthread->flags&THREAD_ACTIV) currentprocess->currentthread = currentprocess->currentthread->next;
     cpu = currentprocess->currentthread->thread_state;
 

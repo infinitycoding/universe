@@ -55,7 +55,7 @@
  * Test task
  **/
 int testproc(void) {
-	//printf("Hello World from Kernelmode!\n");
+	printf("Hello World from Kernelmode!\n");
 	while(1){}
 	//exit(0);
 }
@@ -90,7 +90,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	INIT_KEYBOARD();
 	INIT_SCHEDULER();
 	INIT_VFS();
-	//asm volatile("sti");
+	asm volatile("sti");
 
 	//print Logo and loading message
 	print_logo(YELLOW);
@@ -104,7 +104,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	print_time(get_time());
 
 	//create kernelmode testprocess
-
+	
 
 	//display  input just for Fun :D
 	while (1) {
