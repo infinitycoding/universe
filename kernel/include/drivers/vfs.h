@@ -49,5 +49,5 @@ int vfs_write(vfs_node_t *node, void *base, int bytes);
 void* vfs_read(vfs_node_t *node, uintptr_t offset);
 int vfs_stat(vfs_node_t *node, struct stat *buffer);
 int vfs_access(vfs_node_t *node, mode_t modus);
-  
+
 #endif

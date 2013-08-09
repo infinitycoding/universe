@@ -63,7 +63,7 @@ struct stat {
 
 	time_t	st_atime; // access time
 	time_t	st_mtime; // modification time
-	time_t	st_ctime;
+	time_t	st_ctime; // create time
 
 	long	st_blksize;
 	long	st_blocks;

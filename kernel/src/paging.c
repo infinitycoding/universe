@@ -325,23 +325,23 @@ vaddr_t vaddr_find(pd_t *pd, int num, vaddr_t limit_low, vaddr_t limit_high, int
 	  if(pages_found >= num) { \
 	    return vaddr; \
 	  }
-
+  
   vaddr_t vaddr = NULL;
   int page = 0;
   int pages_found = 0;
-
+  
   uint32_t pd_index = PDE_INDEX(limit_low);
   uint32_t pt_index = PTE_INDEX(limit_low);
   uint32_t pd_index_end = PDE_INDEX(limit_high);
   uint32_t pt_index_end = PTE_INDEX(limit_high);
   pt_t pt;
-
+  
   while(pd_index <= pd_index_end) {
     if(pd->entries[pd_index] & PTE_PRESENT) {
       pt = pt_get(pd, pd_index, flags);
 
       uint32_t pt_end = (pd_index == pd_index_end) ? pt_index_end : PT_LENGTH; // last pd entry
-      for(pt_index = 0; pt_index < pt_end; pt_index++) {
+      for(; pt_index < pt_end; pt_index++) {
 	if(! ((uint32_t)pt[pt_index] & PTE_PRESENT) ) {
 	  PAGES_FOUND(1);
 	} else {
@@ -349,6 +349,7 @@ vaddr_t vaddr_find(pd_t *pd, int num, vaddr_t limit_low, vaddr_t limit_high, int
 	  vaddr = (uintptr_t)NULL;
 	}
       }
+      pt_index = 0;
     } else {
       PAGES_FOUND(PT_LENGTH);
     }
