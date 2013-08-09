@@ -99,13 +99,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	// count free memory and display it
 	uint32_t pages = pmm_count_free_pages();
 	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
-
-        while(1) {
-           char *i = malloc(10);
-           strcpy(i, "123456789");
-           printf("0x%x\n", i);
-        }
-
+	
 	//print current time
 	print_time(get_time());
 
