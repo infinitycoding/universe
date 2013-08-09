@@ -39,11 +39,16 @@ void *realloc(void *ptr, size_t size);
 	internal interface
 */
 
+#define HEAP_STATUS_USED 0
+#define HEAP_STATUS_FREE 1
+ 
+#define NUM_PAGES(n) ((((n) + 0xfff) & 0xfffff000) / PAGE_SIZE)
+
 typedef struct alloc {
 	size_t size;
-	vaddr_t start_addr;
-	
-	struct alloc *prev;
+	vaddr_t base;
+	int status;	
+
 	struct alloc *next;
 } alloc_t;
 
@@ -54,7 +59,7 @@ typedef struct {
 
 void INIT_HEAP(void);
 void heap_init(heap_t *heap);
-void heap_expand(heap_t *heap, int pages);
+alloc_t *heap_expand(heap_t *heap, int pages);
 void heap_destroy(heap_t *heap);
 void *heap_alloc(heap_t *heap, size_t size);
 void heap_free(heap_t *heap, void *ptr);
