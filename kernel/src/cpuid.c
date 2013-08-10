@@ -57,6 +57,23 @@ char* brandID_AMD[]={
    "AMD Opteron DC 2RR", "	AMD Opteron DC 8RR", "unknown AMD X86 processor"
 };
 
+char *models486_Intel[]={
+    "i80486DX-25/33", "i80486DX-50", "i80486SX",
+    "i80486DX2", "i80486SL", "i80486SX2", "unknown",
+    "i80486DX2WB", "i80486DX4", "i80486DX4WB"
+};
+
+char *models486_UMC[]={
+    "", "U5D", "U5S"
+};
+
+char *models486_AMD[]={
+    "", "", "", "80486DX2",
+    "", "", "", "80486DX2WB",
+    "80486DX4", "80486DX4WB", "Elan SC400", "",
+    "", "", "5x86", "5x86WB"
+};
+
 static char* vendorID[]={
 	"AuthenticAMD",	"AMDisbetter!", "GenuineIntel", "CentaurHauls",
 	"CyrixInstead", "TransmetaCPU", "GenuineTMx86", "Geode by NSC",
@@ -71,8 +88,8 @@ static char* cpu_manufactorys[]={
 	"VIA", "Vortex", "unknown"
 };
 
-static char* scall[]={"Callgate","Sysenter","Syscall"};
-static char* architecture[]={"X86","X64"};
+static char* scall[]={"Callgate", "Sysenter", "Syscall"};
+static char* architecture[]={"I386","AMD64", "IA32", "IA64"};
 
 
 
@@ -107,51 +124,104 @@ int identify_cpu(struct cpu_properties *cpu) {
 		"pop %%eax;"
 		:"=a"(eflags), "=c"(ref):
 	);
-	if (eflags==ref) { //cpuid is not supported
-	    cpu->cpuid_support=false;
+	if (eflags == ref)
+	//cpuid is not supported
+	{
+	    cpu->cpuid_support = false;
 	    return 1;
-	} else {
-		cpu->cpuid_support=true;
 	}
 
+    //cpuid is supported
+    cpu->cpuid_support = true;
+
+    //create struct for processor registers
 	struct cpuid_regs reg;
 	uint32_t i;
-	// Copy Vebdir String
-	cpuid(0,&reg);
-	strncpy(cpu->vendor_id,(char*)&reg.ebx,4);
-	strncpy(cpu->vendor_id+4,(char*)&reg.edx,4);
-	strncpy(cpu->vendor_id+8,(char*)&reg.ecx,4);
-	for (i=0;strncmp(cpu->vendor_id,vendorID[i],12)&& i<15;i++) {}
-	cpu->manufactory=i;
 
-	cpu->max_std_func=reg.eax;
-	cpuid(0x80000000,&reg);
-	cpu->max_spec_func=reg.eax;
+	//call cpuid 0
+	cpuid(0, &reg);
 
-	cpuid(1,&reg);
-	cpu->family = (reg.eax & 0x00000F00)>>8;
-	cpu->model = (reg.eax & 0x000000F0)>>4;
-	cpu->stepping = reg.eax & 0x0000000F;
-	cpu->ext_family= (reg.eax & 0x0FF00000)>>20;
-	cpu->ext_model= (reg.eax &  0x000F0000)>>16;
-	cpu->brandID = (uint8_t)reg.ebx;
+	// copy vendor string
+	strncpy(cpu->vendor_id    , (char*) &reg.ebx, 4);
+	strncpy(cpu->vendor_id + 4, (char*) &reg.edx, 4);
+	strncpy(cpu->vendor_id + 8, (char*) &reg.ecx, 4);
+
+	// identify manufactory
+	for (i = 0; strncmp(cpu->vendor_id, vendorID[i], 12) && i < 15; i++) {}
+	cpu->manufactory = i;
+
+	// save number of basic identify functions
+	cpu->max_std_func = reg.eax;
+
+	// get and save maximum numbers of extendet identify functions
+	cpuid(0x80000000, &reg);
+	cpu->max_spec_func = reg.eax;
+
+
+	cpuid(1, &reg);
+	// get CPU model and Family
+	cpu->family     = ((reg.eax & 0x0FF00000) >> 16) | ((reg.eax & 0x00000F00) >> 8);
+	cpu->model      = ((reg.eax & 0x000F0000) >> 12) | ((reg.eax & 0x000000F0) >> 4);
+	cpu->stepping   =  reg.eax & 0x0000000F;
+	cpu->type       = (reg.eax & 0x00003000) >> 12;
+
+	cpu->brandID     = (uint8_t) reg.ebx;
+	cpu->clflush     = (uint8_t) (reg.ebx >> 8);
+	cpu->logic_cores = (uint8_t) (reg.ebx >> 16);
+	cpu->APIC_ID     = (uint8_t) (reg.ebx >> 24);
+
+
+
+    cpu->flagblock0 = reg.ecx;
+	cpu->flagblock1 = reg.edx;
+
+	if(cpu->max_spec_func > 0x80000000)
+	{
+        cpuid(0x80000001, &reg);
+        if((( reg.edx & (1 << 29) ) >> 29) && cpu->flagblock1 & PAE )
+        {
+            cpu->LM = true;
+        }
+	}
+
+    if (cpu->flagblock1 & (1 << 30))
+    {
+        if(cpu->LM)
+            cpu->architecture = IA64;
+        else
+            cpu->architecture = IA32;
+	}
+	else
+	{
+        if(cpu->LM)
+            cpu->architecture = AMD64;
+        else
+            cpu->architecture = I386;
+	}
+
+
+
+
 
 	//Detect Dynamic Syscall
-	if ((!(reg.edx & 0x800)) && !((cpu->family == 6) && (cpu->model < 3) && (cpu->stepping < 3))) {
-		cpu->dsysc=sysenter;
-	} else if (cpu->max_spec_func>0x80000000) {
+	if (cpu->flagblock1 & SEP && cpu->manufactory == 2) {
+		cpu->dsysc = sysenter;
+	}
+	else if (cpu->flagblock1 & SEP && cpu->manufactory < 2 && cpu->max_spec_func > 0x80000000)
+	{
 		cpuid(0x80000001,&reg);
-		if (reg.edx& 0x1000) {
-			cpu->dsysc=syscall;
+		if (reg.edx & 0x1000)
+		{
+			cpu->dsysc = syscall;
 		}
 	}
 
 	//get extended BrandID
-	if (cpu->max_spec_func>0x80000000) {
-		cpuid(0x80000001,&reg);
-		cpu->ext_brandID=(uint16_t)reg.ebx;
+	if (cpu->max_spec_func > 0x80000000) {
+		cpuid(0x80000001, &reg);
+		cpu->ext_brandID = (uint16_t)reg.ebx;
 	} else {
-		cpu->ext_brandID=0x3e;
+		cpu->ext_brandID = 0x3e;
 	}
 
 
@@ -166,7 +236,7 @@ int identify_cpu(struct cpu_properties *cpu) {
 			strcpy(cpu->cpu_type,brandID_Intel[cpu->brandID-1]);
 		}
 	} else if (cpu->manufactory<2) { //AMD CPU
-		int ID=(cpu->ext_brandID>>6)& 0x3ff;
+		int ID = (cpu->ext_brandID>>6)& 0x3ff;
 		if (ID>0x3e) {ID=0x3e;}
 		//uint8_t NN=current_CPU.ext_brandID &0x3F;
 		//TODO: replace XX,YY,ZZ,TT,RR,EE
@@ -174,22 +244,11 @@ int identify_cpu(struct cpu_properties *cpu) {
 
 	} else { //standart name
 		strcpy(cpu->cpu_type,cpu_manufactorys[cpu->manufactory]);
+		strcat(cpu->cpu_type," ");
 		strcat(cpu->cpu_type,architecture[cpu->architecture]);
 		strcat(cpu->cpu_type," CPU");
 	}
-	// TODO: identify CPU through family,model,stepping, socket
 
-	cpuid(1,&reg);
-
-	cpu->APIC_ID = (uint8_t) (reg.ebx>>24);
-	cpu->logic_cores= (uint8_t)(reg.ebx & 0xFF0000)>>16;
-	if (reg.edx&(1<<30)) {
-		cpu->architecture=X64;
-	}
-	cpu->cflush_size=(uint8_t)(reg.ebx & 0xFF00)>>8;
-
-	cpu->flagblock0=reg.ecx;
-	cpu->flagblock1=reg.edx;
 
 	return 0;
 
@@ -202,9 +261,16 @@ int identify_cpu(struct cpu_properties *cpu) {
  void CPU_info(struct cpu_properties *cpu) {
 	if (cpu->cpuid_support==true) {
 		printf("CPU Manufactory: %s\n",cpu_manufactorys[cpu->manufactory]);
-		printf("CPU Architecture: %s\n",architecture[cpu->architecture]);
+		printf("Architecture: %s\n",architecture[cpu->architecture]);
 		printf("CPU Model: %s\n",cpu->cpu_type);
-		printf("Static Syscall: Int $0x80\nDynamic Syscall: %s\n",scall[cpu->dsysc]);
+		printf("Family: %d  Model: %d  Stepping: %d\n",cpu->family,cpu->model,cpu->stepping);
+
+		if(cpu->flagblock1 & CLFLSH)
+		{
+            printf("clflush size: %dB\n",cpu->clflush*8);
+		}
+
+		printf("\nStatic Syscall: Int $0x80\nDynamic Syscall: %s\n",scall[cpu->dsysc]);
 		printf("Logical CPUs: %d\n",cpu->logic_cores);
 	} else {
 		printf("current cpu does not support CPUID\n");
