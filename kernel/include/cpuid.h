@@ -30,9 +30,18 @@ typedef enum {
 } dynamic_syscall;
 
 typedef enum {
-	X86 = 0,
-	X64 = 1,
+	I386 = 0,
+	AMD64 = 1,
+	IA32 = 2,
+	IA64 = 3,
 } arch;
+
+typedef enum{
+    primary = 0,
+    override = 1,
+    secondary = 2,
+    reserved = 3,
+}processor_type;
 
 //Flagblock0
 
@@ -104,17 +113,19 @@ struct cpu_properties {
 	uint8_t family;
 	uint8_t model;
 	uint8_t stepping;
-	uint8_t ext_family;
-	uint8_t ext_model;
+	uint8_t type;
 	uint8_t brandID;
+	uint8_t clflush;
+	uint8_t logic_cores;
+	bool LM;
+
 
 	dynamic_syscall dsysc;
 	uint16_t ext_brandID;
 
 	uint8_t APIC_ID;
-	uint8_t logic_cores;
+
 	arch architecture;
-	uint8_t cflush_size;
 
 
 	char cpu_type[49];
