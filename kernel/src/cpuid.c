@@ -32,47 +32,6 @@
 #include <string.h>
 #include <printf.h>
 
-char* brandID_Intel[]={
-   "Intel Celeron", "Intel Pentium III", "Intel Pentium III Xeon",
-   "Intel Pentium III", "Mobile Intel Pentium III", "Mobile Intel Celeron",
-   "Intel Pentium 4", "Intel Pentium 4", "Intel Celeron",
-   "Intel Xeon", "Intel Xeon MP", "Intel Pentium 4M",
-   "Mobile Intel Celeron", "Mobile Genue Intel", "Intel Mobile Celeron M",
-   "Mobile Intel Celeron", "Intel Celeron", "Mobile Genue Intel",
-   "Intel Pentium M", "Mobile Intel Celeron"
-};
-
-	//only K8 DDR1
-char* brandID_AMD[]={
-   "AMD engeneer sample", "","", "","AMD Athlon 64 XX00+", "AMD Athlon 64 X2 XX00+",
-   "AMD Athlon 64 FX-ZZ", "", "AMD Athlon 64 XX00+ mobile", "AMD Athlon 64 XX00+ mobile low power", "AMD Turion 64 ML-XX", "AMD Turion 64 MT-XX",
-   "AMD Opteron 1YY", "AMD Opteron 1YY", "AMD Opteron 1YY HE", "AMD Opteron 1YY EE", "AMD Opteron 2YY", "AMD Opteron 2YY",
-   "AMD Opteron 2YY HE", "AMD Opteron 2YY EE", "AMD Opteron 8YY", "AMD Opteron 8YY", "AMD Opteron 8YY HE", "AMD Opteron 8YY EE",
-   "AMD Athlon 64 EE00+", "", "", "", "", "AMD Athlon XP-M XX00+ mobile",
-   "AMD Athlon XP-M XX00+ mobile low power", "", "AMD Athlon XP XX00+", "AMD Sempron TT00+ mobile", "AMD Sempron TT00+", "AMD Sempron TT00+ mobile low power",
-   "AMD Athlon 64 FX-ZZ", "", "AMD Sempron X64 TT00+", "", "", "AMD Opteron DC 1RR SE",
-   "AMD Opteron DC 2RR SE", "AMD Opteron DC 8RR SE", "AMD Opteron DC 1RR", "AMD Opteron DC 1RR", "AMD Opteron DC 1RR HE", "AMD Opteron DC 1RR EE",
-   "AMD Opteron DC 2RR", "AMD Opteron DC 2RR", "AMD Opteron DC 2RR HE", "AMD Opteron DC 2RR EE", "AMD Opteron DC 8RR", "	AMD Opteron DC 8RR",
-   "AMD Opteron DC 8RR HE", "AMD Opteron DC 8RR EE", "AMD Opteron DC 1RR", "AMD Opteron DC 2RR", "AMD Opteron DC 8RR", "AMD Opteron DC 1RR",
-   "AMD Opteron DC 2RR", "	AMD Opteron DC 8RR", "unknown AMD X86 processor"
-};
-
-char *models486_Intel[]={
-    "i80486DX-25/33", "i80486DX-50", "i80486SX",
-    "i80486DX2", "i80486SL", "i80486SX2", "unknown",
-    "i80486DX2WB", "i80486DX4", "i80486DX4WB"
-};
-
-char *models486_UMC[]={
-    "", "U5D", "U5S"
-};
-
-char *models486_AMD[]={
-    "", "", "", "80486DX2",
-    "", "", "", "80486DX2WB",
-    "80486DX4", "80486DX4WB", "Elan SC400", "",
-    "", "", "5x86", "5x86WB"
-};
 
 static char* vendorID[]={
 	"AuthenticAMD",	"AMDisbetter!", "GenuineIntel", "CentaurHauls",
@@ -226,32 +185,29 @@ int identify_cpu(struct cpu_properties *cpu) {
 
 
 	//Get CPU name/series
-	if (cpu->max_spec_func>0x80000004) { // via Brand String
-		for (i=0x80000002;i<=0x80000004;i++) {
+	if (cpu->max_spec_func > 0x80000004) { // via Brand String
+		for (i=0x80000002;i<=0x80000004;i++)
+		{
 			cpuid(i,&reg);
 			memcpy((cpu->cpu_type+(i-0x80000002)*16),((void*)&reg),16);
 		}
-	} else if (cpu->brandID) { //via Brand ID
-		if (cpu->manufactory==2) { //Intel CPU
-			strcpy(cpu->cpu_type,brandID_Intel[cpu->brandID-1]);
-		}
-	} else if (cpu->manufactory<2) { //AMD CPU
-		int ID = (cpu->ext_brandID>>6)& 0x3ff;
-		if (ID>0x3e) {ID=0x3e;}
-		//uint8_t NN=current_CPU.ext_brandID &0x3F;
-		//TODO: replace XX,YY,ZZ,TT,RR,EE
-		strcpy(cpu->cpu_type,brandID_AMD[ID]);
 
-	} else { //standart name
+	}
+
+	else if(cpu->family == 6 && cpu->model == 3 && cpu->stepping == 3)
+	{
+        strcat(cpu->cpu_type,"Quemu ");
+        strcat(cpu->cpu_type,architecture[cpu->architecture]);
+	}
+
+	else
+	{ //standart name
 		strcpy(cpu->cpu_type,cpu_manufactorys[cpu->manufactory]);
 		strcat(cpu->cpu_type," ");
 		strcat(cpu->cpu_type,architecture[cpu->architecture]);
-		strcat(cpu->cpu_type," CPU");
 	}
 
-
 	return 0;
-
 }
 
 /*
@@ -259,20 +215,30 @@ int identify_cpu(struct cpu_properties *cpu) {
  * @return void
  */
  void CPU_info(struct cpu_properties *cpu) {
-	if (cpu->cpuid_support==true) {
+	if (cpu->cpuid_support==true)
+	{
 		printf("CPU Manufactory: %s\n",cpu_manufactorys[cpu->manufactory]);
 		printf("Architecture: %s\n",architecture[cpu->architecture]);
 		printf("CPU Model: %s\n",cpu->cpu_type);
-		printf("Family: %d  Model: %d  Stepping: %d\n",cpu->family,cpu->model,cpu->stepping);
+        printf("Family: %d  Model: %d  Stepping: %d\n",cpu->family,cpu->model,cpu->stepping);
+        printf("Logical CPUs: %d\n",cpu->logic_cores);
+		printf("FB0: %#08x  FB1: %#08x\n",cpu->flagblock0, cpu->flagblock1);
+		printf("Dynamic Syscall: %s\n",scall[cpu->dsysc]);
 
-		if(cpu->flagblock1 & CLFLSH)
+        if(cpu->flagblock1 & CLFLSH)
 		{
             printf("clflush size: %dB\n",cpu->clflush*8);
 		}
+		if(cpu->flagblock1 & ACPI)
+		{
+            printf("APIC ID: %d\n", cpu->APIC_ID);
+		}
 
-		printf("\nStatic Syscall: Int $0x80\nDynamic Syscall: %s\n",scall[cpu->dsysc]);
-		printf("Logical CPUs: %d\n",cpu->logic_cores);
-	} else {
+	}
+
+	else
+
+	{
 		printf("current cpu does not support CPUID\n");
 	}
  }

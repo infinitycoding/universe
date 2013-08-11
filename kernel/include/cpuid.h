@@ -133,7 +133,6 @@ struct cpu_properties {
 	uint32_t flagblock0;
 	uint32_t flagblock1;
 	//empty space for futur
-	char reserved[23];
 };
 
 struct cpuid_regs {
