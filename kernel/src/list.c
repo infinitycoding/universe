@@ -2,9 +2,9 @@
 #include <stdint.h>
 #include <list.h>
 
-struct List *ListCreate()
+List *ListCreate()
 {
-struct List *list = (struct List*)malloc(sizeof(struct List));
+List *list = (List*)malloc(sizeof(List));
 struct ListNode *dummy = (struct ListNode*)malloc(sizeof(struct ListNode));
     list->head = dummy;
     list->current = dummy;
@@ -26,7 +26,7 @@ void ListSplice(struct ListNode *start, struct ListNode *end, struct ListNode *t
 return;
 }
 
-struct List *ListPushBack(struct List *list, void *element)
+List *ListPushBack(List *list, void *element)
 {
 struct ListNode *node = (struct ListNode*) malloc(sizeof(struct ListNode));
     node->element = element;
@@ -36,7 +36,7 @@ struct ListNode *node = (struct ListNode*) malloc(sizeof(struct ListNode));
 return list;
 }
 
-struct List *ListPushFront(struct List *list, void *element)
+List *ListPushFront(List *list, void *element)
 {
 struct ListNode *node = (struct ListNode*) malloc(sizeof(struct ListNode));
     node->element = element;
@@ -46,19 +46,19 @@ struct ListNode *node = (struct ListNode*) malloc(sizeof(struct ListNode));
 return list;
 }
 
-void *ListPopBack(struct List *list)
+void *ListPopBack(List *list)
 {
 struct ListNode *last = list->head->prev;
 return ListRemoveNode(last);
 }
 
-void *ListPopFront(struct List *list)
+void *ListPopFront(List *list)
 {
 struct ListNode *first = list->head->next;
 return ListRemoveNode(first);
 }
 
-struct List *ListInsertAfter(struct List *list, void *element)
+List *ListInsertAfter(List *list, void *element)
 {
 struct ListNode *node = (struct ListNode*) malloc(sizeof(struct ListNode));
     node->element = element;
@@ -68,7 +68,7 @@ struct ListNode *node = (struct ListNode*) malloc(sizeof(struct ListNode));
 return list;
 }
 
-struct List *ListInsertBefore(struct List *list, void *element)
+List *ListInsertBefore(List *list, void *element)
 {
 struct ListNode *node = (struct ListNode*) malloc(sizeof(struct ListNode));
     node->element = element;
@@ -87,7 +87,7 @@ free(node);
 return element;
 }
 
-void *ListRemove(struct List *list)
+void *ListRemove(List *list)
 {
 void *element = ListGetCurrent(list);
 struct ListNode *node = list->current;
@@ -97,7 +97,7 @@ free(node);
 return element;
 }
 
-size_t ListSize(struct List *list)
+size_t ListSize(List *list)
 {
 struct ListNode *node = list->head->next;
 struct ListNode *head = list->head;
@@ -109,41 +109,41 @@ size_t size = 0;
 return size;
 }
 
-void *ListGetCurrent(struct List *list)
+void *ListGetCurrent(List *list)
 {
 return list->current->element;
 }
 
-struct List *ListNext(struct List *list)
+List *ListNext(List *list)
 {
 list->current = list->current->next;
 return list;
 }
 
-struct List *ListPrevious(struct List *list)
+List *ListPrevious(List *list)
 {
 list->current = list->current->prev;
 return list;
 }
 
-bool ListIsLast(struct List *list)
+bool ListIsLast(List *list)
 {
 return (list->current == list->head);
 }
 
-struct List *ListSetFirst(struct List *list)
+List *ListSetFirst(List *list)
 {
 list->current = list->head->next;
 return list;
 }
 
-struct List *ListSetLast(struct List *list)
+List *ListSetLast(List *list)
 {
 list->current = list->head->prev;
 return list;
 }
 
-bool ListIsEmpty(struct List *list)
+bool ListIsEmpty(List *list)
 {
 return (list->head == list->head->next);
 }

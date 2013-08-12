@@ -8,27 +8,27 @@ struct ListNode *prev;
 void *element;
 };
 
-struct List {
+typedef struct{
 struct ListNode *head;
 struct ListNode *current;
-};
+}List;
 
-struct List *ListCreate();
+List *ListCreate();
 void ListSplice(struct ListNode *start, struct ListNode *end, struct ListNode *target);
-struct List *ListPushBack(struct List *list, void *element);
-struct List *ListPushFront(struct List *list, void *element);
-void *ListPopBack(struct List *list);
-void *ListPopFront(struct List *list);
-struct List *ListInsertAfter(struct List *list, void *element);
-struct List *ListInsertBefore(struct List *list, void *element);
+List *ListPushBack(List *list, void *element);
+List *ListPushFront(List *list, void *element);
+void *ListPopBack(List *list);
+void *ListPopFront(List *list);
+List *ListInsertAfter(List *list, void *element);
+List *ListInsertBefore(List *list, void *element);
 void *ListRemoveNode(struct ListNode *node);
-void *ListRemove(struct List *list);
-size_t ListSize(struct List *list);
-void *ListGetCurrent(struct List *list);
-struct List *ListNext(struct List *list);
-struct List *ListPrevious(struct List *list);
-int ListIsLast(struct List *list);
-struct List *ListSetLast(struct List *list);
-struct List *ListSetFirst(struct List *list);
+void *ListRemove(List *list);
+size_t ListSize(List *list);
+void *ListGetCurrent(List *list);
+List *ListNext(List *list);
+List *ListPrevious(List *list);
+int ListIsLast(List *list);
+List *ListSetLast(List *list);
+List *ListSetFirst(List *list);
 bool ListIsEmpty();
 #endif
