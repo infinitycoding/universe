@@ -132,6 +132,7 @@ char *pci_dev_names[][16]={
 };
 
 
+//Linked list of PCI devices
 List *pci_dev_list;
 
 
@@ -139,30 +140,39 @@ void INIT_PCI()
 {
     pci_dev_list = ListCreate();
     int dev,bus = 0;
-    printf("PCI BUS %d:\n", bus);
 
-    for(dev = 0; dev < 4; dev++)
+    for(bus = 0; bus < 8; bus++)
     {
-        if(pci_dev_exist(bus, dev))
+
+        for(dev = 0; dev < 32; dev++)
         {
-            struct pci_dev *current_dev = malloc(sizeof(struct pci_dev));
-            current_dev->bus = bus;
-            current_dev->dev = dev;
-            current_dev->device_ID = pci_config_readl(bus,dev,0,0)>>16;
-            current_dev->vendor_ID = pci_config_readw(bus,dev,0,0);
-            uint32_t classcode = pci_config_readl(bus,dev,0,8);
-            current_dev->reversion_ID = (uint8_t)classcode;
-            current_dev->programming_interface = (uint8_t) (classcode >> 8);
-            current_dev->sub_class = (uint8_t) (classcode >> 16);
-            current_dev->base_class = (uint8_t) (classcode >> 24);
+            int func;
 
-            ListPushFront(pci_dev_list,current_dev);
+            if(pci_dev_exist(bus, dev))
+            {
+                uint32_t classcode = pci_config_readl(bus,dev,0,8);
 
+                struct pci_dev *current_dev = malloc(sizeof(struct pci_dev));
+                current_dev->bus = bus;
+                current_dev->dev = dev;
+                current_dev->device_ID = pci_config_readl(bus,dev,func,0)>>16;
+                current_dev->vendor_ID = pci_config_readw(bus,dev,func,0);
 
-            printf("slot:%d  vendor: %#04x  device: %0#4x  %s\n",dev,current_dev->vendor_ID,current_dev->device_ID, pci_dev_names[current_dev->base_class][current_dev->sub_class]);
+                current_dev->reversion_ID = (uint8_t)classcode;
+                current_dev->programming_interface = (uint8_t) (classcode >> 8);
+                current_dev->sub_class = (uint8_t) (classcode >> 16);
+                current_dev->base_class = (uint8_t) (classcode >> 24);
+
+                ListPushFront(pci_dev_list,current_dev);
+
+                if(((uint8_t) (classcode >> 24))<8 && ((uint8_t) (classcode >> 16)) < 16)
+                    printf("slot:%d  vendor: %#04x  device: %0#4x  %s\n",dev,pci_config_readw(bus,dev,0,0),pci_config_readl(bus,dev,0,0)>>16,pci_dev_names[(uint8_t) (classcode >> 24)][(uint8_t) (classcode >> 16)]);
+                else
+                    printf("slot:%d  vendor: %#04x  device: %0#4x  %s\n",dev,pci_config_readw(bus,dev,0,0),pci_config_readl(bus,dev,0,0)>>16,"unknown");
+
+            }
 
         }
-
     }
 
 }
