@@ -2,19 +2,36 @@
 #include <stdint.h>
 #include <list.h>
 
-List *ListCreate()
+list_t *list_create(void)
 {
-List *list = (List*)malloc(sizeof(List));
-struct ListNode *dummy = (struct ListNode*)malloc(sizeof(struct ListNode));
+	list_t *list = (list_t *) malloc(sizeof(list_t));
+	struct list_node *dummy = (struct list_node *) malloc(sizeof(struct list_node));
     list->head = dummy;
     list->current = dummy;
     dummy->next = dummy;
     dummy->prev = dummy;
     dummy->element = (void *) 0;
-return list;
+	return list;
 }
 
-void ListSplice(struct ListNode *start, struct ListNode *end, struct ListNode *target)
+/* TODO: Check for bugs */
+void list_destroy(list_t **list)
+{
+	struct list_node *node = list->head->next;
+	struct list_node *head = list->head;
+    while (node != head)
+	{
+		
+        node = node->next;
+		free(node);
+    }
+	
+	free(*list);
+	*list = NULL;
+	return;
+}
+
+void list_splice(struct list_node *start, struct list_node *end, struct list_node *target)
 {
     start->prev->next = end->next;
     end->next->prev = start->prev;
@@ -22,130 +39,128 @@ void ListSplice(struct ListNode *start, struct ListNode *end, struct ListNode *t
     end->next = target->next;
     target->next->prev = end;
     target->next = start;
-
-return;
+	return;
 }
 
-List *ListPushBack(List *list, void *element)
+list_t *list_push_back(list_t *list, void *element)
 {
-struct ListNode *node = (struct ListNode*) malloc(sizeof(struct ListNode));
+	struct list_node *node = (struct list_node *) malloc(sizeof(struct list_node));
     node->element = element;
     node->next = node;
     node->prev = node;
-    ListSplice(node, node, list->head->prev);
-return list;
+    list_splice(node, node, list->head->prev);
+	return list;
 }
 
-List *ListPushFront(List *list, void *element)
+list_t *list_push_front(list_t *list, void *element)
 {
-struct ListNode *node = (struct ListNode*) malloc(sizeof(struct ListNode));
+	struct list_node *node = (struct list_node *) malloc(sizeof(struct list_node));
     node->element = element;
     node->next = node;
     node->prev = node;
-    ListSplice(node, node, list->head);
-return list;
+    list_splice(node, node, list->head);
+	return list;
 }
 
-void *ListPopBack(List *list)
+void *list_pop_back(list_t *list)
 {
-struct ListNode *last = list->head->prev;
-return ListRemoveNode(last);
+	struct list_node *last = list->head->prev;
+	return list_remove_node(last);
 }
 
-void *ListPopFront(List *list)
+void *list_pop_front(list_t *list)
 {
-struct ListNode *first = list->head->next;
-return ListRemoveNode(first);
+	struct list_node *first = list->head->next;
+	return list_remove_node(first);
 }
 
-List *ListInsertAfter(List *list, void *element)
+list_t *list_insert_after(list_t *list, void *element)
 {
-struct ListNode *node = (struct ListNode*) malloc(sizeof(struct ListNode));
+	struct list_node *node = (struct list_node *) malloc(sizeof(struct list_node));
     node->element = element;
     node->next = node;
     node->prev = node;
-    ListSplice(node, node, list->current);
-return list;
+    list_splice(node, node, list->current);
+	return list;
 }
 
-List *ListInsertBefore(List *list, void *element)
+list_t *list_insert_before(list_t *list, void *element)
 {
-struct ListNode *node = (struct ListNode*) malloc(sizeof(struct ListNode));
+	struct list_node *node = (struct list_node *) malloc(sizeof(struct list_node));
     node->element = element;
     node->next = node;
     node->prev = node;
-    ListSplice(node, node, list->current->prev);
-return list;
+    list_splice(node, node, list->current->prev);
+	return list;
 }
 
-void *ListRemoveNode(struct ListNode *node)
+void *list_remove_node(struct list_node *node)
 {
-void *element = node->element;
+	void *element = node->element;
     node->prev->next = node->next;
     node->next->prev = node->prev;
-free(node);
-return element;
+	free(node);
+	return element;
 }
 
-void *ListRemove(List *list)
+void *list_remove(list_t *list)
 {
-void *element = ListGetCurrent(list);
-struct ListNode *node = list->current;
+	void *element = list_get_current(list);
+	struct list_node *node = list->current;
     node->prev->next = node->next;
     node->next->prev = node->prev;
-free(node);
-return element;
+	free(node);
+	return element;
 }
 
-size_t ListSize(List *list)
+int list_length(list_t *list)
 {
-struct ListNode *node = list->head->next;
-struct ListNode *head = list->head;
-size_t size = 0;
-    while (node != head) {
+	struct list_node *node = list->head->next;
+	struct list_node *head = list->head;
+	size_t size = 0;
+    while (node != head)
+	{
         node = node->next;
         size++;
     }
-return size;
+	return size;
 }
 
-void *ListGetCurrent(List *list)
+void *list_get_current(list_t *list)
 {
-return list->current->element;
+	return list->current->element;
 }
 
-List *ListNext(List *list)
+list_t *list_next(list_t *list)
 {
-list->current = list->current->next;
-return list;
+	list->current = list->current->next;
+	return list;
 }
 
-List *ListPrevious(List *list)
+list_t *list_previous(list_t *list)
 {
-list->current = list->current->prev;
-return list;
+	list->current = list->current->prev;
+	return list;
 }
 
-bool ListIsLast(List *list)
+bool list_is_last(list_t *list)
 {
-return (list->current == list->head);
+	return (list->current == list->head);
 }
 
-List *ListSetFirst(List *list)
+list_t *list_set_first(list_t *list)
 {
-list->current = list->head->next;
-return list;
+	list->current = list->head->next;
+	return list;
 }
 
-List *ListSetLast(List *list)
+list_t *list_set_last(list_t *list)
 {
-list->current = list->head->prev;
-return list;
+	list->current = list->head->prev;
+	return list;
 }
 
-bool ListIsEmpty(List *list)
+bool list_is_empty(list_t *list)
 {
-return (list->head == list->head->next);
+	return (list->head == list->head->next);
 }
-
-

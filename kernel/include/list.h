@@ -1,34 +1,37 @@
 #ifndef _list_h_
 #define _list_h_
 
-struct ListNode
+struct list_node
 {
-struct ListNode *next;
-struct ListNode *prev;
-void *element;
+	struct list_node *next;
+	struct list_node *prev;
+	void *element;
 };
 
-typedef struct{
-struct ListNode *head;
-struct ListNode *current;
-}List;
+typedef struct
+{
+	struct list_mode *head;
+	struct list_node *current;
+} list_t;
 
-List *ListCreate();
-void ListSplice(struct ListNode *start, struct ListNode *end, struct ListNode *target);
-List *ListPushBack(List *list, void *element);
-List *ListPushFront(List *list, void *element);
-void *ListPopBack(List *list);
-void *ListPopFront(List *list);
-List *ListInsertAfter(List *list, void *element);
-List *ListInsertBefore(List *list, void *element);
-void *ListRemoveNode(struct ListNode *node);
-void *ListRemove(List *list);
-size_t ListSize(List *list);
-void *ListGetCurrent(List *list);
-List *ListNext(List *list);
-List *ListPrevious(List *list);
-int ListIsLast(List *list);
-List *ListSetLast(List *list);
-List *ListSetFirst(List *list);
-bool ListIsEmpty();
+list_t*	list_create(void);
+void 	list_destroy(list_t **list);
+void 	list_splice(struct list_node *start, struct list_node *end, struct list_node *target);
+list_t*	list_push_back(list_t *list, void *element);
+list_t*	list_push_front(list_t *list, void *element);
+void*	list_pop_pack(list_t *list);
+void*	list_pop_front(list_t *list);
+list_t*	list_insert_after(list_t *list, void *element);
+list_t*	list_insert_before(list_t *list, void *element);
+void*	list_remove_node(struct list_node *node);
+void*	list_remove(list_t *list);
+int		list_length(list_t *list);
+void*	list_get_current(list_t *list);
+list_t*	list_next(list_t *list);
+list_t*	list_previous(list_t *list);
+int 	list_is_last(list_t *list);
+list_t*	list_set_last(list_t *list);
+list_t*	list_set_first(list_t *list);
+bool	list_is_empty();
+
 #endif
