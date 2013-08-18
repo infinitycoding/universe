@@ -133,12 +133,12 @@ char *pci_dev_names[][16]={
 
 
 //Linked list of PCI devices
-List *pci_dev_list;
+list_t *pci_dev_list;
 
 
 void INIT_PCI()
 {
-    pci_dev_list = ListCreate();
+    pci_dev_list = list_create();
     int dev,bus = 0;
 
     for(bus = 0; bus < 8; bus++)
@@ -163,7 +163,7 @@ void INIT_PCI()
                 current_dev->sub_class = (uint8_t) (classcode >> 16);
                 current_dev->base_class = (uint8_t) (classcode >> 24);
 
-                ListPushFront(pci_dev_list,current_dev);
+                list_push_front(pci_dev_list,current_dev);
 
                 if(((uint8_t) (classcode >> 24))<8 && ((uint8_t) (classcode >> 16)) < 16)
                     printf("slot:%d  vendor: %#04x  device: %0#4x  %s\n",dev,pci_config_readw(bus,dev,0,0),pci_config_readl(bus,dev,0,0)>>16,pci_dev_names[(uint8_t) (classcode >> 24)][(uint8_t) (classcode >> 16)]);

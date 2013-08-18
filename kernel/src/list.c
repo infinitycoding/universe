@@ -17,8 +17,8 @@ list_t *list_create(void)
 /* TODO: Check for bugs */
 void list_destroy(list_t **list)
 {
-	struct list_node *node = list->head->next;
-	struct list_node *head = list->head;
+	struct list_node *node = list[0]->head->next;
+	struct list_node *head = list[0]->head;
     while (node != head)
 	{
 		
