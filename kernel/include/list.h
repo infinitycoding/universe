@@ -10,7 +10,7 @@ struct list_node
 
 typedef struct
 {
-	struct list_mode *head;
+	struct list_node *head;
 	struct list_node *current;
 } list_t;
 
