@@ -70,7 +70,8 @@ int testproc(void) {
 *
 * @return 0
 */
-extern
+extern struct thread_state *current_thread;
+extern struct process_state *kernel_state;
 int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	clear_screen();
 
@@ -101,7 +102,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	// count free memory and display it
 	uint32_t pages = pmm_count_free_pages();
 	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
-	
+
 	//print current time
 	//print_time(get_time()); crashes on a real computer and on virtual box
     printf("\n");
@@ -110,8 +111,6 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
     printf("\n");
     INIT_PCI();
 
-
-	//create kernelmode testprocess
 
 
 	//display  input just for Fun :D
