@@ -21,9 +21,11 @@
 	@author Michael Sippel (Universe Team) <micha.linuxfreak@gmail.com>
 */
 
+
+
 #include <scheduler.h>
-#include <task.h>
-#include <thread.h>
+
+
 #include <drivers/timer.h>
 #include <tss.h>
 #include <gdt.h>
@@ -35,13 +37,15 @@ tss_s tss = { .ss0 = 0x10 };
 
 uint32_t *kernelstack;
 
-struct task_state *proc0;
-struct task_state *currentprocess;
-
-bool sched_lock = false;
+struct process_state *kernel_state;
+struct thread_state *current_thread;
+list_t *running_threads;
 
 extern pd_t *pd_kernel;
 extern pd_t *pd_current;
+
+extern list_t *process_list;
+extern list_t *zombie_list;
 
 void INIT_SCHEDULER(void)
 {
@@ -51,29 +55,31 @@ void INIT_SCHEDULER(void)
 	kernelstack = malloc(KERNEL_STACK_SIZE) + KERNEL_STACK_SIZE;
 	tss.esp = (uint32_t)kernelstack;
 
-    proc0 = malloc(sizeof(proc0[0]));
-    proc0->pagedir = pd_kernel;
-    proc0->flags  = TASK_ACTIV|TASK_REALTIME_PRIORITY;
-    strncpy(proc0->name,"kernel",256);
-    strncpy(proc0->desc,"Kernel",256);
+    running_threads = list_create();
+    process_list = list_create();
+    zombie_list = list_create();
+    kernel_state = process_create("Kernel INIT", "initiate system", PROCESS_ACTIVE, NULL);
+    current_thread = thread_create(kernel_state, KERNELMODE, 0, NULL);
 
-    proc0->next = proc0->next;
-    proc0->prev = proc0;
-    proc0->next = proc0;
-    proc0->pid = get_freepid();
-
-    currentprocess = proc0;
-	thread_create(currentprocess, 0, 0);
-	
 }
 
 struct cpu_state *task_schedule(struct cpu_state *cpu)
 {
-    currentprocess->currentthread->thread_state = cpu;
-    currentprocess->currentthread = currentprocess->currentthread->next;
-    //while(!currentprocess->currentthread->flags&THREAD_ACTIV) currentprocess->currentthread = currentprocess->currentthread->next;
-    cpu = currentprocess->currentthread->thread_state;
-
+    current_thread->state = cpu;
+    if(current_thread->ticks == 0)
+    {
+        current_thread->ticks = 10;
+        list_next(running_threads);
+        if(list_is_last(running_threads))
+            list_set_first(running_threads);
+        current_thread = list_get_current(running_threads);
+        cpu = current_thread->state;
+        //pd_switch(current_thread->process->pagedir);
+    }
+    else
+    {
+        current_thread->ticks--;
+    }
 	EOI(0);
 	return cpu;
 }
