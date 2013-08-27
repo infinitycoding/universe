@@ -94,6 +94,7 @@ vaddr_t pd_automap_user(pd_t *pd, paddr_t pframe, uint8_t flags);
 pt_t pt_get(pd_t *pd, int index, uint8_t flags);
 pt_t pt_create(pd_t *pd, int index, uint8_t flags);
 void pt_destroy(pd_t *pd, int index);
+void pd_update(pd_t *pd);
 
 vaddr_t vaddr_find(pd_t *pd, int num, vaddr_t limit_low, vaddr_t limit_high, int flags);
 paddr_t vaddr2paddr(pd_t * const pd, vaddr_t vaddr); // FIXME: really needed?

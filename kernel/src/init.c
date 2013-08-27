@@ -101,8 +101,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	// count free memory and display it
 	uint32_t pages = pmm_count_free_pages();
 	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
-
-
+	
 	//print current time
 	//print_time(get_time()); crashes on a real computer and on virtual box
     printf("\n");

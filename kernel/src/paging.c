@@ -72,8 +72,9 @@ void INIT_PAGING(void) {
 			MEMORY_LAYOUT_DIRECT_MAPPED / PAGE_SIZE,
 			PTE_WRITABLE
 	);
-
-	pd_switch(pd_kernel);
+	
+	pd_current = pd_kernel;
+	asm volatile("mov %0, %%cr3" : : "r" (pframe));
 }
 
 /**
@@ -83,16 +84,37 @@ void INIT_PAGING(void) {
  * @return new pagedirectory
  */
 pd_t *pd_create(void) {
-	pd_t pd;
+	uintptr_t paddr = (uintptr_t) pmm_alloc_page();
+	pd_t *pd = pd_automap_kernel(pd_current, paddr, PTE_PRESENT | PTE_WRITABLE);
+	memset(pd, 0, PAGE_SIZE);
+  	
+	uintptr_t entries_paddr = (uintptr_t) pmm_alloc_page();
+	uintptr_t entries = pd_automap_kernel(pd_current, entries_paddr, PTE_PRESENT | PTE_WRITABLE);
+	memset(entries, 0, PAGE_SIZE);
+	
+	pd->entries = (pde_t*) entries;
+	pd->phys_addr = entries_paddr;
+	
+	pd_update(pd);
+	pd->entries[PDE_INDEX(MEMORY_LAYOUT_PAGING_STRUCTURES_START)] = (uint32_t) entries_paddr | PTE_PRESENT | PTE_WRITABLE;
+	
+	return pd;
+}
 
-	paddr_t pframe = pmm_alloc_page();
-	vaddr_t vframe = pd_map_temp(pframe, PTE_WRITABLE);
-	memset(vframe, 0, PD_LENGTH);
-
-	pd.entries = vframe;
-	pd.phys_addr = pframe;
-
-	return &pd;
+/**
+ * Update the kernelspace area of a pagedir
+ *
+ * @param pagedir
+ * @return void
+ */
+void pd_update(pd_t *pd) {
+	#define START PDE_INDEX(MEMORY_LAYOUT_KERNEL_START)
+	#define END   PDE_INDEX(MEMORY_LAYOUT_KERNEL_END)
+	uintptr_t upd = (uintptr_t) (pd->entries + START);
+	uintptr_t kpd = (uintptr_t) (pd_current->entries + START);
+	size_t len = END - START;
+	memcpy((void*) upd, (void*) kpd, len * sizeof(pde_t));
+	pd->entries[PDE_INDEX(MEMORY_LAYOUT_PAGING_STRUCTURES_START)] = (uint32_t) pd->phys_addr | PTE_PRESENT | PTE_WRITABLE;
 }
 
 /**
@@ -380,14 +402,12 @@ paddr_t vaddr2paddr(pd_t * const pd, vaddr_t vaddr)
  * @return void
  */
 void pd_switch(pd_t *pd) {
-    if(pd != pd_current) {
-	if(pd_current != NULL) {
-	  pd_unmap_range(pd_current, temp_mapped, TEMP_SIZE);
+	if(pd != pd_current && pd != NULL) {
+		pd_unmap_range(pd_current, temp_mapped, TEMP_SIZE);
+		pd_update(pd);
+		pd_current = pd;
+		asm volatile ("mov %0, %%cr3" : : "r" (pd->phys_addr));
 	}
-
-	pd_current = pd;
-	asm volatile ("mov %0, %%cr3" : : "r" (pd->phys_addr));
-    }
 }
 
 /**
