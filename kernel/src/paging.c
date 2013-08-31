@@ -140,7 +140,7 @@ pt_t pt_get(pd_t *pd, int index, uint8_t flags) {
 	if(pd_current) {
 	  if(pd != pd_current) {
 	    pt = (pt_t) PT_PADDR(index);
-	    pt = pd_autmap_kernel(pd_current, pt, flags);
+	    pt = pd_automap_kernel(pd_current, pt, flags);
 	  } else {
 	    pt = (pt_t) PT_VADDR(index);
 	  }
@@ -180,7 +180,6 @@ pt_t pt_create(pd_t *pd, int index, uint8_t flags) {
  * @return void
  */
 void pt_destroy(pd_t *pd, int index) {
-	pd_unmap(pd, PT_VADDR(index));
 	pd->entries[index] = 0;
 }
 
