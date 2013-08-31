@@ -111,7 +111,8 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
     INIT_PCI();
 
 
-
+struct process_state *proc = process_create("test", "test", PROCESS_ACTIVE,NULL);
+thread_create(proc, 3, testproc, NULL);
 	while (1) {
 		putchar(input());
 	}
