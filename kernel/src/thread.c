@@ -3,6 +3,7 @@
 #include <cpu.h>
 
 extern list_t *running_threads;
+extern struct thread_state* current_thread;
 
 struct thread_state *thread_create(struct process_state *process, privilege_t prev, uint32_t eip, void *args)
 {
@@ -64,7 +65,6 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
         *new_thread->state = new_state;
     }
 
-
     if(list_is_empty(process->zombie_tids))
         new_thread->tid = process->tid_counter++;
     else
@@ -78,10 +78,42 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
 
 void thread_kill(struct thread_state *thread)
 {
-
-
-
+    asm volatile("cli");
+    if(current_thread == thread)
+        thread->flags |= THREAD_ZOMBIE;
+    else
+    {
+        if(thread->flags & THREAD_ACTIV)
+        {
+            struct list_node *backup_current = running_threads->current;
+            list_set_first(running_threads);
+            while(!list_is_last(running_threads))
+            {
+                struct thread_state *t = list_get_current(running_threads);
+                if(t == thread)
+                {
+                    list_remove(running_threads);
+                    break;
+                }
+            }
+            running_threads->current = backup_current;
+        }
+        free(thread->state);
+        list_push_front(thread->process->zombie_tids,thread->tid);
+        list_set_first(thread->process->threads);
+        while(!list_is_last(thread->process->threads))
+        {
+            struct thread_state *t = list_get_current(thread->process->threads);
+            if(t == thread)
+            {
+                list_remove(thread->process->threads);
+                break;
+            }
+        }
+        free(thread);
+    }
+    asm volatile("sti");
 }
-/*
-struct thread_state *thread_find(struct process_state *process,tid_t tid);
-*/
+
+
+

@@ -47,6 +47,7 @@ extern pd_t *pd_current;
 extern list_t *process_list;
 extern list_t *zombie_list;
 
+
 void INIT_SCHEDULER(void)
 {
 	set_GDT_entry(5, (uint32_t) &tss, sizeof(tss), 0x89, 0x8);
@@ -60,12 +61,11 @@ void INIT_SCHEDULER(void)
     zombie_list = list_create();
     kernel_state = process_create("Kernel INIT", "initiate system", PROCESS_ACTIVE, NULL);
     current_thread = thread_create(kernel_state, KERNELMODE, 0, NULL);
-
 }
 
 struct cpu_state *task_schedule(struct cpu_state *cpu)
 {
-    current_thread->state = cpu;
+    *current_thread->state = *cpu;
     if(current_thread->ticks == 0)
     {
         current_thread->ticks = 10;
@@ -73,8 +73,8 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
         if(list_is_last(running_threads))
             list_set_first(running_threads);
         current_thread = list_get_current(running_threads);
-        cpu = current_thread->state;
-        //pd_switch(current_thread->process->pagedir);
+        *cpu = *current_thread->state;
+        pd_switch(current_thread->process->pagedir);
     }
     else
     {

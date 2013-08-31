@@ -33,7 +33,7 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
 
     int i;
 
-    for (i = 768; i < 1024; i++)
+    for (i = 0; i < 1024; i++)
 
     {
         state->pagedir->entries[i] = pd_kernel->entries[i];
@@ -61,6 +61,10 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
         state->pid = (pid_t) list_pop_front(zombie_list);
     }
 
+    asm volatile("cli");
+    list_push_front(process_list,state);
+    asm volatile("sti");
+
     return state;
 }
 
@@ -75,7 +79,7 @@ void process_kill(struct process_state *process)
     process->flags = PROCESS_FREEZED;
     list_set_first(process->threads);
     bool still_running = false;
-
+    asm volatile("cli");
     while(!list_is_last(process->threads))
     {
         struct thread_state *thread = list_get_current(process->threads);
@@ -94,6 +98,7 @@ void process_kill(struct process_state *process)
         }
 
     }
+    asm volatile("sti");
 
     list_set_first(process->children);
 
@@ -121,29 +126,25 @@ void process_kill(struct process_state *process)
         list_destroy(&process->ports);
         list_destroy(&process->threads);
         list_destroy(&process->zombie_tids);
+        asm volatile("cli");
         list_set_first(process_list);
 
-    while(!list_is_last(process_list))
-    {
-
-        if(list_get_current(process_list) == process)
-
+        while(!list_is_last(process_list))
         {
-
-            list_remove(process_list);
-
-            break;
-
+            if(list_get_current(process_list) == process)
+            {
+                list_remove(process_list);
+                break;
+            }
+            list_next(process_list);
         }
-
-        list_next(process_list);
-
+        free(process);
+        asm volatile("sti");
     }
-
-    free(process);
-
+    else
+    {
+        process->flags |= PROCESS_ZOMBIE;
     }
-
 }
 
 
