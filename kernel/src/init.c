@@ -56,8 +56,7 @@
  * Test task
  **/
 int testproc(void) {
-	printf("Hello World from Kernelmode!\n");
-	while(1){}
+	while(1){printf("X");}
 	//exit(0);
 }
 
@@ -104,7 +103,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
 
 	//print current time
-	//print_time(get_time()); crashes on a real computer and on virtual box
+	//print_time(get_time()); //crashes on a real computer and on virtual box
     printf("\n");
 
     INIT_CPUID();
@@ -113,7 +112,6 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 
 
 
-	//display  input just for Fun :D
 	while (1) {
 		putchar(input());
 	}

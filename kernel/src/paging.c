@@ -34,11 +34,6 @@ static inline void paging_flush_tlb(vaddr_t addr);
 
 pd_t *pd_kernel = NULL;
 pd_t *pd_current = NULL;
-vaddr_t *temp_mapped = NULL;
-#define TEMP_SIZE PAGE_SIZE
-#define FOR_TEMP(x) \
-    for(x = 0; x < TEMP_SIZE; x++)
-
 #define PT_PADDR(i) (pd->entries[i] & ~0xFFF)
 #define PT_VADDR(i) (MEMORY_LAYOUT_PAGING_STRUCTURES_START + PT_LENGTH*sizeof(pte_t)*i)
 
@@ -62,9 +57,6 @@ void INIT_PAGING(void) {
 	pd_kernel->entries = vframe;
 	pd_kernel->entries[PDE_INDEX(pt_vframe)] = pframe | PTE_WRITABLE | PDE_PRESENT;
 
-	vaddr_t temp_frame = pmm_alloc_page() + MEMORY_LAYOUT_KERNEL_START;
-	memset(temp_frame, 0, TEMP_SIZE);
-
 	pd_map_range(
 			pd_kernel,
 			0x00000000,
@@ -72,7 +64,7 @@ void INIT_PAGING(void) {
 			MEMORY_LAYOUT_DIRECT_MAPPED / PAGE_SIZE,
 			PTE_WRITABLE
 	);
-
+	
 	pd_current = pd_kernel;
 	asm volatile("mov %0, %%cr3" : : "r" (pframe));
 }
@@ -87,17 +79,17 @@ pd_t *pd_create(void) {
 	uintptr_t paddr = (uintptr_t) pmm_alloc_page();
 	pd_t *pd = pd_automap_kernel(pd_current, paddr, PTE_PRESENT | PTE_WRITABLE);
 	memset(pd, 0, PAGE_SIZE);
-
+  	
 	uintptr_t entries_paddr = (uintptr_t) pmm_alloc_page();
 	uintptr_t entries = pd_automap_kernel(pd_current, entries_paddr, PTE_PRESENT | PTE_WRITABLE);
 	memset(entries, 0, PAGE_SIZE);
-
+	
 	pd->entries = (pde_t*) entries;
 	pd->phys_addr = entries_paddr;
-
+	
 	pd_update(pd);
 	pd->entries[PDE_INDEX(MEMORY_LAYOUT_PAGING_STRUCTURES_START)] = (uint32_t) entries_paddr | PTE_PRESENT | PTE_WRITABLE;
-
+	
 	return pd;
 }
 
@@ -148,7 +140,7 @@ pt_t pt_get(pd_t *pd, int index, uint8_t flags) {
 	if(pd_current) {
 	  if(pd != pd_current) {
 	    pt = (pt_t) PT_PADDR(index);
-	    pt = pd_map_temp(pt, flags);
+	    pt = pd_autmap_kernel(pd_current, pt, flags);
 	  } else {
 	    pt = (pt_t) PT_VADDR(index);
 	  }
@@ -193,34 +185,6 @@ void pt_destroy(pd_t *pd, int index) {
 }
 
 /**
- * Map a page temporaily in the current pagedirectory
- *
- * @param pframe physical address
- * @param flags flags
- *
- * @return virtual address
- */
-vaddr_t pd_map_temp(paddr_t pframe, uint8_t flags) {
-	vaddr_t vframe = vaddr_find(pd_current, 1,
-				    MEMORY_LAYOUT_RESERVED_AREA_END,
-				    MEMORY_LAYOUT_KERNEL_END, flags);
-	pd_map(pd_current, pframe, vframe, flags | PTE_PRESENT);
-
-	int i;
-	FOR_TEMP(i) {
-		if(temp_mapped[i] == NULL) {
-			/**
-			 * FIXME: if temp_mapped is full the mapping won't be removed at pd_switch()!
-			 */
-			temp_mapped[i] = vframe;
-			break;
-		}
-	}
-
-	return vframe;
-}
-
-/**
  * Map a physical address to a virtual adress
  *
  * @param pd pagedirectory in that will map
@@ -252,6 +216,10 @@ int pd_map(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags) {
 
 	if(pd == pd_current && pd_current) {
 		paging_flush_tlb(vframe);
+	} else {
+		if(pd_current) {
+			pd_unmap(pd_current, (vaddr_t) pt);
+		}
 	}
 
 	return 0;
@@ -347,17 +315,17 @@ vaddr_t vaddr_find(pd_t *pd, int num, vaddr_t limit_low, vaddr_t limit_high, int
 	  if(pages_found >= num) { \
 	    return vaddr; \
 	  }
-
+  
   vaddr_t vaddr = NULL;
   int page = 0;
   int pages_found = 0;
-
+  
   uint32_t pd_index = PDE_INDEX(limit_low);
   uint32_t pt_index = PTE_INDEX(limit_low);
   uint32_t pd_index_end = PDE_INDEX(limit_high);
   uint32_t pt_index_end = PTE_INDEX(limit_high);
   pt_t pt;
-
+  
   while(pd_index <= pd_index_end) {
     if(pd->entries[pd_index] & PTE_PRESENT) {
       pt = pt_get(pd, pd_index, flags);
@@ -403,7 +371,6 @@ paddr_t vaddr2paddr(pd_t * const pd, vaddr_t vaddr)
  */
 void pd_switch(pd_t *pd) {
 	if(pd != pd_current && pd != NULL) {
-		//pd_unmap_range(pd_current, temp_mapped, TEMP_SIZE);
 		pd_update(pd);
 		pd_current = pd;
 		asm volatile ("mov %0, %%cr3" : : "r" (pd->phys_addr));
