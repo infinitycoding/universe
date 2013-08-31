@@ -72,7 +72,7 @@ void INIT_PAGING(void) {
 			MEMORY_LAYOUT_DIRECT_MAPPED / PAGE_SIZE,
 			PTE_WRITABLE
 	);
-	
+
 	pd_current = pd_kernel;
 	asm volatile("mov %0, %%cr3" : : "r" (pframe));
 }
@@ -87,17 +87,17 @@ pd_t *pd_create(void) {
 	uintptr_t paddr = (uintptr_t) pmm_alloc_page();
 	pd_t *pd = pd_automap_kernel(pd_current, paddr, PTE_PRESENT | PTE_WRITABLE);
 	memset(pd, 0, PAGE_SIZE);
-  	
+
 	uintptr_t entries_paddr = (uintptr_t) pmm_alloc_page();
 	uintptr_t entries = pd_automap_kernel(pd_current, entries_paddr, PTE_PRESENT | PTE_WRITABLE);
 	memset(entries, 0, PAGE_SIZE);
-	
+
 	pd->entries = (pde_t*) entries;
 	pd->phys_addr = entries_paddr;
-	
+
 	pd_update(pd);
 	pd->entries[PDE_INDEX(MEMORY_LAYOUT_PAGING_STRUCTURES_START)] = (uint32_t) entries_paddr | PTE_PRESENT | PTE_WRITABLE;
-	
+
 	return pd;
 }
 
@@ -347,17 +347,17 @@ vaddr_t vaddr_find(pd_t *pd, int num, vaddr_t limit_low, vaddr_t limit_high, int
 	  if(pages_found >= num) { \
 	    return vaddr; \
 	  }
-  
+
   vaddr_t vaddr = NULL;
   int page = 0;
   int pages_found = 0;
-  
+
   uint32_t pd_index = PDE_INDEX(limit_low);
   uint32_t pt_index = PTE_INDEX(limit_low);
   uint32_t pd_index_end = PDE_INDEX(limit_high);
   uint32_t pt_index_end = PTE_INDEX(limit_high);
   pt_t pt;
-  
+
   while(pd_index <= pd_index_end) {
     if(pd->entries[pd_index] & PTE_PRESENT) {
       pt = pt_get(pd, pd_index, flags);
@@ -403,7 +403,7 @@ paddr_t vaddr2paddr(pd_t * const pd, vaddr_t vaddr)
  */
 void pd_switch(pd_t *pd) {
 	if(pd != pd_current && pd != NULL) {
-		pd_unmap_range(pd_current, temp_mapped, TEMP_SIZE);
+		//pd_unmap_range(pd_current, temp_mapped, TEMP_SIZE);
 		pd_update(pd);
 		pd_current = pd;
 		asm volatile ("mov %0, %%cr3" : : "r" (pd->phys_addr));
