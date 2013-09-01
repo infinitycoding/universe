@@ -25,6 +25,7 @@
 */
 
 #include <stdint.h>
+#include <multiboot.h>
 
 enum CR3_Flags {
 	CR3_WRITETHOUGH	= 8,
@@ -66,6 +67,8 @@ enum PTE_Flags {
 #define PAGE_FRAME_NUMBER(x) ((x) >> 12)
 #define PAGE_FRAME_ADDR(x) ((x) << 12)
 
+#define NUM_PAGES(n) ((((n) + 0xfff) & 0xfffff000) / PAGE_SIZE)
+
 #define PDE_INDEX(x) ((x) >> 22)
 #define PTE_INDEX(x) ((x) >> 12 & 0x03FF)
 
@@ -78,7 +81,7 @@ typedef struct {
 	paddr_t phys_addr;
 } pd_t;
 
-void INIT_PAGING(void);
+void INIT_PAGING(struct multiboot_struct *mb_info);
 
 pd_t *pd_create(void);
 void pd_destroy(pd_t *pd);

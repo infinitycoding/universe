@@ -64,7 +64,7 @@
 #define ELF_MAG2 'L'
 #define ELF_MAG3 'F'
 
-struct elf32_header {
+struct elf_header {
 	uint8_t ident[EI_NIDENT];
 	uint16_t type;
 	uint16_t machine;
@@ -98,7 +98,7 @@ struct elf32_header {
 #define EP_FLAGS_W 0x2 /* Writable segment */
 #define EP_FLAGS_R 0x3 /* Readable segment */
 
-struct elf32_program_header {
+struct elf_program_header {
 	uint32_t type;
 	uint32_t offset;
 	uint32_t virt_addr;
@@ -108,5 +108,7 @@ struct elf32_program_header {
 	uint32_t flags;
 	uint32_t alignment;
 } __attribute__((packed));
+
+struct process *load_elf(void *image);
 
 #endif

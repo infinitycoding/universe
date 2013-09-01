@@ -41,8 +41,6 @@ void *realloc(void *ptr, size_t size);
 
 #define HEAP_STATUS_USED 0
 #define HEAP_STATUS_FREE 1
- 
-#define NUM_PAGES(n) ((((n) + 0xfff) & 0xfffff000) / PAGE_SIZE)
 
 typedef struct alloc {
 	size_t size;

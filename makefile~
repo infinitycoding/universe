@@ -1,4 +1,4 @@
-all: kernel user
+all: kernel
 
 kernel:
 	$(MAKE) -C kernel/src
