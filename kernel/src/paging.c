@@ -180,6 +180,7 @@ pt_t pt_create(pd_t *pd, int index, uint8_t flags) {
  * @return void
  */
 void pt_destroy(pd_t *pd, int index) {
+	pmm_mark_page_as_free((paddr_t)pd->entries[index]);
 	pd->entries[index] = 0;
 }
 

@@ -1,6 +1,9 @@
 #include <thread.h>
 #include <heap.h>
 #include <cpu.h>
+#include <memory_layout.h>
+#include <paging.h>
+#include <string.h>
 
 extern list_t *running_threads;
 extern struct thread_state* current_thread;
@@ -13,56 +16,31 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     new_thread->ticks = 10;
     new_thread->return_value = 0;
 
+	void *kernel_stack = malloc(0x1000);
+	struct cpu_state *new_state = kernel_stack + 0x1000 - sizeof(struct cpu_state);
+	new_thread->state = new_state;
+	memset(new_state, 0, sizeof(struct cpu_state));
+
+	new_state->eip = eip;
+	new_state->eflags = 0x202;
+
     if(prev == KERNELMODE)
     {
-        struct cpu_state new_state = {
-            .gs = 0x10,
-            .fs = 0x10,
-            .es = 0x10,
-            .ds = 0x10,
-            .edi = 0,
-            .esi = 0,
-            .ebp = 0,
-            .ebx = 0,
-            .edx = 0,
-            .ecx = 0,
-            .eax = 0,
-            .intr = 0,
-            .error = 0,
-            .eip = eip,
-            .cs = 0x8,
-            .eflags = 0x202,
-        };
-
-        new_thread->state = malloc(sizeof(new_state));
-        *new_thread->state = new_state;
         new_thread->flags |= THREAD_KERNELMODE;
+
+		new_state->cs = 0x08;
+		new_state->ds = 0x10;
+		new_state->es = 0x10;
+		new_state->fs = 0x10;
+		new_state->gs = 0x10;
     }
     else
     {
-        struct cpu_state new_state = {
-            .gs = 0x2b,
-            .fs = 0x2b,
-            .es = 0x2b,
-            .ds = 0x2b,
-            .edi = 0,
-            .esi = 0,
-            .ebp = 0,
-            .ebx = 0,
-            .edx = 0,
-            .ecx = 0,
-            .eax = 0,
-            .intr = 0,
-            .error = 0,
-            .eip = eip,
-            .cs = 0x23,
-            .eflags = 0x202,
-            .esp = (uint32_t)malloc(THREAD_STACK_SIZE)+THREAD_STACK_SIZE,
-            .ss = 0x2b,
-        };
-
-        new_thread->state = malloc(sizeof(new_state));
-        *new_thread->state = new_state;
+		paddr_t pframe = pmm_alloc_page();
+		vaddr_t vframe = (uintptr_t) pd_automap_user(process->pagedir, pframe, PTE_PRESENT | PTE_WRITABLE | PTE_USER);
+		new_state->esp = (uint32_t) vframe + THREAD_STACK_SIZE;
+		new_state->cs = 0x1b;
+		new_state->ss = 0x23;
     }
 
     if(list_is_empty(process->zombie_tids))
