@@ -43,10 +43,11 @@ pd_t *pd_current = NULL;
  * @param void
  * @return void
  */
-void INIT_PAGING(void) {
+void INIT_PAGING(struct multiboot_struct *mb_info) {
 	install_exc(INT_PAGE_FAULT, pd_fault_handler);
 
-	pd_kernel = pmm_alloc_page() + MEMORY_LAYOUT_KERNEL_START;
+	paddr_t pd_paddr = pmm_alloc_page();
+	pd_kernel = pd_paddr + MEMORY_LAYOUT_KERNEL_START;
 
 	paddr_t pframe = pmm_alloc_page();
 	vaddr_t vframe = pframe + MEMORY_LAYOUT_KERNEL_START;
@@ -56,14 +57,27 @@ void INIT_PAGING(void) {
 	pd_kernel->phys_addr = pframe;
 	pd_kernel->entries = vframe;
 	pd_kernel->entries[PDE_INDEX(pt_vframe)] = pframe | PTE_WRITABLE | PDE_PRESENT;
-
-	pd_map_range(
-			pd_kernel,
-			0x00000000,
-			MEMORY_LAYOUT_KERNEL_START,
-			MEMORY_LAYOUT_DIRECT_MAPPED / PAGE_SIZE,
-			PTE_WRITABLE
-	);
+	
+	pd_map_range(pd_kernel, 0, MEMORY_LAYOUT_KERNEL_START, MEMORY_LAYOUT_DIRECT_MAPPED/PAGE_SIZE, PTE_WRITABLE);// kernel
+	pd_map(pd_kernel, 0xB8000, 0xB8000, PTE_WRITABLE | PTE_USER);// videomemory (0xB8000 - 0xBFFFF)
+	// multiboot
+	pd_map(pd_kernel, (vaddr_t)mb_info & (~0xfff), ((paddr_t)mb_info&(~0xfff)), PTE_WRITABLE);
+	pd_map(pd_kernel, mb_info->mods_addr & (~0xfff), mb_info->mods_addr & (~0xfff), PTE_WRITABLE);
+	int i;
+	uintptr_t addr;
+	struct mods_add *modules = (void*) mb_info->mods_addr;
+	for(i = 0; i < mb_info->mods_count; i++) {
+		addr = modules[i].mod_start & (~0xfff);
+		while(addr < modules[i].mod_end) {
+			pd_map(pd_kernel, addr, addr, PTE_PRESENT | PTE_WRITABLE);
+			addr += PAGE_SIZE;
+		}
+	}
+	
+	void *pd = pd_automap_kernel(pd_kernel, pframe, PTE_WRITABLE);
+	void *ct = pd_automap_kernel(pd_kernel, pd_paddr, PTE_WRITABLE);
+	pd_kernel->entries = pd;
+	pd_kernel = ct;
 	
 	pd_current = pd_kernel;
 	asm volatile("mov %0, %%cr3" : : "r" (pframe));
