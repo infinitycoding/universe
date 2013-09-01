@@ -56,7 +56,9 @@
  * Test task
  **/
 int testproc(void) {
-	while(1){printf("X");}
+	while(1){/*printf("X");*/}
+	// Der Prozess darf hier nicht stehen, weil der kernel nur mit kernel-flags gemappt ist. (und damit auch dieser prozess)
+	// Versucht ein usermode programm kernel code auszuführen gibt es einen pagefault.
 	//exit(0);
 }
 
@@ -111,8 +113,9 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
     INIT_PCI();
 
 
-struct process_state *proc = process_create("test", "test", PROCESS_ACTIVE,NULL);
-thread_create(proc, 3, testproc, NULL);
+	struct process_state *proc = process_create("test", "test", PROCESS_ACTIVE,NULL);
+	thread_create(proc, 0, testproc, NULL);
+	
 	while (1) {
 		putchar(input());
 	}
