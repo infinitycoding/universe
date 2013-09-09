@@ -48,7 +48,7 @@ struct process *load_elf(void *image) {
 	ph = (struct elf_program_header*) (image + header->ph_offset);
 
 	struct process_state *proc = process_create("", "", PROCESS_ACTIVE, NULL);
-	struct thread *thread = thread_create(proc, 3, header->entry, NULL);
+	struct thread *thread = thread_create(proc, 0, header->entry, NULL);
 	pd_t *pd_new = proc->pagedir;
 
 	for(i = 0; i < header->ph_entry_count; i++, ph++) {

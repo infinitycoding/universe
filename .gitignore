@@ -13,5 +13,8 @@ Thumbs.db
 .project
 *.c~
 *.h~
+makefile~
+Makefile~
+*.ld~
 .gitignore~
 
