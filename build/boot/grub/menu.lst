@@ -1,0 +1,7 @@
+timeout 10
+
+title Universe
+    kernel /kernel32.elf
+    module /test.elf
+    boot
+

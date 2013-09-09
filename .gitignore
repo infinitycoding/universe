@@ -12,6 +12,8 @@ Thumbs.db
 .cproject
 .project
 *.c~
+*.iso
+*.lst~
 *.h~
 makefile~
 Makefile~
