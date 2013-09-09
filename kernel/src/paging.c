@@ -59,7 +59,7 @@ void INIT_PAGING(struct multiboot_struct *mb_info) {
 	pd_kernel->entries[PDE_INDEX(pt_vframe)] = pframe | PTE_WRITABLE | PDE_PRESENT;
 	
 	pd_map_range(pd_kernel, 0, MEMORY_LAYOUT_KERNEL_START, MEMORY_LAYOUT_DIRECT_MAPPED/PAGE_SIZE, PTE_WRITABLE);// kernel
-	pd_map(pd_kernel, 0xB8000, 0xB8000, PTE_WRITABLE | PTE_USER);// videomemory (0xB8000 - 0xBFFFF)
+	pd_map(pd_kernel, 0xB8000, 0xB8000, PTE_WRITABLE);// videomemory (0xB8000 - 0xBFFFF)
 	// multiboot
 	pd_map(pd_kernel, (vaddr_t)mb_info & (~0xfff), ((paddr_t)mb_info&(~0xfff)), PTE_WRITABLE);
 	pd_map(pd_kernel, mb_info->mods_addr & (~0xfff), mb_info->mods_addr & (~0xfff), PTE_WRITABLE);
@@ -250,7 +250,7 @@ int pd_map(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags) {
 void pd_unmap(pd_t *pd, vaddr_t frame) {
 	pt_t pt = pt_get(pd, PDE_INDEX(frame), PDE_WRITABLE);
 	pt[PTE_INDEX(frame)] = 0;
-
+	
 	int pt_emty = 1, i;
 	for(i = 0; i < PT_LENGTH; i++) {
 	  if(pt[i]) {
@@ -258,7 +258,7 @@ void pd_unmap(pd_t *pd, vaddr_t frame) {
 	    break;
 	  }
 	}
-
+	
 	if(pt_emty) {
 	  pt_destroy(pd, PDE_INDEX(frame));
 	}
@@ -296,6 +296,19 @@ vaddr_t pd_automap_kernel(pd_t *pd, paddr_t pframe, uint8_t flags) {
 	return vframe;
 }
 
+vaddr_t pd_automap_kernel_range(pd_t *pd, paddr_t pframe, int pages, uint8_t flags) {
+	int i;
+	vaddr_t vaddr_start = vaddr_find(pd, pages, MEMORY_LAYOUT_RESERVED_AREA_END, MEMORY_LAYOUT_KERNEL_END, flags);
+	for(i = 0; i < pages; i++) {
+		paddr_t paddr = pframe + i*PAGE_SIZE;
+		vaddr_t vaddr = vaddr_start + i*PAGE_SIZE;
+		pd_map(pd_current, paddr, vaddr, flags);
+	}
+	
+	return vaddr_start;
+}
+
+
 /**
  * Auto-map pframe to a free virtual address in userspace
  *
@@ -311,6 +324,18 @@ vaddr_t pd_automap_user(pd_t *pd, paddr_t pframe, uint8_t flags) {
 	pd_map(pd, pframe, vframe, flags | PTE_PRESENT);
 
 	return vframe;
+}
+
+vaddr_t pd_automap_user_range(pd_t *pd, paddr_t pframe, int pages, uint8_t flags) {
+	int i;
+	vaddr_t vaddr_start = vaddr_find(pd, pages, 0x0, MEMORY_LAYOUT_KERNEL_START, flags);
+	for(i = 0; i < pages; i++) {
+		paddr_t paddr = pframe + i*PAGE_SIZE;
+		vaddr_t vaddr = vaddr_start + i*PAGE_SIZE;
+		pd_map(pd_current, paddr, vaddr, flags);
+	}
+	
+	return vaddr_start;
 }
 
 /**

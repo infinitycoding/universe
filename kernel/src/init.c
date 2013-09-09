@@ -51,18 +51,6 @@
 
 #include "memory_layout.h"
 
-
-/**
- * Test task
- **/
-int testproc(void) {
-	while(1){/*printf("X");*/}
-	// Der Prozess darf hier nicht stehen, weil der kernel nur mit kernel-flags gemappt ist. (und damit auch dieser prozess)
-	// Versucht ein usermode programm kernel code auszuführen gibt es einen pagefault.
-	//exit(0);
-}
-
-
 /**
 * Initalize the Kernel
 *
@@ -107,24 +95,25 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 
 	//print current time
 	//print_time(get_time()); //crashes on a real computer and on virtual box
-    printf("\n");
-
-    INIT_CPUID();
-    printf("\n");
-    INIT_PCI();
-
-	int i;
+	printf("\n");
+	
+	INIT_CPUID();
+	printf("\n");
+	INIT_PCI();
+	
+	// Load modules
+	int i,j;
 	struct mods_add* modules = mb_info->mods_addr;
         for(i = 0; i < mb_info->mods_count; i++) {
         	size_t len = modules[i].mod_end - modules[i].mod_start;
         	size_t pages = NUM_PAGES(len);
-        	void *mod = pd_automap_kernel(pd_current, modules[i].mod_start, PTE_WRITABLE | PTE_USER);
-		//struct process *proc = load_elf(mod);
+        	void *mod = pd_automap_kernel_range(pd_current, modules[i].mod_start, pages, PTE_WRITABLE);
+		struct process *proc = load_elf(mod);
         }
 	
 	while (1) {
 		putchar(input());
 	}
-
+	
 	return 0;
 }

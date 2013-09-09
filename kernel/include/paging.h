@@ -93,6 +93,8 @@ void pd_map_range(pd_t *pd, paddr_t pframe, vaddr_t vframe, unsigned int pages, 
 void pd_unmap_range(pd_t *pd, vaddr_t frame, unsigned int pages);
 vaddr_t pd_automap_kernel(pd_t *pd, paddr_t pframe, uint8_t flags);
 vaddr_t pd_automap_user(pd_t *pd, paddr_t pframe, uint8_t flags);
+vaddr_t pd_automap_kernel_range(pd_t *pd, paddr_t pframe, int pages, uint8_t flags);
+vaddr_t pd_automap_user_range(pd_t *pd, paddr_t pframe, int pages, uint8_t flags);
 
 pt_t pt_get(pd_t *pd, int index, uint8_t flags);
 pt_t pt_create(pd_t *pd, int index, uint8_t flags);
