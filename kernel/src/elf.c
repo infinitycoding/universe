@@ -43,14 +43,13 @@ struct process *load_elf(void *image) {
 		printf("Invalid ELF-Magic!\n");
 		return NULL;
 	}
-
+	
 	int i,j;
 	ph = (struct elf_program_header*) (image + header->ph_offset);
-
+	
 	struct process_state *proc = process_create("", "", PROCESS_ACTIVE, NULL);
-	struct thread *thread = thread_create(proc, 0, header->entry, NULL);
-	pd_t *pd_new = proc->pagedir;
-
+	struct thread_state *new_thread = thread_create(proc, 3, header->entry, NULL);
+	
 	for(i = 0; i < header->ph_entry_count; i++, ph++) {
 		if(ph->type == EPT_LOAD) {
 			int pages = NUM_PAGES(ph->mem_size);
@@ -63,7 +62,7 @@ struct process *load_elf(void *image) {
 				uintptr_t src = (uintptr_t) image + ph->offset + j*PAGE_SIZE;
 				uintptr_t dest = (uintptr_t) dest_start + j*PAGE_SIZE;
         			
-				pd_map(pd_new, paddr, vaddr, PTE_WRITABLE | PTE_USER);
+				pd_map(new_thread->pagedir, paddr, vaddr, PTE_WRITABLE | PTE_USER);
 				pd_map(pd_current, paddr, dest, PTE_WRITABLE);
 				
         			memcpy((void*) dest, (void*) src, PAGE_SIZE);

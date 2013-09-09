@@ -6,7 +6,7 @@ kernel:
 user:
 	$(MAKE) -C user/test
 
-qemu: kernel
+qemu: kernel user
 	qemu-system-i386 -kernel kernel/src/kernel32.elf -initrd user/test/test.elf
 
 clean:
