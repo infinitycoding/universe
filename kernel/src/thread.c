@@ -11,11 +11,12 @@ extern struct thread_state* current_thread;
 struct thread_state *thread_create(struct process_state *process, privilege_t prev, uint32_t eip, void *args)
 {
     struct thread_state *new_thread = malloc(sizeof(struct thread_state));
-    new_thread->flags = THREAD_ACTIV;
+	new_thread->flags = THREAD_ACTIV;
     new_thread->process = process;
+    new_thread->pagedir = pd_create();
     new_thread->ticks = 10;
     new_thread->return_value = 0;
-
+	
 	void *kernel_stack = malloc(0x1000);
 	struct cpu_state *new_state = kernel_stack + 0x1000 - sizeof(struct cpu_state);
 	new_thread->state = new_state;
@@ -37,8 +38,9 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     else
     {
 		paddr_t pframe = pmm_alloc_page();
-		vaddr_t vframe = (uintptr_t) pd_automap_user(process->pagedir, pframe, PTE_PRESENT | PTE_WRITABLE | PTE_USER);
-		new_state->esp = (uint32_t) vframe + THREAD_STACK_SIZE;
+		pd_map(new_thread->pagedir, pframe, MEMORY_LAYOUT_STACK_TOP-0x1000, PTE_PRESENT | PTE_WRITABLE | PTE_USER);
+		
+		new_state->esp = (uint32_t) MEMORY_LAYOUT_STACK_TOP;
 		new_state->cs = 0x1b;
 		new_state->ss = 0x23;
     }

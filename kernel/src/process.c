@@ -28,7 +28,7 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
     state->desc = (char *) malloc(string_len + 1);
     strncpy(state->desc, desc, string_len);
     state->desc[string_len + 1] = 0;
-
+/*
     state->pagedir = pd_create();
 
     int i;
@@ -39,7 +39,7 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
         state->pagedir->entries[i] = pd_kernel->entries[i];
 
     }
-
+*/
     state->flags = flags;
     state->children = list_create();
     state->zombie_tids = list_create();

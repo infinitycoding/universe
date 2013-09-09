@@ -54,7 +54,7 @@ void INIT_SCHEDULER(void)
 	load_gdt(5);
 	asm volatile("ltr %%ax" : : "a" (5 << 3));
 	kernelstack = malloc(KERNEL_STACK_SIZE) + KERNEL_STACK_SIZE;
-	tss.esp = (uint32_t)kernelstack;
+	tss.esp0 = (uint32_t)kernelstack;
 
     running_threads = list_create();
     process_list = list_create();
@@ -74,7 +74,7 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
             list_set_first(running_threads);
         current_thread = list_get_current(running_threads);
         *cpu = *current_thread->state;
-        pd_switch(current_thread->process->pagedir);
+        pd_switch(current_thread->pagedir);
     }
     else
     {
