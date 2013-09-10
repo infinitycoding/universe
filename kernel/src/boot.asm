@@ -22,7 +22,8 @@
   @author Michael Sippel (Universe Team) <micha.linuxfreak@gmail.com>
 */
 
-#include "memory_layout.h"
+#define MEMORY_LAYOUT_KERNEL_START 0xC0000000
+#define KERNEL_PAGES (MEMORY_LAYOUT_KERNEL_START >> 22)
 
 section .multiboot
 #define MB_MAGIC 0x1BADB002

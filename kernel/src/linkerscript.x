@@ -3,34 +3,29 @@
 
 
 ENTRY (start)
+OUTPUT_FORMAT(elf32-i386)
 
 SECTIONS
 {
- . = 0xC0100000 - 0xC0000000 + SIZEOF_HEADERS;
+      .  = 0x00100000;
+      kernel_phys_start = .;
 
-    .boot ALIGN(4096) : {
-        *(.multiboot .multiboot.*)
-    }
+      . += 0xC0000000;
+      kernel_virt_start = .;
 
- _MEMORY_LAYOUT_KERNEL_PSTART = ALIGN(4096);
+      .text : AT(kernel_phys_start) {
+          *(.multiboot*)
+          *(.text)
+      }
 
-    .text _MEMORY_LAYOUT_KERNEL_PSTART + 0xC0000000 : AT (_MEMORY_LAYOUT_KERNEL_PSTART) {
-        kernel_start = .;
-        *(.text .text.*)
-    }
+      .data ALIGN(4096) : {
+          *(.data)
+      }
 
-    .rodata ALIGN(4096) : {
-        *(.rodata .rodata.*)
-    }
+      .bss ALIGN(4096) : {
+	  *(.bss*)
+      }
 
-    .data ALIGN(4096) : {
-        *(.data .data.*)
-    }
-
-    .bss ALIGN(4096) : {
-        *(.bss .bss.*)
-    }
-
-    . = ALIGN(4096);
-    kernel_end = .;
+      kernel_virt_end = .;
+      kernel_phys_end = . - 0xC0000000;
 }

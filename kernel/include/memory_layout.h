@@ -19,6 +19,11 @@
 	along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+extern void kernel_phys_start;
+extern void kernel_phys_end;
+extern void kernel_virt_start;
+extern void kernel_virt_end;
+
 #define MEMORY_LAYOUT_DIRECT_MAPPED		0x02000000
 
 #define PAGE_SIZE				4096
@@ -33,7 +38,5 @@
 
 #define PAGING_STRUCTURES_COUNT			32
 #define MEMORY_LAYOUT_PAGING_STRUCTURES_START	0xFF800000 /* 4 GB - 8 MB */
-
-#define KERNEL_PAGES (MEMORY_LAYOUT_KERNEL_START >> 22)
 
 #endif /* MEMORY_LAYOUT_H_ */

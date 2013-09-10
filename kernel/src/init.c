@@ -72,10 +72,6 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	set_color(WHITE | BLACK << 4);
 	//Init Kernelmodules
 	INIT_PMM(mb_info);
-printf("pmm_test: 0x%x\n", pmm_alloc_page());
-printf("pmm_test: 0x%x\n", pmm_alloc_page());
-printf("pmm_test: 0x%x\n", pmm_alloc_page());
-while(1);
 	INIT_GDT();
 	INIT_IDT();
 	INIT_PAGING(mb_info);
@@ -114,10 +110,6 @@ while(1);
         	void *mod = pd_automap_kernel_range(pd_current, modules[i].mod_start, pages, PTE_WRITABLE);
 		struct process *proc = load_elf(mod);
         }
-	
-	while (1) {
-		putchar(input());
-	}
 	
 	return 0;
 }
