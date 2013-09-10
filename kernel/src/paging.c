@@ -28,7 +28,6 @@
 #include <pmm.h>
 #include <drivers/video.h>
 #include <memory_layout.h>
-#include <boot_pd.h>
 
 static inline void paging_flush_tlb(vaddr_t addr);
 
@@ -59,9 +58,9 @@ void INIT_PAGING(struct multiboot_struct *mb_info) {
 	pd_kernel->entries[PDE_INDEX(pt_vframe)] = pframe | PTE_WRITABLE | PDE_PRESENT;
 	
 	pd_map_range(pd_kernel, 0, MEMORY_LAYOUT_KERNEL_START, MEMORY_LAYOUT_DIRECT_MAPPED/PAGE_SIZE, PTE_WRITABLE);// kernel
-	pd_map(pd_kernel, 0xB8000, 0xC00B8000, PTE_WRITABLE | PTE_USER);// videomemory (0xB8000 - 0xBFFFF)
+	//pd_map(pd_kernel, 0xB8000, 0xC00B8000, PTE_WRITABLE | PTE_USER);// videomemory (0xB8000 - 0xBFFFF)
 	// multiboot
-	pd_map(pd_kernel, (vaddr_t)mb_info & (~0xfff), ((paddr_t)mb_info&(~0xfff)), PTE_WRITABLE);
+	/*pd_map(pd_kernel, (vaddr_t)mb_info & (~0xfff) - MEMORY_LAYOUT_KERNEL_START, ((paddr_t)mb_info&(~0xfff)), PTE_WRITABLE);
 	pd_map(pd_kernel, mb_info->mods_addr & (~0xfff), mb_info->mods_addr & (~0xfff), PTE_WRITABLE);
 	int i;
 	uintptr_t addr;
@@ -73,7 +72,7 @@ void INIT_PAGING(struct multiboot_struct *mb_info) {
 			addr += PAGE_SIZE;
 		}
 	}
-	
+	*/
 	void *pd = pd_automap_kernel(pd_kernel, pframe, PTE_WRITABLE);
 	void *ct = pd_automap_kernel(pd_kernel, pd_paddr, PTE_WRITABLE);
 	pd_kernel->entries = pd;
