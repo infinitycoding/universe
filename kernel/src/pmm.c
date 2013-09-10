@@ -19,6 +19,8 @@
 #include <pmm.h>
 #include <math.h>
 #include <multiboot.h>
+#include <paging.h>
+#include <memory_layout.h>
 #include <printf.h>
 #include <panic.h>
 
@@ -37,9 +39,9 @@ unsigned long pmm_mmap[PMM_MMAP_SIZE];
  *
  * @return number of free pages
  */
-unsigned long pmm_count_free_pages() {
-	unsigned long free_pages = 0;
-	unsigned long i, z;
+int pmm_count_free_pages(void) {
+	int free_pages = 0;
+	int i, z;
 
 	for (i = 0; i < PMM_MMAP_SIZE; i++) {
 		for (z = 0; z < 32; z++) {
@@ -67,8 +69,7 @@ void pmm_mark_page_as_free(paddr_t page)
  * @param page-pointer on the begin of the first page.
  * @param num of the pages which should be marked as free.
  */
-static void pmm_mark_page_range_as_free(paddr_t page, unsigned int num)
-{
+void pmm_mark_page_range_as_free(paddr_t page, unsigned int num) {
 	int i;
 
 	if (!num)
@@ -89,8 +90,7 @@ static void pmm_mark_page_range_as_free(paddr_t page, unsigned int num)
  *
  * @param page-pointer on the begin of the first page.
  */
-static void pmm_mark_page_as_used(paddr_t page)
-{
+void pmm_mark_page_as_used(paddr_t page) {
 	pmm_mmap[page / PAGE_SIZE / 32] &= ~(1 << ((page / PAGE_SIZE) & 31));
 }
 
@@ -100,8 +100,7 @@ static void pmm_mark_page_as_used(paddr_t page)
  * @param page-pointer on the begin of the first page.
  * @param num of the pages which should be marked as free.
  */
-static void pmm_mark_page_range_as_used(paddr_t page, unsigned int num)
-{
+void pmm_mark_page_range_as_used(paddr_t page, unsigned int num) {
 	int i;
 
 	if (!num)
@@ -110,10 +109,10 @@ static void pmm_mark_page_range_as_used(paddr_t page, unsigned int num)
 /*
  * PMM is broken, see comment in PMM_INIT
  */
-/*	if (page / PAGE_SIZE + num > PMM_MMAP_SIZE * 32)
+	if (page / PAGE_SIZE + num > PMM_MMAP_SIZE * 32)
 		panic("PMM: pmm_mark_page_range_as_used(): marking the given\n"
 		    "pages as used would cause a buffer overrun");
-*/
+
 	for (i = 0; i < num; i++) {
 		pmm_mark_page_as_used(page + i * PAGE_SIZE);
 	}
@@ -126,8 +125,7 @@ static void pmm_mark_page_range_as_used(paddr_t page, unsigned int num)
  *
  * @return If the search is succesful this method returns a pointer on the begin on this page.
  */
-static paddr_t pmm_find_free_page(unsigned long lower_limit)
-{
+paddr_t pmm_find_free_page(unsigned long lower_limit) {
 	uint32_t i, z;
 	paddr_t page = 0;
 
@@ -159,8 +157,7 @@ static paddr_t pmm_find_free_page(unsigned long lower_limit)
  * @return Pointer on begin of the first page.
  * @return If succesful this method will return a pointer on the begin of the first free page.
  */
-static unsigned int pmm_find_free_page_range(unsigned long lower_limit, unsigned int num)
-{
+paddr_t pmm_find_free_page_range(unsigned long lower_limit, unsigned int num) {
 	uint32_t i, z;
 	uint32_t found = 0;
 	paddr_t page = 0;
@@ -211,28 +208,22 @@ static unsigned int pmm_find_free_page_range(unsigned long lower_limit, unsigned
  *
  * @return Pointer on the begin of the page.
  */
-paddr_t pmm_alloc_page()
-{
+paddr_t pmm_alloc_page(void) {
 	paddr_t page = pmm_find_free_page(PMM_DMA_LIMIT);
 
 	if (page & (PAGE_SIZE - 1)) {
 		panic("PMM: pmm_alloc_page(): no pages left");
 	}
 	pmm_mark_page_as_used(page);
+
 	return page;
 }
 
 /**
  * Reserve a page not under a entered address
- * The minimum is PMA_DMA_LIMIT.
  */
-paddr_t pmm_alloc_page_limit(uint32_t lower_limit)
-{
-	paddr_t page;
-	if (PMM_DMA_LIMIT > lower_limit)
-		page = pmm_find_free_page(PMM_DMA_LIMIT);
-	else
-		page = pmm_find_free_page(lower_limit);
+paddr_t pmm_alloc_page_limit(paddr_t lower_limit) {
+	paddr_t page = pmm_find_free_page(lower_limit);
 
 	if (page & (PAGE_SIZE - 1)) {
 		panic("PMM: pmm_alloc_page_limit(): no pages left");
@@ -242,14 +233,12 @@ paddr_t pmm_alloc_page_limit(uint32_t lower_limit)
 	return page;
 }
 
-
 /**
  * Reserve num DMA-Pages.
  *
  * @return Pointer on the begin of the first page.
  */
-paddr_t pmm_alloc_dma_page_range(unsigned int num)
-{
+paddr_t pmm_alloc_dma_page_range(unsigned int num) {
 	if (!num)
 		panic("PMM: pmm_alloc_dma_page_range(): num zero");
 	paddr_t page = pmm_find_free_page_range(0, num);
@@ -265,8 +254,7 @@ paddr_t pmm_alloc_dma_page_range(unsigned int num)
  *
  * @return Pointer on the begin of the first page.
  */
-paddr_t pmm_alloc_page_range(unsigned int num)
-{
+paddr_t pmm_alloc_page_range(unsigned int num) {
 	if (!num)
 		panic("PMM: pmm_alloc_page_range(): num zero");
 	paddr_t page = pmm_find_free_page_range(PMM_DMA_LIMIT, num);
@@ -277,26 +265,27 @@ paddr_t pmm_alloc_page_range(unsigned int num)
 	return page;
 }
 
-void INIT_PMM(struct multiboot_struct* MBS)
-{
-    uint32_t i;
+void INIT_PMM(struct multiboot_struct *mb_info) {
+	int i;
+	for (i = 0; i < PMM_MMAP_SIZE; i++) {
+		pmm_mmap[i] = 0;
+	}
+	
+	mb_info->mmap_addr += MEMORY_LAYOUT_KERNEL_START;
+	mb_info->mods_addr += MEMORY_LAYOUT_KERNEL_START;
 
-    for (i = 0; i < PMM_MMAP_SIZE; i++)
-		pmm_mmap[i]=0x0;
-    MBS += 0xC0000000;
-    int x;
-	struct mmap_entry *GRUB_MMAP = (struct mmap_entry *)MBS->mmap_addr+0xC0000000;
-	uint32_t memsize; /* in bytes */
+	struct mmap_entry *mmap = mb_info->mmap_addr;
 
-    uint32_t mmp =0;
-    i=0;
-    while(mmp < MBS->mmap_length){
-        mmp = GRUB_MMAP[i].size + 4;
-        if(GRUB_MMAP[i].Type == 1){
-            pmm_mark_page_range_as_free((paddr_t)GRUB_MMAP[i].BaseAddr, ((uint32_t) GRUB_MMAP[i].Length)/4096);
-        }
-        i++;
-    }
+	int len = 0;
+	for(i = 0; len < mb_info->mmap_length; i++) {
+		len += mmap[i].size +4;
+		if(mmap[i].Type == 1) {
+			uintptr_t addr = mmap[i].BaseAddr;
+			int pages = mmap[i].Length / PAGE_SIZE;
+
+			pmm_mark_page_range_as_free(addr, pages);
+		}
+	}
 
 	//protect Memory structures
 	pmm_mark_page_as_used(0); //IVT+BDA
@@ -309,31 +298,20 @@ void INIT_PMM(struct multiboot_struct* MBS)
 	pmm_mark_page_range_as_used(0xA0000, 96); //0xA0000 - 0xFFFFF ROM-AREA
 
 	//multiboot structures
-	struct mods_add* MBMA = (void*)MBS->mods_addr;
-	pmm_mark_page_as_used((paddr_t)MBS);
-	pmm_mark_page_as_used((paddr_t)MBMA);
+	struct mods_add *mods = (void*)mb_info->mods_addr;
+	pmm_mark_page_as_used((paddr_t)mb_info - MEMORY_LAYOUT_KERNEL_START);
+	pmm_mark_page_as_used((paddr_t)mods    - MEMORY_LAYOUT_KERNEL_START);
 
 	//multiboot modules
-	if (MBS->mods_count > 0) {
-		for (x = 0; x < MBS->mods_count; x++) {
-			uint32_t size = MBMA[x].mod_end-MBMA[x].mod_start;
-			if (size % 4096 != 0) {
-				size /= 4096;
-				size++;
-			} else {
-				size /= 4096;
-			}
-			pmm_mark_page_range_as_used((paddr_t) MBMA[x].mod_start,size);
-			pmm_mark_page_as_used((paddr_t) MBMA[x].string);
-		}
+	for (i = 0; i < mb_info->mods_count; i++) {
+		uint32_t size = mods[i].mod_end - mods[i].mod_start;
+		int pages = NUM_PAGES(size);
+		pmm_mark_page_range_as_used((paddr_t) mods[i].mod_start, pages);
+		pmm_mark_page_as_used((paddr_t) mods[i].string);
 	}
 
-	pmm_mark_page_range_as_used((paddr_t)0x100000, 30); //fixme Static size
-
-	if (! (MBS->flags & 0x1)){
+	if (! (mb_info->flags & 0x1)){
 		panic("PMM_INIT: no ram info in multiboot structure");
 	}
-
-	
 }
 

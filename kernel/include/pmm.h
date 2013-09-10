@@ -36,12 +36,17 @@ extern const void kernel_end;
 #define PMM_MMAP_SIZE        32768
 
 void INIT_PMM(struct multiboot_struct* MBS);
+int pmm_count_free_pages(void);
 void pmm_mark_page_as_free(paddr_t page);
-unsigned long pmm_count_free_pages(void);
+void pmm_mark_page_as_used(paddr_t page);
+void pmm_mark_page_range_as_used(paddr_t page, unsigned int num);
+void pmm_mark_page_range_as_free(paddr_t page, unsigned int num);
+paddr_t pmm_find_free_page(unsigned long lower_limit);
+paddr_t pmm_find_free_page_range(unsigned long lower_limit, unsigned int num);
 
-paddr_t pmm_alloc_page ();
+paddr_t pmm_alloc_page(void);
 paddr_t pmm_alloc_dma_page_range_64k(unsigned int num);
-paddr_t pmm_alloc_page_limit(uint32_t lower_limit);
+paddr_t pmm_alloc_page_limit(paddr_t lower_limit);
 paddr_t pmm_alloc_page_range(unsigned int num);
 
 #endif

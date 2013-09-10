@@ -72,17 +72,21 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	set_color(WHITE | BLACK << 4);
 	//Init Kernelmodules
 	INIT_PMM(mb_info);
+printf("pmm_test: 0x%x\n", pmm_alloc_page());
+printf("pmm_test: 0x%x\n", pmm_alloc_page());
+printf("pmm_test: 0x%x\n", pmm_alloc_page());
+while(1);
 	INIT_GDT();
 	INIT_IDT();
-	//INIT_PAGING(mb_info);
-	//INIT_HEAP();
-	//INIT_PIT(50);
-	//INIT_CMOS();
-	//INIT_KEYBOARD();
-	//INIT_SCHEDULER();
-	//INIT_VFS();
+	INIT_PAGING(mb_info);
+	INIT_HEAP();
+	INIT_PIT(50);
+	INIT_CMOS();
+	INIT_KEYBOARD();
+	INIT_SCHEDULER();
+	INIT_VFS();
 
-	//asm volatile("sti");
+	asm volatile("sti");
 
 	//print Logo and loading message
 	print_logo(YELLOW);
@@ -97,10 +101,10 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	//print_time(get_time()); //crashes on a real computer and on virtual box
 	//printf("\n");
 	
-	//INIT_CPUID();
-	//printf("\n");
-	//INIT_PCI();
-	/*
+	INIT_CPUID();
+	printf("\n");
+	INIT_PCI();
+	
 	// Load modules
 	int i,j;
 	struct mods_add* modules = mb_info->mods_addr;
@@ -110,9 +114,9 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
         	void *mod = pd_automap_kernel_range(pd_current, modules[i].mod_start, pages, PTE_WRITABLE);
 		struct process *proc = load_elf(mod);
         }
-	*/
+	
 	while (1) {
-	//	putchar(input());
+		putchar(input());
 	}
 	
 	return 0;
