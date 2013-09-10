@@ -45,10 +45,10 @@ pd_t *pd_current = NULL;
 void INIT_PAGING(struct multiboot_struct *mb_info) {
 	install_exc(INT_PAGE_FAULT, pd_fault_handler);
 
-	paddr_t pd_paddr = pmm_alloc_page();
+	paddr_t pd_paddr = pmm_alloc_page_limit(0);
 	pd_kernel = pd_paddr + MEMORY_LAYOUT_KERNEL_START;
 
-	paddr_t pframe = pmm_alloc_page();
+	paddr_t pframe = pmm_alloc_page_limit(0);
 	vaddr_t vframe = pframe + MEMORY_LAYOUT_KERNEL_START;
 
 	vaddr_t pt_vframe = MEMORY_LAYOUT_PAGING_STRUCTURES_START;
@@ -57,11 +57,12 @@ void INIT_PAGING(struct multiboot_struct *mb_info) {
 	pd_kernel->entries = vframe;
 	pd_kernel->entries[PDE_INDEX(pt_vframe)] = pframe | PTE_WRITABLE | PDE_PRESENT;
 	
-	//pd_map_range(pd_kernel, 0, MEMORY_LAYOUT_KERNEL_START, MEMORY_LAYOUT_DIRECT_MAPPED/PAGE_SIZE, PTE_WRITABLE);// kernel
-	//pd_map(pd_kernel, 0xB8000, 0xC00B8000, PTE_WRITABLE | PTE_USER);// videomemory (0xB8000 - 0xBFFFF)
+	pd_map_range(pd_kernel, 0, MEMORY_LAYOUT_KERNEL_START, NUM_PAGES(MEMORY_LAYOUT_DIRECT_MAPPED), PTE_WRITABLE);// kernel
+	pd_map(pd_kernel, 0xB8000, 0xC00B8000, PTE_WRITABLE | PTE_USER);// videomemory (0xB8000 - 0xBFFFF)
 	// multiboot
-	/*pd_map(pd_kernel, (vaddr_t)mb_info & (~0xfff) - MEMORY_LAYOUT_KERNEL_START, ((paddr_t)mb_info&(~0xfff)), PTE_WRITABLE);
-	pd_map(pd_kernel, mb_info->mods_addr & (~0xfff), mb_info->mods_addr & (~0xfff), PTE_WRITABLE);
+	pd_map(pd_kernel, (vaddr_t)mb_info & (~0xfff) - MEMORY_LAYOUT_KERNEL_START, ((paddr_t)mb_info&(~0xfff)), PTE_WRITABLE);
+	pd_map(pd_kernel, mb_info->mods_addr & (~0xfff) - MEMORY_LAYOUT_KERNEL_START, mb_info->mods_addr & (~0xfff), PTE_WRITABLE);
+	
 	int i;
 	uintptr_t addr;
 	struct mods_add *modules = (void*) mb_info->mods_addr;
@@ -72,7 +73,7 @@ void INIT_PAGING(struct multiboot_struct *mb_info) {
 			addr += PAGE_SIZE;
 		}
 	}
-	*/
+	
 	void *pd = pd_automap_kernel(pd_kernel, pframe, PTE_WRITABLE);
 	void *ct = pd_automap_kernel(pd_kernel, pd_paddr, PTE_WRITABLE);
 	pd_kernel->entries = pd;
@@ -150,7 +151,7 @@ void pd_destroy(pd_t *pd) {
 pt_t pt_get(pd_t *pd, int index, uint8_t flags) {
 	pt_t pt;
 
-	if(pd_current) {
+	if(pd_current != NULL) {
 	  if(pd != pd_current) {
 	    pt = (pt_t) PT_PADDR(index);
 	    pt = pd_automap_kernel(pd_current, pt, flags);
@@ -174,9 +175,8 @@ pt_t pt_get(pd_t *pd, int index, uint8_t flags) {
  * @return pagetable
  */
 pt_t pt_create(pd_t *pd, int index, uint8_t flags) {
-	pt_t pt = pmm_alloc_page();
+	pt_t pt = pmm_alloc_page_limit(0);
 	pd->entries[index] = (pde_t) pt | flags | PDE_PRESENT;
-
 
 	pt = pt_get(pd, index, flags | PDE_PRESENT);
 	memset(pt, 0, PT_LENGTH);
