@@ -19,27 +19,28 @@
 /**
   @author Thomas Haller (Universe Team) <thomas.haller@familie-haller.eu>
   @author Simon Diepold aka. Tdotu (Universe Team) <simon.diepold@infinitycoding.de>
-**/
+  @author Michael Sippel (Universe Team) <micha.linuxfreak@gmail.com>
+*/
 
 #include "memory_layout.h"
 
-[BITS 32]
-FLAGS    equ 0
-MAGIC    equ 0x1BADB002       ; Magicnumber
-CHECKSUM equ -(MAGIC + FLAGS) ; Checksum
-//zeilen equ 10
-
-
 section .multiboot
-align 16
-MultiBootHeader:
-  dd MAGIC       ; Magic number
-  dd FLAGS       ; Flags
-  dd CHECKSUM    ; Checksu
+#define MB_MAGIC 0x1BADB002
+#define MB_FLAGS 0x0
+#define MB_CHECKSUM -(MB_MAGIC + MB_FLAGS)
 
+align 4
+dd MB_MAGIC
+dd MB_FLAGS
+dd MB_CHECKSUM
 
-section	.multiboot.start exec
-align 16
+section .data
+align 4096
+boot_pd:
+    dd 0x00000083
+    times (KERNEL_PAGES - 1) dd 0
+    dd 0x00000083
+    times (1024 - KERNEL_PAGES - 1) dd 0
 
 /**
  * setting up Paging and call the init function
@@ -47,40 +48,37 @@ align 16
  * @param Checksum
  * @return void
  **/
+section .text
+
 global start
 start:
-
-// Load PD adress to CR3
-extern BOOT_PDE
-  mov  ecx, BOOT_PDE - MEMORY_LAYOUT_KERNEL_START
+  mov  ecx, boot_pd - MEMORY_LAYOUT_KERNEL_START
   mov  cr3, ecx
 
-// activate PSE
   mov  ecx, cr4
   or   ecx, (1 << 4)
   mov  cr4, ecx
-
-// activate paging
+  
   mov  ecx, cr0
   or   ecx, (1 << 31)
   mov  cr0, ecx
+  
+  lea ecx, [higherhalf]
+  jmp ecx
 
-// loading stackpointer
-  mov  esp, stack
-
-// push parameters and align stack
+higherhalf:
+  mov esp, stack
+  add ebx, MEMORY_LAYOUT_KERNEL_START
+  
   push 0
   push 0
   push eax
   push ebx
-
-// call init
+  
 extern init
   call init
   jmp $
 
-
-// thomas: ich würde den stack nicht hier anlegen sondern im C code
 section .bss
 align 4096
 resb 4096
