@@ -121,7 +121,7 @@ void kbd_irq_handler(void) {
 		}
 
 	}
-
+	printf("x");
 	if (ASCII) {
 		*tail = ASCII;
 		tail++;

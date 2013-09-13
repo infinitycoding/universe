@@ -1,5 +1,7 @@
+#include <universe.h>
 
 void _start(void) {
-    while(1);
+    print("Userspace!\n");
+    exit(0);
 }
 

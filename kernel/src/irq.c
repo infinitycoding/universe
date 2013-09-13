@@ -26,6 +26,8 @@
 #include <cpu.h>
 #include <panic.h>
 #include <printf.h>
+#include <Syscall.h>
+#include <scheduler.h>
 
 static struct IDT_Entry IDT[256];
 static struct idtpt idtp;
@@ -186,21 +188,43 @@ void deinstall_exc(int excnum)
 struct cpu_state* irq_handler(struct cpu_state* cpu)
 {
 	//Exceptions
-	if (cpu->intr < 32) {
-		if (((uint32_t)exc[cpu->intr]) != NULL) {
+	if (cpu->intr < 32)
+	{
+		if ( ((uint32_t) exc[cpu->intr]) != NULL)
+		{
 			exc[cpu->intr](&cpu);
 			return cpu;
-		} else {
+		}
+		else
+		{
 			exc_panic(cpu);
 		}
-	} else if (cpu->intr < 46) {
+	}
+	//Taskscheduler
+	else if(cpu->intr == 32)
+	{
+        cpu = task_schedule(cpu);
+	}
 	//IRQs
-	    int irqnum=cpu->intr-32;
-		if (((uint32_t)irq[irqnum]) != NULL) {
+	else if (cpu->intr < 46)
+	{
+	    int irqnum = cpu->intr - 32;
+		if ( ((uint32_t) irq[irqnum]) != NULL)
+		{
 			irq[irqnum](&cpu);
 		}
 		EOI(irqnum);
 		return cpu;
+	}
+	//Syscall
+	else if(cpu->intr == 0x80)
+	{
+        syscall_handler(&cpu);
+	}
+	//unspecified ISRs
+	else
+	{
+        panic("A unspecified ISR was called.");
 	}
 	return cpu;
 }
@@ -233,6 +257,12 @@ void INIT_IDT(void)
 {
 	remap_pic();
 	//Exceptions
+	int i;
+	for(i = 0; i < 256; i++)
+	{
+        Set_IDT_Entry(i,0x8,(uint32_t)isr_default,0xEE00);
+	}
+
 	Set_IDT_Entry(0,0x8,(uint32_t)isr_0,0xEE00); Set_IDT_Entry(1,0x8,(uint32_t)isr_1,0xEE00); Set_IDT_Entry(2,0x8,(uint32_t)isr_2,0xEE00);
 	Set_IDT_Entry(3,0x8,(uint32_t)isr_3,0xEE00); Set_IDT_Entry(4,0x8,(uint32_t)isr_4,0xEE00); Set_IDT_Entry(5,0x8,(uint32_t)isr_5,0xEE00);
 	Set_IDT_Entry(6,0x8,(uint32_t)isr_6,0xEE00); Set_IDT_Entry(7,0x8,(uint32_t)isr_7,0xEE00); Set_IDT_Entry(8,0x8,(uint32_t)isr_8,0xEE00);
@@ -253,5 +283,7 @@ void INIT_IDT(void)
 	Set_IDT_Entry(42,0x8,(uint32_t)isr_42,0xEE00); Set_IDT_Entry(43,0x8,(uint32_t)isr_43,0xEE00);
 	Set_IDT_Entry(44,0x8,(uint32_t)isr_44,0xEE00); Set_IDT_Entry(45,0x8,(uint32_t)isr_45,0xEE00);
 	Set_IDT_Entry(46,0x8,(uint32_t)isr_46,0xEE00); Set_IDT_Entry(47,0x8,(uint32_t)isr_47,0xEE00);
-	lidt(48);
+
+	Set_IDT_Entry(0x80,0x8,(uint32_t)isr_128,0xEE00);
+	lidt(129);
 }

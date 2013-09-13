@@ -79,6 +79,9 @@ extern void isr_45(void);
 extern void isr_46(void);
 extern void isr_47(void);
 
+extern void isr_128(void);
+extern void isr_default(void);
+
 
 struct IDT_Entry {
 	uint16_t Base_low;

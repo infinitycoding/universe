@@ -1,5 +1,6 @@
-#ifndef SYSCALL_H
-#define SYSCALL_H
+#ifndef _stdarg_h_
+#define _stdarg_h_
+
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
@@ -18,11 +19,9 @@
 	along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/**
-	@author Cedric Kienzler aka Cedi <c_edi@gmx.de>
-*/
-
-#include <cpu.h>
-void syscall_handler(struct cpu_state **cpu);
+typedef __builtin_va_list       va_list;
+#define va_start(ap, X)         __builtin_va_start(ap, X)
+#define va_arg(ap, type)        __builtin_va_arg(ap, type)
+#define va_end(ap)              __builtin_va_end(ap)
 
 #endif

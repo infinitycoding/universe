@@ -28,13 +28,13 @@
 */
 
 /**
-	@brief makes string from number
-	@param value 	Input Number
-	@param str 	Output Buffer
-	@param base 	Number base (e.g. 2, 8, 10, 16)
-	@param flags 	SMALL: hexadecimal chars no caps, LEFT: number left aligned, ZEROPAD: Fill with zeroes, PLUS: + sign if positive, SPECIAL: 0x (hex)
-	@param width 	Field width
-	@return pointer to buffer
+ *  @brief makes string from number
+ *  @param value 	Input Number
+ *  @param str 	Output Buffer
+ *  @param base 	Number base (e.g. 2, 8, 10, 16)
+ *  @param flags 	SMALL: hexadecimal chars no caps, LEFT: number left aligned, ZEROPAD: Fill with zeroes, PLUS: + sign if positive, SPECIAL: 0x (hex)
+ *  @param width 	Field width
+ *  @return pointer to buffer
  */
 
 char * itoa_ex(unsigned int value, char * str, int base, int flags, int width)
@@ -95,10 +95,24 @@ char * itoa_ex(unsigned int value, char * str, int base, int flags, int width)
 	return result;
 }
 
+/**
+ *  @brief convets a integer to a ASCII string
+ *  @param value    input number
+ *  @param str      output buffer
+ *  @param base     numerical base (10 = decimal, 16 = hexadecimal)
+ *  @return pointer to buffer
+ */
+
 inline char * itoa(unsigned int value, char * str, int base)
 {
 	return itoa_ex(value, str, base, 0, 1);
 }
+
+/**
+ *  @brief  parsers a ASCII coded integer into a integer value
+ *  @param  str  input string
+ *  @return integer value
+ */
 
 int atoi(const char *str)
 {
