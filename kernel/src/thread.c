@@ -16,7 +16,7 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     new_thread->pagedir = pd_create();
     new_thread->ticks = 10;
     new_thread->return_value = 0;
-	
+
 	void *kernel_stack = malloc(0x1000);
 	struct cpu_state *new_state = kernel_stack + 0x1000 - sizeof(struct cpu_state);
 	new_thread->state = new_state;
@@ -39,7 +39,7 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     {
 		paddr_t pframe = pmm_alloc_page();
 		pd_map(new_thread->pagedir, pframe, MEMORY_LAYOUT_STACK_TOP-0x1000, PTE_PRESENT | PTE_WRITABLE | PTE_USER);
-		
+
 		new_state->esp = (uint32_t) MEMORY_LAYOUT_STACK_TOP;
 		new_state->cs = 0x1b;
 		new_state->ss = 0x23;
@@ -63,36 +63,39 @@ void thread_kill(struct thread_state *thread)
         thread->flags |= THREAD_ZOMBIE;
     else
     {
-        if(thread->flags & THREAD_ACTIV)
+        thread_kill_sub(thread);
+    }
+    asm volatile("sti");
+}
+
+void thread_kill_sub(struct thread_state *thread)
+{
+    if(thread->flags & THREAD_ACTIV || thread->flags & THREAD_ZOMBIE)
+    {
+        list_set_first(running_threads);
+        while(!list_is_last(running_threads))
         {
-            struct list_node *backup_current = running_threads->current;
-            list_set_first(running_threads);
-            while(!list_is_last(running_threads))
-            {
-                struct thread_state *t = list_get_current(running_threads);
-                if(t == thread)
-                {
-                    list_remove(running_threads);
-                    break;
-                }
-            }
-            running_threads->current = backup_current;
-        }
-        free(thread->state);
-        list_push_front(thread->process->zombie_tids,thread->tid);
-        list_set_first(thread->process->threads);
-        while(!list_is_last(thread->process->threads))
-        {
-            struct thread_state *t = list_get_current(thread->process->threads);
+            struct thread_state *t = list_get_current(running_threads);
             if(t == thread)
             {
-                list_remove(thread->process->threads);
+                list_remove(running_threads);
                 break;
             }
         }
-        free(thread);
     }
-    asm volatile("sti");
+    free(thread->state);
+    list_push_front(thread->process->zombie_tids,thread->tid);
+    list_set_first(thread->process->threads);
+    while(!list_is_last(thread->process->threads))
+    {
+        struct thread_state *t = list_get_current(thread->process->threads);
+        if(t == thread)
+        {
+            list_remove(thread->process->threads);
+            break;
+        }
+    }
+    free(thread);
 }
 
 

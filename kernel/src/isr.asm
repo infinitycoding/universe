@@ -14,6 +14,8 @@
 ;
 ;    You should have received a copy of the GNU General Public License
 ;    along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
+;
+;   @author Simon Diepold aka. Tdotu (Universe Team) <simon.diepold@infinitycoding.de>
 
 %macro ISR 1
 	Global isr_%1
@@ -96,45 +98,16 @@
 	ISR 31
 
 
-;Timer Interrupt / Task Scheduler
-    extern task_schedule
-    Global isr_32
-    isr_32:
-    push dword 0
-    push dword 0
-    push eax
-    push ecx
-    push edx
-    push ebx
-    push ebp
-    push esi
-    push edi
-    push ds
-    push es
-    push fs
-    push gs
-    mov dx,0x10
-    mov ds, dx
-    mov es, dx
-    mov fs, dx
-    mov gs, dx
-    push esp
-    call task_schedule
-    mov esp,eax
-    pop gs
-    pop fs
-    pop es
-    pop ds
-    pop edi
-    pop esi
-    pop ebp
-    pop ebx
-    pop edx
-    pop ecx
-    pop eax
-    add esp, 8
-    iret
+;Default
+    Global isr_default
+	isr_default:
+	push dword 0xFFFFFFFF
+	push dword 0xFFFFFFFF
+	jmp isr_save
 
+
+;Timer Interrupt / Task Scheduler
+    ISR 32
     ISR 33
     ISR 34
     ISR 35
@@ -150,6 +123,9 @@
     ISR 45
     ISR 46
     ISR 47
+
+;Syscall Handler
+    ISR 128
 
 
 

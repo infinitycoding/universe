@@ -16,6 +16,14 @@
 	along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/**
+
+  @author Simon Diepold aka. Tdotu (Universe Team) <simon.diepold@infinitycoding.de>
+
+ */
+
+
+
 #include <drivers/pci.h>
 #include <printf.h>
 #include <list.h>
@@ -164,11 +172,6 @@ void INIT_PCI()
                 current_dev->base_class = (uint8_t) (classcode >> 24);
 
                 list_push_front(pci_dev_list,current_dev);
-
-                if(((uint8_t) (classcode >> 24))<8 && ((uint8_t) (classcode >> 16)) < 16)
-                    printf("slot:%d  vendor: %#04x  device: %0#4x  %s\n",dev,pci_config_readw(bus,dev,0,0),pci_config_readl(bus,dev,0,0)>>16,pci_dev_names[(uint8_t) (classcode >> 24)][(uint8_t) (classcode >> 16)]);
-                else
-                    printf("slot:%d  vendor: %#04x  device: %0#4x  %s\n",dev,pci_config_readw(bus,dev,0,0),pci_config_readl(bus,dev,0,0)>>16,"unknown");
 
             }
 

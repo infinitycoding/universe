@@ -1,5 +1,6 @@
-#ifndef SYSCALL_H
-#define SYSCALL_H
+#ifndef	_stdint_h_
+#define	_stdint_h_
+
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
@@ -18,11 +19,33 @@
 	along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/**
-	@author Cedric Kienzler aka Cedi <c_edi@gmx.de>
-*/
+#define TRUE			1
+#define true			1
+#define FALSE			0
+#define false			0
+#define NULL 			(void *)0
 
-#include <cpu.h>
-void syscall_handler(struct cpu_state **cpu);
+typedef unsigned char     	uint8_t;
+typedef unsigned short    	uint16_t;
+typedef unsigned int      	uint32_t;
+typedef unsigned long long 	uint64_t;
+
+typedef signed char		int8_t;
+typedef signed short 		int16_t;
+typedef signed int 		int32_t;
+typedef signed long long 	int64_t;
+
+typedef unsigned int 		uintptr_t;
+typedef long int 		intptr_t;
+
+typedef int64_t 		intmax_t;
+typedef uint64_t 		uintmax_t;
+
+typedef unsigned int 		size_t;
+
+typedef unsigned int 		paddr_t;
+typedef unsigned int 		vaddr_t;
+
+typedef int 				bool;
 
 #endif

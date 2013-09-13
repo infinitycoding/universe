@@ -66,7 +66,23 @@ void INIT_SCHEDULER(void)
 struct cpu_state *task_schedule(struct cpu_state *cpu)
 {
     *current_thread->state = *cpu;
-    if(current_thread->ticks == 0)
+    if(current_thread->flags & THREAD_ZOMBIE)
+    {
+        thread_kill_sub(current_thread);
+        if(list_is_empty(running_threads))
+        {
+            asm volatile("sti");
+            while(list_is_empty(running_threads)){}
+            asm volatile("cli");
+        }
+
+        list_set_first(running_threads);
+        current_thread = list_get_current(running_threads);
+        *cpu = *current_thread->state;
+        pd_switch(current_thread->pagedir);
+
+    }
+    else if(current_thread->ticks == 0)
     {
         current_thread->ticks = 10;
         list_next(running_threads);

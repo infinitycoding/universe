@@ -39,4 +39,5 @@ struct thread_state
 
 struct thread_state *thread_create(struct process_state *process, privilege_t prev, uint32_t eip, void *args);
 void thread_kill(struct thread_state *thread);
+void thread_kill_sub(struct thread_state *thread);
 #endif
