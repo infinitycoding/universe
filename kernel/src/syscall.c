@@ -23,7 +23,7 @@
 
  */
 
-#include <Syscall.h>
+#include <syscall.h>
 #include <thread.h>
 #include <scheduler.h>
 
@@ -35,23 +35,44 @@ extern struct process_state *kernel_state;
 
  **/
 
-void syscall_handler(struct cpu_state **cpu)
+void print(struct cpu_state **cpu)
 {
-    struct cpu_state *state = *cpu;
+    printf("%s",(*cpu)->ebx);
+}
 
-    switch(state->eax)
+void exit(struct cpu_state **cpu)
+{
+    current_thread->flags |= THREAD_ZOMBIE;
+    *cpu = task_schedule(*cpu);
+}
+
+
+#define DEFINED_LINUX_FUNCTIONS 1
+void (*linux_functions[])(struct cpu_state **cpu) =
+{
+    exit
+};
+
+void linux_syscall_handler(struct cpu_state **cpu)
+{
+    if( (*cpu)->eax < DEFINED_LINUX_FUNCTIONS)
     {
-        case 0:
-            printf("%s",state->ebx);
-        break;
-
-        case 1:
-            current_thread->flags |= THREAD_ZOMBIE;
-            *cpu = task_schedule(*cpu);
-        break;
-
-
-
+        linux_functions[(*cpu)->eax](cpu);
     }
+}
 
+
+#define DEFINED_UNIVERSE_FUNCTIONS 1
+void (*universe_functions[])(struct cpu_state **cpu) =
+{
+    print
+};
+
+
+void universe_syscall_handler(struct cpu_state **cpu)
+{
+    if( (*cpu)->eax < DEFINED_UNIVERSE_FUNCTIONS)
+    {
+        universe_functions[(*cpu)->eax](cpu);
+    }
 }
