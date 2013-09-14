@@ -123,8 +123,10 @@
     ISR 45
     ISR 46
     ISR 47
+;Universe Syscall Handler
+    ISR 112
 
-;Syscall Handler
+;Linux Syscall Handler
     ISR 128
 
 

@@ -79,6 +79,7 @@ extern void isr_45(void);
 extern void isr_46(void);
 extern void isr_47(void);
 
+extern void isr_112(void);
 extern void isr_128(void);
 extern void isr_default(void);
 

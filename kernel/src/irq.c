@@ -26,7 +26,7 @@
 #include <cpu.h>
 #include <panic.h>
 #include <printf.h>
-#include <Syscall.h>
+#include <syscall.h>
 #include <scheduler.h>
 
 static struct IDT_Entry IDT[256];
@@ -216,10 +216,15 @@ struct cpu_state* irq_handler(struct cpu_state* cpu)
 		EOI(irqnum);
 		return cpu;
 	}
-	//Syscall
+	//universe syscall
+	else if(cpu->intr == 0x70)
+	{
+        universe_syscall_handler(&cpu);
+	}
+	//linux syscall
 	else if(cpu->intr == 0x80)
 	{
-        syscall_handler(&cpu);
+        linux_syscall_handler(&cpu);
 	}
 	//unspecified ISRs
 	else
@@ -284,6 +289,7 @@ void INIT_IDT(void)
 	Set_IDT_Entry(44,0x8,(uint32_t)isr_44,0xEE00); Set_IDT_Entry(45,0x8,(uint32_t)isr_45,0xEE00);
 	Set_IDT_Entry(46,0x8,(uint32_t)isr_46,0xEE00); Set_IDT_Entry(47,0x8,(uint32_t)isr_47,0xEE00);
 
-	Set_IDT_Entry(0x80,0x8,(uint32_t)isr_128,0xEE00);
+	Set_IDT_Entry(0x70,0x8,(uint32_t)isr_112,0xEE00); //Universe syscall interface
+	Set_IDT_Entry(0x80,0x8,(uint32_t)isr_128,0xEE00); //Linux syscall interface
 	lidt(129);
 }

@@ -19,10 +19,11 @@
 */
 
 /**
-	@author Cedric Kienzler aka Cedi <c_edi@gmx.de>
+  @author Simon Diepold aka. Tdotu (Universe Team) <simon.diepold@infinitycoding.de>
 */
 
 #include <cpu.h>
-void syscall_handler(struct cpu_state **cpu);
+void linux_syscall_handler(struct cpu_state **cpu);
+void universe_syscall_handler(struct cpu_state **cpu);
 
 #endif
