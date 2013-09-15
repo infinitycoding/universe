@@ -27,6 +27,7 @@
 #include <thread.h>
 #include <scheduler.h>
 #include <process.h>
+#include <drivers/vfs.h>
 
 extern struct thread_state *current_thread;
 extern struct process_state *kernel_state;
@@ -40,19 +41,20 @@ void print(struct cpu_state **cpu)
 
 
 
-#define DEFINED_LINUX_FUNCTIONS 2
+#define DEFINED_LINUX_FUNCTIONS 7
 
 
 void (*linux_functions[])(struct cpu_state **cpu) =
 {
-    exit,fork
+    NULL, exit,fork,read,write,open,close
 };
 
 void linux_syscall_handler(struct cpu_state **cpu)
 {
     if( (*cpu)->eax < DEFINED_LINUX_FUNCTIONS)
     {
-        linux_functions[(*cpu)->eax](cpu);
+	if(linux_functions[(*cpu)->eax] != NULL)
+            linux_functions[(*cpu)->eax](cpu);
     }
 }
 
@@ -68,6 +70,7 @@ void universe_syscall_handler(struct cpu_state **cpu)
 {
     if( (*cpu)->eax < DEFINED_UNIVERSE_FUNCTIONS)
     {
-        universe_functions[(*cpu)->eax](cpu);
+        if(universe_functions[(*cpu)->eax] != NULL)
+            universe_functions[(*cpu)->eax](cpu);
     }
 }

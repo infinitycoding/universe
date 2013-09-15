@@ -8,6 +8,7 @@ extern pd_t *pd_kernel;
 extern struct process_state *kernel_state;
 extern struct thread_state *current_thread;
 extern list_t *running_threads;
+extern vfs_inode_t *root;
 
 list_t *process_list = 0;
 list_t *zombie_list = 0;
@@ -32,6 +33,8 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
     strncpy(state->desc, desc, string_len);
     state->desc[string_len + 1] = 0;
     state->flags = flags;
+    state->files = list_create();
+    state->cwd = root;
     state->children = list_create();
     state->zombie_tids = list_create();
     state->threads = list_create();
