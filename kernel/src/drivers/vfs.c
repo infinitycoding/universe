@@ -54,7 +54,8 @@ void INIT_VFS(void) {
 	root->length = 0;
 	root->parent = NULL;
 
-	vfs_create_inode("foo.txt", 0x1ff, root);
+	vfs_inode_t *foo = vfs_create_inode("foo.txt", 0x1ff, root);
+	vfs_write(foo, 0, "Hallo Welt!\n", 13);
 }
 
 /**
@@ -345,7 +346,37 @@ void close(struct cpu_state **cpu) {
 }
 
 void read(struct cpu_state **cpu) {
+	int fd = (*cpu)->ebx;
+	void *buf = (void*) (*cpu)->ecx;
+	size_t len = (*cpu)->edx;
 
+	struct fd *desc = NULL;
+	struct list_node *node = current_thread->process->files->head;	
+	int i;
+	for(i = 0; i < list_length(current_thread->process->files); i++) {
+		desc = node->element;
+		if(desc->id == fd) {
+			break;
+		} else {
+			node = node->next;
+		}
+	}
+
+	if(desc->flags & O_RDONLY ||
+	   desc->flags & O_RDWR)
+	{
+		vfs_inode_t *inode = desc->inode;
+		void *read = vfs_read(inode, desc->pos);
+		if(read != NULL) {
+			memcpy((void*)buf, read, len);
+			desc->pos += len;
+			(*cpu)->eax = len;
+		} else {
+			(*cpu)->eax = -1;
+		}
+	} else {
+		(*cpu)->eax = -1;
+	}
 }
 
 void write(struct cpu_state **cpu) {
