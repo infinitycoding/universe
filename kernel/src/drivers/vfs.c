@@ -351,7 +351,7 @@ void read(struct cpu_state **cpu) {
 	size_t len = (*cpu)->edx;
 
 	struct fd *desc = NULL;
-	struct list_node *node = current_thread->process->files->head;	
+	struct list_node *node = current_thread->process->files->head->next;	
 	int i;
 	for(i = 0; i < list_length(current_thread->process->files); i++) {
 		desc = node->element;
