@@ -35,11 +35,14 @@ extern struct process_state *kernel_state;
 void print(struct cpu_state **cpu)
 {
     printf("%s",(*cpu)->ebx);
+    (*cpu)->eax = 0;
 }
 
 
 
-#define DEFINED_LINUX_FUNCTIONS 1
+#define DEFINED_LINUX_FUNCTIONS 2
+
+
 void (*linux_functions[])(struct cpu_state **cpu) =
 {
     exit,fork
@@ -54,7 +57,7 @@ void linux_syscall_handler(struct cpu_state **cpu)
 }
 
 
-#define DEFINED_UNIVERSE_FUNCTIONS 1
+#define DEFINED_UNIVERSE_FUNCTIONS 2
 void (*universe_functions[])(struct cpu_state **cpu) =
 {
     thread_exit, print
