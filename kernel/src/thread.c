@@ -4,6 +4,7 @@
 #include <memory_layout.h>
 #include <paging.h>
 #include <string.h>
+#include <scheduler.h>
 
 extern list_t *running_threads;
 extern struct thread_state* current_thread;
@@ -101,5 +102,10 @@ void thread_kill_sub(struct thread_state *thread)
     free(thread);
 }
 
+void thread_exit(struct cpu_state **cpu)
+{
+    current_thread->flags |= THREAD_ZOMBIE;
+    *cpu = task_schedule(*cpu);
+}
 
 
