@@ -26,31 +26,23 @@
 #include <syscall.h>
 #include <thread.h>
 #include <scheduler.h>
+#include <process.h>
 
 extern struct thread_state *current_thread;
 extern struct process_state *kernel_state;
 
-/**
-    Todo: create a call table and write a bunch of functions...
-
- **/
 
 void print(struct cpu_state **cpu)
 {
     printf("%s",(*cpu)->ebx);
 }
 
-void exit(struct cpu_state **cpu)
-{
-    current_thread->flags |= THREAD_ZOMBIE;
-    *cpu = task_schedule(*cpu);
-}
 
 
 #define DEFINED_LINUX_FUNCTIONS 1
 void (*linux_functions[])(struct cpu_state **cpu) =
 {
-    exit
+    exit,fork
 };
 
 void linux_syscall_handler(struct cpu_state **cpu)

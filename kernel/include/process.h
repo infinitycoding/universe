@@ -32,7 +32,6 @@ typedef enum
 struct process_state
 {
     pid_t pid;
-    pd_t *pagedir;
     char *name;
     char *desc;
     struct process_state* parent;
@@ -47,7 +46,6 @@ struct process_state
 struct child
 {
     int return_value;
-    pid_t pid;
     struct process_state *process;
 };
 
@@ -57,5 +55,9 @@ struct child
     void process_kill(struct process_state *process);
 
     struct process_state *process_find(pid_t id);
+
+    void exit(struct cpu_state **cpu);
+
+    void fork(struct cpu_state **cpu);
 
 #endif

@@ -51,7 +51,7 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
         new_thread->tid = list_pop_back(process->zombie_tids);
 
 
-    list_push_front(process->children,new_thread);
+    list_push_front(process->threads,new_thread);
     list_push_front(running_threads, new_thread);
     return new_thread;
 }
@@ -84,15 +84,18 @@ void thread_kill_sub(struct thread_state *thread)
         }
     }
     free(thread->state);
-    list_push_front(thread->process->zombie_tids,thread->tid);
-    list_set_first(thread->process->threads);
-    while(!list_is_last(thread->process->threads))
+    if(! (thread->process->flags & PROCESS_ZOMBIE))
     {
-        struct thread_state *t = list_get_current(thread->process->threads);
-        if(t == thread)
+        list_push_front(thread->process->zombie_tids,thread->tid);
+        list_set_first(thread->process->threads);
+        while(!list_is_last(thread->process->threads))
         {
-            list_remove(thread->process->threads);
-            break;
+            struct thread_state *t = list_get_current(thread->process->threads);
+            if(t == thread)
+            {
+                list_remove(thread->process->threads);
+                break;
+            }
         }
     }
     free(thread);
