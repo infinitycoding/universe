@@ -137,20 +137,20 @@ char *strncat(char *dest, const char *src, size_t n)
  * @return 1=the value of the first different char of string0 is bigger
  * @return -1=the value of the first different char of string1 is bigger
  */
-int strcmp(const char *st0, const char *st1)
+int strcmp(const char *str1, const char *str2)
 {
-	uint32_t i;
-	int ret;
-	ret = NULL;
-	for (i = 0; st0[i] == st1[i] && st0[i]!= 0; i++);
-	ret = st0[i] - st1[i];
-	if (ret < 0) {
-	    ret =- 1;
+	int i = 0;
+	while(str1[i] != '\0' && str2[i] != '\0') {
+		if(str1[i] != str2[i]){
+			return 0;
+			break;
+		}
+		i++;
 	}
-	else if (ret > 0) {
-	    ret = 1;
-	}
-	return ret;
+	if( (str1[i] == '\0' && str2[i] != '\0') || (str1[i] != '\0' && str2[i] == '\0') )
+		return 0;
+	else
+		return 1;
 }
 
 

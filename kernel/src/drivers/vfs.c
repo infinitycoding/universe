@@ -28,11 +28,13 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <thread.h>
+#include <memory_layout.h>
+#include <paging.h>
 
 extern struct thread_state *current_thread;
 
-static vfs_inode_t *root = NULL;
-static uint32_t nodes = 0;
+vfs_inode_t *root = NULL;
+uint32_t nodes = 0;
 
 static uid_t uid = 0;
 static gid_t gid = 0;
@@ -46,9 +48,13 @@ static gid_t gid = 0;
 void INIT_VFS(void) {
 	root = malloc(sizeof(vfs_inode_t));
 	root->stat.st_ino = 0;
+	root->stat.st_mode = 0x1ff;
 	nodes = 1;
+	root->name = "root";
 	root->length = 0;
 	root->parent = NULL;
+
+	vfs_create_inode("foo.txt", 0x1ff, root);
 }
 
 /**
@@ -81,20 +87,15 @@ void set_vfs_gid(gid_t new_gid) {
  *
  * @return pointer to the new node
  */
-vfs_inode_t* vfs_create_node(char *name, mode_t mode, vfs_inode_t *parent) {
+vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent) {
 	vfs_inode_t *node = malloc(sizeof(vfs_inode_t));
-	node->name = malloc(strlen(name));
-	int i = 0;
-	while (*name) {
-		*node->name++ = *name++;
-	}
-	node->name[i] = (char) '\0';
+	node->name = name;
 	node->length = 0;
 	node->base = NULL;
-	if (parent == NULL) {
-		node->parent = root;
-	} else {
+	if (parent != NULL) {
 		node->parent = parent;
+		vfs_dentry_t *entry = vfs_create_dir_entry(node);
+		vfs_write(parent, parent->length, entry, sizeof(vfs_dentry_t));
 	}
 
 	node->stat.st_mode = mode;
@@ -130,7 +131,7 @@ vfs_dentry_t* vfs_create_dir_entry(vfs_inode_t *entry_inode) {
  *
  * @return number of written bytes
  */
-int vfs_write(vfs_inode_t *node, void *base, int bytes) {
+int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
 	int i = 0;
 	int writable = 0;
 	if ((node->stat.st_uid == uid) &&
@@ -149,18 +150,24 @@ int vfs_write(vfs_inode_t *node, void *base, int bytes) {
 	}
 
 	if (writable) {
+		int old_len = node->length;
+    		if( (off + bytes) > node->length) {
+			node->length = off + bytes;
+			node->stat.st_size = node->length;
+		}
+
 		if (node->base == NULL) {
-			node->base = malloc(bytes);
+			node->base = malloc(node->length);
 		} else {
-			node->base = realloc(node->base, node->length + bytes);
+			int pages_new = NUM_PAGES(node->length);
+			int pages_old = NUM_PAGES(old_len);
+			if(pages_new > pages_old)
+				node->base = realloc(node->base, node->length);
 		}
-		
-		uint8_t *nbase = (uint8_t*) node->base + node->length;
+
+		uint8_t *nbase = (uint8_t*) node->base + off;
 		uint8_t *wbase = (uint8_t*) base;
-		while (i++ < bytes) {
-			*nbase++ = *wbase++;
-			node->length++;
-		}
+		memcpy(nbase, wbase, bytes);
 	} else {
 		printf("vfs: node %d isn't writable!\n", node->stat.st_ino);
 	}
@@ -265,7 +272,7 @@ vfs_inode_t *vfs_lookup_path(char *path) {
 	
 	int len = strlen(path);
 	if(path[len-1] == '/') {
-	path[len-1] = '\0';
+		path[len-1] = '\0';
 	}
 	
 	char delimiter[] = "/";
@@ -288,8 +295,61 @@ vfs_inode_t *vfs_lookup_path(char *path) {
 			str = strtok(NULL, delimiter);
 		}
 	}
-  
+
 	return parent;
+}
+
+// Systemcalls
+
+void open(struct cpu_state **cpu) {
+	char *path = (*cpu)->ebx;
+	int oflags = (*cpu)->ecx;
+	mode_t mode = (*cpu)->edx;
+
+	vfs_inode_t *inode = vfs_lookup_path(path);
+
+	if(inode == NULL) {
+		if(oflags & O_CREAT) {// create inode
+			char *name = malloc(strlen((char*)path));
+			strcpy(name, path);
+			inode = vfs_create_inode(name, mode, root);
+		} else {
+			(*cpu)->eax = -1;
+			return;
+		}
+	} else {
+		if(oflags & O_EXCL) {
+			(*cpu)->eax = -2;
+			return;
+		}
+	}
+	
+	if(oflags & O_TRUNC) {
+		memset(inode->base, 0, inode->length);
+	}
+	
+	struct fd *desc = malloc(sizeof(struct fd));
+	desc->id = list_length(current_thread->process->files);
+	desc->mode = mode;
+	desc->flags = oflags;
+	desc->pos = 0;	
+	desc->inode = inode;
+
+	list_push_back(current_thread->process->files, desc);
+
+	(*cpu)->eax = desc->id;
+}
+
+void close(struct cpu_state **cpu) {
+
+}
+
+void read(struct cpu_state **cpu) {
+
+}
+
+void write(struct cpu_state **cpu) {
+
 }
 
 
