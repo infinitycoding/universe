@@ -20,34 +20,43 @@
 */
 
 /**
-	@author Michael Sippel <micha.linuxfreak@gmail.com>
+	@author Michael Sippel <michamimosa@gmail.com>
 */
 
 #include <stdint.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-typedef struct vfs_node {
+typedef struct vfs_inode {
 	char *name;
-	struct stat stat;
 	void *base;
-	uint32_t alloc;
-	struct vfs_node *parent;
-} vfs_node_t;
+	uint32_t length;
+	struct stat stat;
+	struct vfs_inode *parent;
+} vfs_inode_t;
 
-typedef struct vfs_dir_entry {
+typedef struct vfs_dentry {
 	ino_t ino;
-	vfs_node_t *entry_node;
-} vfs_dir_entry_t;
+	vfs_inode_t *inode;
+} vfs_dentry_t;
+
+struct fd {
+	unsigned int id;
+	vfs_inode_t *inode;
+	mode_t mode;
+	int flags;
+	int pos;
+};
 
 void INIT_VFS(void);
 void set_vfs_uid(uid_t new_uid);
 void set_vfs_gid(gid_t new_gid);
-vfs_node_t* vfs_create_node(char *name, mode_t mode, vfs_node_t *parent);
-vfs_dir_entry_t* vfs_create_dir_entry(vfs_node_t *entry_node);
-int vfs_write(vfs_node_t *node, void *base, int bytes);
-void* vfs_read(vfs_node_t *node, uintptr_t offset);
-int vfs_stat(vfs_node_t *node, struct stat *buffer);
-int vfs_access(vfs_node_t *node, mode_t modus);
+vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent);
+vfs_dentry_t* vfs_create_dir_entry(vfs_inode_t *entry_inode);
+int vfs_write(vfs_inode_t *inode, void *base, int bytes);
+void* vfs_read(vfs_inode_t *inode, uintptr_t offset);
+int vfs_stat(vfs_inode_t *inode, struct stat *buffer);
+int vfs_access(vfs_inode_t *inode, mode_t modus);
+vfs_inode_t *vfs_lookup_path(char *path);
 
 #endif
