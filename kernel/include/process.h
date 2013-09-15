@@ -2,6 +2,7 @@
 #define _process_h_
 #include <paging.h>
 #include <list.h>
+#include <cpu.h>
 
 typedef uint32_t tid_t;
 
