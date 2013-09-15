@@ -36,7 +36,7 @@ extern char* strrchr(const char*,int);
 //extern char* strpbrk(const char*,const char*);
 //extern char* strstr(const char*,const char*);
 //extern char* strerror(size_t);
-//extern char* strtok(char*,const char*);
+extern char* strtok(char*,const char*);
 
 extern void* memcpy(void*,const void*,size_t);
 extern void* memmove(void*,const void*,size_t);

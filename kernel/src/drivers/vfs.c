@@ -17,7 +17,7 @@
 */
 
 /**
-	@author Michael Sippel <micha.linuxfreak@gmail.com>
+	@author Michael Sippel <michamimosa@gmail.com>
 */
 #include <stdint.h>
 #include <string.h>
@@ -27,8 +27,11 @@
 #include <drivers/vfs.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <thread.h>
 
-static vfs_node_t *root = NULL;
+extern struct thread_state *current_thread;
+
+static vfs_inode_t *root = NULL;
 static uint32_t nodes = 0;
 
 static uid_t uid = 0;
@@ -41,10 +44,10 @@ static gid_t gid = 0;
  * @return void
  */
 void INIT_VFS(void) {
-	root = malloc(sizeof(vfs_node_t));
+	root = malloc(sizeof(vfs_inode_t));
 	root->stat.st_ino = 0;
 	nodes = 1;
-	root->alloc = 0;
+	root->length = 0;
 	root->parent = NULL;
 }
 
@@ -78,15 +81,15 @@ void set_vfs_gid(gid_t new_gid) {
  *
  * @return pointer to the new node
  */
-vfs_node_t* vfs_create_node(char *name, mode_t mode, vfs_node_t *parent) {
-	vfs_node_t *node = malloc(sizeof(vfs_node_t));
+vfs_inode_t* vfs_create_node(char *name, mode_t mode, vfs_inode_t *parent) {
+	vfs_inode_t *node = malloc(sizeof(vfs_inode_t));
 	node->name = malloc(strlen(name));
 	int i = 0;
 	while (*name) {
 		*node->name++ = *name++;
 	}
 	node->name[i] = (char) '\0';
-	node->alloc = 0;
+	node->length = 0;
 	node->base = NULL;
 	if (parent == NULL) {
 		node->parent = root;
@@ -107,14 +110,14 @@ vfs_node_t* vfs_create_node(char *name, mode_t mode, vfs_node_t *parent) {
 /**
  * Create a new directory entry
  *
- * @param entry_node the node that will be entried
+ * @param entry_inode the node that will be entried
  * @return the new directory entry
  */
-vfs_dir_entry_t* vfs_create_dir_entry(vfs_node_t *entry_node) {
-	vfs_dir_entry_t *dir_ent = malloc(sizeof(vfs_dir_entry_t));
+vfs_dentry_t* vfs_create_dir_entry(vfs_inode_t *entry_inode) {
+	vfs_dentry_t *dir_ent = malloc(sizeof(vfs_dentry_t));
 
-	dir_ent->ino = entry_node->stat.st_ino;
-	dir_ent->entry_node = entry_node;
+	dir_ent->ino = entry_inode->stat.st_ino;
+	dir_ent->inode = entry_inode;
 
 	return dir_ent;
 }
@@ -127,7 +130,7 @@ vfs_dir_entry_t* vfs_create_dir_entry(vfs_node_t *entry_node) {
  *
  * @return number of written bytes
  */
-int vfs_write(vfs_node_t *node, void *base, int bytes) {
+int vfs_write(vfs_inode_t *node, void *base, int bytes) {
 	int i = 0;
 	int writable = 0;
 	if ((node->stat.st_uid == uid) &&
@@ -149,14 +152,14 @@ int vfs_write(vfs_node_t *node, void *base, int bytes) {
 		if (node->base == NULL) {
 			node->base = malloc(bytes);
 		} else {
-			node->base = realloc(node->base, node->alloc + bytes);
+			node->base = realloc(node->base, node->length + bytes);
 		}
 		
-		uint8_t *nbase = (uint8_t*) node->base + node->alloc;
+		uint8_t *nbase = (uint8_t*) node->base + node->length;
 		uint8_t *wbase = (uint8_t*) base;
 		while (i++ < bytes) {
 			*nbase++ = *wbase++;
-			node->alloc++;
+			node->length++;
 		}
 	} else {
 		printf("vfs: node %d isn't writable!\n", node->stat.st_ino);
@@ -172,7 +175,7 @@ int vfs_write(vfs_node_t *node, void *base, int bytes) {
  *
  * @return readed data
  */
-void* vfs_read(vfs_node_t *node, uintptr_t offset) {
+void* vfs_read(vfs_inode_t *node, uintptr_t offset) {
 	return (void*) node->base + offset;
 }
 
@@ -184,7 +187,7 @@ void* vfs_read(vfs_node_t *node, uintptr_t offset) {
  *
  * @return success
  */
-int vfs_stat(vfs_node_t *node, struct stat *buffer) {
+int vfs_stat(vfs_inode_t *node, struct stat *buffer) {
 	uint8_t *node_stat = (uint8_t*) &node->stat;
 	uint8_t *buf = (uint8_t*) buffer;
 	int i = 0;
@@ -203,7 +206,7 @@ int vfs_stat(vfs_node_t *node, struct stat *buffer) {
  *
  * @return 
  */
-int vfs_access(vfs_node_t *node, mode_t modus) {
+int vfs_access(vfs_inode_t *node, mode_t modus) {
 	if (node->stat.st_uid == uid) 
 	{
 		if ((modus & R_OK) &&
@@ -243,3 +246,50 @@ int vfs_access(vfs_node_t *node, mode_t modus) {
 
 	return 0;
 }
+
+/**
+ * Dissolve a path to an inode
+ *
+ * @param path
+ * @return inode
+ */
+vfs_inode_t *vfs_lookup_path(char *path) {
+	vfs_inode_t *parent = root;
+	vfs_inode_t *inode = NULL;
+	
+	if(path[0] != '/') {
+		parent = current_thread->process->cwd;
+	} else {
+		path++;
+	}
+	
+	int len = strlen(path);
+	if(path[len-1] == '/') {
+	path[len-1] = '\0';
+	}
+	
+	char delimiter[] = "/";
+	char *str = (char*) strtok(path, delimiter);
+	while(str != NULL) {
+		int num = parent->length / sizeof(vfs_dentry_t);
+		vfs_dentry_t *entries = vfs_read(parent, 0);
+		int found = 0;
+		int i;
+		for(i = 0; i < num; i++) {
+			if(strcmp(str, entries[i].inode->name)) {
+				parent = entries[i].inode;
+				found = 1;
+			}
+		}
+
+		if(!found) {
+			return NULL;
+		} else {
+			str = strtok(NULL, delimiter);
+		}
+	}
+  
+	return parent;
+}
+
+

@@ -3,6 +3,7 @@
 #include <paging.h>
 #include <list.h>
 #include <cpu.h>
+#include <drivers/vfs.h>
 
 typedef uint32_t tid_t;
 
@@ -36,6 +37,8 @@ struct process_state
     char *name;
     char *desc;
     struct process_state* parent;
+    vfs_inode_t *cwd;
+    list_t *files;
     list_t *ports;
     list_t *threads;
     tid_t tid_counter;
