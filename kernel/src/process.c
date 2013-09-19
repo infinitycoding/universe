@@ -163,5 +163,11 @@ void exit(struct cpu_state **cpu)
 
 void fork(struct cpu_state **cpu)
 {
-    printf("sorry! this function is not implemented yet... :(\n");
+    struct process_state *new_process = process_create(current_thread->process->name ,current_thread->process->desc ,current_thread->process->flags ,current_thread->process);
+    thread_create(new_process, !(current_thread->flags & THREAD_KERNELMODE), NULL, *cpu, NULL);
+    /*
+        copy pagedir including allocated structures (copy memory not just the directorys) including the old stack
+    */
+    printf("forked!\n");
+    while(1){}
 }

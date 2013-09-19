@@ -9,7 +9,7 @@
 extern list_t *running_threads;
 extern struct thread_state* current_thread;
 
-struct thread_state *thread_create(struct process_state *process, privilege_t prev, uint32_t eip, void *args)
+struct thread_state *thread_create(struct process_state *process, privilege_t prev, uint32_t eip, struct cpu_state *state, void *args)
 {
     struct thread_state *new_thread = malloc(sizeof(struct thread_state));
 	new_thread->flags = THREAD_ACTIV;
@@ -21,10 +21,17 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
 	void *kernel_stack = malloc(0x1000);
 	struct cpu_state *new_state = kernel_stack + 0x1000 - sizeof(struct cpu_state);
 	new_thread->state = new_state;
-	memset(new_state, 0, sizeof(struct cpu_state));
 
-	new_state->eip = eip;
-	new_state->eflags = 0x202;
+    if(state)
+    {
+      *new_state = *state;
+    }
+    else
+    {
+        memset(new_state, 0, sizeof(struct cpu_state));
+        new_state->eip = eip;
+        new_state->eflags = 0x202;
+    }
 
     if(prev == KERNELMODE)
     {
@@ -38,10 +45,13 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     }
     else
     {
-		paddr_t pframe = pmm_alloc_page();
-		pd_map(new_thread->pagedir, pframe, MEMORY_LAYOUT_STACK_TOP-0x1000, PTE_PRESENT | PTE_WRITABLE | PTE_USER);
+        if(!state)
+        {
+            paddr_t pframe = pmm_alloc_page();
+            pd_map(new_thread->pagedir, pframe, MEMORY_LAYOUT_STACK_TOP-0x1000, PTE_PRESENT | PTE_WRITABLE | PTE_USER);
+            new_state->esp = (uint32_t) MEMORY_LAYOUT_STACK_TOP;
+		}
 
-		new_state->esp = (uint32_t) MEMORY_LAYOUT_STACK_TOP;
 		new_state->cs = 0x1b;
 		new_state->ss = 0x23;
     }
