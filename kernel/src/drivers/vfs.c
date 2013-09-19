@@ -133,7 +133,6 @@ vfs_dentry_t* vfs_create_dir_entry(vfs_inode_t *entry_inode) {
  * @return number of written bytes
  */
 int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
-	int i = 0;
 	int writable = 0;
 	if ((node->stat.st_uid == uid) &&
 	    (node->stat.st_mode & S_IWUSR)) 
@@ -169,10 +168,11 @@ int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
 		uint8_t *nbase = (uint8_t*) node->base + off;
 		uint8_t *wbase = (uint8_t*) base;
 		memcpy(nbase, wbase, bytes);
+		return bytes;
 	} else {
 		printf("vfs: node %d isn't writable!\n", node->stat.st_ino);
 	}
-	return i;
+	return 0;
 }
 
 /**
@@ -302,6 +302,22 @@ vfs_inode_t *vfs_lookup_path(char *path) {
 
 // Systemcalls
 
+struct fd *get_fd(int fd) {
+	struct fd *desc = NULL;
+	struct list_node *node = current_thread->process->files->head->next;	
+	int i;
+	for(i = 0; i < list_length(current_thread->process->files); i++) {
+		desc = node->element;
+		if(desc->id == fd) {
+			return desc;
+		} else {
+			node = node->next;
+		}
+	}
+	
+	return NULL;
+}
+
 void open(struct cpu_state **cpu) {
 	char *path = (*cpu)->ebx;
 	int oflags = (*cpu)->ecx;
@@ -342,7 +358,21 @@ void open(struct cpu_state **cpu) {
 }
 
 void close(struct cpu_state **cpu) {
-
+	int fd = (*cpu)->ebx;
+	
+	struct list_node *node = current_thread->process->files->head->next;	
+	int i;
+	for(i = 0; i < list_length(current_thread->process->files); i++) {
+		struct fd *desc = node->element;
+		if(desc->id == fd) {
+			list_remove_node(node);
+			(*cpu)->eax = 0;
+		} else {
+			node = node->next;
+		}
+	}
+	
+	(*cpu)->eax = -1;
 }
 
 void read(struct cpu_state **cpu) {
@@ -350,18 +380,12 @@ void read(struct cpu_state **cpu) {
 	void *buf = (void*) (*cpu)->ecx;
 	size_t len = (*cpu)->edx;
 
-	struct fd *desc = NULL;
-	struct list_node *node = current_thread->process->files->head->next;	
-	int i;
-	for(i = 0; i < list_length(current_thread->process->files); i++) {
-		desc = node->element;
-		if(desc->id == fd) {
-			break;
-		} else {
-			node = node->next;
-		}
+	struct fd *desc = get_fd(fd);
+	if(desc == NULL) {
+		(*cpu)->eax = -1;
+		return;
 	}
-
+	
 	if(desc->flags & O_RDONLY ||
 	   desc->flags & O_RDWR)
 	{
@@ -372,15 +396,41 @@ void read(struct cpu_state **cpu) {
 			desc->pos += len;
 			(*cpu)->eax = len;
 		} else {
-			(*cpu)->eax = -1;
+			(*cpu)->eax = -2;
 		}
 	} else {
-		(*cpu)->eax = -1;
+		(*cpu)->eax = -3;
 	}
 }
 
 void write(struct cpu_state **cpu) {
+	int fd = (*cpu)->ebx;
+	void *buf = (void*) (*cpu)->ecx;
+	size_t len = (*cpu)->edx;
 
+	struct fd *desc = get_fd(fd);
+	if(desc == NULL) {
+		(*cpu)->eax = -1;
+		return;
+	}
+
+	if(desc->flags & O_WRONLY ||
+	   desc->flags & O_RDWR)
+	{
+		if(! (desc->flags & O_APPEND) ) {
+			desc->pos = 0;
+			desc->flags |= O_APPEND;
+		}
+		
+		vfs_inode_t *inode = desc->inode;
+		int ret = vfs_write(inode, desc->pos, buf, len);
+		(*cpu)->eax = ret;
+		if(ret > 0) {
+			desc->pos += len;
+		}
+	} else {
+		(*cpu)->eax = -3;
+	}
 }
 
 
