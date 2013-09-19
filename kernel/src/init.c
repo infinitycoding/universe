@@ -41,12 +41,12 @@
 #include <logo.h>
 #include <scheduler.h>
 #include <heap.h>
+#include <vfs.h>
 
 #include <drivers/keyboard.h>
 #include <drivers/timer.h>
 #include <drivers/cmos.h>
 #include <drivers/video.h>
-#include <drivers/vfs.h>
 #include <drivers/pci.h>
 
 #include "memory_layout.h"
