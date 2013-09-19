@@ -1,5 +1,16 @@
 #include <universe.h>
 
+void thread(int i)
+{
+    while(1){}
+    while(i >= 0)
+    {
+        print("you can't stop me!\n");
+        i--;
+    }
+    thread_exit(0);
+}
+
 void _start(void) {
     print("Userspace!\nRead \"foo.txt\":\n");
 
@@ -16,8 +27,10 @@ void _start(void) {
     linux_syscall(SYS_WRITE, fd, &str, 10, 0, 0);
 
     // close file
-    linux_syscall(SYS_CLOSE, fd, 0, 0, 0, 0);    
+    linux_syscall(SYS_CLOSE, fd, 0, 0, 0, 0);
 
-    exit(0);
+    thread_launch(thread, 2);
+    asm volatile("_stop: jmp _stop");
+    //exit(0);
 }
 

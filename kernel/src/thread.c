@@ -105,6 +105,8 @@ void thread_kill_sub(struct thread_state *thread)
             if(t == thread)
             {
                 list_remove(thread->process->threads);
+                if(list_is_empty(thread->process->threads))
+                    process_kill(thread->process);
                 break;
             }
         }
@@ -116,6 +118,11 @@ void thread_exit(struct cpu_state **cpu)
 {
     current_thread->flags |= THREAD_ZOMBIE;
     *cpu = task_schedule(*cpu);
+}
+
+void launch_thread(struct cpu_state **cpu)
+{
+    thread_create(current_thread->process, !(current_thread->flags & THREAD_KERNELMODE), (*cpu)->ebx, NULL, (*cpu)->ecx);
 }
 
 

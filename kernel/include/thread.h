@@ -41,4 +41,5 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
 void thread_kill(struct thread_state *thread);
 void thread_kill_sub(struct thread_state *thread);
 void thread_exit(struct cpu_state **cpu);
+void launch_thread(struct cpu_state **cpu);
 #endif
