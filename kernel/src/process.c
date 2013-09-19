@@ -14,12 +14,26 @@ list_t *process_list = 0;
 list_t *zombie_list = 0;
 pid_t pid_counter = 1;
 
-
+/**
+ * returns the smaller inputvalue
+ * @param a     inputvalue
+ * @param b     inputvalue
+ * @return the smallest inputvalue
+ */
 inline int min(int a, int b)
 {
     return (a < b) ? a : b;
 }
 
+
+/**
+ * creates a process
+ * @param name      name of the process (max. 255 characters)
+ * @param desc      description of the process (max. 255 characters)
+ * @param flags     process flags (activ, freezed, zombies)
+ * @param parent    pointer to the parent process struct (NULL: Kernel Init = parent)
+ * @return
+ */
 struct process_state *process_create(const char *name, const char *desc, uint16_t flags,struct process_state *parent)
 {
 
@@ -74,6 +88,10 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
 }
 
 
+/**
+ * kills a process
+ * @param process pointer to the process state
+ */
 void process_kill(struct process_state *process)
 {
     asm volatile("cli");
@@ -126,7 +144,11 @@ void process_kill(struct process_state *process)
     asm volatile("sti");
 }
 
-
+/**
+ * finds a process by ID
+ * @param pid Process ID
+ * @return process state pointer or NULL if the process does not exist
+ */
 struct process_state *process_find(pid_t pid)
 {
     list_set_first(process_list);
@@ -141,7 +163,10 @@ struct process_state *process_find(pid_t pid)
     return 0;
 }
 
-
+/**
+ * terminates the current process (linux function for the API)
+ * @param cpu registers of the corrent process
+ */
 void exit(struct cpu_state **cpu)
 {
     list_set_first(current_thread->process->parent->children);
@@ -160,7 +185,10 @@ void exit(struct cpu_state **cpu)
     *cpu = task_schedule(*cpu);
 }
 
-
+/**
+ * creates a new child process (linux function for the API)
+ * @param cpu registers of the corrent process
+ */
 void fork(struct cpu_state **cpu)
 {
     struct process_state *new_process = process_create(current_thread->process->name ,current_thread->process->desc ,current_thread->process->flags ,current_thread->process);

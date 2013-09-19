@@ -9,6 +9,8 @@
 #define SYS_OPEN 5
 #define SYS_CLOSE 6
 
+#define exit(RETV) asm volatile("int $128" : : "a"(SYS_EXIT), "b"(RETV))
+
 inline uint32_t linux_syscall(uint32_t function, uint32_t ebx, uint32_t ecx, uint32_t edx, uint32_t esi, uint32_t edi)
 {
     uint32_t retv = 0;
@@ -28,8 +30,10 @@ inline uint32_t linux_syscall(uint32_t function, uint32_t ebx, uint32_t ecx, uin
     return retv;
 }
 
-#define exit(RETV) asm volatile("int $128" : : "a"(SYS_EXIT), "b"(RETV))
-#define thread_exit(RETV) asm volatile("int $112;": : "a"(0) , "b"(STR))
+#define print(STR) asm volatile("pushl %%ebx; int $112; popl %%ebx;": : "a"(0) , "b"(STR))
+#define thread_exit(RETV) asm volatile("int $112;": : "a"(1) , "b"(RETV))
+#define thread_launch(FUNCTION, PARAMETER) asm volatile("pushl %%ebx; int $112; popl %%ebx;": : "a"(2) , "b"(FUNCTION), "c"(PARAMETER))
+
 
 inline uint32_t universe_syscall(uint32_t function, uint32_t ebx, uint32_t ecx, uint32_t edx, uint32_t esi, uint32_t edi)
 {
@@ -50,4 +54,3 @@ inline uint32_t universe_syscall(uint32_t function, uint32_t ebx, uint32_t ecx, 
     return retv;
 }
 
-#define print(STR) asm volatile("pushl %%ebx; int $112; popl %%ebx;": : "a"(1) , "b"(STR))

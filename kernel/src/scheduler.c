@@ -47,7 +47,9 @@ extern pd_t *pd_current;
 extern list_t *process_list;
 extern list_t *zombie_list;
 
-
+/**
+ * Initiate the scheduler module
+ */
 void INIT_SCHEDULER(void)
 {
 	set_GDT_entry(5, (uint32_t) &tss, sizeof(tss), 0x89, 0x8);
@@ -63,6 +65,10 @@ void INIT_SCHEDULER(void)
     current_thread = thread_create(kernel_state, KERNELMODE, 0, NULL, NULL);
 }
 
+/**
+ * performs context switches
+ * @param process pointer to the process state
+ */
 struct cpu_state *task_schedule(struct cpu_state *cpu)
 {
     *current_thread->state = *cpu;
