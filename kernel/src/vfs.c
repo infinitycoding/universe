@@ -24,7 +24,7 @@
 #include <heap.h>
 #include <printf.h>
 #include <unistd.h>
-#include <drivers/vfs.h>
+#include <vfs.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <thread.h>

@@ -27,7 +27,7 @@
 #include <thread.h>
 #include <scheduler.h>
 #include <process.h>
-#include <drivers/vfs.h>
+#include <vfs.h>
 
 extern struct thread_state *current_thread;
 extern struct process_state *kernel_state;

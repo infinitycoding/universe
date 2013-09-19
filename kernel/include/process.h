@@ -3,7 +3,7 @@
 #include <paging.h>
 #include <list.h>
 #include <cpu.h>
-#include <drivers/vfs.h>
+#include <vfs.h>
 
 typedef uint32_t tid_t;
 
