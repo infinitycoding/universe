@@ -84,9 +84,8 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
 
         list_set_first(running_threads);
         current_thread = list_get_current(running_threads);
-        *cpu = *current_thread->state;
         pd_switch(current_thread->pagedir);
-
+        memcpy(cpu, current_thread->state, sizeof(struct cpu_state));
     }
     else if(current_thread->ticks == 0)
     {
@@ -95,8 +94,8 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
         if(list_is_last(running_threads))
             list_set_first(running_threads);
         current_thread = list_get_current(running_threads);
-        *cpu = *current_thread->state;
         pd_switch(current_thread->pagedir);
+        memcpy(cpu, current_thread->state, sizeof(struct cpu_state));
     }
     else
     {

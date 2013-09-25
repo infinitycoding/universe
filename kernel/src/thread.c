@@ -9,22 +9,39 @@
 extern list_t *running_threads;
 extern struct thread_state* current_thread;
 
+void thread_sync_pagedir(struct thread_state *thread) {
+    struct thread_state *main_thread = thread->process->threads->head->element;
+    if(thread != main_thread && main_thread != NULL && thread != NULL) {
+        int pages = NUM_PAGES(0xB0000000);
+        int end_pd = pages / 1024;
+        int i;
+        for(i = 0; i < end_pd; i++) {
+            pt_t *pt0 = pt_get(main_thread->pagedir, i, PTE_WRITABLE | PTE_USER);
+            pt_t *pt1 = pt_get(thread->pagedir, i, PTE_WRITABLE | PTE_USER);
+            memcpy(pt1, pt0, 4096);
+        }
+    }
+}
+
 struct thread_state *thread_create(struct process_state *process, privilege_t prev, uint32_t eip, struct cpu_state *state, void *args)
 {
     struct thread_state *new_thread = malloc(sizeof(struct thread_state));
 	new_thread->flags = THREAD_ACTIV;
     new_thread->process = process;
     new_thread->pagedir = pd_create();
+    thread_sync_pagedir(new_thread);
     new_thread->ticks = 10;
     new_thread->return_value = 0;
 
-	void *kernel_stack = malloc(0x1000);
-	struct cpu_state *new_state = kernel_stack + 0x1000 - sizeof(struct cpu_state);
-	new_thread->state = new_state;
+    void *kernel_stack = malloc(0x1000);
+    struct cpu_state *new_state = kernel_stack + 0x1000 - sizeof(struct cpu_state);
+    new_thread->state = new_state;
+    
+    printf("cpu at 0x%x\n", new_thread->state);
 
-    if(state)
+    if(state != NULL)
     {
-      *new_state = *state;
+        memcpy(new_state, state, sizeof(struct cpu_state));
     }
     else
     {
@@ -50,7 +67,7 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
             paddr_t pframe = pmm_alloc_page();
             pd_map(new_thread->pagedir, pframe, MEMORY_LAYOUT_STACK_TOP-0x1000, PTE_PRESENT | PTE_WRITABLE | PTE_USER);
             new_state->esp = (uint32_t) MEMORY_LAYOUT_STACK_TOP;
-		}
+	}
 
 		new_state->cs = 0x1b;
 		new_state->ss = 0x23;
@@ -122,7 +139,7 @@ void thread_exit(struct cpu_state **cpu)
 
 void launch_thread(struct cpu_state **cpu)
 {
-    thread_create(current_thread->process, !(current_thread->flags & THREAD_KERNELMODE), (*cpu)->ebx, NULL, (*cpu)->ecx);
+    thread_create(current_thread->process, USERMODE, (*cpu)->ebx, NULL, (*cpu)->ecx);
 }
 
 
