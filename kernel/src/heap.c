@@ -69,7 +69,7 @@ void *realloc(void *ptr, size_t size) {
  * @return void
  */
 void heap_init(heap_t *heap) {
-	vaddr_t vframe = pd_automap_kernel(pd_get_kernel(), pmm_alloc_page(), PTE_WRITABLE);
+	vaddr_t vframe = pd_automap_kernel(pd_get_current(), pmm_alloc_page(), PTE_WRITABLE);
 	alloc_t *header = vframe;
 
 	header->size = PAGE_SIZE - sizeof(alloc_t);
@@ -91,7 +91,7 @@ alloc_t *heap_expand(heap_t *heap, int pages) {
 	/* TODO : Range Allocation */
 	heap->list_count++;
 	paddr_t pframe = NULL;
-	vaddr_t vframe = vaddr_find(pd_get_kernel(), pages, 
+	vaddr_t vframe = vaddr_find(pd_get_current(), pages, 
 				    MEMORY_LAYOUT_KERNEL_HEAP_START,
 				    MEMORY_LAYOUT_KERNEL_HEAP_END, PTE_WRITABLE);
 	vaddr_t vframe_cur = vframe;
@@ -99,7 +99,7 @@ alloc_t *heap_expand(heap_t *heap, int pages) {
 	int i;
 	for(i = 0; i < pages; i++) {
 		pframe = pmm_alloc_page();
-		pd_map(pd_get_kernel(), pframe, vframe_cur, PTE_WRITABLE);
+		pd_map(pd_get_current(), pframe, vframe_cur, PTE_WRITABLE);
 		vframe_cur += PAGE_SIZE;
 	}
 	
@@ -123,7 +123,7 @@ alloc_t *heap_expand(heap_t *heap, int pages) {
  */
 void heap_destroy(heap_t *heap) {
 	while (heap->list_count != 0) {
-		pd_unmap(pd_get_kernel(),
+		pd_unmap(pd_get_current(),
 			 heap->alloc_list[--heap->list_count].base & ~0xFFF);
 	}
 }
@@ -142,14 +142,14 @@ void *heap_alloc(heap_t *heap, size_t size) {
 	int n_size = size + sizeof(alloc_t);
 	
 	if(size <= PAGE_SIZE && size > PAGE_SIZE - sizeof(alloc_t)) {
-		data = pd_automap_kernel(pd_get_kernel(), pmm_alloc_page(), PTE_WRITABLE);
+		data = pd_automap_kernel(pd_get_current(), pmm_alloc_page(), PTE_WRITABLE);
 		return data;
 	}
 	
 	while(header != NULL) {
 		if(header->size >= size && header->status == HEAP_STATUS_FREE) {
 			header->status = HEAP_STATUS_USED;
-			if(header->size > n_size) {
+			/*if(header->size > n_size) {
 				alloc_t *new_header = header->base + size;
 				new_header->base    = header->base + n_size;
 				new_header->size = header->size - n_size;
@@ -158,7 +158,7 @@ void *heap_alloc(heap_t *heap, size_t size) {
 
 				new_header->next = heap->alloc_list;
 				heap->alloc_list = new_header;
-			}
+			}*/
 			
 			return header->base;
 		}
