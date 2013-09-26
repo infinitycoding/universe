@@ -114,13 +114,15 @@ pd_t *pd_create(void) {
  * @return void
  */
 void pd_update(pd_t *pd) {
-	#define START PDE_INDEX(MEMORY_LAYOUT_KERNEL_START)
-	#define END   PDE_INDEX(MEMORY_LAYOUT_KERNEL_END)
-	uintptr_t upd = (uintptr_t) (pd->entries + START);
-	uintptr_t kpd = (uintptr_t) (pd_current->entries + START);
-	size_t len = END - START;
-	memcpy((void*) upd, (void*) kpd, len * sizeof(pde_t));
-	pd->entries[PDE_INDEX(MEMORY_LAYOUT_PAGING_STRUCTURES_START)] = (uint32_t) pd->phys_addr | PTE_PRESENT | PTE_WRITABLE;
+	if(pd != pd_current) {
+		#define START PDE_INDEX(MEMORY_LAYOUT_KERNEL_START)
+		#define END   PDE_INDEX(MEMORY_LAYOUT_KERNEL_END)
+		uintptr_t upd = (uintptr_t) (pd->entries + START);
+		uintptr_t kpd = (uintptr_t) (pd_current->entries + START);
+		size_t len = END - START;
+		memcpy((void*) upd, (void*) kpd, len * sizeof(pde_t));
+		pd->entries[PDE_INDEX(MEMORY_LAYOUT_PAGING_STRUCTURES_START)] = (uint32_t) pd->phys_addr | PTE_PRESENT | PTE_WRITABLE;
+	}
 }
 
 /**
@@ -179,7 +181,7 @@ pt_t pt_create(pd_t *pd, int index, uint8_t flags) {
 	pd->entries[index] = (pde_t) pt | flags | PDE_PRESENT;
 
 	pt = pt_get(pd, index, flags | PDE_PRESENT);
-	memset(pt, 0, PT_LENGTH);
+	memset(pt, 0, 4096);
 
 	return pt;
 }

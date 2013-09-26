@@ -15,10 +15,17 @@ void thread_sync_pagedir(struct thread_state *thread) {
         int pages = NUM_PAGES(0xB0000000);
         int end_pd = pages / 1024;
         int i;
+        pt_t *pt0, pt1;
         for(i = 0; i < end_pd; i++) {
-            pt_t *pt0 = pt_get(main_thread->pagedir, i, PTE_WRITABLE | PTE_USER);
-            pt_t *pt1 = pt_get(thread->pagedir, i, PTE_WRITABLE | PTE_USER);
-            memcpy(pt1, pt0, 4096);
+            if(main_thread->pagedir->entries[i] & PTE_PRESENT) {
+	        if(thread->pagedir->entries[i] & PTE_PRESENT) {
+                    pt1 = pt_get(thread->pagedir, i, PTE_WRITABLE | PTE_USER);
+                } else {
+                    pt1 = pt_create(thread->pagedir, i, PTE_WRITABLE | PTE_USER);
+                }
+                pt0 = pt_get(main_thread->pagedir, i, PTE_WRITABLE | PTE_USER);
+                memcpy(pt1, pt0, 4096);
+            }
         }
     }
 }
@@ -36,8 +43,6 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     void *kernel_stack = malloc(0x1000);
     struct cpu_state *new_state = kernel_stack + 0x1000 - sizeof(struct cpu_state);
     new_thread->state = new_state;
-    
-    printf("cpu at 0x%x\n", new_thread->state);
 
     if(state != NULL)
     {
