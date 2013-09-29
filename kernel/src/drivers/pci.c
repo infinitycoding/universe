@@ -27,6 +27,7 @@
 #include <drivers/pci.h>
 #include <printf.h>
 #include <heap.h>
+#include <idt.h>
 
 uint32_t pci_read(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset)
 {
@@ -136,6 +137,20 @@ bool pci_dev_exist(uint8_t bus, uint8_t dev, uint8_t func)
     return true;
 }
 
+/**
+ * Collection of pci device classes
+ **/
+char *pci_classes[] = {
+    "storage", "network", "display", "multimedia", "memory",
+    "bridge", "bus/port", "perephiery", "input", "docking station",
+    "processor", "serial bus", "wireless", "intelegent", "Satelite",
+    "crypto", "signal processor"
+};
+
+
+/**
+ * Collection of pci device names orderd by class and subclass pci_dev_names[class][subclass]
+ **/
 char *pci_dev_names[][16]={
     {"non vga device", "vga device"}, {"SCSI", "IDE", "Floppy", "IPI", "RAID", "ATA-controler", "SATA-controler","SAS"},
     {"Ethernet", "Token Ring", "FDDI", "ATM", "ISDN", "FIP", "PICMG 2.14"}, {"VGA", "XGA", "3D"}, {"Video", "Audio", "Phone", "HD-Audio"},
@@ -143,8 +158,98 @@ char *pci_dev_names[][16]={
 };
 
 
+/**
+ * searches for a specific PCI device by vendor and device ID
+ * @param device_list pci device list
+ * @param vendor Vendor ID of the device
+ * @param device devicde- ID of the device
+ * @param num pointer to a counter integer
+ * @return NULL if there is no more device of the specified type or the adress auf the PCI device struct
+ */
+struct pci_dev *search_device(list_t *device_list, uint16_t vendor, uint16_t device, int *num)
+{
+    int devnum = *num;
+    while(device_list->lock){}
+    device_list->lock = true;
+        list_set_first(device_list);
+        while(!list_is_last(device_list))
+        {
+            struct pci_dev *current_dev = list_get_current(device_list);
+            if(devnum == 0 && current_dev->device_ID == device && current_dev->vendor_ID == vendor)
+            {
+                *num += 1;
+                device_list->lock = false;
+                return current_dev;
+            }
+            else if(current_dev->device_ID == device && current_dev->vendor_ID == vendor)
+            {
+                devnum--;
+            }
+            list_next(device_list);
+        }
+    device_list->lock = false;
+    return NULL;
+}
+
+list_t *pci_irq_handles;
+
+/**
+ * installs a isr handler for a specific pci device
+ * @param isr interrupt service routine
+ * @param dev pci device
+ */
+void install_pci_isr(void (*isr)(void), struct pci_dev *dev)
+{
+    while(pci_irq_handles->lock){}
+    pci_irq_handles->lock = true;
+        struct pci_isr *new_pci_isr = malloc(sizeof(struct pci_isr));
+        new_pci_isr->isr = isr;
+        new_pci_isr->dev = dev;
+        list_push_front(pci_irq_handles,new_pci_isr);
+    pci_irq_handles->lock = false;
+}
+
+
+/**
+ * deinstalls a isr handler for a specific pci device
+ * @param isr interrupt service routine
+ * @param dev pci device
+ */
+int deinstall_pci_isr(void (*isr)(void), struct pci_dev *dev)
+{
+    while(pci_irq_handles->lock){}
+    pci_irq_handles->lock = true;
+        int num = 0;
+        list_set_first(pci_irq_handles);
+        while(!list_is_last(pci_irq_handles))
+        {
+            struct pci_isr *current_isr = list_get_current(pci_irq_handles);
+            if(current_isr->isr == isr && current_isr->dev == dev)
+            {
+                list_remove(pci_irq_handles);
+                list_set_first(pci_irq_handles);
+                num++;
+            }
+            else
+                list_next(pci_irq_handles);
+        }
+    pci_irq_handles->lock = false;
+    return num;
+}
+
+
+/**
+ * handels pci irqs
+ */
+void pci_irq_handler(void)
+{
+    // Todo: Poll devices
+}
+
+
 //Linked list of PCI devices
 list_t *pci_dev_list;
+
 
 #define PRINT_DEV_LIST
 
@@ -155,6 +260,9 @@ void INIT_PCI()
         printf("PCI-devices:\n");
     #endif
     pci_dev_list = list_create();
+    pci_irq_handles = list_create();
+    pci_dev_list->lock = true;
+
     int dev,bus,func;
 
     for(bus = 0; bus < 8; bus++)
@@ -194,6 +302,7 @@ void INIT_PCI()
                     uint32_t irq_info = pci_readl(bus, dev, func, PCI_INTERRUPT);
                     current_dev->irq_num = (uint8_t) irq_info;
                     current_dev->irq_pin = (uint8_t) (irq_info >> 8);
+                    //Todo: Register Interrupt
 
 
 
@@ -248,5 +357,5 @@ void INIT_PCI()
             }
         }
     }
-
+    pci_dev_list->lock = false;
 }
