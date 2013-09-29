@@ -30,10 +30,6 @@ inline uint32_t linux_syscall(uint32_t function, uint32_t ebx, uint32_t ecx, uin
     return retv;
 }
 
-#define print(STR) asm volatile("pushl %%ebx; int $112; popl %%ebx;": : "a"(0) , "b"(STR))
-#define thread_exit(RETV) asm volatile("int $112;": : "a"(1) , "b"(RETV))
-#define thread_launch(FUNCTION, PARAMETER) asm volatile("pushl %%ebx; int $112; popl %%ebx;": : "a"(2) , "b"(FUNCTION), "c"(PARAMETER))
-
 
 inline uint32_t universe_syscall(uint32_t function, uint32_t ebx, uint32_t ecx, uint32_t edx, uint32_t esi, uint32_t edi)
 {
@@ -53,4 +49,11 @@ inline uint32_t universe_syscall(uint32_t function, uint32_t ebx, uint32_t ecx, 
 
     return retv;
 }
+
+#define print(STR) asm volatile("pushl %%ebx; int $112; popl %%ebx;": : "a"(0) , "b"(STR))
+#define thread_exit(RETV) asm volatile("int $112;": : "a"(1) , "b"(RETV))
+#define thread_launch(FUNCTION, PARAMETER) asm volatile("pushl %%ebx; int $112; popl %%ebx;": : "a"(2) , "b"(FUNCTION), "c"(PARAMETER))
+#define identify_os(...) universe_syscall(3,0,0,0,0,0)
+#define UNIVERSE_OS 'u' | ('n' << 8) | ('i' << 16)
+#define is ^0xFF000000 ==
 

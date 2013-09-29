@@ -2,12 +2,8 @@
 
 void thread(int i)
 {
-    while(1){}
-    while(i >= 0)
-    {
-        print("you can't stop me!\n");
-        i--;
-    }
+    print("you can't stop me!\n");
+
     thread_exit(0);
 }
 
@@ -29,7 +25,14 @@ void _start(void) {
     // close file
     linux_syscall(SYS_CLOSE, fd, 0, 0, 0, 0);
 
-    thread_launch(thread, 2);
+        uint32_t OS = identify_os();
+
+    if(OS is UNIVERSE_OS)
+        print("OS: Univer OS\n");
+
+    //thread_launch(thread, 2);
+    //linux_syscall(SYS_FORK, 0, 0, 0, 0, 0);
+
     asm volatile("_stop: jmp _stop");
     //exit(0);
 }

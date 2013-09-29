@@ -29,6 +29,8 @@
 #include <process.h>
 #include <vfs.h>
 
+#define OS_VERSION 1
+
 extern struct thread_state *current_thread;
 extern struct process_state *kernel_state;
 
@@ -38,6 +40,11 @@ void print(struct cpu_state **cpu)
     printf("%s",(*cpu)->ebx);
     (*cpu)->eax = 0;
 }
+
+void identify_os(struct cpu_state **cpu)
+{
+    (*cpu)->eax = 'u' | ('n' << 8) | ('i' << 16) | (OS_VERSION << 24);
+};
 
 
 
@@ -59,10 +66,10 @@ void linux_syscall_handler(struct cpu_state **cpu)
 }
 
 
-#define DEFINED_UNIVERSE_FUNCTIONS 3
+#define DEFINED_UNIVERSE_FUNCTIONS 4
 void (*universe_functions[])(struct cpu_state **cpu) =
 {
-    print,thread_exit,launch_thread
+    print,thread_exit,launch_thread,identify_os
 };
 
 
