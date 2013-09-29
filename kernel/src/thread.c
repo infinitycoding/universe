@@ -20,7 +20,7 @@ void thread_sync_pagedir(struct thread_state *thread) {
     }
 }
 
-struct thread_state *thread_create(struct process_state *process, privilege_t prev, uint32_t eip, struct cpu_state *state, void *args)
+struct thread_state *thread_create(struct process_state *process, privilege_t prev, uint32_t eip, struct cpu_state *state, int argc, void **argv)
 {
     struct thread_state *new_thread = malloc(sizeof(struct thread_state));
 	new_thread->flags = THREAD_ACTIV;
@@ -65,7 +65,11 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
         {
             paddr_t pframe = pmm_alloc_page();
             pd_map(new_thread->pagedir, pframe, MEMORY_LAYOUT_STACK_TOP-0x1000, PTE_PRESENT | PTE_WRITABLE | PTE_USER);
-            new_state->esp = (uint32_t) MEMORY_LAYOUT_STACK_TOP;
+            new_state->esp = (uint32_t) MEMORY_LAYOUT_STACK_TOP - 8;
+
+            uint32_t *stack = pd_automap_kernel(pd_get_current(), pframe, PTE_PRESENT | PTE_WRITABLE | PTE_USER) + 0x1000;
+            *--stack = argv;
+            *--stack = argc;
 	}
 
 		new_state->cs = 0x1b;
@@ -138,7 +142,7 @@ void thread_exit(struct cpu_state **cpu)
 
 void launch_thread(struct cpu_state **cpu)
 {
-    thread_create(current_thread->process, USERMODE, (*cpu)->ebx, NULL, (*cpu)->ecx);
+    thread_create(current_thread->process, USERMODE, (*cpu)->ebx, NULL, (*cpu)->ecx, (*cpu)->edx);
 }
 
 

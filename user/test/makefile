@@ -2,9 +2,9 @@ SRCS = $(shell find -name '*.c')
 OBJS = $(addsuffix .o,$(basename $(SRCS)))
 
 CFLAGS = -m32 -Wall -fno-stack-protector -fno-builtin -nostdinc -I ../include
-LDFLAGS = -melf_i386 -flto -Tlink.ld
+LDFLAGS = -melf_i386 -flto -T../link.ld
 
-test.elf: $(OBJS)
+test.elf:  ../entry.o $(OBJS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 %.o: %.c

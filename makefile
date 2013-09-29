@@ -5,7 +5,7 @@ kernel:
 	cp kernel/src/kernel32.elf build/kernel32.elf
 
 user:
-	$(MAKE) -C user/test
+	$(MAKE) -C user
 	cp user/test/test.elf build/test.elf
 
 iso-img:
@@ -16,7 +16,7 @@ qemu: kernel user iso-img
 
 clean:
 	$(MAKE) -C kernel/src clean
-	$(MAKE) -C user/test clean
+	$(MAKE) -C user clean
 
 .PHONY: all kernel user clean qemu
 

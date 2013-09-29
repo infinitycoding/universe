@@ -7,7 +7,7 @@ void thread(int i)
     thread_exit(0);
 }
 
-void _start(void) {
+void main(int argc, void **argv) {
     print("Userspace!\nRead \"foo.txt\":\n");
 
     // open file
