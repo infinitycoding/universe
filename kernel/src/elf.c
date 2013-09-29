@@ -48,7 +48,7 @@ struct process *load_elf(void *image) {
 	ph = (struct elf_program_header*) (image + header->ph_offset);
 
 	struct process_state *proc = process_create("", "", PROCESS_ACTIVE, NULL);
-	struct thread_state *new_thread = thread_create(proc, 3, header->entry, NULL, 0, NULL);
+	struct thread_state *new_thread = thread_create(proc, 3, header->entry, NULL, 0, NULL, NULL);
 
 	for(i = 0; i < header->ph_entry_count; i++, ph++) {
 		if(ph->type == EPT_LOAD) {

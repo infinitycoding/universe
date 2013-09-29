@@ -194,7 +194,7 @@ void exit(struct cpu_state **cpu)
 void fork(struct cpu_state **cpu)
 {
     struct process_state *new_process = process_create(current_thread->process->name ,current_thread->process->desc ,current_thread->process->flags ,current_thread->process);
-    struct thread_state *new_thread = thread_create(new_process, !(current_thread->flags & THREAD_KERNELMODE), NULL, *cpu, 0, NULL);
+    struct thread_state *new_thread = thread_create(new_process, !(current_thread->flags & THREAD_KERNELMODE), NULL, *cpu, 0, NULL, NULL);
     int i;
     for(i = 0; i < (MEMORY_LAYOUT_KERNEL_START >> 22); i++)
     {

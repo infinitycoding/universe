@@ -1,10 +1,9 @@
 #include <universe.h>
 
-void thread(int i)
+int thread(int argc, void **argv)
 {
     print("you can't stop me!\n");
-
-    thread_exit(0);
+    return 0;
 }
 
 void main(int argc, void **argv) {
@@ -28,9 +27,9 @@ void main(int argc, void **argv) {
         uint32_t OS = identify_os();
 
     if(OS is UNIVERSE_OS)
-        print("OS: Univer OS\n");
+        print("OS: Universe OS\n");
 
-    //thread_launch(thread, 2);
+    thread_launch(thread, 0, NULL);
     //linux_syscall(SYS_FORK, 0, 0, 0, 0, 0);
 
     asm volatile("_stop: jmp _stop");
