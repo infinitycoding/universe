@@ -21,6 +21,7 @@
 
 #include <stdint.h>
 #include <io.h>
+#include <list.h>
 
 
 #define PCI_CONFIG_DATA    0x0CFC
@@ -50,12 +51,12 @@
 
 
 
-uint8_t pci_readb(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset);
-uint16_t pci_readw(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset);
-uint32_t pci_readl(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset);
-void pci_writeb(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint8_t value);
-void pci_writew(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint16_t value);
-void pci_writel(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint32_t value);
+inline uint8_t pci_readb(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset);
+inline uint16_t pci_readw(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset);
+inline uint32_t pci_readl(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset);
+inline void pci_writeb(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint8_t value);
+inline void pci_writew(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint16_t value);
+inline void pci_writel(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint32_t value);
 pci_dev_exist(uint8_t bus, uint8_t dev, uint8_t func);
 
 typedef enum
@@ -93,5 +94,9 @@ struct pci_dev
     uint8_t irq_pin;
     struct pci_dev_base base_adress[6];
 };
+
+#ifndef _PCI_C_
+    extern list_t *pci_dev_list;
+#endif
 
 #endif

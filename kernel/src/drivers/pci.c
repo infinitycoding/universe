@@ -22,12 +22,18 @@
 
  */
 
-
+#define _PCI_C_
 
 #include <drivers/pci.h>
 #include <printf.h>
-#include <list.h>
 #include <heap.h>
+
+uint32_t pci_read(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset)
+{
+    outl(PCI_CONFIG_ADDRESS,0x80000000 | (bus << 16) | (dev << 11) |( func << 8) | (offset & 0xFC));
+    return inl(PCI_CONFIG_DATA) >> (8 * (offset % 4));
+}
+
 
 
 /**
@@ -38,10 +44,9 @@
  * @param Offset
  * @return value from the input adress
  */
-uint8_t pci_readb(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset)
+uint8_t pci_readb(uint8_t bus, uint8_t dev, uint8_t func, uint8_t offset)
 {
-    outl(PCI_CONFIG_ADDRESS,0x80000000|(bus<<16)|(dev<<11)|(func<<8)|(offset&0xFC));
-    return inb(PCI_CONFIG_DATA);
+    return pci_read(bus, dev, func, offset) & 0xff;
 }
 
 /**
@@ -52,10 +57,9 @@ uint8_t pci_readb(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset)
  * @param Offset
  * @return value from the input adress
  */
-uint16_t pci_readw(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset)
+inline uint16_t pci_readw(uint8_t bus, uint8_t dev, uint8_t func, uint8_t offset)
 {
-    outl(PCI_CONFIG_ADDRESS,0x80000000|(bus<<16)|(dev<<11)|(func<<8)|(offset&0xFC));
-    return inw(PCI_CONFIG_DATA);
+    return pci_read(bus, dev, func, offset) & 0xffff;
 }
 
 
@@ -67,10 +71,9 @@ uint16_t pci_readw(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset)
  * @param Offset
  * @return value from the input adress
  */
-uint32_t pci_readl(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset)
+inline uint32_t pci_readl(uint8_t bus, uint8_t dev, uint8_t func, uint8_t offset)
 {
-    outl(PCI_CONFIG_ADDRESS,0x80000000|(bus<<16)|(dev<<11)|(func<<8)|(offset&0xFC));
-    return inl(PCI_CONFIG_DATA);
+    return pci_read(bus, dev, func, offset);
 }
 
 
@@ -82,10 +85,10 @@ uint32_t pci_readl(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset)
  * @param Offset
  * @param Value
  */
-void pci_writeb(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint8_t value)
+inline void pci_writeb(uint8_t bus, uint8_t dev, uint8_t func, uint8_t offset, uint8_t value)
 {
-    outl(PCI_CONFIG_ADDRESS,0x80000000|(bus<<16)|(dev<<11)|(func<<8)|(offset&0xFC));
-    outb(PCI_CONFIG_DATA,value);
+    outl(PCI_CONFIG_ADDRESS,0x80000000 | (bus << 16) | (dev << 11 ) | (func << 8) | (offset & 0xFC));
+    outb(PCI_CONFIG_DATA + (offset & 3), value);
 }
 
 
@@ -97,10 +100,10 @@ void pci_writeb(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint8_t val
  * @param Offset
  * @param Value
  */
-void pci_writew(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint16_t value)
+inline void pci_writew(uint8_t bus, uint8_t dev, uint8_t func, uint8_t offset, uint16_t value)
 {
     outl(PCI_CONFIG_ADDRESS, 0x80000000 | (bus << 16) | (dev << 11) | (func << 8) | (offset & 0xFC));
-    outw(PCI_CONFIG_DATA, value);
+    outw(PCI_CONFIG_DATA + (offset & 2), value);
 }
 
 
@@ -112,7 +115,7 @@ void pci_writew(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint16_t va
  * @param Offset
  * @param Value
  */
-void pci_writel(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint32_t value)
+inline void pci_writel(uint8_t bus, uint8_t dev, uint8_t func, uint8_t offset, uint32_t value)
 {
     outl(PCI_CONFIG_ADDRESS, 0x80000000 | (bus << 16) | (dev << 11) | (func << 8) | (offset & 0xFC));
     outl(PCI_CONFIG_DATA, value);
@@ -143,10 +146,14 @@ char *pci_dev_names[][16]={
 //Linked list of PCI devices
 list_t *pci_dev_list;
 
+#define PRINT_DEV_LIST
+
 
 void INIT_PCI()
 {
-    printf("PCI-devices:\n");
+    #ifdef PRINT_DEV_LIST
+        printf("PCI-devices:\n");
+    #endif
     pci_dev_list = list_create();
     int dev,bus,func;
 
@@ -172,7 +179,7 @@ void INIT_PCI()
                     current_dev->dev = dev;
                     current_dev->func = func;
 
-                    uint32_t classcode = pci_readl(bus, dev, 0, 8);
+                    uint32_t classcode = pci_readl(bus, dev, 0, PCI_REVISION);
 
                     current_dev->reversion_ID = (uint8_t)classcode;
                     current_dev->programming_interface = (uint8_t) (classcode >> 8);
@@ -183,6 +190,11 @@ void INIT_PCI()
                     current_dev->vendor_ID = pci_readw(bus, dev, func, PCI_VENDOR_ID);
                     current_dev->header_type = pci_readb(bus, dev ,0, PCI_HEADERTYPE) ^ 0x80;
                     current_dev->multifunc = multifunc;
+
+                    uint32_t irq_info = pci_readl(bus, dev, func, PCI_INTERRUPT);
+                    current_dev->irq_num = (uint8_t) irq_info;
+                    current_dev->irq_pin = (uint8_t) (irq_info >> 8);
+
 
 
                     // Standart Device
@@ -224,12 +236,14 @@ void INIT_PCI()
                     // Bridge Device
                     else
                     {
-                        //TODO: Write Cases for Different Headers
+                        //TODO: Write Cases for Bridges
                     }
 
-                    printf("device ID: %X  vendor ID: %X  bus: %d  port: %d  function: %d\n",current_dev->device_ID, current_dev->vendor_ID, current_dev->bus, current_dev->dev, current_dev->func);
+                    #ifdef PRINT_DEV_LIST
+                        printf("device ID: %04X  vendor ID: %04X  bus: %d  port: %d  function: %d\n",current_dev->device_ID, current_dev->vendor_ID, current_dev->bus, current_dev->dev, current_dev->func);
+                    #endif
 
-                    list_push_front(pci_dev_list,current_dev);
+                    list_push_front(pci_dev_list, current_dev);
                 }
             }
         }
