@@ -37,7 +37,7 @@ struct thread_state
     tid_t tid; //Thread ID
 };
 
-struct thread_state *thread_create(struct process_state *process, privilege_t prev, uint32_t eip, struct cpu_state *state, int argc, void **argv);
+struct thread_state *thread_create(struct process_state *process, privilege_t prev, uint32_t eip, struct cpu_state *state, int argc, void **argv, void *return_address);
 void thread_kill(struct thread_state *thread);
 void thread_kill_sub(struct thread_state *thread);
 void thread_exit(struct cpu_state **cpu);
