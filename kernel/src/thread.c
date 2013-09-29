@@ -10,22 +10,12 @@ extern list_t *running_threads;
 extern struct thread_state* current_thread;
 
 void thread_sync_pagedir(struct thread_state *thread) {
-    struct thread_state *main_thread = thread->process->threads->head->element;
+    struct thread_state *main_thread = thread->process->main_thread;
     if(thread != main_thread && main_thread != NULL && thread != NULL) {
-        int pages = NUM_PAGES(0xB0000000);
-        int end_pd = pages / 1024;
+        int end = PDE_INDEX(0xB0000000);
         int i;
-        pt_t *pt0, pt1;
-        for(i = 0; i < end_pd; i++) {
-            if(main_thread->pagedir->entries[i] & PTE_PRESENT) {
-	        if(thread->pagedir->entries[i] & PTE_PRESENT) {
-                    pt1 = pt_get(thread->pagedir, i, PTE_WRITABLE | PTE_USER);
-                } else {
-                    pt1 = pt_create(thread->pagedir, i, PTE_WRITABLE | PTE_USER);
-                }
-                pt0 = pt_get(main_thread->pagedir, i, PTE_WRITABLE | PTE_USER);
-                memcpy(pt1, pt0, 4096);
-            }
+        for(i = 0; i < end; i++) {
+            thread->pagedir->entries[i] = main_thread->pagedir->entries[i];
         }
     }
 }
@@ -43,6 +33,10 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     void *kernel_stack = malloc(0x1000);
     struct cpu_state *new_state = kernel_stack + 0x1000 - sizeof(struct cpu_state);
     new_thread->state = new_state;
+
+    if(process->main_thread == NULL) {
+        process->main_thread = new_thread;
+    }
 
     if(state != NULL)
     {

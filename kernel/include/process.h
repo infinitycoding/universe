@@ -42,6 +42,7 @@ struct process_state
     list_t *ports;
     list_t *threads;
     tid_t tid_counter;
+    struct thread_state *main_thread;
     list_t *zombie_tids;
     list_t *children;
     uint16_t flags;
