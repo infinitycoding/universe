@@ -82,6 +82,7 @@ extern void isr_47(void);
 extern void isr_112(void);
 extern void isr_128(void);
 extern void isr_default(void);
+extern void isr_pci(void);
 
 
 struct IDT_Entry {

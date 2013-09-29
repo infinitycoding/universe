@@ -39,25 +39,23 @@
 #define PCI_BASE        0x10
 #define PCI_INTERRUPT   0x3C
 
-#define INTA 1
-#define INTB 2
-#define INTC 3
-#define INTD 4
 
 #define PCI_STANDART_HEADER  0
 #define PCI_PCI_BRIDGE_HEADER 1
 #define PCI_CARDBUS_BRIDGE_HEADER 2
 
+#ifndef _PCI_C_
+    extern list_t *pci_dev_list;
+#endif
 
+typedef enum
+{
+    INTA = 1,
+    INTB = 2,
+    INTC = 3,
+    INTD = 4,
+}irq_pin;
 
-
-inline uint8_t pci_readb(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset);
-inline uint16_t pci_readw(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset);
-inline uint32_t pci_readl(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset);
-inline void pci_writeb(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint8_t value);
-inline void pci_writew(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint16_t value);
-inline void pci_writel(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint32_t value);
-pci_dev_exist(uint8_t bus, uint8_t dev, uint8_t func);
 
 typedef enum
 {
@@ -73,9 +71,6 @@ struct pci_dev_base
     uint8_t resb;
 };
 
-
-
-void INIT_PCI();
 
 struct pci_dev
 {
@@ -95,8 +90,25 @@ struct pci_dev
     struct pci_dev_base base_adress[6];
 };
 
-#ifndef _PCI_C_
-    extern list_t *pci_dev_list;
-#endif
+struct pci_isr
+{
+    void (*isr)(void);
+    struct pci_dev *dev;
+};
+
+inline uint8_t pci_readb(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset);
+inline uint16_t pci_readw(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset);
+inline uint32_t pci_readl(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset);
+inline void pci_writeb(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint8_t value);
+inline void pci_writew(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint16_t value);
+inline void pci_writel(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint32_t value);
+pci_dev_exist(uint8_t bus, uint8_t dev, uint8_t func);
+struct pci_dev *search_device(list_t *device_list, uint16_t vendor, uint16_t device, int *num);
+void install_pci_isr(void (*isr)(void), struct pci_dev *dev);
+int deinstall_pci_isr(void (*isr)(void), struct pci_dev *dev);
+void pci_irq_handler(void);
+void INIT_PCI();
+
+
 
 #endif

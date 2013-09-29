@@ -28,6 +28,7 @@
 #include <printf.h>
 #include <syscall.h>
 #include <scheduler.h>
+#include <drivers/pci.h>
 
 static struct IDT_Entry IDT[256];
 static struct idtpt idtp;
@@ -225,6 +226,11 @@ struct cpu_state* irq_handler(struct cpu_state* cpu)
 	else if(cpu->intr == 0x80)
 	{
         linux_syscall_handler(&cpu);
+	}
+	//pci IRQ
+	else if(cpu->intr == 50)
+	{
+        pci_irq_handler();
 	}
 	//unspecified ISRs
 	else
