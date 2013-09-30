@@ -62,7 +62,7 @@ void INIT_SCHEDULER(void)
     process_list = list_create();
     zombie_list = list_create();
     kernel_state = process_create("Kernel INIT", "initiate system", PROCESS_ACTIVE, NULL);
-    current_thread = thread_create(kernel_state, KERNELMODE, 0, NULL, 0, NULL);
+    current_thread = thread_create(kernel_state, KERNELMODE, 0, NULL, 0, 0,0);
 }
 
 /**
