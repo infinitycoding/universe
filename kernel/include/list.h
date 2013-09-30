@@ -12,6 +12,7 @@ typedef struct
 {
 	struct list_node *head;
 	struct list_node *current;
+	bool lock;
 } list_t;
 
 list_t*	list_create(void);

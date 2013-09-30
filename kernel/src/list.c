@@ -8,6 +8,7 @@ list_t *list_create(void)
 	struct list_node *dummy = (struct list_node *) malloc(sizeof(struct list_node));
     list->head = dummy;
     list->current = dummy;
+    list->lock = false;
     dummy->next = dummy;
     dummy->prev = dummy;
     dummy->element = (void *) 0;
@@ -21,11 +22,11 @@ void list_destroy(list_t **list)
 	struct list_node *head = list[0]->head;
     while (node != head)
 	{
-		
+
         node = node->next;
 		free(node);
     }
-	
+
 	free(*list);
 	*list = NULL;
 	return;
