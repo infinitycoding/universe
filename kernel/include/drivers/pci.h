@@ -92,7 +92,7 @@ struct pci_dev
 
 struct pci_isr
 {
-    void (*isr)(void);
+    void (*isr)(pci_base_t);
     struct pci_dev *dev;
 };
 
@@ -104,8 +104,8 @@ inline void pci_writew(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint
 inline void pci_writel(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint32_t value);
 pci_dev_exist(uint8_t bus, uint8_t dev, uint8_t func);
 struct pci_dev *search_device(list_t *device_list, uint16_t vendor, uint16_t device, int *num);
-void install_pci_isr(void (*isr)(void), struct pci_dev *dev);
-int deinstall_pci_isr(void (*isr)(void), struct pci_dev *dev);
+void install_pci_isr(void (*isr)(pci_base_t), struct pci_dev *dev);
+int deinstall_pci_isr(void (*isr)(pci_base_t), struct pci_dev *dev);
 void pci_irq_handler(void);
 void INIT_PCI();
 

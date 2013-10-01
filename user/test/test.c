@@ -15,6 +15,7 @@ void main(int argc, void **argv) {
 
     // read
     linux_syscall(SYS_READ, fd, &str, 12, 0, 0);
+
     print(&str);
 
     // write
