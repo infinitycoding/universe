@@ -198,7 +198,7 @@ list_t *pci_irq_handles;
  * @param isr interrupt service routine
  * @param dev pci device
  */
-void install_pci_isr(void (*isr)(void), struct pci_dev *dev)
+void install_pci_isr(void (*isr)(pci_base_t), struct pci_dev *dev)
 {
     while(pci_irq_handles->lock){}
     pci_irq_handles->lock = true;
@@ -215,7 +215,7 @@ void install_pci_isr(void (*isr)(void), struct pci_dev *dev)
  * @param isr interrupt service routine
  * @param dev pci device
  */
-int deinstall_pci_isr(void (*isr)(void), struct pci_dev *dev)
+int deinstall_pci_isr(void (*isr)(pci_base_t), struct pci_dev *dev)
 {
     while(pci_irq_handles->lock){}
     pci_irq_handles->lock = true;
@@ -238,17 +238,24 @@ int deinstall_pci_isr(void (*isr)(void), struct pci_dev *dev)
 }
 
 
+
+//Linked list of PCI devices
+list_t *pci_dev_list;
+
+
 /**
  * handels pci irqs
  */
 void pci_irq_handler(void)
 {
-    // Todo: Poll devices
+    struct list_node *backup = pci_dev_list->head;
+    list_set_first(pci_dev_list);
+    while(!list_is_last(pci_dev_list))
+    {
+
+        list_next(pci_dev_list);
+    }
 }
-
-
-//Linked list of PCI devices
-list_t *pci_dev_list;
 
 
 #define PRINT_DEV_LIST

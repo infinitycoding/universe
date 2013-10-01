@@ -2,17 +2,16 @@ SRCS = $(shell find -name '*.c')
 OBJS = $(addsuffix .o,$(basename $(SRCS)))
 
 CFLAGS = -m32 -Wall -fno-stack-protector -fno-builtin -nostdinc -I ../include
-LDFLAGS = -melf_i386 -flto -T../link.ld
 
-test.elf:  ../entry.o ../stdlibc/stdlibc.a $(OBJS)
-	$(LD) $(LDFLAGS) -o $@ $^
+stdlibc.a: $(OBJS)
+	ar rcs stdlibc.a  $@ $^
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $^
 
 clean:
 	rm $(OBJS)
-	rm test.elf
+	rm stdlibc.a
 
 .PHONY: clean
 
