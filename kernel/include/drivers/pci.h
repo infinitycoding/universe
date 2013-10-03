@@ -40,9 +40,29 @@
 #define PCI_INTERRUPT   0x3C
 
 
+#define PCI_STATUS_INT          (1 << 3)
+#define PCI_STATUS_CAP_LST      (1 << 4)
+#define PCI_STATUS_66MHZ        (1 << 5)
+#define PCI_STATUS_F2B          (1 << 7)
+#define PCI_STATUS_MDPR         (1 << 8)
+
+#define PCI_COMMAND_IO          1
+#define PCI_COMMAND_MEM         (1 << 1)
+#define PCI_COMMAND_MASTER      (1 << 2)
+#define PCI_COMMAND_SPEC_CYC    (1 << 3)
+#define PCI_COMMAND_MEM_INVAL   (1 << 4)
+#define PCI_COMMAND_VGA_SNOOP   (1 << 5)
+#define PCI_COMMAND_PARITY_ERR  (1 << 6)
+#define PCI_COMMAND_SERR        (1 << 8)
+#define PCI_COMMAND_B2B         (1 << 9)
+#define PCI_COMMAND_INT         (1 << 10)
+
+
+
 #define PCI_STANDART_HEADER  0
 #define PCI_PCI_BRIDGE_HEADER 1
 #define PCI_CARDBUS_BRIDGE_HEADER 2
+
 
 #ifndef _PCI_C_
     extern list_t *pci_dev_list;
@@ -92,7 +112,7 @@ struct pci_dev
 
 struct pci_isr
 {
-    void (*isr)(pci_base_t);
+    void (*isr)(struct pci_dev *dev);
     struct pci_dev *dev;
 };
 
@@ -104,8 +124,8 @@ inline void pci_writew(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint
 inline void pci_writel(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint32_t value);
 pci_dev_exist(uint8_t bus, uint8_t dev, uint8_t func);
 struct pci_dev *search_device(list_t *device_list, uint16_t vendor, uint16_t device, int *num);
-void install_pci_isr(void (*isr)(pci_base_t), struct pci_dev *dev);
-int deinstall_pci_isr(void (*isr)(pci_base_t), struct pci_dev *dev);
+void install_pci_isr(void (*isr)(struct pci_dev *dev), struct pci_dev *dev);
+int deinstall_pci_isr(void (*isr)(struct pci_dev *dev), struct pci_dev *dev);
 void pci_irq_handler(void);
 void INIT_PCI();
 
