@@ -198,7 +198,7 @@ list_t *pci_irq_handles;
  * @param isr interrupt service routine
  * @param dev pci device
  */
-void install_pci_isr(void (*isr)(pci_base_t), struct pci_dev *dev)
+void install_pci_isr(void (*isr)(struct pci_dev *dev), struct pci_dev *dev)
 {
     while(pci_irq_handles->lock){}
     pci_irq_handles->lock = true;
@@ -215,7 +215,7 @@ void install_pci_isr(void (*isr)(pci_base_t), struct pci_dev *dev)
  * @param isr interrupt service routine
  * @param dev pci device
  */
-int deinstall_pci_isr(void (*isr)(pci_base_t), struct pci_dev *dev)
+int deinstall_pci_isr(void (*isr)(struct pci_dev *dev), struct pci_dev *dev)
 {
     while(pci_irq_handles->lock){}
     pci_irq_handles->lock = true;
@@ -252,9 +252,23 @@ void pci_irq_handler(void)
     list_set_first(pci_dev_list);
     while(!list_is_last(pci_dev_list))
     {
-
+        struct pci_dev * current_dev = list_get_current(pci_dev_list);
+        uint16_t status = pci_readw(current_dev->bus, current_dev->dev, current_dev->func, PCI_STATUS);
+        if(status & PCI_STATUS_INT)
+        {
+            list_set_first(pci_irq_handles);
+            while(!list_is_last(pci_irq_handles))
+            {
+                struct pci_isr *current_isr = list_get_current(pci_irq_handles);
+                if(current_isr->dev == current_dev)
+                    current_isr->isr(current_dev);
+                list_next(pci_irq_handles);
+            }
+            pci_writel(current_dev->bus, current_dev->dev, current_dev->func, PCI_STATUS, status ^ 1);
+        }
         list_next(pci_dev_list);
     }
+    printf("PCI-IRQ!\n");
 }
 
 
@@ -303,15 +317,38 @@ void INIT_PCI()
 
                     current_dev->device_ID = pci_readw(bus, dev, func, PCI_DEVICE_ID);
                     current_dev->vendor_ID = pci_readw(bus, dev, func, PCI_VENDOR_ID);
-                    current_dev->header_type = pci_readb(bus, dev ,0, PCI_HEADERTYPE) ^ 0x80;
+                    current_dev->header_type = (pci_readb(bus, dev ,0, PCI_HEADERTYPE) | 0x80)^0x80;
                     current_dev->multifunc = multifunc;
 
                     uint32_t irq_info = pci_readl(bus, dev, func, PCI_INTERRUPT);
                     current_dev->irq_num = (uint8_t) irq_info;
                     current_dev->irq_pin = (uint8_t) (irq_info >> 8);
-                    //Todo: Register Interrupt
 
 
+                    #ifdef PRINT_DEV_LIST
+                        printf("device ID: %04X  vendor ID: %04X  bus: %d  port: %d  function: %d interrupt:%d\n",current_dev->device_ID, current_dev->vendor_ID, current_dev->bus, current_dev->dev, current_dev->func, current_dev->irq_num);
+                    #endif
+
+                    if(current_dev->irq_num < 16 && current_dev->irq_pin && current_dev->irq_num)
+                    {
+                        if(!install_irq(current_dev->irq_num, pci_irq_handler))
+                        {
+                            set_color(RED | BLACK << 4);
+                            printf("WARNING: ");
+                            set_color(WHITE | BLACK << 4);
+                            printf("Could not Reserver IRQ %d for PCI-DEVICE: %d:%d:%d\n", current_dev->irq_num, bus, dev, func);
+
+                            set_color(RED | BLACK << 4);
+                            printf("WARNING: ");
+                            set_color(WHITE | BLACK << 4);
+                            printf("FORCING IRQ %d for the PCI-BUS\n", current_dev->irq_num);
+
+                            deinstall_irq(current_dev->irq_num);
+                            install_irq(current_dev->irq_num, pci_irq_handler);
+
+                        }
+
+                    }
 
                     // Standart Device
                     if(! (current_dev->header_type & 0xFF) )
@@ -326,18 +363,18 @@ void INIT_PCI()
                             current_dev->base_adress[base].type = current_base & 1;
 
                             // save current adress
-                            current_dev->base_adress[base].adress = current_base ^ 1;
+                            current_dev->base_adress[base].adress = (current_base | 1) ^ 1;
 
                             // get reserved bits
                             pci_writel(bus, dev, func, PCI_BASE + (base * 4), 0xFFFFFFFF);
                             uint32_t temp_base = pci_readl(bus, dev, func, PCI_BASE + (base * 4));
+
                             temp_base = (~temp_base) | 1;
                             current_dev->base_adress[base].resb = 0;
-
                             int i;
                             for(i = 0; i < 32; i++)
                             {
-                                if(temp_base & (1 << i) == 0)
+                                if((temp_base & (1 << i)) != 0)
                                     current_dev->base_adress[base].resb++;
                                 else
                                     break;
@@ -355,14 +392,14 @@ void INIT_PCI()
                         //TODO: Write Cases for Bridges
                     }
 
-                    #ifdef PRINT_DEV_LIST
-                        printf("device ID: %04X  vendor ID: %04X  bus: %d  port: %d  function: %d\n",current_dev->device_ID, current_dev->vendor_ID, current_dev->bus, current_dev->dev, current_dev->func);
-                    #endif
-
                     list_push_front(pci_dev_list, current_dev);
                 }
             }
         }
     }
     pci_dev_list->lock = false;
+
+    #ifdef PRINT_DEV_LIST
+        printf("\n");
+    #endif
 }
