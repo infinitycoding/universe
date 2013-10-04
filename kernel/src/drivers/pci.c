@@ -355,7 +355,7 @@ void INIT_PCI()
                     {
                         int base;
 
-                        for(base = 0; base < 6; base ++)
+                        for(base = 0; base < 6; base++)
                         {
                             uint32_t current_base = pci_readl(bus, dev, func, PCI_BASE + (base * 4));
 
