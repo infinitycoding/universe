@@ -1,4 +1,5 @@
 #include <universe.h>
+#include <math.h>
 
 int thread(int argc, void **argv)
 {
@@ -32,6 +33,8 @@ void main(int argc, void **argv) {
 
     thread_launch(thread, 0, NULL);
     //linux_syscall(SYS_FORK, 0, 0, 0, 0, 0);
+
+    int n = abs(-4);
 
     asm volatile("_stop: jmp _stop");
     //exit(0);

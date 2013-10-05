@@ -4,7 +4,7 @@ OBJS = $(addsuffix .o,$(basename $(SRCS)))
 CFLAGS = -m32 -Wall -fno-stack-protector -fno-builtin -nostdinc -I ../include
 LDFLAGS = -melf_i386 -flto -T../link.ld
 
-test.elf:  ../entry.o ../stdlibc/stdlibc.a $(OBJS)
+test.elf:  ../entry.o $(OBJS) ../stdlibc/stdlibc.a
 	$(LD) $(LDFLAGS) -o $@ $^
 
 %.o: %.c

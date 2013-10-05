@@ -4,7 +4,7 @@ OBJS = $(addsuffix .o,$(basename $(SRCS)))
 CFLAGS = -m32 -Wall -fno-stack-protector -fno-builtin -nostdinc -I ../include
 
 stdlibc.a: $(OBJS)
-	ar rcs stdlibc.a  $@ $^
+	ar -rcs $@ $^
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $^
