@@ -91,7 +91,7 @@ double log(double y)
 **/
 double pow(double base, double exponent)
 {
-    return exp(exponent * ln(base));
+    return exp(exponent * log(base));
 }
 
 /**

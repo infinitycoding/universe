@@ -48,7 +48,6 @@
 #include <drivers/cmos.h>
 #include <drivers/video.h>
 #include <drivers/pci.h>
-#include <drivers/rtl8139.h>
 
 #include "memory_layout.h"
 
@@ -102,7 +101,6 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	INIT_CPUID();
 	printf("\n");
 	INIT_PCI();
-	INIT_RTL8139();
 
 	// Load modules
 
