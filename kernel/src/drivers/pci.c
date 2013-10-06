@@ -323,6 +323,7 @@ void INIT_PCI()
                     uint32_t irq_info = pci_readl(bus, dev, func, PCI_INTERRUPT);
                     current_dev->irq_num = (uint8_t) irq_info;
                     current_dev->irq_pin = (uint8_t) (irq_info >> 8);
+                    current_dev->locked = false;
 
 
                     #ifdef PRINT_DEV_LIST
