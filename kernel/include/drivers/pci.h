@@ -97,6 +97,7 @@ struct pci_dev
     uint8_t bus;
     uint8_t dev;
     uint8_t func;
+    bool locked;
     uint16_t device_ID;
     uint16_t vendor_ID;
     uint8_t reversion_ID;
