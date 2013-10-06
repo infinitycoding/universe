@@ -204,5 +204,6 @@ void fork(struct cpu_state **cpu)
           memcpy((void*)new_pt, (void*)pt, 4096);
         }
     }
-    printf("forked!\n");
+    new_thread->state->eax = 0;
+    current_thread->state->eax = new_process->pid;
 }
