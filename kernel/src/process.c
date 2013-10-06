@@ -78,7 +78,7 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
         {
             struct child *new_child = malloc(sizeof(struct child));
             new_child->process = state;
-            new_child->return_value = 0;
+            new_child->status = 0;
             list_push_front(state->parent->children, new_child);
         }
 
@@ -117,6 +117,19 @@ void process_kill(struct process_state *process)
         struct child *current_child = list_pop_front(process->children);
         process_kill(current_child->process);
         free(current_child);
+    }
+
+
+    list_set_first(process->parent->children);
+    while(!list_is_empty(process->parent->children))
+    {
+        struct child *current_child = list_get_current(process->parent->children);
+        if(current_child->process = process)
+        {
+            current_child->process = 0;
+            break;
+        }
+        list_next(process->parent->children);
     }
 
     list_destroy(&process->ports);
@@ -177,7 +190,7 @@ void exit(struct cpu_state **cpu)
         struct child *current_child = list_get_current(current_thread->process->parent->children);
         if(current_child->process == current_thread->process)
         {
-            current_child->return_value = (*cpu)->ebx;
+            current_child->status = (*cpu)->ebx;
             break;
         }
         list_next(current_thread->process->parent->children);
@@ -189,7 +202,7 @@ void exit(struct cpu_state **cpu)
 
 /**
  * creates a new child process (linux function for the API)
- * @param cpu registers of the corrent process
+ * @param cpu registers of the current process
  */
 void fork(struct cpu_state **cpu)
 {
@@ -207,3 +220,42 @@ void fork(struct cpu_state **cpu)
     new_thread->state->eax = 0;
     current_thread->state->eax = new_process->pid;
 }
+
+/**
+ *  wait for the termination of a child (linux function for the API)
+ *  @param cpu registers of the current process
+ *  Not completed
+ */
+
+void waitpid(struct cpu_state **cpu)
+{
+    if(list_is_empty(current_thread->process->children))
+    {
+
+
+    }
+    else
+    {
+        list_set_first(current_thread->process->children);
+        while(!list_is_last(current_thread->process->children))
+        {
+            struct child *current_child = list_get_current(current_thread->process->children);
+            if(current_child->process == NULL) //Child is dead
+            {
+                if( ((int) (*cpu)->ebx) == -1)
+                {
+
+
+                }
+                else if(((int) (*cpu)->ebx) > 0 && (*cpu)->ebx == current_thread->process->pid)
+                {
+
+                }
+            }
+            list_next(current_thread->process->children);
+        }
+    }
+}
+
+
+

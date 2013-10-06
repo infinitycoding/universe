@@ -50,7 +50,7 @@ struct process_state
 
 struct child
 {
-    int return_value;
+    int status;
     struct process_state *process;
 };
 
