@@ -1,17 +1,19 @@
-all: kernel user iso-img stdlibc
+all: kernel user iso-img
 
 kernel:
 	$(MAKE) -C kernel/src
 	cp kernel/src/kernel32.elf build/kernel32.elf
 
+ultrashell:
+	$(MAKE) -C user/ultrashell
+	cp user/ultrashell/ultrashell.elf build/ultrashell.elf
+
 stdlibc:
 	$(MAKE) -C user/stdlibc
 
-user: stdlibc
+user: stdlibc ultrashell
 	$(MAKE) -C user
 	cp user/test/test.elf build/test.elf
-
-
 
 iso-img:
 	mkisofs -R -b boot/grub/stage2_eltorito -no-emul-boot -boot-load-size 4 -boot-info-table -o cdrom.iso build
@@ -23,6 +25,8 @@ clean:
 	$(MAKE) -C kernel/src clean
 	$(MAKE) -C user clean
 	$(MAKE) -C user/stdlibc clean
+	$(MAKE) -C user/ultrashell clean
+
 
 
 .PHONY: all kernel stdlibc user clean qemu
