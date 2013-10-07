@@ -2,6 +2,6 @@ timeout 10
 
 title Universe
     kernel /kernel32.elf
-    module /ultrashell.elf
+    module /test.elf
     boot
 
