@@ -12,6 +12,7 @@ Thumbs.db
 .directory
 .cproject
 .project
+.init.c.swp
 *.c~
 *.iso
 *.lst~
