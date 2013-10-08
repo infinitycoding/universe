@@ -123,7 +123,7 @@ inline uint32_t pci_readl(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset);
 inline void pci_writeb(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint8_t value);
 inline void pci_writew(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint16_t value);
 inline void pci_writel(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint32_t value);
-struct pci_dev *pci_dev_exist(uint8_t bus, uint8_t dev, uint8_t func);
+bool pci_dev_exist(uint8_t bus, uint8_t dev, uint8_t func);
 struct pci_dev *search_device(list_t *device_list, uint16_t vendor, uint16_t device, int *num);
 void install_pci_isr(void (*isr)(struct pci_dev *dev), struct pci_dev *dev);
 int deinstall_pci_isr(void (*isr)(struct pci_dev *dev), struct pci_dev *dev);
