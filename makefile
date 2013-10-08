@@ -13,7 +13,7 @@ user: libs
 	@cp user/test/test.elf build/test.elf
 
 iso-img:
-	@genisoimage -R -b boot/grub/stage2_eltorito -no-emul-boot -boot-load-size 4 -boot-info-table -o cdrom.iso build
+	@genisoimage -R -b boot/grub/stage2_eltorito -input-charset utf-8 -no-emul-boot -boot-load-size 4 -boot-info-table -o cdrom.iso build
 
 qemu: kernel user iso-img
 	qemu-system-i386 -cdrom cdrom.iso -net nic,model=rtl8139 -net user
