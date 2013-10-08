@@ -4,10 +4,10 @@ kernel:
 	@$(MAKE) -C kernel/src
 	@cp kernel/src/kernel32.elf build/kernel32.elf
 
-stdlibc:
-	@$(MAKE) -C user/stdlibc
+libs:
+	@$(MAKE) -C libs
 
-user: stdlibc
+user: libs
 	@$(MAKE) -C user
 	@cp user/ultrashell/ultrashell.elf build/ultrashell.elf
 	@cp user/test/test.elf build/test.elf
@@ -21,8 +21,9 @@ qemu: kernel user iso-img
 clean:
 	@$(MAKE) -C kernel/src clean
 	@$(MAKE) -C user clean
+	@$(MAKE) -C libs clean
 
 
 
-.PHONY: all kernel stdlibc user clean qemu
+.PHONY: all kernel libs user clean qemu
 
