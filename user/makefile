@@ -7,6 +7,6 @@ all:
 clean:
 	@$(MAKE) -C test clean
 	@$(MAKE) -C ultrashell clean
-	@rm entry.o
+	@rm entry.o -f
 
 
