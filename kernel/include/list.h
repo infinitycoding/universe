@@ -20,7 +20,7 @@ void 	list_destroy(list_t **list);
 void 	list_splice(struct list_node *start, struct list_node *end, struct list_node *target);
 list_t*	list_push_back(list_t *list, void *element);
 list_t*	list_push_front(list_t *list, void *element);
-void*	list_pop_back(list_t *list);
+void*	list_pop_pack(list_t *list);
 void*	list_pop_front(list_t *list);
 list_t*	list_insert_after(list_t *list, void *element);
 list_t*	list_insert_before(list_t *list, void *element);

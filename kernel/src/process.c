@@ -5,7 +5,6 @@
 #include <scheduler.h>
 #include <paging.h>
 #include <memory_layout.h>
-#include <drivers/timer.h>
 
 extern pd_t *pd_kernel;
 extern struct process_state *kernel_state;
@@ -125,7 +124,7 @@ void process_kill(struct process_state *process)
     while(!list_is_empty(process->parent->children))
     {
         struct child *current_child = list_get_current(process->parent->children);
-        if(current_child->process == process)
+        if(current_child->process = process)
         {
             current_child->process = 0;
             break;
@@ -208,15 +207,14 @@ void exit(struct cpu_state **cpu)
 void fork(struct cpu_state **cpu)
 {
     struct process_state *new_process = process_create(current_thread->process->name ,current_thread->process->desc ,current_thread->process->flags ,current_thread->process);
-    struct thread_state *new_thread = thread_create(new_process, !(current_thread->flags & THREAD_KERNELMODE), 0, *cpu, 0, NULL, NULL);
+    struct thread_state *new_thread = thread_create(new_process, !(current_thread->flags & THREAD_KERNELMODE), NULL, *cpu, 0, NULL, NULL);
     int i;
     for(i = 0; i < (MEMORY_LAYOUT_KERNEL_START >> 22); i++)
     {
-        if(current_thread->pagedir->entries[i])
-        {
-            pt_t new_pt = pt_create(new_thread->pagedir, i, PTE_PRESENT | PTE_USER);
-            pt_t pt = pt_get(current_thread->pagedir, i, PTE_PRESENT | PTE_USER);
-            memcpy((void*)new_pt, (void*)pt, 4096);
+        if(current_thread->pagedir->entries[i]) {
+          pt_t *new_pt = pt_create(new_thread->pagedir, i, PTE_PRESENT | PTE_USER);
+          pt_t *pt = pt_get(current_thread->pagedir, i, PTE_PRESENT | PTE_USER);
+          memcpy((void*)new_pt, (void*)pt, 4096);
         }
     }
     new_thread->state->eax = 0;
