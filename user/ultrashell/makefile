@@ -5,14 +5,14 @@ CFLAGS = -m32 -Wall -fno-stack-protector -fno-builtin -nostdinc -I ../include -I
 LDFLAGS = -melf_i386 -flto -T ../link.ld
 
 ultrashell.elf: ../entry.o $(OBJS) ../stdlibc/stdlibc.a
-	$(LD) $(LDFLAGS) -o $@ $^
+	@$(LD) $(LDFLAGS) -o $@ $^
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $^
+	@$(CC) $(CFLAGS) -c -o $@ $^
 
 clean:
-	rm $(OBJS)
-	rm ultrashell.elf
+	@rm $(OBJS)
+	@rm ultrashell.elf
 
 .PHONY: clean
 
