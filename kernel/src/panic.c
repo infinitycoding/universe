@@ -60,19 +60,6 @@ int cpu_dump(struct cpu_state* cpu, char *str)
 }
 
 
-// just used in case of untreated exceptions
-void exc_panic(struct cpu_state* cpu)
-{
-	char message[512];
-	char *exception = exception_messages[cpu->intr];
-	int len = 0;
-
-	len = sprintf(message, "%s\n\n", exception, cpu->error);
-	cpu_dump(cpu, message + len);
-
-	panic(message);
-}
-
 void panic(char *message)
 {
 	char buffer[1024];
@@ -83,15 +70,15 @@ void panic(char *message)
 	len += sprintf(buffer + len, "      %c", 201);
 	for(i=0;i<66;i++) len += sprintf(buffer + len, "%c", 205);
 	len += sprintf(buffer + len, "%c      \n", 187);
-	
-	len += sprintf(buffer + len, 
+
+	len += sprintf(buffer + len,
 		       "      %c                             Universe                             %c      \n",
 	       186, 186);
-	
+
 	len += sprintf(buffer + len, "      %c", 200);
 	for(i=0;i<66;i++) len += sprintf(buffer + len, "%c", 205);
 	len += sprintf(buffer + len, "%c      \n", 188);
-	
+
 	len += sprintf(buffer + len,
 // 		"      %c==================================================================%c      \n"
 // 		"      |                             Universe                             |      \n"
@@ -124,8 +111,21 @@ void panic(char *message)
 	gotoxy(0, (25 / 2) - (lines / 2) - 1);
 	puts(buffer);
 	printf("\n\n      ");
-	
+
 	halt();
+}
+
+// just used in case of untreated exceptions
+void exc_panic(struct cpu_state* cpu)
+{
+	char message[512];
+	char *exception = exception_messages[cpu->intr];
+	int len = 0;
+
+	len = sprintf(message, "%s\n\n", exception);
+	cpu_dump(cpu, message + len);
+
+	panic(message);
 }
 
 /* easter egg! */
