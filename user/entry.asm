@@ -1,6 +1,6 @@
 extern main
 
-global start
+global _start
 _start:
 	call main
 	mov ebx, eax
