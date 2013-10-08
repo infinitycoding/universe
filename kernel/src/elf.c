@@ -27,10 +27,12 @@
 #include <memory_layout.h>
 #include <process.h>
 #include <thread.h>
+#include <printf.h>
+#include <string.h>
 
 extern pd_t *pd_current;
 
-struct process *load_elf(void *image) {
+struct process_state *load_elf(void *image) {
 	struct elf_header *header = image;
 	struct elf_program_header *ph;
 
