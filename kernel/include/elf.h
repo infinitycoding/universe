@@ -70,13 +70,13 @@ struct elf_header {
 	uint16_t machine;
 	uint32_t version;
 	uint32_t entry;
-	
+
 	uint32_t ph_offset;
 	uint32_t sh_offset;
-	
+
 	uint32_t flags;
 	uint16_t header_size;
-	
+
 	uint16_t ph_entry_size;
 	uint16_t ph_entry_count;
 	uint16_t sh_entry_size;
@@ -109,6 +109,6 @@ struct elf_program_header {
 	uint32_t alignment;
 } __attribute__((packed));
 
-struct process *load_elf(void *image);
+struct process_state *load_elf(void *image);
 
 #endif
