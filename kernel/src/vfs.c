@@ -27,9 +27,9 @@
 #include <vfs.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <thread.h>
 #include <memory_layout.h>
 #include <paging.h>
+#include <thread.h>
 
 extern struct thread_state *current_thread;
 
@@ -135,12 +135,12 @@ vfs_dentry_t* vfs_create_dir_entry(vfs_inode_t *entry_inode) {
 int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
 	int writable = 0;
 	if ((node->stat.st_uid == uid) &&
-	    (node->stat.st_mode & S_IWUSR)) 
+	    (node->stat.st_mode & S_IWUSR))
 	{
 		writable = 1;
-	} 
+	}
 	else if
-	    ((node->stat.st_gid == gid) && 
+	    ((node->stat.st_gid == gid) &&
 	    (node->stat.st_mode & S_IWGRP))
 	{
 		writable = 1;
@@ -212,10 +212,10 @@ int vfs_stat(vfs_inode_t *node, struct stat *buffer) {
  * @param node node
  * @param modus access to check
  *
- * @return 
+ * @return
  */
 int vfs_access(vfs_inode_t *node, mode_t modus) {
-	if (node->stat.st_uid == uid) 
+	if (node->stat.st_uid == uid)
 	{
 		if ((modus & R_OK) &&
 		    !(node->stat.st_mode & S_IRUSR))
@@ -227,7 +227,7 @@ int vfs_access(vfs_inode_t *node, mode_t modus) {
 		    !(node->stat.st_mode & S_IXUSR))
 			return -1;
 	}
-	else if (node->stat.st_gid == gid) 
+	else if (node->stat.st_gid == gid)
 	{
 		if ((modus & R_OK) &&
 		    !(node->stat.st_mode & S_IRGRP))
@@ -263,19 +263,18 @@ int vfs_access(vfs_inode_t *node, mode_t modus) {
  */
 vfs_inode_t *vfs_lookup_path(char *path) {
 	vfs_inode_t *parent = root;
-	vfs_inode_t *inode = NULL;
-	
+
 	if(path[0] != '/') {
 		parent = current_thread->process->cwd;
 	} else {
 		path++;
 	}
-	
+
 	int len = strlen(path);
 	if(path[len-1] == '/') {
 		path[len-1] = '\0';
 	}
-	
+
 	char delimiter[] = "/";
 	char *str = (char*) strtok(path, delimiter);
 	while(str != NULL) {
@@ -304,7 +303,7 @@ vfs_inode_t *vfs_lookup_path(char *path) {
 
 struct fd *get_fd(int fd) {
 	struct fd *desc = NULL;
-	struct list_node *node = current_thread->process->files->head->next;	
+	struct list_node *node = current_thread->process->files->head->next;
 	int i;
 	for(i = 0; i < list_length(current_thread->process->files); i++) {
 		desc = node->element;
@@ -314,12 +313,12 @@ struct fd *get_fd(int fd) {
 			node = node->next;
 		}
 	}
-	
+
 	return NULL;
 }
 
 void open(struct cpu_state **cpu) {
-	char *path = (*cpu)->ebx;
+	char *path = (char *) (*cpu)->ebx;
 	int oflags = (*cpu)->ecx;
 	mode_t mode = (*cpu)->edx;
 
@@ -340,16 +339,16 @@ void open(struct cpu_state **cpu) {
 			return;
 		}
 	}
-	
+
 	if(oflags & O_TRUNC) {
 		memset(inode->base, 0, inode->length);
 	}
-	
+
 	struct fd *desc = malloc(sizeof(struct fd));
 	desc->id = list_length(current_thread->process->files);
 	desc->mode = mode;
 	desc->flags = oflags;
-	desc->pos = 0;	
+	desc->pos = 0;
 	desc->inode = inode;
 
 	list_push_back(current_thread->process->files, desc);
@@ -359,8 +358,8 @@ void open(struct cpu_state **cpu) {
 
 void close(struct cpu_state **cpu) {
 	int fd = (*cpu)->ebx;
-	
-	struct list_node *node = current_thread->process->files->head->next;	
+
+	struct list_node *node = current_thread->process->files->head->next;
 	int i;
 	for(i = 0; i < list_length(current_thread->process->files); i++) {
 		struct fd *desc = node->element;
@@ -371,7 +370,7 @@ void close(struct cpu_state **cpu) {
 			node = node->next;
 		}
 	}
-	
+
 	(*cpu)->eax = -1;
 }
 
@@ -385,7 +384,7 @@ void read(struct cpu_state **cpu) {
 		(*cpu)->eax = -1;
 		return;
 	}
-	
+
 	if(desc->flags & O_RDONLY ||
 	   desc->flags & O_RDWR)
 	{
@@ -421,7 +420,7 @@ void write(struct cpu_state **cpu) {
 			desc->pos = 0;
 			desc->flags |= O_APPEND;
 		}
-		
+
 		vfs_inode_t *inode = desc->inode;
 		int ret = vfs_write(inode, desc->pos, buf, len);
 		(*cpu)->eax = ret;

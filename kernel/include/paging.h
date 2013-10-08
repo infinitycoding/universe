@@ -26,6 +26,7 @@
 
 #include <stdint.h>
 #include <multiboot.h>
+#include <cpu.h>
 
 enum CR3_Flags {
 	CR3_WRITETHOUGH	= 8,
