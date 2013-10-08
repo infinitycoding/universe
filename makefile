@@ -11,8 +11,10 @@ ultrashell:
 stdlibc:
 	$(MAKE) -C user/stdlibc
 
-user: stdlibc ultrashell
+user: stdlibc
 	$(MAKE) -C user
+	$(MAKE) -C user/ultrashell
+	cp user/ultrashell/ultrashell.elf build/ultrashell.elf
 	cp user/test/test.elf build/test.elf
 
 iso-img:
