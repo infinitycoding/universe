@@ -46,7 +46,7 @@ void INIT_PAGING(struct multiboot_struct *mb_info) {
 	install_exc(INT_PAGE_FAULT, pd_fault_handler);
 
 	paddr_t pd_paddr = pmm_alloc_page_limit(0);
-	pd_kernel = pd_paddr + MEMORY_LAYOUT_KERNEL_START;
+	pd_kernel = (pd_t *) pd_paddr + MEMORY_LAYOUT_KERNEL_START;
 
 	paddr_t pframe = pmm_alloc_page_limit(0);
 	vaddr_t vframe = pframe + MEMORY_LAYOUT_KERNEL_START;
@@ -54,15 +54,15 @@ void INIT_PAGING(struct multiboot_struct *mb_info) {
 	vaddr_t pt_vframe = MEMORY_LAYOUT_PAGING_STRUCTURES_START;
 
 	pd_kernel->phys_addr = pframe;
-	pd_kernel->entries = vframe;
+	pd_kernel->entries = (pde_t *) vframe;
 	pd_kernel->entries[PDE_INDEX(pt_vframe)] = pframe | PTE_WRITABLE | PDE_PRESENT;
-	
+
 	pd_map_range(pd_kernel, 0, MEMORY_LAYOUT_KERNEL_START, NUM_PAGES(MEMORY_LAYOUT_DIRECT_MAPPED), PTE_WRITABLE);// kernel
 	pd_map(pd_kernel, 0xB8000, 0xC00B8000, PTE_WRITABLE | PTE_USER);// videomemory (0xB8000 - 0xBFFFF)
 	// multiboot
-	pd_map(pd_kernel, (vaddr_t)mb_info & (~0xfff) - MEMORY_LAYOUT_KERNEL_START, ((paddr_t)mb_info&(~0xfff)), PTE_WRITABLE);
-	pd_map(pd_kernel, mb_info->mods_addr & (~0xfff) - MEMORY_LAYOUT_KERNEL_START, mb_info->mods_addr & (~0xfff), PTE_WRITABLE);
-	
+	pd_map(pd_kernel, ((vaddr_t)mb_info & (~0xfff)) - MEMORY_LAYOUT_KERNEL_START, ((paddr_t)mb_info&(~0xfff)), PTE_WRITABLE);
+	pd_map(pd_kernel, (mb_info->mods_addr & (~0xfff)) - MEMORY_LAYOUT_KERNEL_START, mb_info->mods_addr & (~0xfff), PTE_WRITABLE);
+
 	int i;
 	uintptr_t addr;
 	struct mods_add *modules = (void*) mb_info->mods_addr;
@@ -73,12 +73,12 @@ void INIT_PAGING(struct multiboot_struct *mb_info) {
 			addr += PAGE_SIZE;
 		}
 	}
-	
-	void *pd = pd_automap_kernel(pd_kernel, pframe, PTE_WRITABLE);
-	void *ct = pd_automap_kernel(pd_kernel, pd_paddr, PTE_WRITABLE);
+
+	void *pd = (void *) pd_automap_kernel(pd_kernel, pframe, PTE_WRITABLE);
+	void *ct = (void *) pd_automap_kernel(pd_kernel, pd_paddr, PTE_WRITABLE);
 	pd_kernel->entries = pd;
 	pd_kernel = ct;
-	
+
 	pd_current = pd_kernel;
 	asm volatile("mov %0, %%cr3" : : "r" (pframe));
 }
@@ -93,17 +93,17 @@ pd_t *pd_create(void) {
 	uintptr_t paddr = (uintptr_t) pmm_alloc_page();
 	pd_t *pd = pd_automap_kernel(pd_current, paddr, PTE_PRESENT | PTE_WRITABLE);
 	memset(pd, 0, PAGE_SIZE);
-  	
+
 	uintptr_t entries_paddr = (uintptr_t) pmm_alloc_page();
 	uintptr_t entries = pd_automap_kernel(pd_current, entries_paddr, PTE_PRESENT | PTE_WRITABLE);
 	memset(entries, 0, PAGE_SIZE);
-	
+
 	pd->entries = (pde_t*) entries;
 	pd->phys_addr = entries_paddr;
-	
+
 	pd_update(pd);
 	pd->entries[PDE_INDEX(MEMORY_LAYOUT_PAGING_STRUCTURES_START)] = (uint32_t) entries_paddr | PTE_PRESENT | PTE_WRITABLE;
-	
+
 	return pd;
 }
 
@@ -251,7 +251,7 @@ int pd_map(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags) {
 void pd_unmap(pd_t *pd, vaddr_t frame) {
 	pt_t pt = pt_get(pd, PDE_INDEX(frame), PDE_WRITABLE);
 	pt[PTE_INDEX(frame)] = 0;
-	
+
 	int pt_emty = 1, i;
 	for(i = 0; i < PT_LENGTH; i++) {
 	  if(pt[i]) {
@@ -259,7 +259,7 @@ void pd_unmap(pd_t *pd, vaddr_t frame) {
 	    break;
 	  }
 	}
-	
+
 	if(pt_emty) {
 	  pt_destroy(pd, PDE_INDEX(frame));
 	}
@@ -305,7 +305,7 @@ vaddr_t pd_automap_kernel_range(pd_t *pd, paddr_t pframe, int pages, uint8_t fla
 		vaddr_t vaddr = vaddr_start + i*PAGE_SIZE;
 		pd_map(pd_current, paddr, vaddr, flags);
 	}
-	
+
 	return vaddr_start;
 }
 
@@ -335,7 +335,7 @@ vaddr_t pd_automap_user_range(pd_t *pd, paddr_t pframe, int pages, uint8_t flags
 		vaddr_t vaddr = vaddr_start + i*PAGE_SIZE;
 		pd_map(pd_current, paddr, vaddr, flags);
 	}
-	
+
 	return vaddr_start;
 }
 
@@ -355,17 +355,17 @@ vaddr_t vaddr_find(pd_t *pd, int num, vaddr_t limit_low, vaddr_t limit_high, int
 	  if(pages_found >= num) { \
 	    return vaddr; \
 	  }
-  
+
   vaddr_t vaddr = NULL;
   int page = 0;
   int pages_found = 0;
-  
+
   uint32_t pd_index = PDE_INDEX(limit_low);
   uint32_t pt_index = PTE_INDEX(limit_low);
   uint32_t pd_index_end = PDE_INDEX(limit_high);
   uint32_t pt_index_end = PTE_INDEX(limit_high);
   pt_t pt;
-  
+
   while(pd_index <= pd_index_end) {
     if(pd->entries[pd_index] & PTE_PRESENT) {
       pt = pt_get(pd, pd_index, flags);

@@ -48,6 +48,7 @@
 #include <drivers/cmos.h>
 #include <drivers/video.h>
 #include <drivers/pci.h>
+#include <elf.h>
 
 #include "memory_layout.h"
 
@@ -106,13 +107,13 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 
 
 
-	int i,j;
-	struct mods_add* modules = mb_info->mods_addr;
+	int i;
+	struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
         for(i = 0; i < mb_info->mods_count; i++) {
         	size_t len = modules[i].mod_end - modules[i].mod_start;
         	size_t pages = NUM_PAGES(len);
-        	void *mod = pd_automap_kernel_range(pd_current, modules[i].mod_start, pages, PTE_WRITABLE);
-		struct process *proc = load_elf(mod);
+        	void *mod = (void*)pd_automap_kernel_range(pd_current,(paddr_t) modules[i].mod_start, pages, PTE_WRITABLE);
+            load_elf(mod);
         }
 
     //thread_kill(current_thread);
