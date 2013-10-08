@@ -5,6 +5,8 @@
 #include <paging.h>
 #include <string.h>
 #include <scheduler.h>
+#include <pmm.h>
+#include <list.h>
 
 extern list_t *running_threads;
 extern struct thread_state* current_thread;
@@ -67,10 +69,10 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
             pd_map(new_thread->pagedir, pframe, MEMORY_LAYOUT_STACK_TOP-0x1000, PTE_PRESENT | PTE_WRITABLE | PTE_USER);
             new_state->esp = (uint32_t) MEMORY_LAYOUT_STACK_TOP - 12;
 
-            uint32_t *stack = pd_automap_kernel(pd_get_current(), pframe, PTE_PRESENT | PTE_WRITABLE | PTE_USER) + 0x1000;
-            *--stack = argv;
-            *--stack = argc;
-            *--stack = return_address;
+            uint32_t *stack = (uint32_t *) pd_automap_kernel(pd_get_current(), pframe, PTE_PRESENT | PTE_WRITABLE | PTE_USER) + 0x1000;
+            *--stack = (uint32_t) argv;
+            *--stack = (uint32_t) argc;
+            *--stack = (uint32_t) return_address;
 	}
 
 		new_state->cs = 0x1b;
@@ -80,7 +82,7 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     if(list_is_empty(process->zombie_tids))
         new_thread->tid = process->tid_counter++;
     else
-        new_thread->tid = list_pop_back(process->zombie_tids);
+        new_thread->tid = (tid_t)list_pop_back(process->zombie_tids);
 
 
     list_push_front(process->threads,new_thread);
@@ -118,7 +120,7 @@ void thread_kill_sub(struct thread_state *thread)
     free(thread->state);
     if(! (thread->process->flags & PROCESS_ZOMBIE))
     {
-        list_push_front(thread->process->zombie_tids,thread->tid);
+        list_push_front(thread->process->zombie_tids,(void *) thread->tid);
         list_set_first(thread->process->threads);
         while(!list_is_last(thread->process->threads))
         {
@@ -143,7 +145,7 @@ void thread_exit(struct cpu_state **cpu)
 
 void launch_thread(struct cpu_state **cpu)
 {
-    thread_create(current_thread->process, USERMODE, (*cpu)->ebx, NULL, (*cpu)->ecx, (*cpu)->edx, (*cpu)->esi);
+    thread_create(current_thread->process, USERMODE, (*cpu)->ebx, NULL, (*cpu)->ecx, (void **)(*cpu)->edx, (void *)(*cpu)->esi);
 }
 
 
