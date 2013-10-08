@@ -21,6 +21,8 @@
 */
 
 #include <atoi.h>
+#include <math.h>
+#include <ctype.h>
 /*
 	TODO: Make it compatible with both unsigned int and signed int
 	TODO: implement 64-bit values

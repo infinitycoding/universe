@@ -28,6 +28,8 @@
 #include <pmm.h>
 #include <drivers/video.h>
 #include <memory_layout.h>
+#include <string.h>
+#include <panic.h>
 
 static inline void paging_flush_tlb(vaddr_t addr);
 
@@ -91,12 +93,12 @@ void INIT_PAGING(struct multiboot_struct *mb_info) {
  */
 pd_t *pd_create(void) {
 	uintptr_t paddr = (uintptr_t) pmm_alloc_page();
-	pd_t *pd = pd_automap_kernel(pd_current, paddr, PTE_PRESENT | PTE_WRITABLE);
+	pd_t *pd = (pd_t *) pd_automap_kernel(pd_current, paddr, PTE_PRESENT | PTE_WRITABLE);
 	memset(pd, 0, PAGE_SIZE);
 
 	uintptr_t entries_paddr = (uintptr_t) pmm_alloc_page();
 	uintptr_t entries = pd_automap_kernel(pd_current, entries_paddr, PTE_PRESENT | PTE_WRITABLE);
-	memset(entries, 0, PAGE_SIZE);
+	memset((void*)entries, 0, PAGE_SIZE);
 
 	pd->entries = (pde_t*) entries;
 	pd->phys_addr = entries_paddr;
@@ -156,7 +158,7 @@ pt_t pt_get(pd_t *pd, int index, uint8_t flags) {
 	if(pd_current != NULL) {
 	  if(pd != pd_current) {
 	    pt = (pt_t) PT_PADDR(index);
-	    pt = pd_automap_kernel(pd_current, pt, flags);
+	    pt = (vaddr_t) pd_automap_kernel(pd_current,(paddr_t) pt, flags);
 	  } else {
 	    pt = (pt_t) PT_VADDR(index);
 	  }
@@ -177,7 +179,7 @@ pt_t pt_get(pd_t *pd, int index, uint8_t flags) {
  * @return pagetable
  */
 pt_t pt_create(pd_t *pd, int index, uint8_t flags) {
-	pt_t pt = pmm_alloc_page_limit(0);
+	pt_t pt = (pt_t) pmm_alloc_page_limit(0);
 	pd->entries[index] = (pde_t) pt | flags | PDE_PRESENT;
 
 	pt = pt_get(pd, index, flags | PDE_PRESENT);
@@ -356,7 +358,7 @@ vaddr_t vaddr_find(pd_t *pd, int num, vaddr_t limit_low, vaddr_t limit_high, int
 	    return vaddr; \
 	  }
 
-  vaddr_t vaddr = NULL;
+  vaddr_t vaddr = 0;
   int page = 0;
   int pages_found = 0;
 
@@ -386,7 +388,7 @@ vaddr_t vaddr_find(pd_t *pd, int num, vaddr_t limit_low, vaddr_t limit_high, int
     pd_index++;
   }
 
-  return NULL;
+  return 0;
 }
 
 /** FIXME: really needed? */
@@ -398,7 +400,7 @@ paddr_t vaddr2paddr(pd_t * const pd, vaddr_t vaddr)
 // 	pt_t *pt = (pt_t *)pd_map_fast(pd->entries[pd_index] & PDE_FRAME, 0);
 //
 // 	return (paddr_t)(pd_map_fast(pt[pt_index] & PTE_FRAME, 0) + (vaddr & 0xFFF));
-	return NULL;
+	return 0;
 }
 
 /**
@@ -427,12 +429,11 @@ void pd_fault_handler(struct cpu_state **cpu_p)
 {
     struct cpu_state *cpu = cpu_p[0];
 	char message[512];
-	int len = 0;
 
 	uint32_t addr;
 	asm ("mov %%cr2, %0" : "=r" (addr));
 
-	len = sprintf(message, "Page fault in %s space:\nError %s address %#010X: %s.\nEIP: %#010X", ((cpu->error & 4) ? "user" : "kernel"),
+	sprintf(message, "Page fault in %s space:\nError %s address %#010X: %s.\nEIP: %#010X", ((cpu->error & 4) ? "user" : "kernel"),
 		      ((cpu->error & 2) ? "writing to" : "reading at"), addr, ((cpu->error & 1) ? "Access denied" : "Nonpaged area"), cpu->eip);
 
 	panic(message);
