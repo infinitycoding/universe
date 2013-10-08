@@ -26,6 +26,7 @@
 #include <idt.h>
 #include <drivers/cmos.h>
 #include <drivers/timer.h>
+#include <printf.h>
 
 time_t current_time;
 cmos_data_t *cmos;
