@@ -32,7 +32,6 @@
 #include <pmm.h>
 #include <heap.h>
 #include <string.h>
-#include <idt.h>
 
 tss_s tss = { .ss0 = 0x10 };
 

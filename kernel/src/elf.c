@@ -32,7 +32,7 @@
 
 extern pd_t *pd_current;
 
-struct process_state *load_elf(void *image) {
+struct process *load_elf(void *image) {
 	struct elf_header *header = image;
 	struct elf_program_header *ph;
 

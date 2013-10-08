@@ -1,4 +1,4 @@
-﻿#Windows Thumbnails ignorieren
+#Windows Thumbnails ignorieren
 Thumbs.db
 
 #Objektdateien ignorieren
@@ -22,4 +22,5 @@ makefile~
 Makefile~
 *.ld~
 .gitignore~
+
 
