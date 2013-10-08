@@ -22,6 +22,7 @@
 
 #include <drivers/crtc.h>
 #include <drivers/video.h>
+#include <string.h>
 #include <io.h>
 
 static int lines = 25;
@@ -41,12 +42,12 @@ int putchar(int c)
 		} else {
 			gotoxy(columns - 1, --y);
 		}
-		
+
 		video_mem[2 * (y * columns + x)] = 0;
-		
+
 		return c;
 	}
-	
+
 	if ((x > columns - 1) || (c == '\n')) {
 		gotoxy(0, ++y);
 
@@ -59,7 +60,7 @@ int putchar(int c)
 	video_mem[2 * (y * columns + x) + 1] = color;
 
 	gotoxy(++x, y);
-	
+
 	return c;
 }
 
@@ -117,7 +118,7 @@ void gotoxy(uint8_t _x, uint8_t _y)
 		memset(video_mem + 2 * lines * columns, 0, 2 * columns);
 		--_y;
 	}
-	
+
 	x = _x; y = _y;
 	offset = _y * columns + _x;
 

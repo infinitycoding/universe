@@ -26,6 +26,7 @@
 #include <pmm.h>
 #include <memory_layout.h>
 #include <paging.h>
+#include <string.h>
 
 heap_t kernel_heap;
 
@@ -46,17 +47,17 @@ void free(void * ptr) {
 void *calloc(size_t num, size_t size) {
 	void *data = heap_alloc(&kernel_heap, size);
 	memset(data, 0, size);
-	
+
 	return data;
 }
 
 void *realloc(void *ptr, size_t size) {
 	void *dest = heap_alloc(&kernel_heap, size);
 	alloc_t *source_alloc = ptr - sizeof(alloc_t);
-	
+
 	memmove(dest, ptr, source_alloc->size);
 	free(ptr);
-	
+
 	return dest;
 }
 
@@ -64,13 +65,13 @@ void *realloc(void *ptr, size_t size) {
 
 /**
  * Initalize a heap
- * 
+ *
  * @param heap heap to initalise
  * @return void
  */
 void heap_init(heap_t *heap) {
 	vaddr_t vframe = pd_automap_kernel(pd_get_current(), pmm_alloc_page(), PTE_WRITABLE);
-	alloc_t *header = vframe;
+	alloc_t *header = (alloc_t *)vframe;
 
 	header->size = PAGE_SIZE - sizeof(alloc_t);
 	header->base = vframe + sizeof(alloc_t);
@@ -83,27 +84,27 @@ void heap_init(heap_t *heap) {
 
 /**
  * Add a page to the heap
- * 
+ *
  * @param heap heap
  * @return void
  */
 alloc_t *heap_expand(heap_t *heap, int pages) {
 	/* TODO : Range Allocation */
 	heap->list_count++;
-	paddr_t pframe = NULL;
-	vaddr_t vframe = vaddr_find(pd_get_current(), pages, 
+	paddr_t pframe = 0;
+	vaddr_t vframe = vaddr_find(pd_get_current(), pages,
 				    MEMORY_LAYOUT_KERNEL_HEAP_START,
 				    MEMORY_LAYOUT_KERNEL_HEAP_END, PTE_WRITABLE);
 	vaddr_t vframe_cur = vframe;
-	
+
 	int i;
 	for(i = 0; i < pages; i++) {
 		pframe = pmm_alloc_page();
 		pd_map(pd_get_current(), pframe, vframe_cur, PTE_WRITABLE);
 		vframe_cur += PAGE_SIZE;
 	}
-	
-	alloc_t *new_header = vframe;
+
+	alloc_t *new_header = (alloc_t *) vframe;
 
 	new_header->size = pages*PAGE_SIZE - sizeof(alloc_t);
 	new_header->base = vframe + sizeof(alloc_t);
@@ -117,7 +118,7 @@ alloc_t *heap_expand(heap_t *heap, int pages) {
 
 /**
  * Destroy a heap
- * 
+ *
  * @param heap heap
  * @return void
  */
@@ -130,22 +131,22 @@ void heap_destroy(heap_t *heap) {
 
 /**
  * Find a free range of bytes in the heap and reserve this
- * 
+ *
  * @param heap heap
  * @param size number of bytes
- * 
+ *
  * @return pointer to reserved bytes
  */
 void *heap_alloc(heap_t *heap, size_t size) {
 	alloc_t *header = heap->alloc_list;
 	vaddr_t data = 0;
 	int n_size = size + sizeof(alloc_t);
-	
+
 	if(size <= PAGE_SIZE && size > PAGE_SIZE - sizeof(alloc_t)) {
 		data = pd_automap_kernel(pd_get_current(), pmm_alloc_page(), PTE_WRITABLE);
-		return data;
+		return (void *)data;
 	}
-	
+
 	while(header != NULL) {
 		if(header->size >= size && header->status == HEAP_STATUS_FREE) {
 			header->status = HEAP_STATUS_USED;
@@ -159,37 +160,37 @@ void *heap_alloc(heap_t *heap, size_t size) {
 				new_header->next = heap->alloc_list;
 				heap->alloc_list = new_header;
 			}*/
-			
-			return header->base;
+
+			return (void *)header->base;
 		}
 		header = header->next;
 	}
-	
+
 	header = heap_expand(heap, NUM_PAGES(n_size));
 	if(header != NULL) {
 		header->status = HEAP_STATUS_USED;
-		return header->base;
+		return (void *)header->base;
 	}
-	
+
 	#ifdef HEAP_DEBUG
 		printf("heap_alloc(): reserving %d bytes of memory: %p - %p\n", header->size, data, data + header->size);
 	#endif
-	
+
 	return NULL;
 }
 
 /**
  * Free a range of bytes in th heap
- * 
+ *
  * @param heap heap
  * @param ptr pointer
- * 
+ *
  * @return void
  */
 void heap_free(heap_t *heap, void *ptr) {
 	alloc_t *header = (alloc_t*)((uintptr_t)ptr - sizeof(alloc_t));
 	header->status = HEAP_STATUS_FREE;
-	
+
 	#ifdef HEAP_DEBUG
 		printf("heap_free(): freeing %d bytes of memory: %p - %p\n", header->size, ptr, ptr + header->size);
 	#endif
