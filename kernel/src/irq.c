@@ -128,17 +128,17 @@ static void (*exc[32])(struct cpu_state **cpu) = {
  * install an interrupthandler
  * @param 0 interrupt number
  * @param 1 pointer to the handler function
- * @return true  -> Handler is already seted-up
- * @return false -> Handler sucessfully installed
+ * @return false  -> Handler is already seted-up
+ * @return true -> Handler sucessfully installed
  **/
 int install_irq(int intr,void *handler)
 {
-	if (((uint32_t)irq[intr]) != NULL) {
-	    return true;
+	if (!irq[intr]) {
+	    return false;
 	}
 
 	irq[intr] = handler;
-	return false;
+	return true;
 }
 
 
@@ -146,17 +146,17 @@ int install_irq(int intr,void *handler)
  * install an exception handler
  * @param 0 exception number
  * @param 1 pointer to the handler function
- * @return true  -> Handler is already seted-up
- * @return false -> Handler sucessfully installed
+ * @return false  -> Handler is already seted-up
+ * @return true -> Handler sucessfully installed
  **/
 int install_exc(int excnum, void *handler)
 {
-	if ((uint32_t)exc[excnum] != NULL) {
-	    return true;
+	if (!exc[excnum]) {
+	    return false;
 	}
 
 	exc[excnum] = handler;
-	return false;
+	return true;
 }
 
 /**
@@ -191,7 +191,7 @@ struct cpu_state* irq_handler(struct cpu_state* cpu)
 	//Exceptions
 	if (cpu->intr < 32)
 	{
-		if ( ((uint32_t) exc[cpu->intr]) != NULL)
+		if (!exc[cpu->intr])
 		{
 			exc[cpu->intr](&cpu);
 			return cpu;
@@ -210,7 +210,7 @@ struct cpu_state* irq_handler(struct cpu_state* cpu)
 	else if (cpu->intr < 46)
 	{
 	    int irqnum = cpu->intr - 32;
-		if ( ((uint32_t) irq[irqnum]) != NULL)
+		if (!irq[irqnum])
 		{
 			irq[irqnum](&cpu);
 		}
