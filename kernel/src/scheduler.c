@@ -26,7 +26,7 @@
 #include <scheduler.h>
 
 
-#include <drivers/timer.h>
+#include <idt.h>
 #include <tss.h>
 #include <gdt.h>
 #include <pmm.h>
