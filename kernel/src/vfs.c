@@ -356,6 +356,38 @@ void open(struct cpu_state **cpu) {
 	(*cpu)->eax = desc->id;
 }
 
+void pipe(struct cpu_state **cpu) {
+	int *id = (*cpu)->ebx;
+
+	if(get_fd(id[0]) != NULL &&
+	   get_fd(id[1]) != NULL)
+	{
+		vfs_inode_t *inode = vfs_create_inode("pipe", 0, NULL);
+
+		// create read channel
+		struct fd *desc0 = malloc(sizeof(struct fd));
+		desc0->id = id[0];
+		desc0->mode = 0x7ff;
+		desc0->flags = O_RDONLY;
+		desc0->pos = 0;
+		desc0->inode = inode;
+		list_push_back(current_thread->process->files, desc0);
+		
+		// create write channel
+		struct fd *desc1 = malloc(sizeof(struct fd));
+		desc1->id = id[1];
+		desc1->mode = 0x7ff;
+		desc1->flags = O_WRONLY;
+		desc1->pos = 0;
+		desc1->inode = inode;
+		list_push_back(current_thread->process->files, desc1);
+		
+		(*cpu)->eax = 0;
+	} else {
+		(*cpu)->eax = -1;
+	}
+}
+
 void close(struct cpu_state **cpu) {
 	int fd = (*cpu)->ebx;
 

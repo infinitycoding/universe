@@ -53,7 +53,7 @@ void identify_os(struct cpu_state **cpu)
 
 void (*linux_functions[])(struct cpu_state **cpu) =
 {
-    NULL, exit,fork,read,write,open,close
+    NULL, exit,fork,read,write,open,close, /*FIXME: pipe kommt weiter hinten*/ pipe
 };
 
 void linux_syscall_handler(struct cpu_state **cpu)
