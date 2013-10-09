@@ -118,9 +118,9 @@ double factorial(long n)
 /**
 	Absolute value
 **/
-double abs(double x)
+int abs(int x)
 {
-	if (x < 0.0) {
+	if (x < 0) {
 		return -x;
 	} else {
 		return x;

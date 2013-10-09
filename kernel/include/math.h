@@ -39,7 +39,7 @@ double cos(double x);
 
 int powi(int base, int exponent);
 double factorial(long n);
-double abs(double x);
+int abs(int x);
 
 unsigned int bit_scan_forward(unsigned int);
 
