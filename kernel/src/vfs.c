@@ -357,7 +357,7 @@ void open(struct cpu_state **cpu) {
 }
 
 void pipe(struct cpu_state **cpu) {
-	int *id = (*cpu)->ebx;
+	int *id = (int *) (*cpu)->ebx;
 
 	if(get_fd(id[0]) != NULL &&
 	   get_fd(id[1]) != NULL)
@@ -372,7 +372,7 @@ void pipe(struct cpu_state **cpu) {
 		desc0->pos = 0;
 		desc0->inode = inode;
 		list_push_back(current_thread->process->files, desc0);
-		
+
 		// create write channel
 		struct fd *desc1 = malloc(sizeof(struct fd));
 		desc1->id = id[1];
@@ -381,7 +381,7 @@ void pipe(struct cpu_state **cpu) {
 		desc1->pos = 0;
 		desc1->inode = inode;
 		list_push_back(current_thread->process->files, desc1);
-		
+
 		(*cpu)->eax = 0;
 	} else {
 		(*cpu)->eax = -1;

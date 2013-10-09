@@ -21,6 +21,8 @@
 */
 
 #include <stdint.h>
+#include <string.h>
+#include <heap.h>
 
 
 /**
@@ -52,7 +54,7 @@ size_t strlen(const char *string)
 	while (string[i]) {
 		i++;
 	}
-	
+
 	return i;
 }
 
@@ -88,12 +90,12 @@ char *strncpy(char *dest, const char *src,size_t n)
 	bool eos = false;
 	for (i = 0; i < n; i++) {
 		if (eos == false) {
-			if (src[i] == NULL) {
+			if (src[i] == 0) {
 				eos = true;
 			}
 			dest[i] = src[i];
 		} else {
-			dest[i] = NULL;
+			dest[i] = 0;
 		}
 	}
 	return dest;
@@ -166,8 +168,8 @@ int strcmp(const char *str1, const char *str2)
 int strncmp(const char *st0, const char *st1, size_t n)
 {
 	uint32_t i;
-	int ret;
-	ret = NULL;
+	int ret = 0;
+
 	for (i = 0; st0[i] == st1[i] && st0[i] != 0 && i < n; i++);
 	ret = st0[i] - st1[i];
 	if (ret < 0) {
@@ -230,9 +232,9 @@ char* strstr(const char* st0, const char* st1) {}
 char* strerror(size_t n) {}
 */
 
-char *strtok(const char *string, char *delimiters) {
-	static char *s = NULL;
-	static int num_del = 0;
+char *strtok(char *string, const char *delimiters) {
+	char *s = NULL;
+	int num_del = 0;
 	if(string != NULL) {
 		s = string;
 		num_del = strlen(delimiters);
@@ -256,10 +258,10 @@ char *strtok(const char *string, char *delimiters) {
 		s++;
 		j++;
 	}
-		  
+
 	char *ret = (char*) malloc(j+1);
 	strcpy(ret, string);
-	  
+
 	s = NULL;
 	return ret;
 }
@@ -291,10 +293,10 @@ void *memcpy(void *destination, const void *source, size_t size)
  * @param size of source area
  * @return pointer to destination area
  */
-void *memmove(void *destination,void *source, size_t n)
+void *memmove(void *destination,const void *source, size_t n)
 {
-	char *dest = destination;
-	char *src = source;
+	char *dest = (char *) destination;
+	char *src = (char *) source;
 	char *c, overlap = 0;
 	for (c = src; c < src + n; c++) {
 		if (c == dest) {
