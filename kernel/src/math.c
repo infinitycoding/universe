@@ -99,14 +99,14 @@ int powi(int base, int exponent)
       result *= base;
     }
   }
-  
+
   return result;
 }
 
 /**
 	Factorial function
 **/
-double inline factorial(long n)
+double factorial(long n)
 {
 	double res = 1;
 	int i;
@@ -118,7 +118,7 @@ double inline factorial(long n)
 /**
 	Absolute value
 **/
-double inline abs(double x)
+double abs(double x)
 {
 	if (x < 0.0) {
 		return -x;

@@ -182,7 +182,7 @@ struct process_state *process_find(pid_t pid)
  * terminates the current process (linux function for the API)
  * @param cpu registers of the corrent process
  */
-void exit(struct cpu_state **cpu)
+void sys_exit(struct cpu_state **cpu)
 {
     list_set_first(current_thread->process->parent->children);
     while(list_is_last(current_thread->process->parent->children))
@@ -204,7 +204,7 @@ void exit(struct cpu_state **cpu)
  * creates a new child process (linux function for the API)
  * @param cpu registers of the current process
  */
-void fork(struct cpu_state **cpu)
+void sys_fork(struct cpu_state **cpu)
 {
     struct process_state *new_process = process_create(current_thread->process->name ,current_thread->process->desc ,current_thread->process->flags ,current_thread->process);
     struct thread_state *new_thread = thread_create(new_process, !(current_thread->flags & THREAD_KERNELMODE), 0, *cpu, 0, NULL, NULL);
@@ -227,7 +227,7 @@ void fork(struct cpu_state **cpu)
  *  Not completed
  */
 
-void waitpid(struct cpu_state **cpu)
+void sys_waitpid(struct cpu_state **cpu)
 {
     if(list_is_empty(current_thread->process->children))
     {

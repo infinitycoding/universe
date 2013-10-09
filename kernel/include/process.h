@@ -61,8 +61,8 @@ struct child
 
     struct process_state *process_find(pid_t id);
 
-    void exit(struct cpu_state **cpu);
+    void sys_exit(struct cpu_state **cpu);
 
-    void fork(struct cpu_state **cpu);
+    void sys_fork(struct cpu_state **cpu);
 
 #endif

@@ -28,6 +28,7 @@
 #include <scheduler.h>
 #include <process.h>
 #include <vfs.h>
+#include <printf.h>
 
 #define OS_VERSION 1
 
@@ -37,7 +38,7 @@ extern struct process_state *kernel_state;
 
 void print(struct cpu_state **cpu)
 {
-    printf("%s",(*cpu)->ebx);
+    printf("%s", (char *)(*cpu)->ebx);
     (*cpu)->eax = 0;
 }
 
@@ -53,7 +54,7 @@ void identify_os(struct cpu_state **cpu)
 
 void (*linux_functions[])(struct cpu_state **cpu) =
 {
-    NULL, exit,fork,read,write,open,close, /*FIXME: pipe kommt weiter hinten*/ pipe
+    NULL,sys_exit,sys_fork,read,write,open,close, /*FIXME: pipe kommt weiter hinten*/ pipe
 };
 
 void linux_syscall_handler(struct cpu_state **cpu)

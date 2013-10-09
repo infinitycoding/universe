@@ -173,7 +173,7 @@ paddr_t pmm_find_free_page_range(unsigned long lower_limit, unsigned int num) {
 		}
 
 		if (pmm_mmap[i] == 0xffffffff) {
-			if (found = 0) {
+			if (found == 0) {
 				page = (i * 32) * PAGE_SIZE; //
 			}
 			found += 32;
@@ -270,11 +270,11 @@ void INIT_PMM(struct multiboot_struct *mb_info) {
 	for (i = 0; i < PMM_MMAP_SIZE; i++) {
 		pmm_mmap[i] = 0;
 	}
-	
+
 	mb_info->mmap_addr += MEMORY_LAYOUT_KERNEL_START;
 	mb_info->mods_addr += MEMORY_LAYOUT_KERNEL_START;
 
-	struct mmap_entry *mmap = mb_info->mmap_addr;
+	struct mmap_entry *mmap = (struct mmap_entry *)mb_info->mmap_addr;
 
 	int len = 0;
 	for(i = 0; len < mb_info->mmap_length; i++) {
@@ -293,7 +293,7 @@ void INIT_PMM(struct multiboot_struct *mb_info) {
 	uint16_t* EBDA_p = (void *)0x040E;
 	pmm_mark_page_as_used((paddr_t)EBDA_p[0] << 4); //EBDA
 
-	uint16_t* BDA_size=0x0413;
+	uint16_t* BDA_size = (uint16_t*)0x0413;
 	pmm_mark_page_as_used((BDA_size[0] / 4) * 1024); //FPS (maybe)
 	pmm_mark_page_range_as_used(0xA0000, 96); //0xA0000 - 0xFFFFF ROM-AREA
 
