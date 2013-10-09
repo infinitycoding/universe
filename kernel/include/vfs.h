@@ -78,6 +78,7 @@ int vfs_access(vfs_inode_t *inode, mode_t modus);
 vfs_inode_t *vfs_lookup_path(char *path);
 
 void open(struct cpu_state **cpu);
+void pipe(struct cpu_state **cpu);
 void close(struct cpu_state **cpu);
 void read(struct cpu_state **cpu);
 void write(struct cpu_state **cpu);
