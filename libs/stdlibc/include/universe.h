@@ -15,7 +15,7 @@
 inline uint32_t fork()
 {
     uint32_t pid;
-    asm volatile("int $128;": "a="(pid) : "a" (SYS_FORK));
+    asm volatile("int $128;": "=a"(pid) : "a" (SYS_FORK));
     return pid;
 }
 

@@ -21,6 +21,7 @@
 */
 
 #include <stdint.h>
+#include <string.h>
 
 
 /**
@@ -88,12 +89,12 @@ char *strncpy(char *dest, const char *src,size_t n)
 	bool eos = false;
 	for (i = 0; i < n; i++) {
 		if (eos == false) {
-			if (src[i] == NULL) {
+			if (src[i] == 0) {
 				eos = true;
 			}
 			dest[i] = src[i];
 		} else {
-			dest[i] = NULL;
+			dest[i] = 0;
 		}
 	}
 	return dest;
@@ -166,8 +167,8 @@ int strcmp(const char *str1, const char *str2)
 int strncmp(const char *st0, const char *st1, size_t n)
 {
 	uint32_t i;
-	int ret;
-	ret = NULL;
+	int ret = 0;
+
 	for (i = 0; st0[i] == st1[i] && st0[i] != 0 && i < n; i++);
 	ret = st0[i] - st1[i];
 	if (ret < 0) {
@@ -220,25 +221,6 @@ char *strrchr(const char *str, int c)
 	return ret;
 }
 
-/**
- * copy memory from source to destination
- * @param destination
- * @param source
- * @param size of source area
- * @return pointer to destination area
- */
-void *memcpy(void *destination, const void *source, size_t size)
-{
-	uint8_t *dest = destination;
-	const uint8_t *sour = source;
-	uint32_t i = 0;
-	while (i < size) {
-		dest[i] = sour[i];
-		i++;
-	}
-	return destination;
-}
-
 
 /**
 TODO:
@@ -249,9 +231,11 @@ char* strstr(const char* st0, const char* st1) {}
 char* strerror(size_t n) {}
 */
 
-char *strtok(const char *string, char *delimiters) {
-	static char *s = NULL;
-	static int num_del = 0;
+//malloc not defined yet
+/*
+char *strtok(char *string, const char *delimiters) {
+	char *s = NULL;
+	int num_del = 0;
 	if(string != NULL) {
 		s = string;
 		num_del = strlen(delimiters);
@@ -281,6 +265,25 @@ char *strtok(const char *string, char *delimiters) {
 
 	s = NULL;
 	return ret;
+}*/
+
+/**
+ * copy memory from source to destination
+ * @param destination
+ * @param source
+ * @param size of source area
+ * @return pointer to destination area
+ */
+void *memcpy(void *destination, const void *source, size_t size)
+{
+	uint8_t *dest = destination;
+	const uint8_t *sour = source;
+	uint32_t i = 0;
+	while (i < size) {
+		dest[i] = sour[i];
+		i++;
+	}
+	return destination;
 }
 
 
@@ -291,10 +294,10 @@ char *strtok(const char *string, char *delimiters) {
  * @param size of source area
  * @return pointer to destination area
  */
-void *memmove(void *destination,void *source, size_t n)
+void *memmove(void *destination,const void *source, size_t n)
 {
-	char *dest = destination;
-	char *src = source;
+	char *dest = (char *) destination;
+	char *src = (char *) source;
 	char *c, overlap = 0;
 	for (c = src; c < src + n; c++) {
 		if (c == dest) {
@@ -326,8 +329,7 @@ int memcmp(const void *mem0, const void *mem1, size_t n)
 	const char *st0 = mem0;
 	const char *st1 = mem1;
 	uint32_t i;
-	int ret;
-	ret = NULL;
+	int ret = 0;
 	for (i = 0; st0[i] == st1[i] && st0[i] !=0 && i<n; i++);
 	ret = st0[i] - st1[i];
 	if (ret < 0) {
