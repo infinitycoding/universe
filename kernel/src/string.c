@@ -328,8 +328,7 @@ int memcmp(const void *mem0, const void *mem1, size_t n)
 	const char *st0 = mem0;
 	const char *st1 = mem1;
 	uint32_t i;
-	int ret;
-	ret = NULL;
+	int ret = 0;
 	for (i = 0; st0[i] == st1[i] && st0[i] !=0 && i<n; i++);
 	ret = st0[i] - st1[i];
 	if (ret < 0) {

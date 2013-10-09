@@ -38,8 +38,8 @@ double sin(double x);
 double cos(double x);
 
 int powi(int base, int exponent);
-double inline factorial(long n);
-double inline abs(double x);
+double factorial(long n);
+double abs(double x);
 
 unsigned int bit_scan_forward(unsigned int);
 

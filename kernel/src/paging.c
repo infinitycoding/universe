@@ -158,7 +158,7 @@ pt_t pt_get(pd_t *pd, int index, uint8_t flags) {
 	if(pd_current != NULL) {
 	  if(pd != pd_current) {
 	    pt = (pt_t) PT_PADDR(index);
-	    pt = (vaddr_t) pd_automap_kernel(pd_current,(paddr_t) pt, flags);
+	    pt = (pt_t) pd_automap_kernel(pd_current,(paddr_t) pt, flags);
 	  } else {
 	    pt = (pt_t) PT_VADDR(index);
 	  }
