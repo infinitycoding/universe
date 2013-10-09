@@ -7,23 +7,22 @@ int thread(int argc, void **argv)
     return 0;
 }
 
-int main(int argc, void **argv) {
+int main(int argc, char **argv) {
     print("Userspace!\nRead \"foo.txt\":\n");
 
     int fd[2] = {3, 4};
 
     // create a pipe
-    linux_syscall(SYS_PIPE, &fd, 0,0,0,0);
-    
-    uint32_t OS = identify_os();
+    linux_syscall(SYS_PIPE,(uint32_t) &fd, 0,0,0,0);
 
-    if(OS is UNIVERSE_OS)
-        print("OS: Universe OS\n");
+    //uint32_t OS = identify_os();
+
 
     thread_launch(thread, 0, NULL);
-    int n = abs(-4);
+
 
     asm volatile("_stop: jmp _stop");
     //exit(0);
+    return 0;
 }
 
