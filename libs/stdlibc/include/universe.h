@@ -58,7 +58,7 @@ inline uint32_t universe_syscall(uint32_t function, uint32_t ebx, uint32_t ecx, 
     return retv;
 }
 
-uint32_t thread_exit(int retv) {
+void thread_exit(int retv) {
   asm volatile("int $112;": : "a" (1) , "b"(retv));
 }
 
@@ -66,6 +66,6 @@ uint32_t thread_exit(int retv) {
 #define print(STR) asm volatile("pushl %%ebx; int $112; popl %%ebx;": : "a"(0) , "b"(STR))
 #define thread_launch(FUNCTION, ARGC, ARGV) asm volatile("pushl %%ebx; int $112; popl %%ebx;": : "a"(2) , "b"(FUNCTION), "c"(ARGC), "d" (ARGV), "S" (&thread_exit))
 #define identify_os(...) universe_syscall(3,0,0,0,0,0)
-#define UNIVERSE_OS 'u' | ('n' << 8) | ('i' << 16)
+#define UNIVERSE_OS ('u' | ('n' << 8) | ('i' << 16))
 #define is ^0xFF000000 ==
 

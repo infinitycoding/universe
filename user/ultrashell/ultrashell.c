@@ -8,9 +8,9 @@
 
 int main(void)
 {
-	char **args = NULL;
-	int argc = 0;
-	int i = 0;
+	//char **args = NULL;
+	//int argc = 0;
+	//int i = 0;
 
 	print("Ultrashell!\n");
 
@@ -21,6 +21,7 @@ int main(void)
 		print(args[i]);
 		print('\n');
 	}*/
+	return 0;
 }
 
 
@@ -49,7 +50,7 @@ int main(void)
 			currentToken[tokenSize] = '\0';
 			tokens[0][currentTokenNumber] = (char *)malloc(sizeof(char) * tokenSize);
 			strncpy(tokens[0][currentTokenNumber], currentToken, MAX_TOKEN_LENGTH);
-			
+
 			memset(currentToken, '\0', sizeof(currentToken));
 			currentTokenNumber++;
 			tokenSize = 0;
