@@ -8,7 +8,7 @@ int thread(int argc, void **argv)
 }
 
 int main(int argc, char **argv) {
-    print("Userspace!\nRead \"foo.txt\":\n");
+    print("Userspace!\n");
 
     int fd[2] = {3, 4};
 
