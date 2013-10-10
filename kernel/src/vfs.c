@@ -436,8 +436,17 @@ void read(struct cpu_state **cpu) {
 
 void write(struct cpu_state **cpu) {
 	int fd = (*cpu)->ebx;
-	void *buf = (void*) (*cpu)->ecx;
+	char *buf = (void*) (*cpu)->ecx;
 	size_t len = (*cpu)->edx;
+
+	if(fd < 3) {
+		int i;
+		for(i = 0; i < len; i++) {
+			printf("%c", buf[i]);
+		}
+		(*cpu)->eax = 0;
+		return;
+	}
 
 	struct fd *desc = get_fd(fd);
 	if(desc == NULL) {
