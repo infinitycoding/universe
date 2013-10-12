@@ -4,6 +4,7 @@ Thumbs.db
 #Objektdateien ignorieren
 *.o
 *.a
+*.x
 
 #Kernel Ausführbare Dateien ignoriere
 *.elf
