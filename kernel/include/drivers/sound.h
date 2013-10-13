@@ -1,5 +1,5 @@
-#ifndef _scheduler_h_
-#define _scheduler_h_
+#ifndef _SOUND_H_
+#define _SOUND_H_
 
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
@@ -19,29 +19,6 @@
 	along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdint.h>
-#include <cpu.h>
-#include <paging.h>
-#include <thread.h>
+sound(uint32_t frequency, uint32_t time);
 
-
-
-
-//Definitions
-#define STACK_HEAD 0xBFFFFFFF
-#define KERNEL_STACK_SIZE 4096
-
-#define PORT_ACCESS_STRUCT_SIZE 10
-#define THREAD_STRUCT_SIZE 24
-#define CHILD_STRUCT_SIZE 20
-#define ZOMBIEPID_STRUCT_SIZE 12
-#define CPU_STATE_STRUCT_SIZE 76
-
-
-
-
-void INIT_SCHEDULER(void);
-struct cpu_state *task_schedule(struct cpu_state *cpu);
-
-
-#endif
+#endif /* _SOUND_H_ */

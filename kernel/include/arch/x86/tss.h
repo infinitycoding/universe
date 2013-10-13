@@ -1,5 +1,5 @@
-#ifndef _scheduler_h_
-#define _scheduler_h_
+#ifndef _tss_h_
+#define _tss_h_
 
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
@@ -19,29 +19,37 @@
 	along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdint.h>
-#include <cpu.h>
-#include <paging.h>
-#include <thread.h>
+#define IO_BITMAP_LEN 0xFFFF
 
-
-
-
-//Definitions
-#define STACK_HEAD 0xBFFFFFFF
-#define KERNEL_STACK_SIZE 4096
-
-#define PORT_ACCESS_STRUCT_SIZE 10
-#define THREAD_STRUCT_SIZE 24
-#define CHILD_STRUCT_SIZE 20
-#define ZOMBIEPID_STRUCT_SIZE 12
-#define CPU_STATE_STRUCT_SIZE 76
-
-
-
-
-void INIT_SCHEDULER(void);
-struct cpu_state *task_schedule(struct cpu_state *cpu);
-
+typedef struct tss_s
+{
+	uint32_t ptl;
+	uint32_t esp0;
+	uint32_t ss0;
+	uint32_t esp1;
+	uint32_t ss1;
+	uint32_t esp2;
+	uint32_t ss2;
+	uint32_t cr3;
+	uint32_t eip;
+	uint32_t eflags;
+	uint32_t eax;
+	uint32_t ecx;
+	uint32_t edx;
+	uint32_t ebx;
+	uint32_t esp;
+	uint32_t ebp;
+	uint32_t esi;
+	uint32_t edi;
+	uint32_t es;
+	uint32_t cs;
+	uint32_t ss;
+	uint32_t ds;
+	uint32_t fs;
+	uint32_t gs;
+	uint32_t ldt;
+	uint16_t reserved;
+	uint16_t iopb;
+}__attribute__((packed)) tss_s;
 
 #endif
