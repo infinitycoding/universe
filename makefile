@@ -1,5 +1,7 @@
 all: kernel user iso-img
 
+ARCH=
+
 kernel:
 	@$(MAKE) -C kernel/src
 	@cp kernel/src/kernel32.elf build/kernel32.elf
