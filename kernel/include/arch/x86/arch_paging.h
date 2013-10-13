@@ -1,5 +1,5 @@
-#ifndef _paging_h_
-#define _paging_h_
+#ifndef _arch_paging_h_
+#define _arch_paging_h_
 
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
@@ -62,6 +62,10 @@ enum PTE_Flags {
 	PTE_FRAME	= 0x7FFFF000
 };
 
+#define VMM_PRESENT  0x1
+#define VMM_WRITABLE 0x2
+#define VMM_USER     0x3
+
 #define PD_LENGTH 1024
 #define PT_LENGTH 1024
 
@@ -80,39 +84,13 @@ typedef pte_t* pt_t;
 typedef struct {
 	pde_t *entries;
 	paddr_t phys_addr;
-} pd_t;
-
-void INIT_PAGING(struct multiboot_struct *mb_info);
-
-pd_t *pd_create(void);
-void pd_destroy(pd_t *pd);
-
-vaddr_t pd_map_temp(paddr_t pframe, uint8_t flags);
-int pd_map(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags);
-void pd_unmap(pd_t *pd, vaddr_t frame);
-void pd_map_range(pd_t *pd, paddr_t pframe, vaddr_t vframe, unsigned int pages, uint8_t flags);
-void pd_unmap_range(pd_t *pd, vaddr_t frame, unsigned int pages);
-vaddr_t pd_automap_kernel(pd_t *pd, paddr_t pframe, uint8_t flags);
-vaddr_t pd_automap_user(pd_t *pd, paddr_t pframe, uint8_t flags);
-vaddr_t pd_automap_kernel_range(pd_t *pd, paddr_t pframe, int pages, uint8_t flags);
-vaddr_t pd_automap_user_range(pd_t *pd, paddr_t pframe, int pages, uint8_t flags);
+} arch_vmm_context_t;
 
 pt_t pt_get(pd_t *pd, int index, uint8_t flags);
 pt_t pt_create(pd_t *pd, int index, uint8_t flags);
 void pt_destroy(pd_t *pd, int index);
-void pd_update(pd_t *pd);
 
-vaddr_t vaddr_find(pd_t *pd, int num, vaddr_t limit_low, vaddr_t limit_high, int flags);
-paddr_t vaddr2paddr(pd_t * const pd, vaddr_t vaddr); // FIXME: really needed?
-
-void pd_switch(pd_t *pd);
-
-//void map_page_kernel(paddr_t phys_frame, vaddr_t virt_frame, uint8_t flags);
-//void unmap_page_kernel(vaddr_t frame);
-
-void pd_fault_handler(struct cpu_state **cpu_p);
-
-inline pd_t * pd_get_current(void);
-inline pd_t * pd_get_kernel(void);
+void pagefault_handler(struct cpu_state **cpu_p);
 
 #endif
+
