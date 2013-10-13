@@ -1,4 +1,4 @@
-
+#define LINKER
 #include "memory_layout.h"
 //#include "elf.h"
 
