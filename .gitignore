@@ -19,6 +19,7 @@ Thumbs.db
 *.lst~
 *.asm~
 *.h~
+*.gen~
 makefile~
 Makefile~
 *.ld~
