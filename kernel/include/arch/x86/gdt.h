@@ -1,5 +1,5 @@
-#ifndef _scheduler_h_
-#define _scheduler_h_
+#ifndef	_gdt_h_
+#define	_gdt_h_
 
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
@@ -20,28 +20,24 @@
 */
 
 #include <stdint.h>
-#include <cpu.h>
-#include <paging.h>
-#include <thread.h>
 
 
+struct gdt_entry {
+	uint16_t limit_low;
+	uint16_t Base_low;
+	uint8_t Base_middle;
+	uint8_t Access;
+	uint8_t limit_Flags;
+	uint8_t base_high;
+};
 
+struct gdtpt{
+	uint16_t limit;
+	void* base;
+} __attribute__((packed));
 
-//Definitions
-#define STACK_HEAD 0xBFFFFFFF
-#define KERNEL_STACK_SIZE 4096
-
-#define PORT_ACCESS_STRUCT_SIZE 10
-#define THREAD_STRUCT_SIZE 24
-#define CHILD_STRUCT_SIZE 20
-#define ZOMBIEPID_STRUCT_SIZE 12
-#define CPU_STATE_STRUCT_SIZE 76
-
-
-
-
-void INIT_SCHEDULER(void);
-struct cpu_state *task_schedule(struct cpu_state *cpu);
-
+void set_GDT_entry(int entry, uint32_t base, uint32_t size, uint8_t acess, int8_t flags);
+void load_gdt(uint16_t last_entry);
+void INIT_GDT(void);
 
 #endif

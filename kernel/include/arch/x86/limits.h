@@ -1,5 +1,5 @@
-#ifndef _scheduler_h_
-#define _scheduler_h_
+#ifndef	_limits_h_
+#define	_limits_h_
 
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
@@ -19,29 +19,28 @@
 	along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdint.h>
-#include <cpu.h>
-#include <paging.h>
-#include <thread.h>
+#define INT8_MIN -128
+#define INT8_MAX 127
+#define UINT8_MAX 255
 
+#define INT16_MIN -32768
+#define INT16_MAX 32767
+#define UINT16_MAX 65535
 
+#define INT32_MIN ((int32_t) -0x80000000)
+#define INT32_MAX 0x7FFFFFFF
+#define UINT32_MAX 0xFFFFFFFF
 
+#define INT64_MIN ((int64_t) -0x8000000000000000LL)
+#define INT64_MAX 0x7FFFFFFFFFFFFFFFLL
+#define UINT64_MAX ((uint64_t) -1ULL)
 
-//Definitions
-#define STACK_HEAD 0xBFFFFFFF
-#define KERNEL_STACK_SIZE 4096
+#define INTPTR_MIN INT32_MIN
+#define INTPTR_MAX INT32_MAX
+#define UINTPTR_MAX UINT32_MAX
 
-#define PORT_ACCESS_STRUCT_SIZE 10
-#define THREAD_STRUCT_SIZE 24
-#define CHILD_STRUCT_SIZE 20
-#define ZOMBIEPID_STRUCT_SIZE 12
-#define CPU_STATE_STRUCT_SIZE 76
-
-
-
-
-void INIT_SCHEDULER(void);
-struct cpu_state *task_schedule(struct cpu_state *cpu);
-
+#define INTMAX_MIN INT64_MIN
+#define INTMAX_MAX INT64_MAX
+#define UINTMAX_MAX UINT64_MAX
 
 #endif
