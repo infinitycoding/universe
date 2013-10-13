@@ -32,5 +32,6 @@ clean:
 	@$(MAKE) -C kernel/src clean
 	@$(MAKE) -C user clean
 	@$(MAKE) -C libs clean
+	@rm *.iso -f
 
 .PHONY: all kernel libs user clean qemu
