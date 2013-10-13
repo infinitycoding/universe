@@ -19,10 +19,12 @@
 	along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-extern void kernel_phys_start;
-extern void kernel_phys_end;
-extern void kernel_virt_start;
-extern void kernel_virt_end;
+#ifndef LINKER
+	extern void kernel_phys_start;
+	extern void kernel_phys_end;
+	extern void kernel_virt_start;
+	extern void kernel_virt_end;
+#endif
 
 #define MEMORY_LAYOUT_DIRECT_MAPPED		0x02000000
 
