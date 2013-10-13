@@ -28,5 +28,6 @@ kernel32.elf: $(OBJS) linkerscript.x
 clean:
 	@rm -f $(OBJS)
 	@rm -f kernel32.elf
+	@rm -f linkerscript.x
 
 .PHONY: clean
