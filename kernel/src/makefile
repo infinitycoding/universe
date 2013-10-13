@@ -7,7 +7,15 @@ ASM = nasm
 LD = ld
 
 ASFLAGS =  -f elf32
-CFLAGS = -m32 -Wall -g -nostdinc -fno-stack-protector -fno-builtin-log -Wimplicit-function-declaration -I ../include
+CFLAGS = -m32 -Wall -g -nostdinc -fno-stack-protector -fno-builtin-log -Wimplicit-function-declaration -I ../include 
+
+ifeq ($(ARCH),PPC)
+CFLAGS +=  -I ../include/arch/ppc
+else ifeq ($(ARCH),I386)
+CFLAGS +=  -I ../include/arch/x86
+endif
+
+
 LDFLAGS = -melf_i386 -Tlinkerscript.x
 
 kernel32.elf: $(OBJS) linkerscript.x
