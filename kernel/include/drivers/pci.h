@@ -64,6 +64,7 @@
 #define PCI_CARDBUS_BRIDGE_HEADER 2
 
 
+
 #ifndef _PCI_C_
     extern list_t *pci_dev_list;
 #endif
@@ -81,6 +82,7 @@ typedef enum
 {
     MEMORY = 0,
     PORT = 1,
+    UNUSED = 2,
 }pci_base_t;
 
 
@@ -124,9 +126,9 @@ inline void pci_writeb(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint
 inline void pci_writew(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint16_t value);
 inline void pci_writel(uint8_t bus,uint8_t dev,uint8_t func,uint8_t offset, uint32_t value);
 bool pci_dev_exist(uint8_t bus, uint8_t dev, uint8_t func);
-struct pci_dev *search_device(list_t *device_list, uint16_t vendor, uint16_t device, int *num);
-void install_pci_isr(void (*isr)(struct pci_dev *dev), struct pci_dev *dev);
-int deinstall_pci_isr(void (*isr)(struct pci_dev *dev), struct pci_dev *dev);
+struct pci_dev *pci_search_device(list_t *device_list, uint16_t vendor, uint16_t device, int num);
+void pci_install_isr(void (*isr)(struct pci_dev *dev), struct pci_dev *dev);
+int pci_deinstall_isr(void (*isr)(struct pci_dev *dev), struct pci_dev *dev);
 void pci_irq_handler(void);
 void INIT_PCI();
 

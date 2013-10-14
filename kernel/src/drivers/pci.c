@@ -163,27 +163,25 @@ char *pci_dev_names[][16]={
  * @param device_list pci device list
  * @param vendor Vendor ID of the device
  * @param device devicde- ID of the device
- * @param num pointer to a counter integer
+ * @param num of the device in a device list
  * @return NULL if there is no more device of the specified type or the adress auf the PCI device struct
  */
-struct pci_dev *search_device(list_t *device_list, uint16_t vendor, uint16_t device, int *num)
+struct pci_dev *pci_search_device(list_t *device_list, uint16_t vendor, uint16_t device, int num)
 {
-    int devnum = *num;
     while(device_list->lock){}
     device_list->lock = true;
         list_set_first(device_list);
         while(!list_is_last(device_list))
         {
             struct pci_dev *current_dev = list_get_current(device_list);
-            if(devnum == 0 && current_dev->device_ID == device && current_dev->vendor_ID == vendor)
+            if(num == 0 && current_dev->device_ID == device && current_dev->vendor_ID == vendor)
             {
-                *num += 1;
                 device_list->lock = false;
                 return current_dev;
             }
             else if(current_dev->device_ID == device && current_dev->vendor_ID == vendor)
             {
-                devnum--;
+                num--;
             }
             list_next(device_list);
         }
@@ -198,7 +196,7 @@ list_t *pci_irq_handles;
  * @param isr interrupt service routine
  * @param dev pci device
  */
-void install_pci_isr(void (*isr)(struct pci_dev *dev), struct pci_dev *dev)
+void pci_install_isr(void (*isr)(struct pci_dev *dev), struct pci_dev *dev)
 {
     while(pci_irq_handles->lock){}
     pci_irq_handles->lock = true;
@@ -215,7 +213,7 @@ void install_pci_isr(void (*isr)(struct pci_dev *dev), struct pci_dev *dev)
  * @param isr interrupt service routine
  * @param dev pci device
  */
-int deinstall_pci_isr(void (*isr)(struct pci_dev *dev), struct pci_dev *dev)
+int pci_deinstall_isr(void (*isr)(struct pci_dev *dev), struct pci_dev *dev)
 {
     while(pci_irq_handles->lock){}
     pci_irq_handles->lock = true;
@@ -281,8 +279,10 @@ void INIT_PCI()
     #ifdef PRINT_DEV_LIST
         printf("PCI-devices:\n");
     #endif
-    pci_dev_list = list_create();
-    pci_irq_handles = list_create();
+    if(!pci_dev_list)
+        pci_dev_list = list_create();
+    if(!pci_irq_handles)
+        pci_irq_handles = list_create();
     pci_dev_list->lock = true;
 
     int dev,bus,func;
@@ -370,7 +370,8 @@ void INIT_PCI()
                             // get reserved bits
                             pci_writel(bus, dev, func, PCI_BASE + (base * 4), 0xFFFFFFFF);
                             uint32_t temp_base = pci_readl(bus, dev, func, PCI_BASE + (base * 4));
-
+                            if(temp_base == 0)
+                                current_dev->base_adress[base].type = UNUSED;
                             temp_base = (~temp_base) | 1;
                             current_dev->base_adress[base].resb = 0;
                             int i;
