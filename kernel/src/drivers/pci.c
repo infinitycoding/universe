@@ -266,7 +266,7 @@ void pci_irq_handler(void)
         }
         list_next(pci_dev_list);
     }
-    printf("PCI-IRQ!\n");
+    //printf("PCI-IRQ!\n");
     pci_dev_list->head = backup;
 }
 
