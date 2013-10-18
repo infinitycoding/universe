@@ -86,9 +86,9 @@ typedef struct {
 	paddr_t phys_addr;
 } arch_vmm_context_t;
 
-pt_t pt_get(pd_t *pd, int index, uint8_t flags);
-pt_t pt_create(pd_t *pd, int index, uint8_t flags);
-void pt_destroy(pd_t *pd, int index);
+pt_t pt_get(arch_vmm_context_t *context, int index, uint8_t flags);
+pt_t pt_create(arch_vmm_context_t *context, int index, uint8_t flags);
+void pt_destroy(arch_vmm_context_t *context, int index);
 
 void pagefault_handler(struct cpu_state **cpu_p);
 
