@@ -45,6 +45,7 @@ int arch_map(arch_vmm_context_t *context, paddr_t pframe, vaddr_t vframe, uint8_
 int arch_unmap(arch_vmm_context_t *context, vaddr_t frame);
 vaddr_t arch_vaddr_find(arch_vmm_context_t *context, int pages, vaddr_t limit_low, vaddr_t limit_high, uint8_t flags);
 paddr_t arch_vaddr2paddr(arch_vmm_context_t *context, vaddr_t vaddr);
+void arch_sync_pts(arch_vmm_context_t *src, arch_vmm_context_t *dest, int index_low, int index_high);
 
 // global
 void INIT_PAGING(void);

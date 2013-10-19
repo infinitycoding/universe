@@ -10,14 +10,11 @@
 extern list_t *running_threads;
 extern struct thread_state* current_thread;
 
-void thread_sync_pagedir(struct thread_state *thread) {
+void thread_sync_context(struct thread_state *thread) {
     struct thread_state *main_thread = thread->process->main_thread;
     if(thread != main_thread && main_thread != NULL && thread != NULL) {
         int end = PDE_INDEX(0xB0000000);
-        int i;
-        for(i = 0; i < end; i++) {
-            thread->pagedir->entries[i] = main_thread->pagedir->entries[i];
-        }
+        arch_sync_pts(main_thread->context.arch_context, thread->context.arch_context, 0, end);
     }
 }
 
@@ -26,7 +23,7 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     struct thread_state *new_thread = malloc(sizeof(struct thread_state));
 	new_thread->flags = THREAD_ACTIV;
     new_thread->process = process;
-    new_thread->pagedir = pd_create();
+    vmm_create_context(&new_thread->context);
     thread_sync_pagedir(new_thread);
     new_thread->ticks = 10;
     new_thread->return_value = 0;
@@ -65,10 +62,10 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
         if(!state)
         {
             paddr_t pframe = pmm_alloc_page();
-            pd_map(new_thread->pagedir, pframe, MEMORY_LAYOUT_STACK_TOP-0x1000, PTE_PRESENT | PTE_WRITABLE | PTE_USER);
+            vmm_map(&new_thread->context, pframe, MEMORY_LAYOUT_STACK_TOP-0x1000, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
             new_state->esp = (uint32_t) MEMORY_LAYOUT_STACK_TOP - 12;
 
-            uint32_t *stack = (uint32_t *) (pd_automap_kernel(pd_get_current(), pframe, PTE_PRESENT | PTE_WRITABLE | PTE_USER) + 0x1000);
+            uint32_t *stack = (uint32_t *) (vmm_automap_kernel(current_context, pframe, VMM_PRESENT | VMM_WRITABLE | VMM_USER) + 0x1000);
             *--stack = (uint32_t) argv;
             *--stack = argc;
             *--stack = (uint32_t) return_address;
