@@ -313,14 +313,12 @@ vaddr_t vaddr_find(arch_vmm_context_t *context, int num, vaddr_t limit_low, vadd
   return 0;
 }
 
-paddr_t arch_vaddr2paddr(pd_t * const pd, vaddr_t vaddr){
-// 	unsigned int pd_index = PDE_INDEX(vaddr);
-// 	unsigned int pt_index = PTE_INDEX(vaddr);
-//
-// 	pt_t *pt = (pt_t *)pd_map_fast(pd->entries[pd_index] & PDE_FRAME, 0);
-//
-// 	return (paddr_t)(pd_map_fast(pt[pt_index] & PTE_FRAME, 0) + (vaddr & 0xFFF));
-	return 0;
+paddr_t arch_vaddr2paddr(arch_vmm_context_t *context, vaddr_t vaddr) {
+ 	unsigned int pd_index = PDE_INDEX(vaddr);
+ 	unsigned int pt_index = PTE_INDEX(vaddr);
+
+ 	pt_t *pt = (pt_t *)pd_get(context->entries[pd_index] & PDE_FRAME, 0);
+	return pt[pt_index];
 }
 
 /**
