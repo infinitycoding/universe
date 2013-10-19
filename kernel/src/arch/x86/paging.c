@@ -32,7 +32,7 @@
 
 static inline void paging_flush_tlb(vaddr_t addr);
 
-#define PT_PADDR(i) (pd->entries[i] & ~0xFFF)
+#define PT_PADDR(i) (context->entries[i] & ~0xFFF)
 #define PT_VADDR(i) (MEMORY_LAYOUT_PAGING_STRUCTURES_START + PT_LENGTH*sizeof(pte_t)*i)
 
 /**
@@ -43,9 +43,9 @@ static inline void paging_flush_tlb(vaddr_t addr);
  */
 void ARCH_INIT_PAGING(struct multiboot_struct *mb_info) {
 	vmm_context_t context;
-	arch_context_t arch_context;
+	arch_vmm_context_t arch_context;
 
-	context.arch_context = arch_context;
+	context.arch_context = &arch_context;
 
 	paddr_t pframe = pmm_alloc_page_limit(0);
 	vaddr_t vframe = pframe + MEMORY_LAYOUT_KERNEL_START;
@@ -74,9 +74,8 @@ void ARCH_INIT_PAGING(struct multiboot_struct *mb_info) {
 	}
 
 	void *pd = (void *) vmm_automap_kernel(&context, pframe, VMM_WRITABLE);
-	void *ct = (void *) vmm_automap_kernel(&context, pd_paddr, VMM_WRITABLE);
 	arch_context.entries = pd;
-	current_context = ct;
+	current_context = &context;
 	asm volatile("mov %0, %%cr3" : : "r" (pframe));
 }
 
@@ -155,11 +154,11 @@ void arch_sync_pts(arch_vmm_context_t *src, arch_vmm_context_t *dest, int index_
  *
  * @return pagetable
  */
-pt_t pt_get(pd_t *pd, int index, uint8_t flags) {
+pt_t pt_get(arch_vmm_context_t *context, int index, uint8_t flags) {
 	pt_t pt;
 
-	if(pd_current != NULL) {
-	  if(pd != pd_current) {
+	if(current_context != NULL) {
+	  if(context != current_context) {
 	    pt = (pt_t) PT_PADDR(index);
 	    pt = (pt_t) vmm_automap_kernel(current_context,(paddr_t) pt, flags);
 	  } else {
@@ -181,11 +180,11 @@ pt_t pt_get(pd_t *pd, int index, uint8_t flags) {
  *
  * @return pagetable
  */
-pt_t pt_create(pd_t *pd, int index, uint8_t flags) {
+pt_t pt_create(arch_vmm_context_t *context, int index, uint8_t flags) {
 	pt_t pt = (pt_t) pmm_alloc_page_limit(0);
-	pd->entries[index] = (pde_t) pt | flags | VMM_PRESENT;
+	context->entries[index] = (pde_t) pt | flags | VMM_PRESENT;
 
-	pt = pt_get(pd, index, flags | VMM_PRESENT);
+	pt = pt_get(context, index, flags | VMM_PRESENT);
 	memset(pt, 0, 4096);
 
 	return pt;
@@ -199,9 +198,9 @@ pt_t pt_create(pd_t *pd, int index, uint8_t flags) {
  *
  * @return void
  */
-void pt_destroy(pd_t *pd, int index) {
-	pmm_mark_page_as_free((paddr_t)pd->entries[index]);
-	pd->entries[index] = 0;
+void pt_destroy(arch_vmm_context_t *context, int index) {
+	pmm_mark_page_as_free((paddr_t)context->entries[index]);
+	context->entries[index] = 0;
 }
 
 /**
@@ -227,9 +226,9 @@ int arch_map(arch_vmm_context_t *context, paddr_t pframe, vaddr_t vframe, uint8_
 	pde_t pde = context->entries[pd_index];
 
 	if (pde & VMM_PRESENT) {
-		pt = pt_get(pd, pd_index, flags | VMM_PRESENT);
+		pt = pt_get(context, pd_index, flags | VMM_PRESENT);
 	} else {
-		pt = pt_create(pd, pd_index, flags | VMM_PRESENT);
+		pt = pt_create(context, pd_index, flags | VMM_PRESENT);
 	}
 
 	pt[pt_index] = (pte_t)(pframe & ~0xFFF) | VMM_PRESENT | (flags & 0xFFF);
@@ -253,7 +252,7 @@ int arch_map(arch_vmm_context_t *context, paddr_t pframe, vaddr_t vframe, uint8_
  *
  * @return void
  */
-void arch_unmap(arch_vmm_context_t *context, vaddr_t frame) {
+int arch_unmap(arch_vmm_context_t *context, vaddr_t frame) {
 	pt_t pt = pt_get(context, PDE_INDEX(frame), VMM_WRITABLE);
 	pt[PTE_INDEX(frame)] = 0;
 
@@ -268,6 +267,8 @@ void arch_unmap(arch_vmm_context_t *context, vaddr_t frame) {
 	if(pt_emty) {
 	  pt_destroy(context, PDE_INDEX(frame));
 	}
+
+	return 0;
 }
 
 /**
@@ -299,7 +300,7 @@ vaddr_t vaddr_find(arch_vmm_context_t *context, int num, vaddr_t limit_low, vadd
 
   while(pd_index <= pd_index_end) {
     if(context->entries[pd_index] & VMM_PRESENT) {
-      pt = pt_get(pd, pd_index, flags);
+      pt = pt_get(context, pd_index, flags);
 
       uint32_t pt_end = (pd_index == pd_index_end) ? pt_index_end : PT_LENGTH; // last pd entry
       for(; pt_index < pt_end; pt_index++) {
@@ -324,7 +325,7 @@ paddr_t arch_vaddr2paddr(arch_vmm_context_t *context, vaddr_t vaddr) {
  	unsigned int pd_index = PDE_INDEX(vaddr);
  	unsigned int pt_index = PTE_INDEX(vaddr);
 
- 	pt_t *pt = (pt_t *)pd_get(context->entries[pd_index] & PDE_FRAME, 0);
+ 	pt_t *pt = (pt_t *)pd_get(context, pd_index);
 	return pt[pt_index];
 }
 
@@ -336,7 +337,7 @@ paddr_t arch_vaddr2paddr(arch_vmm_context_t *context, vaddr_t vaddr) {
  *
  * @return void
  */
-void arch_switch_context(arch_context_t *context) {
+void arch_switch_context(arch_vmm_context_t *context) {
 	asm volatile ("mov %0, %%cr3" : : "r" (context->phys_addr));
 }
 
@@ -346,7 +347,7 @@ void arch_switch_context(arch_context_t *context) {
  * @param cpu current cpu state
  * @return void
  */
-void pd_fault_handler(struct cpu_state **cpu_p)
+void page_fault_handler(struct cpu_state **cpu_p)
 {
     struct cpu_state *cpu = cpu_p[0];
 	char message[512];

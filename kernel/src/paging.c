@@ -23,6 +23,8 @@
 
 #include <paging.h>
 #include <arch_paging.h>
+#include <memory_layout.h>
+#
 
 vmm_context_t *current_context = NULL;
 
@@ -33,7 +35,7 @@ vmm_context_t *current_context = NULL;
  * @return void
  */
 void INIT_PAGING(struct multiboot_struct *mb_info) {
-	install_exc(INT_PAGE_FAULT, page_fault_handler);
+	install_exc(0xe, page_fault_handler);
 	ARCH_INIT_PAGING(mb_info);
 }
 
@@ -61,25 +63,27 @@ int vmm_map(vmm_context_t *context, paddr_t pframe, vaddr_t vframe, uint8_t flag
 	return arch_map(context->arch_context, pframe, vframe, flags);
 }
 
-void vmm_unmap(vmm_context_t *context, vaddr_t frame) {
-	arch_unmap(context->arch_context, frame);
+int vmm_unmap(vmm_context_t *context, vaddr_t frame) {
+	return arch_unmap(context->arch_context, frame);
 }
 
 /**
  * Range
  */
-void vmm_map_range(vmm_context_t *context, paddr_t pframe, vaddr_t vframe, int pages, uint8_t flags) {
+int vmm_map_range(vmm_context_t *context, paddr_t pframe, vaddr_t vframe, int pages, uint8_t flags) {
 	int p;
 	for (p = 0; p < pages; ++p) {
-	  vmm_map(context->arch_context, pframe + PAGE_FRAME_ADDR(p), vframe + PAGE_FRAME_ADDR(p), flags);
+		vmm_map(context->arch_context, pframe + PAGE_FRAME_ADDR(p), vframe + PAGE_FRAME_ADDR(p), flags);
 	}
+	return 0;
 }
 
-void pd_unmap_range(vmm_context_t *context, vaddr_t frame, int pages) {
+int pd_unmap_range(vmm_context_t *context, vaddr_t frame, int pages) {
 	int p;
 	for(p = 0; p < pages; p++) {
-	  vmm_unmap(context, frame + PAGE_FRAME_ADDR(p));
+		vmm_unmap(context, frame + PAGE_FRAME_ADDR(p));
 	}
+	return 0;
 }
 
 /**
@@ -89,7 +93,7 @@ vaddr_t vmm_automap_kernel(vmm_context_t *context, paddr_t pframe, uint8_t flags
 	vaddr_t vframe = arch_vaddr_find(context->arch_context, 1,
 				    MEMORY_LAYOUT_RESERVED_AREA_END,
 				    MEMORY_LAYOUT_KERNEL_END, flags);
-	vmm_map(context, pframe, vframe, flags | PTE_PRESENT);
+	vmm_map(context, pframe, vframe, flags | VMM_PRESENT);
 
 	return vframe;
 }
@@ -109,7 +113,7 @@ vaddr_t vmm_automap_kernel_range(vmm_context_t *context, paddr_t pframe, int pag
 vaddr_t vmm_automap_user(vmm_context_t *context, paddr_t pframe, uint8_t flags) {
 	vaddr_t vframe = arch_vaddr_find(context->arch_context, 1,
 				    0x0, MEMORY_LAYOUT_KERNEL_START, flags);
-	vmm_map(context, pframe, vframe, flags | PTE_PRESENT);
+	vmm_map(context, pframe, vframe, flags | VMM_PRESENT);
 
 	return vframe;
 }
