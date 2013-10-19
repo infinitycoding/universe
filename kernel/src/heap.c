@@ -94,7 +94,7 @@ alloc_t *heap_expand(heap_t *heap, int pages) {
 	paddr_t pframe = 0;
 	vaddr_t vframe = arch_vaddr_find(current_context->arch_context, pages,
 				    MEMORY_LAYOUT_KERNEL_HEAP_START,
-				    MEMORY_LAYOUT_KERNEL_HEAP_END, PTE_WRITABLE);
+				    MEMORY_LAYOUT_KERNEL_HEAP_END, VMM_WRITABLE);
 	vaddr_t vframe_cur = vframe;
 
 	int i;

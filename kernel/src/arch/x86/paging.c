@@ -87,11 +87,11 @@ void ARCH_INIT_PAGING(struct multiboot_struct *mb_info) {
  */
 arch_vmm_context_t *arch_vmm_create_context(void) {
 	uintptr_t paddr = (uintptr_t) pmm_alloc_page();
-	arch_vmm_context_t *context = (arch_vmm_context_t *) pd_automap_kernel(current_context, paddr, VMM_PRESENT | VMM_WRITABLE);
+	arch_vmm_context_t *context = (arch_vmm_context_t *) vmm_automap_kernel(current_context, paddr, VMM_PRESENT | VMM_WRITABLE);
 	memset(context, 0, PAGE_SIZE);
 
 	uintptr_t entries_paddr = (uintptr_t) pmm_alloc_page();
-	uintptr_t entries = pd_automap_kernel(current_context, entries_paddr, VMM_PRESENT | VMM_WRITABLE);
+	uintptr_t entries = vmm_automap_kernel(current_context, entries_paddr, VMM_PRESENT | VMM_WRITABLE);
 	memset((void*)entries, 0, PAGE_SIZE);
 
 	context->entries = (pde_t*) entries;
@@ -110,7 +110,7 @@ arch_vmm_context_t *arch_vmm_create_context(void) {
  * @param pd pagedirectory to destroy
  * @return void
  */
-void arch_destroy_context(arch_vmm_context_t *context) {
+void arch_vmm_destroy_context(arch_vmm_context_t *context) {
 	int pt;
 	for (pt = 0; pt < PD_LENGTH; ++pt) {
 		if (context->entries[pt] & VMM_PRESENT) {
@@ -277,7 +277,7 @@ int arch_unmap(arch_vmm_context_t *context, vaddr_t frame) {
  * @param pd pagedirectory
  * @return virtual adress
  */
-vaddr_t vaddr_find(arch_vmm_context_t *context, int num, vaddr_t limit_low, vaddr_t limit_high, int flags) {
+vaddr_t arch_vaddr_find(arch_vmm_context_t *context, int num, vaddr_t limit_low, vaddr_t limit_high, int flags) {
 #define PAGES_FOUND(l) \
 	  if(vaddr == (vaddr_t)NULL) { \
 	    page = pd_index * PT_LENGTH + pt_index; \
@@ -325,7 +325,7 @@ paddr_t arch_vaddr2paddr(arch_vmm_context_t *context, vaddr_t vaddr) {
  	unsigned int pd_index = PDE_INDEX(vaddr);
  	unsigned int pt_index = PTE_INDEX(vaddr);
 
- 	pt_t *pt = (pt_t *)pd_get(context, pd_index);
+ 	pt_t *pt = (pt_t *)pt_get(context, pd_index, 0);
 	return pt[pt_index];
 }
 

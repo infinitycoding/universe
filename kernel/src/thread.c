@@ -24,7 +24,7 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
 	new_thread->flags = THREAD_ACTIV;
     new_thread->process = process;
     vmm_create_context(&new_thread->context);
-    thread_sync_pagedir(new_thread);
+    thread_sync_context(new_thread);
     new_thread->ticks = 10;
     new_thread->return_value = 0;
 

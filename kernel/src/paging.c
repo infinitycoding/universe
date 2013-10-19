@@ -43,11 +43,11 @@ void INIT_PAGING(struct multiboot_struct *mb_info) {
  * Create & Destroy
  */
 void vmm_create_context(vmm_context_t *context) {
-	context->arch_context = arch_create_vmm_context();
+	context->arch_context = arch_vmm_create_context();
 }
 
 void vmm_destroy_context(vmm_context_t *context) {
-	arch_destroy_vmm_context(context->arch_context);
+	arch_vmm_destroy_context(context->arch_context);
 }
 
 void vmm_switch_context(vmm_context_t *context) {
@@ -78,7 +78,7 @@ int vmm_map_range(vmm_context_t *context, paddr_t pframe, vaddr_t vframe, int pa
 	return 0;
 }
 
-int pd_unmap_range(vmm_context_t *context, vaddr_t frame, int pages) {
+int vmm_unmap_range(vmm_context_t *context, vaddr_t frame, int pages) {
 	int p;
 	for(p = 0; p < pages; p++) {
 		vmm_unmap(context, frame + PAGE_FRAME_ADDR(p));
