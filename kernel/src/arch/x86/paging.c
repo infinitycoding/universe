@@ -139,6 +139,13 @@ void arch_update_context(arch_vmm_context_t *context) {
 	}
 }
 
+void arch_sync_pts(arch_vmm_context_t *src, arch_vmm_context_t *dest, int index_low, int index_high) {
+	int i;
+        for(i = index_low; i < index_high; i++) {
+            dest->entries[i] = src->entries[i];
+        }
+}
+
 /**
  * Get the pagetable at index
  *

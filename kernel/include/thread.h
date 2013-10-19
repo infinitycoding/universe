@@ -30,7 +30,7 @@ struct thread_state
 {
     struct cpu_state *state;
     struct process_state *process;
-    pd_t *pagedir;
+    vmm_context_t context;
     uint32_t ticks;
     uint16_t flags;
     int return_value;

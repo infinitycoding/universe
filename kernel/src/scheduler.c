@@ -41,9 +41,6 @@ struct process_state *kernel_state;
 struct thread_state *current_thread;
 list_t *running_threads;
 
-extern pd_t *pd_kernel;
-extern pd_t *pd_current;
-
 extern list_t *process_list;
 extern list_t *zombie_list;
 
@@ -84,7 +81,7 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
 
         list_set_first(running_threads);
         current_thread = list_get_current(running_threads);
-        pd_switch(current_thread->pagedir);
+        vmm_switch_context(current_thread->context);
         memcpy(cpu, current_thread->state, sizeof(struct cpu_state));
     }
     else if(current_thread->ticks == 0)
@@ -94,7 +91,7 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
         if(list_is_last(running_threads))
             list_set_first(running_threads);
         current_thread = list_get_current(running_threads);
-        pd_switch(current_thread->pagedir);
+        vmm_switch_context(current_thread->context);
         memcpy(cpu, current_thread->state, sizeof(struct cpu_state));
     }
     else
