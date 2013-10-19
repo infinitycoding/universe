@@ -28,10 +28,6 @@
 #include <multiboot.h>
 #include <cpu.h>
 
-#define VMM_PRESENT  0x1
-#define VMM_WRITABLE 0x2
-#define VMM_USER     0x3
-
 #define PD_LENGTH 1024
 #define PT_LENGTH 1024
 
