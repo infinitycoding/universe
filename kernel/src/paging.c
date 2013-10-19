@@ -24,6 +24,8 @@
 #include <paging.h>
 #include <arch_paging.h>
 
+vmm_context_t *current_context = NULL;
+
 /**
  * Initalize paging
  *
@@ -44,6 +46,12 @@ void vmm_create_context(vmm_context_t *context) {
 
 void vmm_destroy_context(vmm_context_t *context) {
 	arch_destroy_vmm_context(context->arch_context);
+}
+
+void vmm_switch_context(vmm_context_t *context) {
+	arch_update_context(context->arch_context);
+	current_context = context;
+	arch_switch_context(context->arch_context);
 }
 
 /**
