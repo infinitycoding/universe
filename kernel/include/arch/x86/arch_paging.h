@@ -28,40 +28,6 @@
 #include <multiboot.h>
 #include <cpu.h>
 
-enum CR3_Flags {
-	CR3_WRITETHOUGH	= 8,
-	CR3_NOCACHE	= 16,
-	CR3_FRAME	= 0x7FFFF000
-};
-
-enum PDE_Flags {
-	PDE_PRESENT	= 1,
-	PDE_WRITABLE	= 2,
-	PDE_USER	= 4,
-	PDE_WRITETHOUGH	= 8,
-	PDE_NOCACHE	= 16,
-	PDE_ACCESSED	= 32,
-	PDE_DIRTY	= 64,
-	PDE_4MB		= 128,
-	PDE_GLOBAL	= 256,
-	PDE_AVAIL	= 0xE00,
-	PDE_FRAME	= 0x7FFFF000,
-};
-
-enum PTE_Flags {
-	PTE_PRESENT	= 1,
-	PTE_WRITABLE	= 2,
-	PTE_USER	= 4,
-	PTE_WRITETHOUGH	= 8,
-	PTE_NOCACHE	= 16,
-	PTE_ACCESSED	= 32,
-	PTE_DIRTY	= 64,
-	PTE_PAT		= 128,
-	PTE_GLOBAL	= 256,
-	PTE_AVAIL	= 0xE00,
-	PTE_FRAME	= 0x7FFFF000
-};
-
 #define VMM_PRESENT  0x1
 #define VMM_WRITABLE 0x2
 #define VMM_USER     0x3
@@ -76,6 +42,10 @@ enum PTE_Flags {
 
 #define PDE_INDEX(x) ((x) >> 22)
 #define PTE_INDEX(x) ((x) >> 12 & 0x03FF)
+
+#define VMM_PRESENT  0x1
+#define VMM_WRITABLE 0x2
+#define VMM_USER     0x4
 
 typedef uint32_t pde_t;
 typedef uint32_t pte_t;
