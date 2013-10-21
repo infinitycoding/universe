@@ -32,10 +32,10 @@
  * @return void
  **/
 
-void pd_dump(uint32_t *pd){
-    pd += 0xC0000000;
+void pd_dump(arch_vmm_context_t *context){
     int pdi, pti, phys_base, virt_base, size, sec = 0;
     uint32_t *pt;
+    uint32_t *pd = context->entries;
     for( pdi = 0; pdi < PD_LENGTH; pdi++ ){
         if(sec && (pd[pdi] & 1) == 0){
             printf("%#010X - %#010X => %#010X - %#010X\n", phys_base, phys_base + (4096 * size), virt_base, virt_base + (4096 * size));
@@ -46,7 +46,7 @@ void pd_dump(uint32_t *pd){
             pdi++;
         }
 
-        pt = (uint32_t*) ( ( (pd[pdi] | 0xfff) ^ 0xfff) + 0xC0000000);
+        pt = pt_get(context, pdi, 0);
 
         for( pti = 0; pti < PT_LENGTH; pti++ ){
             if(sec && (pt[pti] & 1) == 0){
@@ -82,3 +82,60 @@ void pd_dump(uint32_t *pd){
         printf("%#010X - %#010X => %#010X - %#010X\n", phys_base, phys_base + (4096 * size), virt_base, virt_base + (4096 * size));
     }
 }
+
+void pd_dump2(arch_vmm_context_t *context) {
+#define END 	if(size > 0) { \
+			if(size == 1) { \
+				printf("%#010X => %#010X\n", virt_begin, phys_begin); \
+			} else { \
+				printf("%#010X - %#010X => %#010X - %#010X\n", virt_begin, virt_begin + (size-1)*4096, phys_begin, phys_begin + (size-1)*4096);\
+			}\
+			size = 0;\
+		}
+
+#define START 	virt_begin = (pd_index * 1024 + pt_index) * 4096; \
+		phys_begin = paddr; \
+		size = 1;
+
+	int pd_index = 0;
+	int pt_index = 0;
+
+	uint32_t *pd = context->entries;
+	uint32_t *pt = NULL;
+
+	uint32_t virt_begin = 0;
+	uint32_t phys_begin = 0;
+	int size = 0;
+
+	uint32_t entry = 0;
+	uint32_t paddr = 0;
+
+	for(pd_index = 0; pd_index < 1024; pd_index++) {
+		if(pd[pd_index] & VMM_PRESENT) {
+			pt = pt_get(context, pd_index, VMM_PRESENT);
+
+			for(pt_index = 0; pt_index < 1024; pt_index++) {
+				entry = pt[pt_index];
+				if(entry & VMM_PRESENT) {
+					paddr = pt[pt_index] & ~0xfff;
+
+					if(size == 0) {
+						START
+					} else {
+						if(paddr != phys_begin + size*4096) {
+							END
+						} else {
+							size++;
+						}
+					}
+				} else {
+					END
+				}
+			}
+		} else {
+			END
+		}
+	}
+}
+
+

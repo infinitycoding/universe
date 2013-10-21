@@ -45,19 +45,18 @@ void ARCH_INIT_PAGING(struct multiboot_struct *mb_info) {
 	vmm_context_t context;
 	arch_vmm_context_t arch_context;
 
-	context.arch_context = &arch_context;
+	context.arch_context = (arch_vmm_context_t *) &arch_context;
 
 	paddr_t pframe = pmm_alloc_page_limit(0);
-	vaddr_t vframe = pframe + MEMORY_LAYOUT_KERNEL_START;
-
-	vaddr_t pt_vframe = MEMORY_LAYOUT_PAGING_STRUCTURES_START;
+	vaddr_t vframe = MEMORY_LAYOUT_PAGING_STRUCTURES_START;
 
 	arch_context.phys_addr = pframe;
-	arch_context.entries = (pde_t *) vframe;
-	arch_context.entries[PDE_INDEX(pt_vframe)] = pframe | VMM_WRITABLE | VMM_PRESENT;
+	arch_context.entries = (pde_t *) pframe + MEMORY_LAYOUT_KERNEL_START;
+	memset(arch_context.entries, 0, PAGE_SIZE);
 
-	vmm_map_range(&context, 0, MEMORY_LAYOUT_KERNEL_START, NUM_PAGES(MEMORY_LAYOUT_DIRECT_MAPPED), VMM_WRITABLE);// kernel
-	vmm_map(&context, 0xB8000, 0xC00B8000, VMM_WRITABLE | VMM_USER);// videomemory (0xB8000 - 0xBFFFF)
+	arch_context.entries[PDE_INDEX(vframe)] = pframe | VMM_WRITABLE | VMM_PRESENT;
+	vmm_map_range(&context, 0, MEMORY_LAYOUT_KERNEL_START, MEMORY_LAYOUT_DIRECT_MAPPED/PAGE_SIZE, VMM_WRITABLE);// kernel
+	vmm_map(&context, 0xB8000, 0xC00B8000, VMM_WRITABLE);// videomemory (0xB8000 - 0xBFFFF)
 	// multiboot
 	vmm_map(&context, ((vaddr_t)mb_info & (~0xfff)) - MEMORY_LAYOUT_KERNEL_START, ((paddr_t)mb_info&(~0xfff)), VMM_WRITABLE);
 	vmm_map(&context, (mb_info->mods_addr & (~0xfff)) - MEMORY_LAYOUT_KERNEL_START, mb_info->mods_addr & (~0xfff), VMM_WRITABLE);
@@ -73,10 +72,11 @@ void ARCH_INIT_PAGING(struct multiboot_struct *mb_info) {
 		}
 	}
 
-	void *pd = (void *) vmm_automap_kernel(&context, pframe, VMM_WRITABLE);
-	arch_context.entries = pd;
+	void *pd_vaddr = (void *) vmm_automap_kernel(&context, pframe, VMM_WRITABLE);
+	arch_context.entries = pd_vaddr;
+
 	current_context = &context;
-	asm volatile("mov %0, %%cr3" : : "r" (pframe));
+	arch_switch_context(&arch_context);
 }
 
 /**
@@ -158,14 +158,14 @@ pt_t pt_get(arch_vmm_context_t *context, int index, uint8_t flags) {
 	pt_t pt;
 
 	if(current_context != NULL) {
-	  if(context != current_context) {
-	    pt = (pt_t) PT_PADDR(index);
-	    pt = (pt_t) vmm_automap_kernel(current_context,(paddr_t) pt, flags);
-	  } else {
-	    pt = (pt_t) PT_VADDR(index);
-	  }
+		if(context == current_context->arch_context) {
+			pt = (pt_t) PT_VADDR(index); 
+		} else {
+			pt = (pt_t) PT_PADDR(index);
+			pt = (pt_t) vmm_automap_kernel(current_context, (paddr_t) pt, flags);
+		}
 	} else {
-	  pt = (pt_t) PT_PADDR(index) + MEMORY_LAYOUT_KERNEL_START;
+		pt = (pt_t) PT_PADDR(index) + MEMORY_LAYOUT_KERNEL_START;
 	}
 
 	return pt;
@@ -233,10 +233,10 @@ int arch_map(arch_vmm_context_t *context, paddr_t pframe, vaddr_t vframe, uint8_
 
 	pt[pt_index] = (pte_t)(pframe & ~0xFFF) | VMM_PRESENT | (flags & 0xFFF);
 
-	if(context == current_context && current_context) {
-		paging_flush_tlb(vframe);
-	} else {
-		if(current_context) {
+	if(current_context != NULL) {
+		if(context == current_context->arch_context) {
+			paging_flush_tlb(vframe);
+		} else {
 			vmm_unmap(current_context, (vaddr_t) pt);
 		}
 	}
