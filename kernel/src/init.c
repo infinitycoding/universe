@@ -75,7 +75,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	INIT_PMM(mb_info);
 	INIT_GDT();
 	INIT_IDT();
-	INIT_PAGING(mb_info);
+	INIT_PAGING(mb_info);while(1);
 	INIT_HEAP();
 	INIT_PIT(50);
 	INIT_CMOS();

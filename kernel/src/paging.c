@@ -24,7 +24,6 @@
 #include <paging.h>
 #include <arch_paging.h>
 #include <memory_layout.h>
-#
 
 vmm_context_t *current_context = NULL;
 
@@ -73,7 +72,7 @@ int vmm_unmap(vmm_context_t *context, vaddr_t frame) {
 int vmm_map_range(vmm_context_t *context, paddr_t pframe, vaddr_t vframe, int pages, uint8_t flags) {
 	int p;
 	for (p = 0; p < pages; ++p) {
-		vmm_map(context->arch_context, pframe + PAGE_FRAME_ADDR(p), vframe + PAGE_FRAME_ADDR(p), flags);
+		vmm_map(context, pframe + p*PAGE_SIZE, vframe + p*PAGE_SIZE, flags);
 	}
 	return 0;
 }
