@@ -50,9 +50,11 @@ void vmm_destroy_context(vmm_context_t *context) {
 }
 
 void vmm_switch_context(vmm_context_t *context) {
-	arch_update_context(context->arch_context);
-	current_context = context;
-	arch_switch_context(context->arch_context);
+	if(context != current_context) {
+		arch_update_context(context->arch_context);
+		arch_switch_context(context->arch_context);
+		current_context = context;
+	}
 }
 
 /**
@@ -72,7 +74,7 @@ int vmm_unmap(vmm_context_t *context, vaddr_t frame) {
 int vmm_map_range(vmm_context_t *context, paddr_t pframe, vaddr_t vframe, int pages, uint8_t flags) {
 	int p;
 	for (p = 0; p < pages; ++p) {
-		vmm_map(context, pframe + p*PAGE_SIZE, vframe + p*PAGE_SIZE, flags);
+		vmm_map(context, pframe + PAGE_FRAME_ADDR(p), vframe + PAGE_FRAME_ADDR(p), flags);
 	}
 	return 0;
 }
