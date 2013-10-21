@@ -75,38 +75,33 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	INIT_PMM(mb_info);
 	INIT_GDT();
 	INIT_IDT();
-	INIT_PAGING(mb_info);while(1);
+	INIT_PAGING(mb_info);
 	INIT_HEAP();
 	INIT_PIT(50);
 	INIT_CMOS();
 	INIT_KEYBOARD();
-	INIT_SCHEDULER();
+	//INIT_SCHEDULER();
 	INIT_VFS();
 
-	asm volatile("sti");
+	//asm volatile("sti");
 
 	//print Logo and loading message
 	print_logo(YELLOW);
 	puts("Universe wird gestartet...\n");
-
-
 
 	// count free memory and display it
 	uint32_t pages = pmm_count_free_pages();
 	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
 
 	//print current time
-	//print_time(get_time()); //crashes on a real computer and on virtual box
-	//printf("\n");
+	print_time(get_time()); //crashes on a real computer and on virtual box
+	printf("\n");
 
 	INIT_CPUID();
 	printf("\n");
 	INIT_PCI();
-
+while(1);
 	// Load modules
-
-
-
 	int i;
 	struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
         for(i = 0; i < mb_info->mods_count; i++) {
@@ -116,8 +111,9 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
             load_elf(mod);
         }
 
-    //thread_kill(current_thread);
+	//thread_kill(current_thread);
+	//while(1){}
 
-    //while(1){}
 	return 0;
 }
+

@@ -83,11 +83,11 @@ void panic(char *message)
 // 		"      %c==================================================================%c      \n"
 // 		"      |                             Universe                             |      \n"
 // 		"      |==================================================================|      \n"
-		"\n"
-		"\n"
-		"      Universe has been crashed. You have to restart your computer.\n"
-		"\n"
-		"      "
+		"                                                                                \n"
+		"                                                                                \n"
+		"      Universe has been crashed. You have to restart your computer.             \n"
+		"                                                                                \n"
+		"                                                                                \n"
 	);
 
 	while (*message != '\0') {
@@ -106,9 +106,9 @@ void panic(char *message)
 	);
 
 	set_color(WHITE | RED << 4);
-	clear_screen();
+	//clear_screen();
 
-	gotoxy(0, (25 / 2) - (lines / 2) - 1);
+	//gotoxy(0, (25 / 2) - (lines / 2) - 1);
 	puts(buffer);
 	printf("\n\n      ");
 
