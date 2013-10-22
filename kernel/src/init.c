@@ -77,13 +77,14 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	INIT_IDT();
 	INIT_PAGING(mb_info);
 	INIT_HEAP();
+	INIT_VFS();
+
+	asm volatile("sti");
+
 	INIT_PIT(50);
 	INIT_CMOS();
 	INIT_KEYBOARD();
-	//INIT_SCHEDULER();
-	INIT_VFS();
-
-	//asm volatile("sti");
+	INIT_SCHEDULER();
 
 	//print Logo and loading message
 	print_logo(YELLOW);
@@ -100,7 +101,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	INIT_CPUID();
 	printf("\n");
 	INIT_PCI();
-while(1);
+
 	// Load modules
 	int i;
 	struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;

@@ -241,9 +241,9 @@ void sys_fork(struct cpu_state **cpu)
     int i;
     for(i = 0; i < (MEMORY_LAYOUT_KERNEL_START >> 22); i++)
     {
-        if(current_thread->context.arch_context->entries[i]) {
-          pt_t *new_pt = (pt_t *) pt_create(new_thread->context.arch_context, i, VMM_PRESENT | VMM_USER);
-          pt_t *pt = (pt_t *) pt_get(new_thread->context.arch_context, i, VMM_PRESENT | VMM_USER);
+        if(current_thread->context.arch_context.entries[i]) {
+          pt_t *new_pt = (pt_t *) pt_create(&new_thread->context.arch_context, i, VMM_PRESENT | VMM_USER);
+          pt_t *pt = (pt_t *) pt_get(&new_thread->context.arch_context, i, VMM_PRESENT | VMM_USER);
           memcpy((void*)new_pt, (void*)pt, 4096);
         }
     }

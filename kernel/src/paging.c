@@ -42,17 +42,18 @@ void INIT_PAGING(struct multiboot_struct *mb_info) {
  * Create & Destroy
  */
 void vmm_create_context(vmm_context_t *context) {
-	context->arch_context = arch_vmm_create_context();
+	arch_vmm_create_context(&context->arch_context);
+
 }
 
 void vmm_destroy_context(vmm_context_t *context) {
-	arch_vmm_destroy_context(context->arch_context);
+	arch_vmm_destroy_context(&context->arch_context);
 }
 
 void vmm_switch_context(vmm_context_t *context) {
 	if(context != current_context) {
-		arch_update_context(context->arch_context);
-		arch_switch_context(context->arch_context);
+		arch_update_context(&context->arch_context);
+		arch_switch_context(&context->arch_context);
 		current_context = context;
 	}
 }
@@ -61,11 +62,11 @@ void vmm_switch_context(vmm_context_t *context) {
  * Map a physical address to a virtual adress
  */
 int vmm_map(vmm_context_t *context, paddr_t pframe, vaddr_t vframe, uint8_t flags) {
-	return arch_map(context->arch_context, pframe, vframe, flags);
+	return arch_map(&context->arch_context, pframe, vframe, flags);
 }
 
 int vmm_unmap(vmm_context_t *context, vaddr_t frame) {
-	return arch_unmap(context->arch_context, frame);
+	return arch_unmap(&context->arch_context, frame);
 }
 
 /**
@@ -91,7 +92,7 @@ int vmm_unmap_range(vmm_context_t *context, vaddr_t frame, int pages) {
  * Automap
  */
 vaddr_t vmm_automap_kernel(vmm_context_t *context, paddr_t pframe, uint8_t flags) {
-	vaddr_t vframe = arch_vaddr_find(context->arch_context, 1,
+	vaddr_t vframe = arch_vaddr_find(&context->arch_context, 1,
 				    MEMORY_LAYOUT_RESERVED_AREA_END,
 				    MEMORY_LAYOUT_KERNEL_END, flags);
 	vmm_map(context, pframe, vframe, flags | VMM_PRESENT);
@@ -101,7 +102,7 @@ vaddr_t vmm_automap_kernel(vmm_context_t *context, paddr_t pframe, uint8_t flags
 
 vaddr_t vmm_automap_kernel_range(vmm_context_t *context, paddr_t pframe, int pages, uint8_t flags) {
 	int i;
-	vaddr_t vaddr_start = arch_vaddr_find(context->arch_context, pages, MEMORY_LAYOUT_RESERVED_AREA_END, MEMORY_LAYOUT_KERNEL_END, flags);
+	vaddr_t vaddr_start = arch_vaddr_find(&context->arch_context, pages, MEMORY_LAYOUT_RESERVED_AREA_END, MEMORY_LAYOUT_KERNEL_END, flags);
 	for(i = 0; i < pages; i++) {
 		paddr_t paddr = pframe + i*PAGE_SIZE;
 		vaddr_t vaddr = vaddr_start + i*PAGE_SIZE;
@@ -112,7 +113,7 @@ vaddr_t vmm_automap_kernel_range(vmm_context_t *context, paddr_t pframe, int pag
 }
 
 vaddr_t vmm_automap_user(vmm_context_t *context, paddr_t pframe, uint8_t flags) {
-	vaddr_t vframe = arch_vaddr_find(context->arch_context, 1,
+	vaddr_t vframe = arch_vaddr_find(&context->arch_context, 1,
 				    0x0, MEMORY_LAYOUT_KERNEL_START, flags);
 	vmm_map(context, pframe, vframe, flags | VMM_PRESENT);
 
@@ -121,7 +122,7 @@ vaddr_t vmm_automap_user(vmm_context_t *context, paddr_t pframe, uint8_t flags) 
 
 vaddr_t vmm_automap_user_range(vmm_context_t *context, paddr_t pframe, int pages, uint8_t flags) {
 	int i;
-	vaddr_t vaddr_start = arch_vaddr_find(context->arch_context, pages, 0x0, MEMORY_LAYOUT_KERNEL_START, flags);
+	vaddr_t vaddr_start = arch_vaddr_find(&context->arch_context, pages, 0x0, MEMORY_LAYOUT_KERNEL_START, flags);
 	for(i = 0; i < pages; i++) {
 		paddr_t paddr = pframe + i*PAGE_SIZE;
 		vaddr_t vaddr = vaddr_start + i*PAGE_SIZE;

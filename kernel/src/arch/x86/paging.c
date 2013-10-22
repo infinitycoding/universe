@@ -36,7 +36,6 @@ static inline void paging_flush_tlb(vaddr_t addr);
 #define PT_VADDR(i) (MEMORY_LAYOUT_PAGING_STRUCTURES_START + PT_LENGTH*sizeof(pte_t)*i)
 
 vmm_context_t kernel_context;
-arch_vmm_context_t arch_kernel_context;
 
 /**
  * Initalize paging (kernel_pd)
@@ -45,16 +44,14 @@ arch_vmm_context_t arch_kernel_context;
  * @return void
  */
 void ARCH_INIT_PAGING(struct multiboot_struct *mb_info) {
-	kernel_context.arch_context = &arch_kernel_context;
-
 	paddr_t pframe = pmm_alloc_page_limit(0);
 	vaddr_t vframe = MEMORY_LAYOUT_PAGING_STRUCTURES_START;
 
-	arch_kernel_context.phys_addr = pframe;
-	arch_kernel_context.entries = (pde_t *) pframe + MEMORY_LAYOUT_KERNEL_START;
-	memset(arch_kernel_context.entries, 0, PAGE_SIZE);
+	kernel_context.arch_context.phys_addr = pframe;
+	kernel_context.arch_context.entries = (pde_t *) pframe + MEMORY_LAYOUT_KERNEL_START;
+	memset(kernel_context.arch_context.entries, 0, PAGE_SIZE);
 
-	arch_kernel_context.entries[PDE_INDEX(vframe)] = pframe | VMM_WRITABLE | VMM_PRESENT;
+	kernel_context.arch_context.entries[PDE_INDEX(vframe)] = pframe | VMM_WRITABLE | VMM_PRESENT;
 	vmm_map_range(&kernel_context, 0, MEMORY_LAYOUT_KERNEL_START, MEMORY_LAYOUT_DIRECT_MAPPED/PAGE_SIZE, VMM_WRITABLE);// kernel
 	vmm_map(&kernel_context, 0xB8000, 0xC00B8000, VMM_WRITABLE);// videomemory (0xB8000 - 0xBFFFF)
 	// multiboot
@@ -73,9 +70,9 @@ void ARCH_INIT_PAGING(struct multiboot_struct *mb_info) {
 	}
 
 	void *pd_vaddr = (void *) vmm_automap_kernel(&kernel_context, pframe, VMM_WRITABLE);
-	arch_kernel_context.entries = pd_vaddr;
+	kernel_context.arch_context.entries = pd_vaddr;
 
-	arch_switch_context(&arch_kernel_context);
+	arch_switch_context(&kernel_context.arch_context);
 	current_context = &kernel_context;
 }
 
@@ -85,22 +82,15 @@ void ARCH_INIT_PAGING(struct multiboot_struct *mb_info) {
  * @param void
  * @return new pagedirectory
  */
-arch_vmm_context_t *arch_vmm_create_context(void) {
+void arch_vmm_create_context(arch_vmm_context_t *context) {
 	uintptr_t paddr = (uintptr_t) pmm_alloc_page();
-	arch_vmm_context_t *context = (arch_vmm_context_t *) vmm_automap_kernel(current_context, paddr, VMM_PRESENT | VMM_WRITABLE);
-	memset(context, 0, PAGE_SIZE);
+	uintptr_t vaddr = vmm_automap_kernel(current_context, paddr, VMM_PRESENT | VMM_WRITABLE);
+	memset((void*)vaddr, 0, PAGE_SIZE);
 
-	uintptr_t entries_paddr = (uintptr_t) pmm_alloc_page();
-	uintptr_t entries = vmm_automap_kernel(current_context, entries_paddr, VMM_PRESENT | VMM_WRITABLE);
-	memset((void*)entries, 0, PAGE_SIZE);
-
-	context->entries = (pde_t*) entries;
-	context->phys_addr = entries_paddr;
+	context->entries =   vaddr;
+	context->phys_addr = paddr;
 
 	arch_update_context(context);
-	context->entries[PDE_INDEX(MEMORY_LAYOUT_PAGING_STRUCTURES_START)] = (uint32_t) entries_paddr | VMM_PRESENT | VMM_WRITABLE;
-
-	return context;
 }
 
 /**
@@ -126,23 +116,18 @@ void arch_vmm_destroy_context(arch_vmm_context_t *context) {
  * @param pagedir
  * @return void
  */
-void arch_update_context(arch_vmm_context_t *context) {
-	if(context != current_context) {
-		#define START PDE_INDEX(MEMORY_LAYOUT_KERNEL_START)
-		#define END   PDE_INDEX(MEMORY_LAYOUT_KERNEL_END)
-		uintptr_t upd = (uintptr_t) (context->entries + START);
-		uintptr_t kpd = (uintptr_t) (current_context->arch_context->entries + START);
-		size_t len = END - START;
-		memcpy((void*) upd, (void*) kpd, len * sizeof(pde_t));
-		context->entries[PDE_INDEX(MEMORY_LAYOUT_PAGING_STRUCTURES_START)] = (uint32_t) context->phys_addr | VMM_PRESENT | VMM_WRITABLE;
+void arch_sync_pts(arch_vmm_context_t *src, arch_vmm_context_t *dest, int index_low, int index_high) {
+	int i;
+	for(i = index_low; i < index_high; i++) {
+		dest->entries[i] = src->entries[i];
 	}
 }
 
-void arch_sync_pts(arch_vmm_context_t *src, arch_vmm_context_t *dest, int index_low, int index_high) {
-	int i;
-        for(i = index_low; i < index_high; i++) {
-        	dest->entries[i] = src->entries[i];
-        }
+void arch_update_context(arch_vmm_context_t *context) {
+	#define START PDE_INDEX(MEMORY_LAYOUT_KERNEL_START)
+	#define END   PDE_INDEX(MEMORY_LAYOUT_KERNEL_END)
+	arch_sync_pts(&current_context->arch_context, context, START, END);
+	context->entries[PDE_INDEX(MEMORY_LAYOUT_PAGING_STRUCTURES_START)] = (uint32_t) context->phys_addr | VMM_PRESENT | VMM_WRITABLE;
 }
 
 /**
@@ -158,7 +143,7 @@ pt_t pt_get(arch_vmm_context_t *context, int index, uint8_t flags) {
 	pt_t pt;
 	
 	if(current_context != NULL) {
-		if(context == current_context->arch_context) {
+		if(context == &current_context->arch_context) {
 			pt = (pt_t) PT_VADDR(index);
 		} else {
 			pt = (pt_t) PT_PADDR(index);
@@ -234,7 +219,7 @@ int arch_map(arch_vmm_context_t *context, paddr_t pframe, vaddr_t vframe, uint8_
 	pt[pt_index] = (pte_t)(pframe & ~0xFFF) | VMM_PRESENT | (flags & 0xFFF);
 
 	if(current_context != NULL) {
-		if(context == current_context->arch_context) {
+		if(context == &current_context->arch_context) {
 			paging_flush_tlb(vframe);
 		} else {
 			vmm_unmap(current_context, (vaddr_t) pt);
