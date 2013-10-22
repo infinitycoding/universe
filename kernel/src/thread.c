@@ -14,7 +14,7 @@ void thread_sync_context(struct thread_state *thread) {
     struct thread_state *main_thread = thread->process->main_thread;
     if(thread != main_thread && main_thread != NULL && thread != NULL) {
         int end = PDE_INDEX(0xB0000000);
-        arch_sync_pts(main_thread->context.arch_context, thread->context.arch_context, 0, end);
+        arch_sync_pts(&main_thread->context.arch_context, &thread->context.arch_context, 0, end);
     }
 }
 

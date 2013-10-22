@@ -30,7 +30,7 @@
 #include <arch_paging.h>
 
 typedef struct vmm_context {
-	arch_vmm_context_t *arch_context;
+	arch_vmm_context_t arch_context;
 } vmm_context_t;
 
 extern vmm_context_t *current_context;
