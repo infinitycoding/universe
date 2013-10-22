@@ -70,7 +70,7 @@ void *realloc(void *ptr, size_t size) {
  * @return void
  */
 void heap_init(heap_t *heap) {
-	vaddr_t vframe = pd_automap_kernel(pd_get_current(), pmm_alloc_page(), PTE_WRITABLE);
+	vaddr_t vframe = vmm_automap_kernel(current_context, pmm_alloc_page(), VMM_WRITABLE);
 	alloc_t *header = (alloc_t *)vframe;
 
 	header->size = PAGE_SIZE - sizeof(alloc_t);
@@ -92,15 +92,15 @@ alloc_t *heap_expand(heap_t *heap, int pages) {
 	/* TODO : Range Allocation */
 	heap->list_count++;
 	paddr_t pframe = 0;
-	vaddr_t vframe = vaddr_find(pd_get_current(), pages,
+	vaddr_t vframe = arch_vaddr_find(&current_context->arch_context, pages,
 				    MEMORY_LAYOUT_KERNEL_HEAP_START,
-				    MEMORY_LAYOUT_KERNEL_HEAP_END, PTE_WRITABLE);
+				    MEMORY_LAYOUT_KERNEL_HEAP_END, VMM_WRITABLE);
 	vaddr_t vframe_cur = vframe;
 
 	int i;
 	for(i = 0; i < pages; i++) {
 		pframe = pmm_alloc_page();
-		pd_map(pd_get_current(), pframe, vframe_cur, PTE_WRITABLE);
+		vmm_map(current_context, pframe, vframe_cur, VMM_WRITABLE);
 		vframe_cur += PAGE_SIZE;
 	}
 
@@ -124,7 +124,7 @@ alloc_t *heap_expand(heap_t *heap, int pages) {
  */
 void heap_destroy(heap_t *heap) {
 	while (heap->list_count != 0) {
-		pd_unmap(pd_get_current(),
+		vmm_unmap(current_context,
 			 heap->alloc_list[--heap->list_count].base & ~0xFFF);
 	}
 }
@@ -143,7 +143,7 @@ void *heap_alloc(heap_t *heap, size_t size) {
 	int n_size = size + sizeof(alloc_t);
 
 	if(size <= PAGE_SIZE && size > PAGE_SIZE - sizeof(alloc_t)) {
-		data = pd_automap_kernel(pd_get_current(), pmm_alloc_page(), PTE_WRITABLE);
+		data = vmm_automap_kernel(current_context, pmm_alloc_page(), VMM_WRITABLE);
 		return (void *)data;
 	}
 

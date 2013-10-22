@@ -62,7 +62,7 @@
 */
 extern struct thread_state *current_thread;
 extern struct process_state *kernel_state;
-extern pd_t *pd_current;
+
 int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	clear_screen();
 
@@ -77,47 +77,44 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	INIT_IDT();
 	INIT_PAGING(mb_info);
 	INIT_HEAP();
-	INIT_PIT(50);
-	INIT_CMOS();
-	INIT_KEYBOARD();
-	INIT_SCHEDULER();
 	INIT_VFS();
 
 	asm volatile("sti");
 
+	INIT_PIT(50);
+	INIT_CMOS();
+	INIT_KEYBOARD();
+	INIT_SCHEDULER();
+
 	//print Logo and loading message
 	print_logo(YELLOW);
 	puts("Universe wird gestartet...\n");
-
-
 
 	// count free memory and display it
 	uint32_t pages = pmm_count_free_pages();
 	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
 
 	//print current time
-	//print_time(get_time()); //crashes on a real computer and on virtual box
-	//printf("\n");
+	print_time(get_time()); //crashes on a real computer and on virtual box
+	printf("\n");
 
 	INIT_CPUID();
 	printf("\n");
 	INIT_PCI();
 
 	// Load modules
-
-
-
 	int i;
 	struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
         for(i = 0; i < mb_info->mods_count; i++) {
         	size_t len = modules[i].mod_end - modules[i].mod_start;
         	size_t pages = NUM_PAGES(len);
-        	void *mod = (void*)pd_automap_kernel_range(pd_current,(paddr_t) modules[i].mod_start, pages, PTE_WRITABLE);
+        	void *mod = (void*)vmm_automap_kernel_range(current_context,(paddr_t) modules[i].mod_start, pages, VMM_WRITABLE);
             load_elf(mod);
         }
 
-    //thread_kill(current_thread);
+	//thread_kill(current_thread);
+	//while(1){}
 
-    //while(1){}
 	return 0;
 }
+

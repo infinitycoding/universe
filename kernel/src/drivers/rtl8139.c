@@ -62,7 +62,7 @@ void rtl8139_reset(struct rtl_dev * dev)
     rtl_outl(dev, REG_TRANSMIT_CONFIGURATION, 0x03000700);
     rtl_outl(dev, REG_RECEIVE_CONFIGURATION, 0x0000070a);
     rtl_outl(dev, REG_RECEIVE_BUFFER, dev->phys_membase); // set recieve buffer
-    rtl_outw(dev, REG_INTERRUPT_MASK, ALL_INTERRUPTS);  //Allow all interrupts
+    rtl_outw(dev, REG_INTERRUPT_MASK, ALL_INTERRUPTS); //Allow all interrupts
 }
 
 
@@ -70,3 +70,4 @@ void rtl8139_isr(struct pci_dev *dev)
 {
     printf("RTL IRQ!\n");
 }
+
