@@ -30,8 +30,6 @@
 #include <printf.h>
 #include <string.h>
 
-extern pd_t *pd_current;
-
 struct process_state *load_elf(void *image) {
 	struct elf_header *header = image;
 	struct elf_program_header *ph;
@@ -55,8 +53,8 @@ struct process_state *load_elf(void *image) {
 	for(i = 0; i < header->ph_entry_count; i++, ph++) {
 		if(ph->type == EPT_LOAD) {
 			int pages = NUM_PAGES(ph->mem_size);
-			uintptr_t dest_start = (uintptr_t) vaddr_find(pd_current, pages,
-						MEMORY_LAYOUT_KERNEL_START, MEMORY_LAYOUT_KERNEL_END, PTE_WRITABLE);
+			uintptr_t dest_start = (uintptr_t) arch_vaddr_find(current_context, pages,
+						MEMORY_LAYOUT_KERNEL_START, MEMORY_LAYOUT_KERNEL_END, VMM_WRITABLE);
 
 			for(j = 0; j < pages; j++) {
 				paddr_t paddr = (uintptr_t) pmm_alloc_page();
@@ -64,14 +62,14 @@ struct process_state *load_elf(void *image) {
 				uintptr_t src = (uintptr_t) image + ph->offset + j*PAGE_SIZE;
 				uintptr_t dest = (uintptr_t) dest_start + j*PAGE_SIZE;
 
-				pd_map(new_thread->pagedir, paddr, vaddr, PTE_WRITABLE | PTE_USER);
-				pd_map(pd_current, paddr, dest, PTE_WRITABLE);
+				vmm_map(&new_thread->context, paddr, vaddr, VMM_WRITABLE | VMM_USER);
+				vmm_map(current_context, paddr, dest, VMM_WRITABLE);
 
         			memcpy((void*) dest, (void*) src, PAGE_SIZE);
       			}
       			memset((void*)dest_start + ph->file_size, 0, ph->mem_size - ph->file_size);
 
-      			pd_unmap_range(pd_current, dest_start, pages);
+      			vmm_unmap_range(current_context, dest_start, pages);
     		}
   	}
 

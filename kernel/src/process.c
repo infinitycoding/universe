@@ -6,7 +6,6 @@
 #include <paging.h>
 #include <memory_layout.h>
 
-extern pd_t *pd_kernel;
 extern struct process_state *kernel_state;
 extern struct thread_state *current_thread;
 extern list_t *running_threads;
@@ -242,9 +241,9 @@ void sys_fork(struct cpu_state **cpu)
     int i;
     for(i = 0; i < (MEMORY_LAYOUT_KERNEL_START >> 22); i++)
     {
-        if(current_thread->pagedir->entries[i]) {
-          pt_t *new_pt = (pt_t *) pt_create(new_thread->pagedir, i, PTE_PRESENT | PTE_USER);
-          pt_t *pt = (pt_t *) pt_get(current_thread->pagedir, i, PTE_PRESENT | PTE_USER);
+        if(current_thread->context.arch_context.entries[i]) {
+          pt_t *new_pt = (pt_t *) pt_create(&new_thread->context.arch_context, i, VMM_PRESENT | VMM_USER);
+          pt_t *pt = (pt_t *) pt_get(&new_thread->context.arch_context, i, VMM_PRESENT | VMM_USER);
           memcpy((void*)new_pt, (void*)pt, 4096);
         }
     }

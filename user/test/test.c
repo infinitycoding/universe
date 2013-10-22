@@ -9,20 +9,10 @@ int thread(int argc, void **argv)
 
 int main(int argc, char **argv) {
     print("Userspace!\n");
-
-    int fd[2] = {3, 4};
-
-    // create a pipe
-    linux_syscall(SYS_PIPE,(uint32_t) &fd, 0,0,0,0);
-
-    //uint32_t OS = identify_os();
-
-
     thread_launch(thread, 0, NULL);
 
-
-    asm volatile("_stop: jmp _stop");
-    //exit(0);
+    while(1);
+    
     return 0;
 }
 

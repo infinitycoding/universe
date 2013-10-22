@@ -41,6 +41,9 @@
 #define EM_88K		0x05 /* Motorola 88000 */
 #define EM_860		0x06 /* Intel 80860 */
 #define EM_MIPS		0x08 /* MIPS RS3000 */
+#define EM_PPC		0x14 /* PowerPC */
+#define EM_ARM		0x28 /* ARM */
+#define EM_IA64		0x32 /* IA-64 */
 #define EM_X86_64	0x3E /* AMD64 */
 
 // Versions

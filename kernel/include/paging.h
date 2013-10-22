@@ -20,99 +20,46 @@
 */
 
 /**
-	@author Tom Slawik <tom.slawik@gmail.com>
-	@author Michael Sippel (Universe Team) <micha.linuxfreak@gmail.com>
+	@author Michael Sippel (Universe Team) <michamimosa@gmail.com>
 */
 
 #include <stdint.h>
 #include <multiboot.h>
 #include <cpu.h>
 
-enum CR3_Flags {
-	CR3_WRITETHOUGH	= 8,
-	CR3_NOCACHE	= 16,
-	CR3_FRAME	= 0x7FFFF000
-};
+#include <arch_paging.h>
 
-enum PDE_Flags {
-	PDE_PRESENT	= 1,
-	PDE_WRITABLE	= 2,
-	PDE_USER	= 4,
-	PDE_WRITETHOUGH	= 8,
-	PDE_NOCACHE	= 16,
-	PDE_ACCESSED	= 32,
-	PDE_DIRTY	= 64,
-	PDE_4MB		= 128,
-	PDE_GLOBAL	= 256,
-	PDE_AVAIL	= 0xE00,
-	PDE_FRAME	= 0x7FFFF000,
-};
+typedef struct vmm_context {
+	arch_vmm_context_t arch_context;
+} vmm_context_t;
 
-enum PTE_Flags {
-	PTE_PRESENT	= 1,
-	PTE_WRITABLE	= 2,
-	PTE_USER	= 4,
-	PTE_WRITETHOUGH	= 8,
-	PTE_NOCACHE	= 16,
-	PTE_ACCESSED	= 32,
-	PTE_DIRTY	= 64,
-	PTE_PAT		= 128,
-	PTE_GLOBAL	= 256,
-	PTE_AVAIL	= 0xE00,
-	PTE_FRAME	= 0x7FFFF000
-};
+extern vmm_context_t *current_context;
 
-#define PD_LENGTH 1024
-#define PT_LENGTH 1024
+// arch
+void ARCH_INIT_PAGING(struct multiboot_struct *mb_info);
+arch_vmm_context_t *arch_create_vmm_context(void);
+void arch_destroy_vmm_context(arch_vmm_context_t *context);
+void arch_switch_context(arch_vmm_context_t *context);
+void arch_update_context(arch_vmm_context_t *context);
+int arch_map(arch_vmm_context_t *context, paddr_t pframe, vaddr_t vframe, uint8_t flags);
+int arch_unmap(arch_vmm_context_t *context, vaddr_t frame);
+vaddr_t arch_vaddr_find(arch_vmm_context_t *context, int num, vaddr_t limit_low, vaddr_t limit_high, int flags);
+paddr_t arch_vaddr2paddr(arch_vmm_context_t *context, vaddr_t vaddr);
+void arch_sync_pts(arch_vmm_context_t *src, arch_vmm_context_t *dest, int index_low, int index_high);
+void page_fault_handler(struct cpu_state **cpu_p);
 
-#define PAGE_FRAME_NUMBER(x) ((x) >> 12)
-#define PAGE_FRAME_ADDR(x) ((x) << 12)
-
-#define NUM_PAGES(n) ((((n) + 0xfff) & 0xfffff000) / PAGE_SIZE)
-
-#define PDE_INDEX(x) ((x) >> 22)
-#define PTE_INDEX(x) ((x) >> 12 & 0x03FF)
-
-typedef uint32_t pde_t;
-typedef uint32_t pte_t;
-typedef pte_t* pt_t;
-
-typedef struct {
-	pde_t *entries;
-	paddr_t phys_addr;
-} pd_t;
-
+// global
 void INIT_PAGING(struct multiboot_struct *mb_info);
-
-pd_t *pd_create(void);
-void pd_destroy(pd_t *pd);
-
-vaddr_t pd_map_temp(paddr_t pframe, uint8_t flags);
-int pd_map(pd_t *pd, paddr_t pframe, vaddr_t vframe, uint8_t flags);
-void pd_unmap(pd_t *pd, vaddr_t frame);
-void pd_map_range(pd_t *pd, paddr_t pframe, vaddr_t vframe, unsigned int pages, uint8_t flags);
-void pd_unmap_range(pd_t *pd, vaddr_t frame, unsigned int pages);
-vaddr_t pd_automap_kernel(pd_t *pd, paddr_t pframe, uint8_t flags);
-vaddr_t pd_automap_user(pd_t *pd, paddr_t pframe, uint8_t flags);
-vaddr_t pd_automap_kernel_range(pd_t *pd, paddr_t pframe, int pages, uint8_t flags);
-vaddr_t pd_automap_user_range(pd_t *pd, paddr_t pframe, int pages, uint8_t flags);
-
-pt_t pt_get(pd_t *pd, int index, uint8_t flags);
-pt_t pt_create(pd_t *pd, int index, uint8_t flags);
-void pt_destroy(pd_t *pd, int index);
-void pd_update(pd_t *pd);
-
-vaddr_t vaddr_find(pd_t *pd, int num, vaddr_t limit_low, vaddr_t limit_high, int flags);
-paddr_t vaddr2paddr(pd_t * const pd, vaddr_t vaddr); // FIXME: really needed?
-
-void pd_switch(pd_t *pd);
-
-//void map_page_kernel(paddr_t phys_frame, vaddr_t virt_frame, uint8_t flags);
-//void unmap_page_kernel(vaddr_t frame);
-
-void pd_fault_handler(struct cpu_state **cpu_p);
-
-inline pd_t * pd_get_current(void);
-inline pd_t * pd_get_kernel(void);
+vmm_context_t *create_vmm_context(void);
+void destroy_vmm_context(vmm_context_t *context);
+int vmm_map(vmm_context_t *context, paddr_t pframe, vaddr_t vframe, uint8_t flags);
+int vmm_unmap(vmm_context_t *context, vaddr_t frame);
+int vmm_map_range(vmm_context_t *context, paddr_t pframe, vaddr_t vframe, int pages, uint8_t flags);
+int vmm_unmap_range(vmm_context_t *context, vaddr_t frame, int pages);
+vaddr_t vmm_automap_kernel(vmm_context_t *context, paddr_t pframe, uint8_t flags);
+vaddr_t vmm_automap_user(vmm_context_t *context, paddr_t pframe, uint8_t flags);
+vaddr_t vmm_automap_kernel_range(vmm_context_t *context, paddr_t pframe, int pages, uint8_t flags);
+vaddr_t vmm_automap_user_range(vmm_context_t *context, paddr_t pframe, int pages, uint8_t flags);
 
 #endif
+
