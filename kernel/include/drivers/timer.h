@@ -47,6 +47,7 @@ int update_time(void);
 int change_time(time_t time);
 time_t *get_time(void);
 void set_pit_freq(int freq);
+void print_time(time_t * time);
 
 #endif
 

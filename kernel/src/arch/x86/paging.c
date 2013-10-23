@@ -87,7 +87,7 @@ void arch_vmm_create_context(arch_vmm_context_t *context) {
 	uintptr_t vaddr = vmm_automap_kernel(current_context, paddr, VMM_PRESENT | VMM_WRITABLE);
 	memset((void*)vaddr, 0, PAGE_SIZE);
 
-	context->entries =   vaddr;
+	context->entries = (arch_vmm_context_t *) vaddr;
 	context->phys_addr = paddr;
 
 	arch_update_context(context);
@@ -141,7 +141,7 @@ void arch_update_context(arch_vmm_context_t *context) {
  */
 pt_t pt_get(arch_vmm_context_t *context, int index, uint8_t flags) {
 	pt_t pt;
-	
+
 	if(current_context != NULL) {
 		if(context == &current_context->arch_context) {
 			pt = (pt_t) PT_VADDR(index);
@@ -276,7 +276,7 @@ vaddr_t arch_vaddr_find(arch_vmm_context_t *context, int num, vaddr_t limit_low,
 	vaddr_t vaddr = 0;
 	int page = 0;
 	int pages_found = 0;
-	
+
 	uint32_t pd_index = PDE_INDEX(limit_low);
 	uint32_t pt_index = PTE_INDEX(limit_low);
 	uint32_t pd_index_end = PDE_INDEX(limit_high);
@@ -285,7 +285,7 @@ vaddr_t arch_vaddr_find(arch_vmm_context_t *context, int num, vaddr_t limit_low,
 	while(pd_index <= pd_index_end) {
 		if(context->entries[pd_index] & VMM_PRESENT) {
 			pt = pt_get(context, pd_index, flags);
-			
+
 			uint32_t pt_end = (pd_index == pd_index_end) ? pt_index_end : PT_LENGTH; // last pd entry
 			for(; pt_index < pt_end; pt_index++) {
 				if(! ((uint32_t)pt[pt_index] & VMM_PRESENT) ) {
@@ -310,7 +310,7 @@ paddr_t arch_vaddr2paddr(arch_vmm_context_t *context, vaddr_t vaddr) {
  	unsigned int pt_index = PTE_INDEX(vaddr);
 
  	pt_t *pt = (pt_t *)pt_get(context, pd_index, 0);
-	return pt[pt_index];
+	return (paddr_t) pt[pt_index];
 }
 
 /**

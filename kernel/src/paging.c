@@ -24,6 +24,7 @@
 #include <paging.h>
 #include <arch_paging.h>
 #include <memory_layout.h>
+#include <idt.h>
 
 vmm_context_t *current_context = NULL;
 
