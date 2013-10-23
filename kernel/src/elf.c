@@ -53,7 +53,7 @@ struct process_state *load_elf(void *image) {
 	for(i = 0; i < header->ph_entry_count; i++, ph++) {
 		if(ph->type == EPT_LOAD) {
 			int pages = NUM_PAGES(ph->mem_size);
-			uintptr_t dest_start = (uintptr_t) arch_vaddr_find(current_context, pages,
+			uintptr_t dest_start = (uintptr_t) arch_vaddr_find((arch_vmm_context_t *)current_context, pages,
 						MEMORY_LAYOUT_KERNEL_START, MEMORY_LAYOUT_KERNEL_END, VMM_WRITABLE);
 
 			for(j = 0; j < pages; j++) {
