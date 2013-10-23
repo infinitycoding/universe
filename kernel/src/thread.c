@@ -141,7 +141,7 @@ void thread_exit(struct cpu_state **cpu)
 
 void launch_thread(struct cpu_state **cpu)
 {
-    thread_create(current_thread->process, USERMODE, (*cpu)->ebx, NULL, (*cpu)->ecx, (void**)(*cpu)->edx, (void*)(*cpu)->esi);
+    thread_create(current_thread->process, USERMODE, (*cpu)->CPU_ARG1, NULL, (*cpu)->CPU_ARG2, (void**)(*cpu)->CPU_ARG3, (void*)(*cpu)->CPU_ARG4);
 }
 
 

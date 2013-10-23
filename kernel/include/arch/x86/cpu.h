@@ -47,4 +47,11 @@ struct cpu_state
 	uint32_t   ss;
 };
 
+#define CPU_ARG0 eax
+#define CPU_ARG1 ebx
+#define CPU_ARG2 ecx
+#define CPU_ARG3 edx
+#define CPU_ARG4 esi
+#define CPU_ARG5 edi
+
 #endif

@@ -318,9 +318,9 @@ struct fd *get_fd(int fd) {
 }
 
 void open(struct cpu_state **cpu) {
-	char *path = (char *) (*cpu)->ebx;
-	int oflags = (*cpu)->ecx;
-	mode_t mode = (*cpu)->edx;
+	char *path = (char *) (*cpu)->CPU_ARG1;
+	int oflags = (*cpu)->CPU_ARG2;
+	mode_t mode = (*cpu)->CPU_ARG3;
 
 	vfs_inode_t *inode = vfs_lookup_path(path);
 
@@ -357,7 +357,7 @@ void open(struct cpu_state **cpu) {
 }
 
 void pipe(struct cpu_state **cpu) {
-	int *id = (int *) (*cpu)->ebx;
+	int *id = (int *) (*cpu)->CPU_ARG1;
 
 	if(get_fd(id[0]) != NULL &&
 	   get_fd(id[1]) != NULL)
@@ -389,7 +389,7 @@ void pipe(struct cpu_state **cpu) {
 }
 
 void close(struct cpu_state **cpu) {
-	int fd = (*cpu)->ebx;
+	int fd = (*cpu)->CPU_ARG1;
 
 	struct list_node *node = current_thread->process->files->head->next;
 	int i;
@@ -407,9 +407,9 @@ void close(struct cpu_state **cpu) {
 }
 
 void read(struct cpu_state **cpu) {
-	int fd = (*cpu)->ebx;
-	void *buf = (void*) (*cpu)->ecx;
-	size_t len = (*cpu)->edx;
+	int fd = (*cpu)->CPU_ARG1;
+	void *buf = (void*) (*cpu)->CPU_ARG2;
+	size_t len = (*cpu)->CPU_ARG3;
 
 	struct fd *desc = get_fd(fd);
 	if(desc == NULL) {
@@ -435,9 +435,9 @@ void read(struct cpu_state **cpu) {
 }
 
 void write(struct cpu_state **cpu) {
-	int fd = (*cpu)->ebx;
-	char *buf = (void*) (*cpu)->ecx;
-	size_t len = (*cpu)->edx;
+	int fd = (*cpu)->CPU_ARG1;
+	char *buf = (void*) (*cpu)->CPU_ARG2;
+	size_t len = (*cpu)->CPU_ARG3;
 
 	if(fd < 3) {
 		int i;
