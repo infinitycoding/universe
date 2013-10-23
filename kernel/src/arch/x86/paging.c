@@ -87,7 +87,7 @@ void arch_vmm_create_context(arch_vmm_context_t *context) {
 	uintptr_t vaddr = vmm_automap_kernel(current_context, paddr, VMM_PRESENT | VMM_WRITABLE);
 	memset((void*)vaddr, 0, PAGE_SIZE);
 
-	context->entries = (arch_vmm_context_t *) vaddr;
+	context->entries = (pde_t *) vaddr;
 	context->phys_addr = paddr;
 
 	arch_update_context(context);

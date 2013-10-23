@@ -60,6 +60,9 @@ vaddr_t vmm_automap_kernel(vmm_context_t *context, paddr_t pframe, uint8_t flags
 vaddr_t vmm_automap_user(vmm_context_t *context, paddr_t pframe, uint8_t flags);
 vaddr_t vmm_automap_kernel_range(vmm_context_t *context, paddr_t pframe, int pages, uint8_t flags);
 vaddr_t vmm_automap_user_range(vmm_context_t *context, paddr_t pframe, int pages, uint8_t flags);
+void vmm_switch_context(vmm_context_t *context);
+void vmm_destroy_context(vmm_context_t *context);
+void vmm_create_context(vmm_context_t *context);
 
 #endif
 
