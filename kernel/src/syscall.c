@@ -38,13 +38,13 @@ extern struct process_state *kernel_state;
 
 void print(struct cpu_state **cpu)
 {
-    printf("%s", (char *)(*cpu)->ebx);
-    (*cpu)->eax = 0;
+    printf("%s", (char *)(*cpu)->CPU_ARG1);
+    (*cpu)->CPU_ARG0 = 0;
 }
 
 void identify_os(struct cpu_state **cpu)
 {
-    (*cpu)->eax = 'u' | ('n' << 8) | ('i' << 16) | (OS_VERSION << 24);
+    (*cpu)->CPU_ARG0 = 'u' | ('n' << 8) | ('i' << 16) | (OS_VERSION << 24);
 };
 
 
@@ -59,10 +59,10 @@ void (*linux_functions[])(struct cpu_state **cpu) =
 
 void linux_syscall_handler(struct cpu_state **cpu)
 {
-    if( (*cpu)->eax < DEFINED_LINUX_FUNCTIONS)
+    if( (*cpu)->CPU_ARG0 < DEFINED_LINUX_FUNCTIONS)
     {
-	if(linux_functions[(*cpu)->eax] != NULL)
-            linux_functions[(*cpu)->eax](cpu);
+	if(linux_functions[(*cpu)->CPU_ARG0] != NULL)
+            linux_functions[(*cpu)->CPU_ARG0](cpu);
     }
 }
 
@@ -76,9 +76,9 @@ void (*universe_functions[])(struct cpu_state **cpu) =
 
 void universe_syscall_handler(struct cpu_state **cpu)
 {
-    if( (*cpu)->eax < DEFINED_UNIVERSE_FUNCTIONS)
+    if( (*cpu)->CPU_ARG0 < DEFINED_UNIVERSE_FUNCTIONS)
     {
-        if(universe_functions[(*cpu)->eax] != NULL)
-            universe_functions[(*cpu)->eax](cpu);
+        if(universe_functions[(*cpu)->CPU_ARG0] != NULL)
+            universe_functions[(*cpu)->CPU_ARG0](cpu);
     }
 }

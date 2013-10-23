@@ -220,7 +220,7 @@ void sys_exit(struct cpu_state **cpu)
         struct child *current_child = list_get_current(current_thread->process->parent->children);
         if(current_child->process == current_thread->process)
         {
-            current_child->status = (*cpu)->ebx;
+            current_child->status = (*cpu)->CPU_ARG1;
             break;
         }
         list_next(current_thread->process->parent->children);
@@ -247,8 +247,8 @@ void sys_fork(struct cpu_state **cpu)
           memcpy((void*)new_pt, (void*)pt, 4096);
         }
     }
-    new_thread->state->eax = 0;
-    current_thread->state->eax = new_process->pid;
+    new_thread->state->CPU_ARG0 = 0;
+    current_thread->state->CPU_ARG0 = new_process->pid;
 }
 
 /**
@@ -272,12 +272,12 @@ void sys_waitpid(struct cpu_state **cpu)
             struct child *current_child = list_get_current(current_thread->process->children);
             if(current_child->process == NULL) //Child is dead
             {
-                if( ((int) (*cpu)->ebx) == -1)
+                if( ((int) (*cpu)->CPU_ARG1) == -1)
                 {
 
 
                 }
-                else if(((int) (*cpu)->ebx) > 0 && (*cpu)->ebx == current_thread->process->pid)
+                else if(((int) (*cpu)->CPU_ARG1) > 0 && (*cpu)->CPU_ARG1 == current_thread->process->pid)
                 {
 
                 }
