@@ -49,12 +49,12 @@ void identify_os(struct cpu_state **cpu)
 
 
 
-#define DEFINED_LINUX_FUNCTIONS 7
+#define DEFINED_LINUX_FUNCTIONS 8
 
 
 void (*linux_functions[])(struct cpu_state **cpu) =
 {
-    NULL,sys_exit,sys_fork,read,write,open,close, /*FIXME: pipe kommt weiter hinten*/ pipe
+    NULL,sys_exit,sys_fork,read,write,open,close,sys_waitpid, /*FIXME: pipe kommt weiter hinten*/ pipe
 };
 
 void linux_syscall_handler(struct cpu_state **cpu)
