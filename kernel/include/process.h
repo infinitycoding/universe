@@ -12,6 +12,7 @@ typedef enum
     PROCESS_ACTIVE = 1,
     PROCESS_FREEZED =  2,
     PROCESS_ZOMBIE = 4,
+    PROCESS_WAITPID = 16,
     PROCESS_NOT_FOUND = -1,
 }pflag_t;
 
@@ -38,6 +39,7 @@ struct process_state
     list_t *zombie_tids;
     list_t *children;
     uint16_t flags;
+    uint32_t waitpid;
 };
 
 struct child

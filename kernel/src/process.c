@@ -127,6 +127,22 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
 void process_kill(struct process_state *process)
 {
     asm volatile("cli");
+    if(process->parent->flags & PROCESS_WAITPID)
+    {
+        if(process->parent->waitpid == -1) // any childt the other cases
+        {
+            list_t *parent_threads = process->parent->threads;
+            list_set_first(parent_threads);
+            while(!list_is_empty(parent_threads) && !list_is_last(parent_threads))
+            {
+                list_push_front(running_threads, list_get_current(parent_threads));
+                list_next(parent_threads);
+            }
+        }
+        //Todo: implenen
+    }
+
+
     list_set_first(process->threads);
 
     while(!list_is_empty(process->threads))
@@ -259,32 +275,24 @@ void sys_fork(struct cpu_state **cpu)
 
 void sys_waitpid(struct cpu_state **cpu)
 {
-    if(list_is_empty(current_thread->process->children))
+    list_set_first(running_threads);
+    while(!list_is_last(running_threads) && !list_is_empty(running_threads))
     {
-
-
-    }
-    else
-    {
-        list_set_first(current_thread->process->children);
-        while(!list_is_last(current_thread->process->children))
+        if(((struct thread_state*)list_get_current(running_threads))->process == current_thread->process)
         {
-            struct child *current_child = list_get_current(current_thread->process->children);
-            if(current_child->process == NULL) //Child is dead
-            {
-                if( ((int) (*cpu)->CPU_ARG1) == -1)
-                {
-
-
-                }
-                else if(((int) (*cpu)->CPU_ARG1) > 0 && (*cpu)->CPU_ARG1 == current_thread->process->pid)
-                {
-
-                }
-            }
-            list_next(current_thread->process->children);
+            list_remove(running_threads);
+            list_set_first(running_threads);
+        }
+        else
+        {
+            list_next(running_threads);
         }
     }
+    current_thread->ticks = 0;
+    current_thread->process->flags |= PROCESS_WAITPID;
+    current_thread->process->waitpid = (*cpu)->CPU_ARG1;
+    list_set_first(running_threads);
+    *cpu = task_schedule(*cpu);
 }
 
 
