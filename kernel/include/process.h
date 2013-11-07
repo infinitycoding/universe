@@ -53,5 +53,6 @@ struct child
     struct process_state *process_find(pid_t id);
     void sys_exit(struct cpu_state **cpu);
     void sys_fork(struct cpu_state **cpu);
+    void sys_waitpid(struct cpu_state **cpu);
 
 #endif
