@@ -17,6 +17,7 @@
 #include <stdint.h>
 #include <process.h>
 #include <list.h>
+#include <paging.h>
 #define THREAD_ACTIV 1
 #define THREAD_FREEZED 2
 #define THREAD_KERNELMODE 4
@@ -37,7 +38,7 @@ struct thread_state
     tid_t tid; //Thread ID
 };
 
-struct thread_state *thread_create(struct process_state *process, privilege_t prev,uintptr_t eip, struct cpu_state *state, int argc, void **argv, void *return_address);
+struct thread_state *thread_create(struct process_state *process, privilege_t prev,uintptr_t eip, struct cpu_state *state, int argc, void **argv, void *return_address, vmm_context_t *context);
 void thread_kill(struct thread_state *thread);
 void thread_kill_sub(struct thread_state *thread);
 void thread_exit(struct cpu_state **cpu);

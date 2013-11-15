@@ -252,17 +252,18 @@ void sys_exit(struct cpu_state **cpu)
  */
 void sys_fork(struct cpu_state **cpu)
 {
+    vmm_context_t context;
+    vmm_create_context(&context);
+    arch_fork_context(&current_thread->context.arch_context, &context.arch_context);
     struct process_state *new_process = process_create(current_thread->process->name ,current_thread->process->desc ,current_thread->process->flags ,current_thread->process);
-    struct thread_state *new_thread = thread_create(new_process, !(current_thread->flags & THREAD_KERNELMODE), 0, *cpu, 0, NULL, NULL);
-    int i;
-    for(i = 0; i < (MEMORY_LAYOUT_KERNEL_START >> 22); i++)
-    {
-        if(current_thread->context.arch_context.entries[i]) {
-          pt_t *new_pt = (pt_t *) pt_create(&new_thread->context.arch_context, i, VMM_PRESENT | VMM_USER);
-          pt_t *pt = (pt_t *) pt_get(&new_thread->context.arch_context, i, VMM_PRESENT | VMM_USER);
-          memcpy((void*)new_pt, (void*)pt, 4096);
-        }
-    }
+    struct thread_state *new_thread = thread_create(new_process, !(current_thread->flags & THREAD_KERNELMODE), 0, *cpu, 0, NULL, NULL, &context);
+    
+    void *stack_src = MEMORY_LAYOUT_STACK_TOP - THREAD_STACK_SIZE;
+    paddr_t pframe = pmm_alloc_page();
+    vmm_map(&new_thread->context, pframe, MEMORY_LAYOUT_STACK_TOP-0x1000, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
+    void *stack = vmm_automap_kernel(current_context, pframe, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
+    memcpy(stack, stack_src, THREAD_STACK_SIZE);
+
     new_thread->state->CPU_ARG0 = 0;
     current_thread->state->CPU_ARG0 = new_process->pid;
 }
