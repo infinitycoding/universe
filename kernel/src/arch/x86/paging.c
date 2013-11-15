@@ -29,6 +29,7 @@
 #include <memory_layout.h>
 #include <string.h>
 #include <panic.h>
+#include <thread.h>
 
 static inline void paging_flush_tlb(vaddr_t addr);
 
@@ -120,6 +121,17 @@ void arch_sync_pts(arch_vmm_context_t *src, arch_vmm_context_t *dest, int index_
 	int i;
 	for(i = index_low; i < index_high; i++) {
 		dest->entries[i] = src->entries[i];
+	}
+}
+
+void arch_fork_context(arch_vmm_context_t *src, arch_vmm_context_t *dest) {
+	int i;
+	for(i = 0; i < 1024; i++) {
+		if(src->entries[i] & VMM_PRESENT) {
+			pt_t *pt_src = pt_get(src, i, VMM_PRESENT | VMM_WRITABLE);
+			pt_t *pt_dest = pt_create(dest, i, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
+			memcpy(pt_dest, pt_src, 4096);
+		}
 	}
 }
 
@@ -310,7 +322,7 @@ paddr_t arch_vaddr2paddr(arch_vmm_context_t *context, vaddr_t vaddr) {
  	unsigned int pt_index = PTE_INDEX(vaddr);
 
  	pt_t *pt = (pt_t *)pt_get(context, pd_index, 0);
-	return (paddr_t) pt[pt_index];
+	return (paddr_t) pt[pt_index] & ~0xfff;
 }
 
 /**

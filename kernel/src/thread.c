@@ -18,12 +18,17 @@ void thread_sync_context(struct thread_state *thread) {
     }
 }
 
-struct thread_state *thread_create(struct process_state *process, privilege_t prev, uint32_t eip, struct cpu_state *state, int argc, void **argv, void *return_address)
+struct thread_state *thread_create(struct process_state *process, privilege_t prev, uint32_t eip, struct cpu_state *state, int argc, void **argv, void *return_address, vmm_context_t *context)
 {
     struct thread_state *new_thread = malloc(sizeof(struct thread_state));
 	new_thread->flags = THREAD_ACTIV;
     new_thread->process = process;
-    vmm_create_context(&new_thread->context);
+    
+    if(context == NULL)
+      vmm_create_context(&new_thread->context);
+    else
+      memcpy(&new_thread->context.arch_context, &context->arch_context, sizeof(arch_vmm_context_t));
+    
     thread_sync_context(new_thread);
     new_thread->ticks = 10;
     new_thread->return_value = 0;
@@ -51,11 +56,11 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     {
         new_thread->flags |= THREAD_KERNELMODE;
 
-		new_state->cs = 0x08;
-		new_state->ds = 0x10;
-		new_state->es = 0x10;
-		new_state->fs = 0x10;
-		new_state->gs = 0x10;
+	new_state->cs = 0x08;
+	new_state->ds = 0x10;
+	new_state->es = 0x10;
+	new_state->fs = 0x10;
+	new_state->gs = 0x10;
     }
     else
     {
@@ -69,10 +74,11 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
             *--stack = (uint32_t) argv;
             *--stack = argc;
             *--stack = (uint32_t) return_address;
+	    vmm_unmap(current_context, stack);
 	}
 
-		new_state->cs = 0x1b;
-		new_state->ss = 0x23;
+	new_state->cs = 0x1b;
+	new_state->ss = 0x23;
     }
 
     if(list_is_empty(process->zombie_tids))
@@ -141,7 +147,7 @@ void thread_exit(struct cpu_state **cpu)
 
 void launch_thread(struct cpu_state **cpu)
 {
-    thread_create(current_thread->process, USERMODE, (*cpu)->CPU_ARG1, NULL, (*cpu)->CPU_ARG2, (void**)(*cpu)->CPU_ARG3, (void*)(*cpu)->CPU_ARG4);
+    thread_create(current_thread->process, USERMODE, (*cpu)->CPU_ARG1, NULL, (*cpu)->CPU_ARG2, (void**)(*cpu)->CPU_ARG3, (void*)(*cpu)->CPU_ARG4, NULL);
 }
 
 

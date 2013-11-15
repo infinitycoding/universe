@@ -11,8 +11,14 @@ int main(int argc, char **argv) {
     print("Userspace!\n");
     thread_launch(thread, 0, NULL);
 
-    while(1);
-    
+    int pid = linux_syscall(SYS_FORK, 0, 0, 0, 0, 0);
+    if(pid == 0) {
+        print("Child!\n");
+    } else {
+        print("Parent!\n");
+    }
+    while(1);    
+
     return 0;
 }
 
