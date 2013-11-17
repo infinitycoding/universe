@@ -79,7 +79,6 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
             while(list_is_empty(running_threads)){}
             asm volatile("cli");
         }
-
         list_set_first(running_threads);
         current_thread = list_get_current(running_threads);
         vmm_switch_context(&current_thread->context);

@@ -12,7 +12,6 @@ typedef enum
     PROCESS_ACTIVE = 1,
     PROCESS_FREEZED =  2,
     PROCESS_ZOMBIE = 4,
-    PROCESS_WAITPID = 16,
     PROCESS_NOT_FOUND = -1,
 }pflag_t;
 
@@ -39,7 +38,6 @@ struct process_state
     list_t *zombie_tids;
     list_t *children;
     uint16_t flags;
-    uint32_t waitpid;
 };
 
 struct child
@@ -54,5 +52,6 @@ struct child
     void sys_exit(struct cpu_state **cpu);
     void sys_fork(struct cpu_state **cpu);
     void sys_waitpid(struct cpu_state **cpu);
+    void dump_thread_list(list_t *threads);
 
 #endif
