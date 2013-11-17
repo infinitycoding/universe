@@ -22,8 +22,8 @@
 #define THREAD_FREEZED 2
 #define THREAD_KERNELMODE 4
 #define THREAD_ZOMBIE 8
-#define MAIN_THREAD 16
 #define THREAD_STACK_SIZE 4096
+#define THREAD_WAITPID 16
 
 
 
@@ -34,6 +34,7 @@ struct thread_state
     vmm_context_t context;
     uint32_t ticks;
     uint16_t flags;
+    uint32_t waitpid;
     int return_value;
     tid_t tid; //Thread ID
 };

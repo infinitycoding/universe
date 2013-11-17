@@ -26,6 +26,19 @@ inline int min(int a, int b)
     return (a < b) ? a : b;
 }
 
+void dump_thread_list(list_t *threads)
+{
+    list_set_first(threads);
+    printf("-----%d-----\n",list_length(threads));
+    while(!list_is_empty(threads) && !list_is_last(threads))
+    {
+        struct thread_state *t = list_get_current(threads);
+        printf("PID: %d  TID: %d  FLAG: %08x\n",t->process->pid, t->tid, t->flags);
+        list_next(threads);
+    }
+    list_set_first(threads);
+}
+
 
 /**
  * creates a process
@@ -127,19 +140,21 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
 void process_kill(struct process_state *process)
 {
     asm volatile("cli");
-    if(process->parent->flags & PROCESS_WAITPID)
+
+    list_set_first(process->parent->threads);
+    while(!list_is_empty(process->parent->threads) && !list_is_last(process->parent->threads))
     {
-        if(process->parent->waitpid == -1) // any childt the other cases
+        struct thread_state *thread = list_get_current(process->parent->threads);
+        if(thread->flags & THREAD_WAITPID)
         {
-            list_t *parent_threads = process->parent->threads;
-            list_set_first(parent_threads);
-            while(!list_is_empty(parent_threads) && !list_is_last(parent_threads))
+            if(thread->waitpid == -1)
             {
-                list_push_front(running_threads, list_get_current(parent_threads));
-                list_next(parent_threads);
+                thread->flags &= ~THREAD_WAITPID;
+                thread->waitpid = 0;
+                list_push_front(running_threads, thread);
             }
         }
-        //Todo: implenen
+        list_next(process->parent->threads);
     }
 
 
@@ -257,7 +272,7 @@ void sys_fork(struct cpu_state **cpu)
     arch_fork_context(&current_thread->context.arch_context, &context.arch_context);
     struct process_state *new_process = process_create(current_thread->process->name ,current_thread->process->desc ,current_thread->process->flags ,current_thread->process);
     struct thread_state *new_thread = thread_create(new_process, !(current_thread->flags & THREAD_KERNELMODE), 0, *cpu, 0, NULL, NULL, &context);
-    
+
     void *stack_src = MEMORY_LAYOUT_STACK_TOP - THREAD_STACK_SIZE;
     paddr_t pframe = pmm_alloc_page();
     vmm_map(&new_thread->context, pframe, MEMORY_LAYOUT_STACK_TOP-0x1000, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
@@ -277,22 +292,14 @@ void sys_fork(struct cpu_state **cpu)
 void sys_waitpid(struct cpu_state **cpu)
 {
     list_set_first(running_threads);
-    while(!list_is_last(running_threads) && !list_is_empty(running_threads))
+    while(list_get_current(running_threads) != current_thread)
     {
-        if(((struct thread_state*)list_get_current(running_threads))->process == current_thread->process)
-        {
-            list_remove(running_threads);
-            list_set_first(running_threads);
-        }
-        else
-        {
-            list_next(running_threads);
-        }
+        list_next(running_threads);
     }
+    list_remove(running_threads);
     current_thread->ticks = 0;
-    current_thread->process->flags |= PROCESS_WAITPID;
-    current_thread->process->waitpid = (*cpu)->CPU_ARG1;
-    list_set_first(running_threads);
+    current_thread->flags |= THREAD_WAITPID;
+    current_thread->waitpid = (*cpu)->CPU_ARG1;
     *cpu = task_schedule(*cpu);
 }
 

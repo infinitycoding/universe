@@ -23,12 +23,12 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     struct thread_state *new_thread = malloc(sizeof(struct thread_state));
 	new_thread->flags = THREAD_ACTIV;
     new_thread->process = process;
-    
+
     if(context == NULL)
       vmm_create_context(&new_thread->context);
     else
       memcpy(&new_thread->context.arch_context, &context->arch_context, sizeof(arch_vmm_context_t));
-    
+
     thread_sync_context(new_thread);
     new_thread->ticks = 10;
     new_thread->return_value = 0;
@@ -117,9 +117,11 @@ void thread_kill_sub(struct thread_state *thread)
                 list_remove(running_threads);
                 break;
             }
+            list_next(running_threads);
         }
     }
     free(thread->state);
+
     if(! (thread->process->flags & PROCESS_ZOMBIE))
     {
         list_push_front(thread->process->zombie_tids,(void *) thread->tid);
@@ -134,6 +136,7 @@ void thread_kill_sub(struct thread_state *thread)
                     process_kill(thread->process);
                 break;
             }
+            list_next(thread->process->threads);
         }
     }
     free(thread);
