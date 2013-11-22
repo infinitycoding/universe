@@ -65,5 +65,7 @@ void vmm_switch_context(vmm_context_t *context);
 void vmm_destroy_context(vmm_context_t *context);
 void vmm_create_context(vmm_context_t *context);
 
+void alloc_memory(struct cpu_state **cpu);
+
 #endif
 

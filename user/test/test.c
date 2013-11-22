@@ -20,6 +20,9 @@ int main(int argc, char **argv) {
         linux_syscall(SYS_WAITPID,-1,0,0,0,0);
         print("I'm back!\n");
     }
+
+    int *a = alloc_memory(1);
+
     while(1);
     return 0;
 }

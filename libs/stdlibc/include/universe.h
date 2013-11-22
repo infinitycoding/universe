@@ -20,6 +20,13 @@ inline uint32_t fork()
     return pid;
 }
 
+inline uint32_t alloc_memory(int pages)
+{
+	uint32_t addr;
+	asm volatile("int $112;" : "=a" (addr) : "a" (4), "b" (pages));
+	return addr;
+}
+
 inline uint32_t linux_syscall(uint32_t function, uint32_t ebx, uint32_t ecx, uint32_t edx, uint32_t esi, uint32_t edi)
 {
     uint32_t retv = 0;
@@ -62,7 +69,6 @@ inline uint32_t universe_syscall(uint32_t function, uint32_t ebx, uint32_t ecx, 
 void thread_exit(int retv) {
   asm volatile("int $112;": : "a" (1) , "b"(retv));
 }
-
 
 #define print(STR) asm volatile("pushl %%ebx; int $112; popl %%ebx;": : "a"(0) , "b"(STR))
 #define thread_launch(FUNCTION, ARGC, ARGV) asm volatile("pushl %%ebx; int $112; popl %%ebx;": : "a"(2) , "b"(FUNCTION), "c"(ARGC), "d" (ARGV), "S" (&thread_exit))

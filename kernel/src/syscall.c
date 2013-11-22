@@ -67,10 +67,10 @@ void linux_syscall_handler(struct cpu_state **cpu)
 }
 
 
-#define DEFINED_UNIVERSE_FUNCTIONS 4
+#define DEFINED_UNIVERSE_FUNCTIONS 5
 void (*universe_functions[])(struct cpu_state **cpu) =
 {
-    print,thread_exit,launch_thread,identify_os
+    print,thread_exit,launch_thread,identify_os,alloc_memory
 };
 
 
