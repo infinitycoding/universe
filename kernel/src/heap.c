@@ -150,7 +150,7 @@ void *heap_alloc(heap_t *heap, size_t size) {
 	while(header != NULL) {
 		if(header->size >= size && header->status == HEAP_STATUS_FREE) {
 			header->status = HEAP_STATUS_USED;
-			/*if(header->size > n_size) {
+			if(header->size > n_size) {
 				alloc_t *new_header = header->base + size;
 				new_header->base    = header->base + n_size;
 				new_header->size = header->size - n_size;
@@ -159,7 +159,7 @@ void *heap_alloc(heap_t *heap, size_t size) {
 
 				new_header->next = heap->alloc_list;
 				heap->alloc_list = new_header;
-			}*/
+			}
 
 			return (void *)header->base;
 		}
