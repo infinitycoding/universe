@@ -21,7 +21,9 @@ int main(int argc, char **argv) {
         print("I'm back!\n");
     }
 
-    int *a = alloc_memory(1);
+    char *a = malloc(10);
+    a = "1234567890";
+    print(a);
 
     while(1);
     return 0;
