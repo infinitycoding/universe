@@ -110,6 +110,7 @@ void *list_remove(list_t *list)
 	struct list_node *node = list->current;
     node->prev->next = node->next;
     node->next->prev = node->prev;
+    list->current = node->next;
 	free(node);
 	return element;
 }
