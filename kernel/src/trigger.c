@@ -1,5 +1,4 @@
 #include <trigger.h>
-#include <process.h>
 #include <list.h>
 #include <heap.h>
 
@@ -24,27 +23,29 @@ void INIT_TRIGGER(void)
 
 
 /**
- * Wakes up a thread or process
- * @param 0 true = object is a process, false = object is a thread
- * @param 1 pointer to the thread/process state
+ * Wakes up a thread
+ * @param 0 pointer to the thread state
  * @return void
  **/
-void wakeup(bool proc, void *object)
+void wakeup_thread(struct thread_state *object)
 {
-    if(proc)
+    list_push_front(running_threads, object);
+}
+
+
+/**
+ * Wakes up a process
+ * @param 0 pointer to the process state
+ * @return void
+ **/
+void wakeup_process(struct process_state *object)
+{
+    struct process_state *process = object;
+    list_set_first(process->threads);
+    while(!list_is_empty(process->threads) && !list_is_last(process->threads))
     {
-        struct process_state *process = object;
-        list_set_first(process->threads);
-        while(!list_is_empty(process->threads) && !list_is_last(process->threads))
-        {
-            list_push_front(running_threads, list_get_current(process->threads));
-            list_next(process->threads);
-        }
-    }
-    // mount thread
-    else
-    {
-        list_push_front(running_threads, object);
+        list_push_front(running_threads, list_get_current(process->threads));
+        list_next(process->threads);
     }
 }
 
@@ -102,7 +103,7 @@ int remove_event_trigger_by_object(void *object, uint32_t ID)
  * @param 0 event ID
  * @return true if the trigger was removed, false if there was no trigger with the given ID
  **/
-int remove_event_by_id(uint32_t ID)
+int remove_event_trigger_by_id(uint32_t ID)
 {
     int removed_elements = 0;
     list_set_first(trigger_list);
@@ -138,8 +139,18 @@ int send_event(uint32_t ID)
         struct trigger_entry *current_entry = list_get_current(trigger_list);
         if(current_entry->ID == ID)
         {
-            wakeup(current_entry->proc, current_entry->object);
-            remove_event_by_id(ID);
+            if(current_entry->proc)
+            {
+                wakeup_process(current_entry->object);
+                remove_event_trigger_by_object(current_entry->object, current_entry->ID);
+            }
+            else
+            {
+                wakeup_thread(current_entry->object);
+                remove_event_trigger_by_object(current_entry->object, current_entry->ID);
+            }
+
+            remove_event_trigger_by_id(ID);
             return true;
         }
         list_next(trigger_list);
@@ -208,7 +219,17 @@ void send_killed_process(struct process_state *proc)
 
         if(current_entry->ID == proc->pid && current_entry->type == WAIT_PID) // pid > 0
         {
-            wakeup(current_entry->proc, current_entry->object);
+            if(current_entry->proc)
+            {
+                wakeup_process(current_entry->object);
+                remove_event_trigger_by_object(current_entry->object, current_entry->ID);
+            }
+            else
+            {
+                wakeup_thread(current_entry->object);
+                remove_event_trigger_by_object(current_entry->object, current_entry->ID);
+            }
+
             list_remove(trigger_list);
             free(current_entry);
             continue;
@@ -225,7 +246,25 @@ void send_killed_process(struct process_state *proc)
 
         if((int)current_entry->ID == -1 && current_entry->type == WAIT_PID) // pid = -1
         {
-
+            if(current_entry->object == proc->parent)
+            {
+                wakeup_process(proc->parent);
+                remove_event_trigger_by_object(proc->parent, current_entry->ID);
+            }
+            else
+            {
+                list_set_first(proc->parent->threads);
+                while(!list_is_empty(proc->parent->threads) && !list_is_last(proc->parent->threads))
+                {
+                    struct thread_state *thread = list_get_current(proc->parent->threads);
+                    if(thread == current_entry->object)
+                    {
+                        wakeup_thread(thread);
+                        remove_event_trigger_by_object(thread, current_entry->ID);
+                    }
+                    list_next(proc->parent->threads);
+                }
+            }
         }
 
         if((int)current_entry->ID < -1 && current_entry->type == WAIT_PID) // pid < -1
