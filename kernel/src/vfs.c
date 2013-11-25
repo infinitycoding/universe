@@ -317,7 +317,7 @@ struct fd *get_fd(int fd) {
 	return NULL;
 }
 
-void open(struct cpu_state **cpu) {
+void sys_open(struct cpu_state **cpu) {
 	char *path = (char *) (*cpu)->CPU_ARG1;
 	int oflags = (*cpu)->CPU_ARG2;
 	mode_t mode = (*cpu)->CPU_ARG3;
@@ -330,12 +330,12 @@ void open(struct cpu_state **cpu) {
 			strcpy(name, path);
 			inode = vfs_create_inode(name, mode, root);
 		} else {
-			(*cpu)->eax = -1;
+			(*cpu)->CPU_ARG0 = -1;
 			return;
 		}
 	} else {
 		if(oflags & O_EXCL) {
-			(*cpu)->eax = -2;
+			(*cpu)->CPU_ARG0 = -2;
 			return;
 		}
 	}
@@ -353,10 +353,10 @@ void open(struct cpu_state **cpu) {
 
 	list_push_back(current_thread->process->files, desc);
 
-	(*cpu)->eax = desc->id;
+	(*cpu)->CPU_ARG0 = desc->id;
 }
 
-void pipe(struct cpu_state **cpu) {
+void sys_pipe(struct cpu_state **cpu) {
 	int *id = (int *) (*cpu)->CPU_ARG1;
 
 	if(get_fd(id[0]) != NULL &&
@@ -382,13 +382,13 @@ void pipe(struct cpu_state **cpu) {
 		desc1->inode = inode;
 		list_push_back(current_thread->process->files, desc1);
 
-		(*cpu)->eax = 0;
+		(*cpu)->CPU_ARG0 = 0;
 	} else {
-		(*cpu)->eax = -1;
+		(*cpu)->CPU_ARG0 = -1;
 	}
 }
 
-void close(struct cpu_state **cpu) {
+void sys_close(struct cpu_state **cpu) {
 	int fd = (*cpu)->CPU_ARG1;
 
 	struct list_node *node = current_thread->process->files->head->next;
@@ -397,23 +397,23 @@ void close(struct cpu_state **cpu) {
 		struct fd *desc = node->element;
 		if(desc->id == fd) {
 			list_remove_node(node);
-			(*cpu)->eax = 0;
+			(*cpu)->CPU_ARG0 = 0;
 		} else {
 			node = node->next;
 		}
 	}
 
-	(*cpu)->eax = -1;
+	(*cpu)->CPU_ARG0 = -1;
 }
 
-void read(struct cpu_state **cpu) {
+void sys_read(struct cpu_state **cpu) {
 	int fd = (*cpu)->CPU_ARG1;
 	void *buf = (void*) (*cpu)->CPU_ARG2;
 	size_t len = (*cpu)->CPU_ARG3;
 
 	struct fd *desc = get_fd(fd);
 	if(desc == NULL) {
-		(*cpu)->eax = -1;
+		(*cpu)->CPU_ARG0 = -1;
 		return;
 	}
 
@@ -425,16 +425,16 @@ void read(struct cpu_state **cpu) {
 		if(read != NULL) {
 			memcpy((void*)buf, read, len);
 			desc->pos += len;
-			(*cpu)->eax = len;
+			(*cpu)->CPU_ARG0 = len;
 		} else {
-			(*cpu)->eax = -2;
+			(*cpu)->CPU_ARG0 = -2;
 		}
 	} else {
-		(*cpu)->eax = -3;
+		(*cpu)->CPU_ARG0 = -3;
 	}
 }
 
-void write(struct cpu_state **cpu) {
+void sys_write(struct cpu_state **cpu) {
 	int fd = (*cpu)->CPU_ARG1;
 	char *buf = (void*) (*cpu)->CPU_ARG2;
 	size_t len = (*cpu)->CPU_ARG3;
@@ -444,13 +444,13 @@ void write(struct cpu_state **cpu) {
 		for(i = 0; i < len; i++) {
 			printf("%c", buf[i]);
 		}
-		(*cpu)->eax = 0;
+		(*cpu)->CPU_ARG0 = 0;
 		return;
 	}
 
 	struct fd *desc = get_fd(fd);
 	if(desc == NULL) {
-		(*cpu)->eax = -1;
+		(*cpu)->CPU_ARG0 = -1;
 		return;
 	}
 
@@ -464,13 +464,29 @@ void write(struct cpu_state **cpu) {
 
 		vfs_inode_t *inode = desc->inode;
 		int ret = vfs_write(inode, desc->pos, buf, len);
-		(*cpu)->eax = ret;
+		(*cpu)->CPU_ARG0 = ret;
 		if(ret > 0) {
 			desc->pos += len;
 		}
 	} else {
-		(*cpu)->eax = -3;
+		(*cpu)->CPU_ARG0 = -3;
 	}
 }
 
+void sys_creat(struct cpu_state **cpu) {
+	char *name = (*cpu)->CPU_ARG1;
+	int mode = (*cpu)->CPU_ARG2;
+	vfs_inode_t *inode = vfs_create_inode(name, mode, root);
+	
+	struct fd *desc = malloc(sizeof(struct fd));
+	desc->id = list_length(current_thread->process->files);
+	desc->mode = mode;
+	desc->flags = O_RDWR;
+	desc->pos = 0;
+	desc->inode = inode;
+
+	list_push_back(current_thread->process->files, desc);
+
+	(*cpu)->CPU_ARG0 = desc->id;
+}
 
