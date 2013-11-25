@@ -53,6 +53,8 @@ void INIT_VFS(void) {
 	root->name = "root";
 	root->length = 0;
 	root->parent = NULL;
+	root->type = VFS_REGULAR;
+	root->links = list_create();
 
 	vfs_inode_t *foo = vfs_create_inode("foo.txt", 0x1ff, root);
 	vfs_write(foo, 0, "Hallo Welt!\n", 13);
@@ -92,6 +94,8 @@ vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent) {
 	vfs_inode_t *node = malloc(sizeof(vfs_inode_t));
 	node->name = name;
 	node->length = 0;
+	node->type = VFS_REGULAR;
+	node->links = list_create();
 	node->base = NULL;
 	if (parent != NULL) {
 		node->parent = parent;
@@ -168,6 +172,15 @@ int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
 		uint8_t *nbase = (uint8_t*) node->base + off;
 		uint8_t *wbase = (uint8_t*) base;
 		memcpy(nbase, wbase, bytes);
+
+		struct list_node *ln = node->links->head->next;
+		while(ln != node->links->head) {
+			vfs_inode_t *link = ln->element;
+			link->base = node->base;
+			link->length = node->length;
+			ln = ln->next;
+		}
+
 		return bytes;
 	} else {
 		printf("vfs: node %d isn't writable!\n", node->stat.st_ino);
@@ -363,6 +376,7 @@ void sys_pipe(struct cpu_state **cpu) {
 	   get_fd(id[1]) != NULL)
 	{
 		vfs_inode_t *inode = vfs_create_inode("pipe", 0, NULL);
+		inode->type = VFS_PIPE;
 
 		// create read channel
 		struct fd *desc0 = malloc(sizeof(struct fd));
@@ -488,5 +502,17 @@ void sys_creat(struct cpu_state **cpu) {
 	list_push_back(current_thread->process->files, desc);
 
 	(*cpu)->CPU_ARG0 = desc->id;
+}
+
+void sys_link(struct cpu_state **cpu) {
+	char *src_path = (*cpu)->CPU_ARG1;
+	char *dest_path = (*cpu)->CPU_ARG2;
+	
+	vfs_inode_t *src_inode = vfs_lookup_path(src_path);
+	vfs_inode_t *dest_inode = vfs_create_inode(dest_path, src_inode->stat.st_mode, root);
+	dest_inode->type = VFS_LINK;
+	dest_inode->base = src_inode->base;
+	dest_inode->length = src_inode->length;
+	list_push_back(src_inode->links, dest_inode);
 }
 
