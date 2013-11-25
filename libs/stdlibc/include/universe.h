@@ -10,7 +10,8 @@
 #define SYS_CLOSE 6
 #define SYS_WAITPID 7
 #define SYS_CREAT 8
-#define SYS_PIPE 9 // TODO
+#define SYS_LINK 9
+#define SYS_PIPE 10 // TODO
 
 #define exit(RETV) asm volatile("int $128" : : "a"(SYS_EXIT), "b"(RETV))
 

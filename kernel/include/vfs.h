@@ -27,6 +27,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <cpu.h>
+#include <list.h>
 
 #define R_OK 0x1
 #define W_OK 0x2
@@ -36,6 +37,11 @@
 #define SEEK_SET 0x1
 #define SEEK_CUR 0x2
 #define SEEK_END 0x3
+
+// inode types
+#define VFS_REGULAR 0x0
+#define VFS_PIPE    0x1
+#define VFS_LINK    0x3
 
 #define O_RDONLY 0x01 /* read only */
 #define O_WRONLY 0x02 /* write only */
@@ -48,9 +54,11 @@
 typedef struct vfs_inode {
 	char *name;
 	void *base;
+	uint32_t type;
 	uint32_t length;
 	struct stat stat;
 	struct vfs_inode *parent;
+	list_t *links;
 } vfs_inode_t;
 
 typedef struct vfs_dentry {
@@ -83,5 +91,6 @@ void sys_close(struct cpu_state **cpu);
 void sys_read(struct cpu_state **cpu);
 void sys_write(struct cpu_state **cpu);
 void sys_creat(struct cpu_state **cpu);
+void sys_link(struct cpu_state **cpu);
 
 #endif
