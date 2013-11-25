@@ -3,6 +3,7 @@
 
 
 #include <stdint.h>
+#include <process.h>
 
 typedef enum
 {
@@ -21,6 +22,13 @@ struct trigger_entry
 };
 
 
-
-
+void INIT_TRIGGER(void);
+void wakeup_thread(struct thread_state *object);
+void wakeup_process(struct process_state *object);
+int remove_event_trigger_by_object(void *object, uint32_t ID);
+int remove_event_trigger_by_id(uint32_t ID);
+int send_event(uint32_t ID);
+uint32_t add_event_trigger(bool proc, void *object);
+void add_trigger(trigger_t type, uint32_t ID, bool proc, void *object);
+void send_killed_process(struct process_state *proc);
 #endif
