@@ -42,6 +42,7 @@
 #include <scheduler.h>
 #include <heap.h>
 #include <vfs.h>
+#include <trigger.h>
 
 
 #include <drivers/keyboard.h>
@@ -79,7 +80,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	INIT_PAGING(mb_info);
 	INIT_HEAP();
 	INIT_VFS();
-
+    INIT_TRIGGER();
 	asm volatile("sti");
 
 	INIT_PIT(50);
@@ -115,7 +116,6 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 
 	//thread_kill(current_thread);
 	//while(1){}
-
 	return 0;
 }
 

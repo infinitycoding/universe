@@ -5,11 +5,13 @@
 #include <scheduler.h>
 #include <paging.h>
 #include <memory_layout.h>
+#include <trigger.h>
 
 extern struct process_state *kernel_state;
 extern struct thread_state *current_thread;
 extern list_t *running_threads;
 extern vfs_inode_t *root;
+
 
 list_t *process_list = 0;
 list_t *zombie_list = 0;
@@ -67,7 +69,7 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
     state->zombie_tids = list_create();
     state->threads = list_create();
     state->ports = list_create();
-    state->tid_counter = 0;
+    state->tid_counter = 1;
 
     if (parent == NULL)
         state->parent = kernel_state;
@@ -140,24 +142,7 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
 void process_kill(struct process_state *process)
 {
     asm volatile("cli");
-
-    list_set_first(process->parent->threads);
-    while(!list_is_empty(process->parent->threads) && !list_is_last(process->parent->threads))
-    {
-        struct thread_state *thread = list_get_current(process->parent->threads);
-        if(thread->flags & THREAD_WAITPID)
-        {
-            if(thread->waitpid == -1)
-            {
-                thread->flags &= ~THREAD_WAITPID;
-                thread->waitpid = 0;
-                list_push_front(running_threads, thread);
-            }
-        }
-        list_next(process->parent->threads);
-    }
-
-
+    send_killed_process(process);
     list_set_first(process->threads);
 
     while(!list_is_empty(process->threads))
@@ -176,7 +161,8 @@ void process_kill(struct process_state *process)
     while(!list_is_empty(process->children))
     {
         struct child *current_child = list_pop_front(process->children);
-        process_kill(current_child->process);
+        if(current_child->process)
+            process_kill(current_child->process);
         free(current_child);
     }
 
@@ -300,6 +286,7 @@ void sys_waitpid(struct cpu_state **cpu)
     current_thread->ticks = 0;
     current_thread->flags |= THREAD_WAITPID;
     current_thread->waitpid = (*cpu)->CPU_ARG1;
+    add_trigger(WAIT_PID, current_thread->waitpid, false, (void *)current_thread);
     *cpu = task_schedule(*cpu);
 }
 
