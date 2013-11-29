@@ -20,8 +20,7 @@
 
  */
 
-#include <stdint.h>
-#include <arch/x86/arch_mutex.h>
+#include <mutex.h>
 
 void lock(mutex m)
 {

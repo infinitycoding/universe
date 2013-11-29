@@ -20,13 +20,16 @@
 
  */
 
-#ifndef _arch_mutex_h_
-#define _arch_mutex_h_
+#ifndef _mutex_h_
+#define _mutex_h_
 
 #include <stdint.h>
 
 typedef int* mutex;
 
+void lock(mutex m);
+void unlock(mutex m);
+bool try_lock(mutex m);
 
 
 
