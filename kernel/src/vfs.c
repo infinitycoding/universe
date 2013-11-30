@@ -39,6 +39,9 @@ uint32_t nodes = 0;
 static uid_t uid = 0;
 static gid_t gid = 0;
 
+// solve a link
+#define GET_INODE(i) if(i->type == VFS_LINK) i = (vfs_inode_t*) i->base;
+
 /**
  * Initalizing the Virtual File System
  *
@@ -54,7 +57,6 @@ void INIT_VFS(void) {
 	root->length = 0;
 	root->parent = NULL;
 	root->type = VFS_REGULAR;
-	root->links = list_create();
 
 	vfs_inode_t *foo = vfs_create_inode("foo.txt", 0x1ff, root);
 	vfs_write(foo, 0, "Hallo Welt!\n", 13);
@@ -95,7 +97,6 @@ vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent) {
 	node->name = name;
 	node->length = 0;
 	node->type = VFS_REGULAR;
-	node->links = list_create();
 	node->base = NULL;
 	if (parent != NULL) {
 		node->parent = parent;
@@ -137,6 +138,8 @@ vfs_dentry_t* vfs_create_dir_entry(vfs_inode_t *entry_inode) {
  * @return number of written bytes
  */
 int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
+	GET_INODE(node);
+	
 	int writable = 0;
 	if ((node->stat.st_uid == uid) &&
 	    (node->stat.st_mode & S_IWUSR))
@@ -172,15 +175,7 @@ int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
 		uint8_t *nbase = (uint8_t*) node->base + off;
 		uint8_t *wbase = (uint8_t*) base;
 		memcpy(nbase, wbase, bytes);
-
-		struct list_node *ln = node->links->head->next;
-		while(ln != node->links->head) {
-			vfs_inode_t *link = ln->element;
-			link->base = node->base;
-			link->length = node->length;
-			ln = ln->next;
-		}
-
+		
 		return bytes;
 	} else {
 		printf("vfs: node %d isn't writable!\n", node->stat.st_ino);
@@ -197,6 +192,7 @@ int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
  * @return readed data
  */
 void* vfs_read(vfs_inode_t *node, uintptr_t offset) {
+	GET_INODE(node);
 	return (void*) node->base + offset;
 }
 
@@ -511,8 +507,19 @@ void sys_link(struct cpu_state **cpu) {
 	vfs_inode_t *src_inode = vfs_lookup_path(src_path);
 	vfs_inode_t *dest_inode = vfs_create_inode(dest_path, src_inode->stat.st_mode, root);
 	dest_inode->type = VFS_LINK;
-	dest_inode->base = src_inode->base;
-	dest_inode->length = src_inode->length;
-	list_push_back(src_inode->links, dest_inode);
+	dest_inode->base = dest_inode;
+
+	(*cpu)->CPU_ARG0 = 0;
+}
+
+void sys_unlink(struct cpu_state **cpu) {
+	char *path = (*cpu)->CPU_ARG1;
+	
+	vfs_inode_t *link = vfs_lookup_path(path);
+	link->base = NULL;
+	link->type = VFS_REGULAR;
+	free(link);
+
+	(*cpu)->CPU_ARG0 = 0;
 }
 
