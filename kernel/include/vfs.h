@@ -58,7 +58,6 @@ typedef struct vfs_inode {
 	uint32_t length;
 	struct stat stat;
 	struct vfs_inode *parent;
-	list_t *links;
 } vfs_inode_t;
 
 typedef struct vfs_dentry {
@@ -92,5 +91,6 @@ void sys_read(struct cpu_state **cpu);
 void sys_write(struct cpu_state **cpu);
 void sys_creat(struct cpu_state **cpu);
 void sys_link(struct cpu_state **cpu);
+void sys_unlink(struct cpu_state **cpu);
 
 #endif
