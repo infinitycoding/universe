@@ -51,6 +51,7 @@
 #include <drivers/video.h>
 #include <drivers/pci.h>
 #include <elf.h>
+#include <mutex.h>
 
 #include "memory_layout.h"
 
@@ -64,6 +65,8 @@
 */
 extern struct thread_state *current_thread;
 extern struct process_state *kernel_state;
+
+
 
 int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	clear_screen();
@@ -99,10 +102,14 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	//print current time
 	print_time(get_time()); //crashes on a real computer and on virtual box
 	printf("\n");
+	printf("Timestamp:%d\n",unix_time(get_time()));
 
 	INIT_CPUID();
 	printf("\n");
 	INIT_PCI();
+
+
+
 
 	// Load modules
 	int i;

@@ -24,6 +24,7 @@
 */
 
 #include <stdint.h>
+#include <cpu.h>
 
 typedef struct time {
 	uint8_t second;
@@ -48,6 +49,8 @@ int change_time(time_t time);
 time_t *get_time(void);
 void set_pit_freq(int freq);
 void print_time(time_t * time);
+int unix_time(time_t *time);
+void sys_time(struct cpu_state **cpu);
 
 #endif
 

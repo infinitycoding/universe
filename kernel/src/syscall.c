@@ -29,6 +29,7 @@
 #include <process.h>
 #include <vfs.h>
 #include <printf.h>
+#include <drivers/timer.h>
 
 #define OS_VERSION 1
 
@@ -49,12 +50,12 @@ void identify_os(struct cpu_state **cpu)
 
 
 
-#define DEFINED_LINUX_FUNCTIONS 11
+#define DEFINED_LINUX_FUNCTIONS 12
 
 
 void (*linux_functions[])(struct cpu_state **cpu) =
 {
-    NULL,sys_exit,sys_fork,sys_read,sys_write,sys_open,sys_close,sys_waitpid,sys_creat,sys_link,sys_unlink, /*FIXME: pipe kommt weiter hinten*/ sys_pipe
+    NULL,sys_exit,sys_fork,sys_read,sys_write,sys_open,sys_close,sys_waitpid,sys_creat,sys_link,sys_unlink,/*sys_chdir,*/ sys_time,/*FIXME: pipe kommt weiter hinten*/ sys_pipe
 };
 
 void linux_syscall_handler(struct cpu_state **cpu)

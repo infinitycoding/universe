@@ -139,6 +139,33 @@ time_t *get_time(void) {
 	return &current_time;
 }
 
+const int day_to_current_month[] = {0,31,59,90,120,151,181,212,243,273,304,334}; // regeljahr
+/**
+ * creates a unix timestamp
+ *
+ * @param pointer ti time struct
+ *
+ * @return unix timestamp
+ */
+int unix_time(time_t *time)
+{
+	int year = (time->century*100)+time->year;
+	int leap_years = ((year - 1) - 1968) / 4 - ((year - 1) - 1900) / 100 + ((year - 1) - 1600) / 400;
+	int unix_time = time->second + (time->minute *60) + (time->hour *60*60) + ((day_to_current_month[time->month - 1] + time->day_in_month - 1) *24*60*60) + (((year-1970)*365+leap_years)*24*60*60);
+	if((time->month >2) && (year%4==0 && (year%100!=0 || year%400==0)))
+	unix_time += 24*60*60;
+	return unix_time;
+}
+
+void sys_time(struct cpu_state **cpu)
+{
+    int stamp = unix_time(get_time());
+    if((*cpu)->CPU_ARG1)
+        *((int*)(*cpu)->CPU_ARG1) = stamp;
+    return stamp;
+}
+
+
 /**
  * Print datetime
  */
