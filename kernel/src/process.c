@@ -64,6 +64,7 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
     state->desc[string_len + 1] = 0;
     state->flags = flags;
     state->files = list_create();
+	state->pipes = list_create();
     state->cwd = root;
     state->children = list_create();
     state->zombie_tids = list_create();

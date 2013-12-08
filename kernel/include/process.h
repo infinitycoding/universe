@@ -31,6 +31,7 @@ struct process_state
     struct process_state* parent;
     vfs_inode_t *cwd;
     list_t *files;
+    list_t *pipes;
     list_t *ports;
     list_t *threads;
     tid_t tid_counter;
