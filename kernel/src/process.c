@@ -50,7 +50,7 @@ void dump_thread_list(list_t *threads)
  * @param parent    pointer to the parent process struct (NULL: Kernel Init = parent)
  * @return
  */
-struct process_state *process_create(const char *name, const char *desc, uint16_t flags,struct process_state *parent)
+struct process_state *process_create(const char *name, const char *desc, uint16_t flags,struct process_state *parent,vfs_inode_t *stdin,vfs_inode_t *stdout,vfs_inode_t *stderr)
 {
 
     struct process_state *state = malloc(sizeof(struct process_state));
@@ -103,9 +103,9 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
 
 
     // create stream files
-    vfs_inode_t *stdin = vfs_create_inode("stdin", 0x7ff, NULL);
-    vfs_inode_t *stdout = vfs_create_inode("stdout", 0x7ff, NULL);
-    vfs_inode_t *stderr = vfs_create_inode("stderr", 0x7ff, NULL);
+    if(stdin == NULL) stdin = vfs_create_inode("stdin", 0x7ff, NULL);
+    if(stdout == NULL) stdout = vfs_create_inode("stdout", 0x7ff, NULL);
+    if(stderr == NULL) stderr = vfs_create_inode("stderr", 0x7ff, NULL);
 
     struct fd *desc0 = malloc(sizeof(struct fd));
     desc0->id = 0;
