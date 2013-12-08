@@ -47,7 +47,7 @@ struct child
     struct process_state *process;
 };
 
-    struct process_state *process_create(const char *name, const char *desc, uint16_t flags,struct process_state *parent);
+    struct process_state *process_create(const char *name, const char *desc, uint16_t flags,struct process_state *parent,vfs_inode_t *stdin,vfs_inode_t *stdout,vfs_inode_t *stderr);
     void process_kill(struct process_state *process);
     struct process_state *process_find(pid_t id);
     void sys_exit(struct cpu_state **cpu);
