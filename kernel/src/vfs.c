@@ -19,6 +19,7 @@
 /**
 	@author Michael Sippel <michamimosa@gmail.com>
 */
+
 #include <stdint.h>
 #include <string.h>
 #include <heap.h>
@@ -140,29 +141,23 @@ vfs_dentry_t* vfs_create_dir_entry(vfs_inode_t *entry_inode) {
 int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
 	GET_INODE(node);
 	
-	int writable = 0;
-	if ((node->stat.st_uid == uid) &&
-	    (node->stat.st_mode & S_IWUSR))
-	{
-		writable = 1;
+	int num_pipes = 1;
+	struct list_node *pipes = NULL;
+	if(node->type == VFS_PIPE) {
+		vfs_inode_t *base_inode = node->parent;
+		vfs_pipe_info_t *info = (vfs_pipe_info_t*) base_inode->base;
+		num_pipes = list_length(info->read_inodes);
+		pipes = info->read_inodes->head->next;
 	}
-	else if
-	    ((node->stat.st_gid == gid) &&
-	    (node->stat.st_mode & S_IWGRP))
-	{
-		writable = 1;
-	} else {
-		if (node->stat.st_mode & S_IWOTH)
-			writable = 1;
-	}
-
-	if (writable) {
+	
+	int i;
+	for(i = 0; i < num_pipes; i++) {
 		int old_len = node->length;
-    		if( (off + bytes) > node->length) {
+			if( (off + bytes) > node->length) {
 			node->length = off + bytes;
 			node->stat.st_size = node->length;
 		}
-
+		
 		if (node->base == NULL) {
 			node->base = malloc(node->length);
 		} else {
@@ -171,16 +166,18 @@ int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
 			if(pages_new > pages_old)
 				node->base = realloc(node->base, node->length);
 		}
-
+		
 		uint8_t *nbase = (uint8_t*) node->base + off;
 		uint8_t *wbase = (uint8_t*) base;
 		memcpy(nbase, wbase, bytes);
 		
-		return bytes;
-	} else {
-		printf("vfs: node %d isn't writable!\n", node->stat.st_ino);
+		if(pipes != NULL) {
+			node = pipes->element;
+			pipes = pipes->next;
+		}
 	}
-	return 0;
+	
+	return bytes;
 }
 
 /**
@@ -371,26 +368,43 @@ void sys_pipe(struct cpu_state **cpu) {
 	if(get_fd(id[0]) != NULL &&
 	   get_fd(id[1]) != NULL)
 	{
-		vfs_inode_t *inode = vfs_create_inode("pipe", 0, NULL);
-		inode->type = VFS_PIPE;
+		vfs_inode_t *base_inode = vfs_create_inode("pipe", 0, NULL);
+
+		vfs_pipe_info_t *pipe = malloc(sizeof(vfs_pipe_info_t));
+		pipe->num_readers = 1;
+		pipe->num_writers = 1;
+		pipe->read_inodes  = list_create();
+		pipe->write_inodes = list_create();		
+
+		base_inode->type = VFS_PIPE;
+		base_inode->base = pipe;
+		base_inode->length = sizeof(vfs_pipe_info_t);		
+
+		list_push_back(current_thread->process->pipes, base_inode);
 
 		// create read channel
+		vfs_inode_t *read_inode = vfs_create_inode("pipe", 0, base_inode);
+		read_inode->type = VFS_PIPE;
 		struct fd *desc0 = malloc(sizeof(struct fd));
 		desc0->id = id[0];
 		desc0->mode = 0x7ff;
 		desc0->flags = O_RDONLY;
 		desc0->pos = 0;
-		desc0->inode = inode;
+		desc0->inode = read_inode;
 		list_push_back(current_thread->process->files, desc0);
+		list_push_back(pipe->read_inodes, read_inode);
 
 		// create write channel
+		vfs_inode_t *write_inode = vfs_create_inode("pipe", 0, base_inode);
+		write_inode->type = VFS_PIPE;
 		struct fd *desc1 = malloc(sizeof(struct fd));
 		desc1->id = id[1];
 		desc1->mode = 0x7ff;
 		desc1->flags = O_WRONLY;
 		desc1->pos = 0;
-		desc1->inode = inode;
+		desc1->inode = write_inode;
 		list_push_back(current_thread->process->files, desc1);
+		list_push_back(pipe->write_inodes, write_inode);
 
 		(*cpu)->CPU_ARG0 = 0;
 	} else {

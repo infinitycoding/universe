@@ -60,6 +60,14 @@ typedef struct vfs_inode {
 	struct vfs_inode *parent;
 } vfs_inode_t;
 
+typedef struct vfs_pipe_info {
+	unsigned int num_readers;
+	unsigned int num_writers;
+	
+	list_t *read_inodes;
+	list_t *write_inodes;
+} vfs_pipe_info_t;
+
 typedef struct vfs_dentry {
 	ino_t ino;
 	vfs_inode_t *inode;
