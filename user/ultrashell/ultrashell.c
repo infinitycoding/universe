@@ -1,34 +1,34 @@
 #include <ultrashell.h>
 
 #include <universe.h>
+#include <stdlib.h>
 
 
 
-// main is needed to compile, currently unused
+// main is needed to compile, currently test only
 
 int main(void)
 {
-	//char **args = NULL;
-	//int argc = 0;
-	//int i = 0;
+	char **args = NULL;
+	int argc = 0;
+	int i = 0;
 
 	print("Ultrashell!\n");
 
-	/*argc = getTokens("git add .\n", args);
+	argc = getTokens("git add .\n", &args);
 
 	for(i = 0; i < argc; i++)
 	{
 		print(args[i]);
-		print('\n');
-	}*/
+		print("\n");
+	}
 	return 0;
 }
 
 
 // separates a string into tokens
-// unworkable because of missing malloc
 
-/*int getTokens(const char *instring, char ***tokens)
+int getTokens(const char *instring, char ***tokens)
 {
 	char currentToken[MAX_TOKEN_LENGTH];
 	int currentTokenNumber = 0;
@@ -48,12 +48,12 @@ int main(void)
 				i++;
 
 			currentToken[tokenSize] = '\0';
-			tokens[0][currentTokenNumber] = (char *)malloc(sizeof(char) * tokenSize);
+			tokens[0][currentTokenNumber] = (char *)malloc(sizeof(char) * (tokenSize+1));
 			strncpy(tokens[0][currentTokenNumber], currentToken, MAX_TOKEN_LENGTH);
 
 			memset(currentToken, '\0', sizeof(currentToken));
 			currentTokenNumber++;
-			tokenSize = 0;
+			tokenSize = 1;
 		}
 		else
 		{
@@ -62,8 +62,12 @@ int main(void)
 		}
 	}
 
+	currentToken[tokenSize] = '\0';
+	tokens[0][currentTokenNumber] = (char *)malloc(sizeof(char) * (tokenSize+1));
+	strncpy(tokens[0][currentTokenNumber], currentToken, MAX_TOKEN_LENGTH);
+
 	return tokenNumber;
-}*/
+}
 
 
 // counts the number of tokens in a string
