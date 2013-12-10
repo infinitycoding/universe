@@ -64,7 +64,6 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
     state->desc[string_len + 1] = 0;
     state->flags = flags;
     state->files = list_create();
-	state->pipes = list_create();
     state->cwd = root;
     state->children = list_create();
     state->zombie_tids = list_create();
@@ -265,6 +264,17 @@ void sys_fork(struct cpu_state **cpu)
     vmm_map(&new_thread->context, pframe, MEMORY_LAYOUT_STACK_TOP-0x1000, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
     void *stack = vmm_automap_kernel(current_context, pframe, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
     memcpy(stack, stack_src, THREAD_STACK_SIZE);
+
+	struct list_node *node = current_thread->process->files->head->next;
+	struct list_node *head = current_thread->process->files->head;
+	while(node != head) {
+		struct fd *dest = malloc(sizeof(struct fd));
+		struct fd *src  = (struct fd*) node->element;
+		memcpy(dest, src, sizeof(struct fd));
+		list_push_back(new_process->files, dest);
+		
+		node = node->next;
+	}
 
     new_thread->state->CPU_ARG0 = 0;
     current_thread->state->CPU_ARG0 = new_process->pid;
