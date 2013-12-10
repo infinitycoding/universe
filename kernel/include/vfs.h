@@ -64,9 +64,15 @@ typedef struct vfs_pipe_info {
 	unsigned int num_readers;
 	unsigned int num_writers;
 	
-	list_t *read_inodes;
-	list_t *write_inodes;
+	list_t *pipe_buffer;
+	int num_blocks;
 } vfs_pipe_info_t;
+
+typedef struct vfs_pipe_buffer_block {
+	uint8_t *base;
+	uint32_t block_id;
+	uint32_t length;
+} vfs_pipe_buffer_block_t;
 
 typedef struct vfs_dentry {
 	ino_t ino;
