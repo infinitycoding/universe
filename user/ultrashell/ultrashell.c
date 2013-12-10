@@ -1,6 +1,8 @@
 #include <ultrashell.h>
+#include <basicCMDs.h>
 
-#include <universe.h>
+//#include <universe.h>
+#include <string.h>
 #include <stdlib.h>
 
 
@@ -9,20 +11,36 @@
 
 int main(void)
 {
-	char **args = NULL;
-	int argc = 0;
-	int i = 0;
+	parserLine("sver\n");
+	parserLine("echo 13 * 17 =\n");
+	parserLine("mul 13 17\n");
 
-	print("Ultrashell!\n");
-
-	argc = getTokens("git add .\n", &args);
-
-	for(i = 0; i < argc; i++)
-	{
-		print(args[i]);
-		print("\n");
-	}
 	return 0;
+}
+
+
+// parsers a line (strange, with this name...)
+
+int parserLine(const char *line)
+{
+	char **argv = NULL;
+	int argc = 0;
+
+	argc = getTokens(line, &argv);
+
+	// TODO:
+	// write from here (next lines are test only)
+
+	if(!strncmp(argv[0], "echo", 4))
+		return echo(argc, argv);
+	else if(!strncmp(argv[0], "sver", 4))
+		return sver(argc, argv);
+	else if(!strncmp(argv[0], "mul", 3))
+		return mul(argc, argv);
+	/*else
+		print("Unknown filename or command.\n");*/
+
+	return -1;
 }
 
 
