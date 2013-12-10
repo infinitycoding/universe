@@ -1,3 +1,8 @@
+#ifndef UNIVERSE_H
+#define UNIVERSE_H
+
+
+
 #include <stdint.h>
 #include <stdarg.h>
 
@@ -79,3 +84,4 @@ void thread_exit(int retv) {
 #define UNIVERSE_OS ('u' | ('n' << 8) | ('i' << 16))
 #define is ^0xFF000000 ==
 
+#endif
