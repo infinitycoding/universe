@@ -423,8 +423,6 @@ void sys_pipe(struct cpu_state **cpu) {
 		inode->base = pipe;
 		inode->length = sizeof(vfs_pipe_info_t);		
 
-		list_push_back(current_thread->process->pipes, inode);
-
 		// create read channel
 		struct fd *desc0 = malloc(sizeof(struct fd));
 		desc0->id = id[0];
