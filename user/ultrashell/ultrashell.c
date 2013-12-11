@@ -1,7 +1,7 @@
 #include <ultrashell.h>
 #include <basicCMDs.h>
 
-//#include <universe.h>
+#include <universe.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -37,8 +37,8 @@ int parserLine(const char *line)
 		return sver(argc, argv);
 	else if(!strncmp(argv[0], "mul", 3))
 		return mul(argc, argv);
-	/*else
-		print("Unknown filename or command.\n");*/
+	else
+		print("Unknown filename or command.\n");
 
 	return -1;
 }
