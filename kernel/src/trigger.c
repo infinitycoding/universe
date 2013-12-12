@@ -23,6 +23,53 @@ void INIT_TRIGGER(void)
 
 
 /**
+ * Suspends a running thread
+ * @param 0 pointer to the thread state
+ * @return void
+ */
+void suspend_thread(struct thread_state *object)
+{
+    if(list_is_empty(running_threads))
+        return;
+
+    list_set_first(running_threads);
+    while(list_get_current(running_threads) != object && !list_is_last(running_threads))
+        list_next(running_threads);
+
+    if(list_get_current(running_threads) == object)
+    {
+        list_remove(running_threads);
+        object->ticks  =  0;
+        object->flags &= ~THREAD_ACTIV;
+    }
+}
+
+
+/**
+ * Suspends a process
+ * @param 0 pointer to the process state
+ * @return void
+ */
+void suspend_process(struct process_state *object)
+{
+    if(list_is_empty(object->threads))
+        return;
+
+    list_set_first(object->threads);
+    while(!list_is_last(object->threads))
+    {
+        struct thread_state *thread = (struct thread_state *)list_get_current(object->threads);
+        if(thread->flags & THREAD_ACTIV)
+            suspend_thread(thread);
+
+        list_next(object->threads);
+    }
+
+    object->flags &= ~PROCESS_ACTIVE;
+}
+
+
+/**
  * Wakes up a thread
  * @param 0 pointer to the thread state
  * @return void
@@ -30,6 +77,7 @@ void INIT_TRIGGER(void)
 void wakeup_thread(struct thread_state *object)
 {
     list_push_front(running_threads, object);
+    object->flags |= THREAD_ACTIV;
 }
 
 
@@ -44,19 +92,22 @@ void wakeup_process(struct process_state *object)
     list_set_first(process->threads);
     while(!list_is_empty(process->threads) && !list_is_last(process->threads))
     {
-        list_push_front(running_threads, list_get_current(process->threads));
+        struct thread_state *thread = (struct thread_state *)list_get_current(process->threads);
+        if(!(thread->flags & THREAD_ACTIV))
+            wakeup_thread(thread);
         list_next(process->threads);
     }
+    object->flags |= PROCESS_ACTIVE;
 }
 
 
 /**
- * Removes a event trigger by object name and ID if given,
+ * Removes a event trigger by object name and ID (if given),
  * @param 0 pointer to thread/process state
  * @param 1 optional event ID (0 = don't care)
  * @return number or removed triggers
  **/
-int remove_event_trigger_by_object(void *object, uint32_t ID)
+int remove_event_trigger(void *object, uint32_t ID)
 {
     int removed_elements = 0;
     if(ID == 0)
@@ -99,11 +150,11 @@ int remove_event_trigger_by_object(void *object, uint32_t ID)
 
 
 /**
- * Removes a event trigger by event ID
+ * Removes every trigger with the given ID
  * @param 0 event ID
- * @return true if the trigger was removed, false if there was no trigger with the given ID
+ * @return number of removed triggers, 0 if there was no trigger with the given ID
  **/
-int remove_event_trigger_by_id(uint32_t ID)
+int remove_event(uint32_t ID)
 {
     int removed_elements = 0;
     list_set_first(trigger_list);
@@ -142,20 +193,34 @@ int send_event(uint32_t ID)
             if(current_entry->proc)
             {
                 wakeup_process(current_entry->object);
-                remove_event_trigger_by_object(current_entry->object, current_entry->ID);
+                remove_event_trigger(current_entry->object, current_entry->ID);
             }
             else
             {
                 wakeup_thread(current_entry->object);
-                remove_event_trigger_by_object(current_entry->object, current_entry->ID);
+                remove_event_trigger(current_entry->object, current_entry->ID);
             }
 
-            remove_event_trigger_by_id(ID);
+            remove_event(ID);
             return true;
         }
         list_next(trigger_list);
     }
     return false;
+}
+
+
+/**
+ * returns a new, unused event ID
+ * @param void
+ * @return new event ID
+ */
+uint32_t get_new_event_ID(void)
+{
+    if(list_is_empty(event_id_list))
+        return event_id_counter++;
+
+    return (uint32_t) list_pop_back(event_id_list);
 }
 
 
@@ -169,16 +234,7 @@ uint32_t add_event_trigger(bool proc, void *object)
 {
     struct trigger_entry *new_entry = (struct trigger_entry*) malloc(sizeof(struct trigger_entry));
     new_entry->type = WAIT_EVENT;
-
-    if(list_is_empty(event_id_list))
-    {
-        new_entry->ID = event_id_counter++;
-    }
-    else
-    {
-        new_entry->ID = (uint32_t) list_pop_back(event_id_list);
-    }
-
+    new_entry->ID = get_new_event_ID();
     new_entry->proc = proc;
     new_entry->object = object;
     list_push_front(trigger_list,new_entry);
@@ -222,12 +278,12 @@ void send_killed_process(struct process_state *proc)
             if(current_entry->proc)
             {
                 wakeup_process(current_entry->object);
-                remove_event_trigger_by_object(current_entry->object, current_entry->ID);
+                remove_event_trigger(current_entry->object, current_entry->ID);
             }
             else
             {
                 wakeup_thread(current_entry->object);
-                remove_event_trigger_by_object(current_entry->object, current_entry->ID);
+                remove_event_trigger(current_entry->object, current_entry->ID);
             }
 
             list_remove(trigger_list);
@@ -249,7 +305,7 @@ void send_killed_process(struct process_state *proc)
             if(current_entry->object == proc->parent)
             {
                 wakeup_process(proc->parent);
-                remove_event_trigger_by_object(proc->parent, current_entry->ID);
+                remove_event_trigger(proc->parent, current_entry->ID);
             }
             else
             {
@@ -260,7 +316,7 @@ void send_killed_process(struct process_state *proc)
                     if(thread == current_entry->object)
                     {
                         wakeup_thread(thread);
-                        remove_event_trigger_by_object(thread, current_entry->ID);
+                        remove_event_trigger(thread, current_entry->ID);
                     }
                     list_next(proc->parent->threads);
                 }
