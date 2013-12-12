@@ -245,7 +245,7 @@ uint32_t add_event_trigger(bool proc, void *object)
 /**
  * Adds a trigger
  * @param 0 trigger type
- * @param 1 trigger ID
+ * @param 1 trigger ID (if type is not EVENT, the ID is unimportant and can be uesd as custom Identifier)
  * @param 2 true = object is a process, false = object is a thread
  * @param 3 pointer to process/thread state
  * @return void
