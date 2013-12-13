@@ -15,6 +15,12 @@ int main(void)
 	parserLine("echo 13 * 17 =\n");
 	parserLine("mul 13 17\n");
 
+	char buf[1];
+	while(1) {
+		linux_syscall(SYS_READ, 0, buf, 1, 0,0);
+		linux_syscall(SYS_WRITE, 1, buf, 1, 0,0);
+	}
+	
 	return 0;
 }
 
