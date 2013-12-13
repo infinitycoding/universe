@@ -102,10 +102,10 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
 
 
     // create stream files
-    if(stdin == NULL) stdin = vfs_create_inode("stdin", 0x7ff, NULL);
-    if(stdout == NULL) stdout = vfs_create_inode("stdout", 0x7ff, NULL);
-    if(stderr == NULL) stderr = vfs_create_inode("stderr", 0x7ff, NULL);
-
+    if(stdin == NULL) stdin = vfs_create_pipe();
+    if(stdout == NULL) stdout = vfs_create_pipe();
+    if(stderr == NULL) stderr = vfs_create_pipe();
+	
     struct fd *desc0 = malloc(sizeof(struct fd));
     desc0->id = 0;
     desc0->mode = 0x7ff;

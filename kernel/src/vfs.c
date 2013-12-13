@@ -31,6 +31,7 @@
 #include <memory_layout.h>
 #include <paging.h>
 #include <thread.h>
+#include <trigger.h>
 
 extern struct thread_state *current_thread;
 
@@ -115,6 +116,23 @@ vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent) {
 	return node;
 }
 
+vfs_inode_t *vfs_create_pipe(void) {
+	vfs_inode_t *inode = vfs_create_inode("pipe", 0, NULL);
+
+	vfs_pipe_info_t *pipe = malloc(sizeof(vfs_pipe_info_t));
+	pipe->num_readers = 1;
+	pipe->num_writers = 1;
+	pipe->pipe_buffer = list_create();	
+	pipe->event_id = get_new_event_ID();
+	pipe->length = 0;
+	
+	inode->type = VFS_PIPE;
+	inode->base = pipe;
+	inode->length = sizeof(vfs_pipe_info_t);
+	
+	return inode;		
+}
+
 /**
  * Create a new directory entry
  *
@@ -177,10 +195,14 @@ int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
 				block->length = 0;
 				block->block_id = info->num_blocks++;
 				list_push_back(info->pipe_buffer, block);
+				found = 1;
 			}
 			
 			block->base[index] = data[i];
+			info->length++;
 		}
+		
+		send_event(info->event_id);
 	} else {
 		int old_len = node->length;
 		if( (off + bytes) > node->length) {
@@ -220,21 +242,27 @@ void* vfs_read(vfs_inode_t *node, uintptr_t offset) {
 		int block_off= offset % PAGE_SIZE;
 		
 		vfs_pipe_info_t *info = (vfs_pipe_info_t*) node->base;
-		vfs_pipe_buffer_block_t *block = NULL;
-		struct list_node *bn = info->pipe_buffer->head->next;
-		int i;
-		for(i = 0; i < info->num_blocks; i++) {
-			block = (vfs_pipe_buffer_block_t*) bn->element;
-			if(block->block_id == block_id) {
-				break;
-			}
-			bn = bn->next;
-		}
 		
-		return (void*) block->base + block_off;
-	} else {
+		if(info->length > 0) {
+			vfs_pipe_buffer_block_t *block = NULL;
+			struct list_node *bn = info->pipe_buffer->head->next;
+			int i;
+			for(i = 0; i < info->num_blocks; i++) {
+				block = (vfs_pipe_buffer_block_t*) bn->element;
+				if(block->block_id == block_id) {
+					break;
+				}
+				bn = bn->next;
+			}
+			
+			info->length -= offset;
+			return (void*) block->base + block_off;
+		}
+	} else if(offset <= node->length) {
 		return (void*) node->base + offset;
 	}
+	
+	return NULL;
 }
 
 /**
@@ -354,8 +382,7 @@ vfs_inode_t *vfs_lookup_path(char *path) {
 struct fd *get_fd(int fd) {
 	struct fd *desc = NULL;
 	struct list_node *node = current_thread->process->files->head->next;
-	int i;
-	for(i = 0; i < list_length(current_thread->process->files); i++) {
+	while(node != current_thread->process->files->head) {
 		desc = node->element;
 		if(desc->id == fd) {
 			return desc;
@@ -412,17 +439,8 @@ void sys_pipe(struct cpu_state **cpu) {
 	if(get_fd(id[0]) != NULL &&
 	   get_fd(id[1]) != NULL)
 	{
-		vfs_inode_t *inode = vfs_create_inode("pipe", 0, NULL);
-
-		vfs_pipe_info_t *pipe = malloc(sizeof(vfs_pipe_info_t));
-		pipe->num_readers = 1;
-		pipe->num_writers = 1;
-		pipe->pipe_buffer = list_create();	
-
-		inode->type = VFS_PIPE;
-		inode->base = pipe;
-		inode->length = sizeof(vfs_pipe_info_t);		
-
+		vfs_inode_t *inode = vfs_create_pipe();
+		
 		// create read channel
 		struct fd *desc0 = malloc(sizeof(struct fd));
 		desc0->id = id[0];
@@ -457,6 +475,7 @@ void sys_close(struct cpu_state **cpu) {
 		if(desc->id == fd) {
 			list_remove_node(node);
 			(*cpu)->CPU_ARG0 = 0;
+			return;
 		} else {
 			node = node->next;
 		}
@@ -480,13 +499,23 @@ void sys_read(struct cpu_state **cpu) {
 	   desc->flags & O_RDWR)
 	{
 		vfs_inode_t *inode = desc->inode;
-		void *read = vfs_read(inode, desc->pos);
-		if(read != NULL) {
-			memcpy((void*)buf, read, len);
-			desc->pos += len;
-			(*cpu)->CPU_ARG0 = len;
+		vfs_pipe_info_t *pipe = inode->base;
+		
+		if(inode->type == VFS_PIPE &&
+		   pipe->length < 1 &&
+		   pipe->num_writers > 0)
+		{
+			suspend_thread(current_thread);
+			add_trigger(WAIT_EVENT, pipe->event_id, 0, current_thread);
 		} else {
-			(*cpu)->CPU_ARG0 = -2;
+			void *read = vfs_read(inode, desc->pos);
+			if(read != NULL) {
+				memcpy((void*)buf, read, len);
+				desc->pos += len;
+				(*cpu)->CPU_ARG0 = len;
+			} else {
+				(*cpu)->CPU_ARG0 = -2;
+			}
 		}
 	} else {
 		(*cpu)->CPU_ARG0 = -3;

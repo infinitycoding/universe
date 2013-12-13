@@ -64,8 +64,11 @@ typedef struct vfs_pipe_info {
 	unsigned int num_readers;
 	unsigned int num_writers;
 	
+	uint32_t event_id;
+	
 	list_t *pipe_buffer;
 	int num_blocks;
+	int length;
 } vfs_pipe_info_t;
 
 typedef struct vfs_pipe_buffer_block {
@@ -91,6 +94,7 @@ void INIT_VFS(void);
 void set_vfs_uid(uid_t new_uid);
 void set_vfs_gid(gid_t new_gid);
 vfs_inode_t *vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent);
+vfs_inode_t *vfs_create_pipe(void);
 vfs_dentry_t *vfs_create_dir_entry(vfs_inode_t *entry_inode);
 int vfs_write(vfs_inode_t *inode, int off, void *base, int bytes);
 void* vfs_read(vfs_inode_t *inode, uintptr_t offset);

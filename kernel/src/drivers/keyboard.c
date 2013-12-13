@@ -22,6 +22,10 @@
 #include <printf.h>
 #include <drivers/keyboard.h>
 #include <drivers/keymap_de.h>
+#include <vfs.h>
+#include <thread.h>
+
+extern struct thread_state *current_thread;
 
 static bool shift = false;
 static bool numlock = false;
@@ -121,7 +125,12 @@ void kbd_irq_handler(void) {
 		}
 
 	}
-	printf("x");
+	if(current_thread != NULL){
+	struct list_node *node = current_thread->process->files->head->next;
+	struct fd *desc = (vfs_inode_t*) node->element;
+	vfs_inode_t *inode = desc->inode;
+	vfs_write(inode, 0, &ASCII, 1);
+}
 	if (ASCII) {
 		*tail = ASCII;
 		tail++;
