@@ -105,7 +105,7 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
     if(stdin == NULL) stdin = vfs_create_pipe();
     if(stdout == NULL) stdout = vfs_create_pipe();
     if(stderr == NULL) stderr = vfs_create_pipe();
-	
+
     struct fd *desc0 = malloc(sizeof(struct fd));
     desc0->id = 0;
     desc0->mode = 0x7ff;
@@ -272,7 +272,7 @@ void sys_fork(struct cpu_state **cpu)
 		struct fd *src  = (struct fd*) node->element;
 		memcpy(dest, src, sizeof(struct fd));
 		list_push_back(new_process->files, dest);
-		
+
 		node = node->next;
 	}
 
@@ -297,7 +297,7 @@ void sys_waitpid(struct cpu_state **cpu)
     current_thread->ticks = 0;
     current_thread->flags |= THREAD_WAITPID;
     current_thread->waitpid = (*cpu)->CPU_ARG1;
-    add_trigger(WAIT_PID, current_thread->waitpid, false, (void *)current_thread);
+    add_trigger(WAIT_PID, current_thread->waitpid, false, (void *)current_thread,NULL);
     *cpu = task_schedule(*cpu);
 }
 
