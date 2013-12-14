@@ -20,6 +20,7 @@ struct trigger_entry
     uint32_t ID; // event ID or the parameter of waitpid
     bool proc;
     void *object; // pointer to the thread or Process struct. Depends on bool proc
+    void (*callback)(struct cpu_state **cpu);
 };
 
 
@@ -32,7 +33,7 @@ int remove_event_trigger(void *object, uint32_t ID);
 int remove_event(uint32_t ID);
 int send_event(uint32_t ID);
 uint32_t get_new_event_ID(void);
-uint32_t add_event_trigger(bool proc, void *object);
-void add_trigger(trigger_t type, uint32_t ID, bool proc, void *object);
+uint32_t add_event_trigger(bool proc, void *object, void (*callback)(struct cpu_state **cpu));
+void add_trigger(trigger_t type, uint32_t ID, bool proc, void *object, void (*callback)(struct cpu_state **cpu));
 void send_killed_process(struct process_state *proc);
 #endif
