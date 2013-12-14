@@ -125,13 +125,20 @@ void kbd_irq_handler(void) {
 		}
 
 	}
-	if(current_thread != NULL){
-	struct list_node *node = current_thread->process->files->head->next;
-	struct fd *desc = (vfs_inode_t*) node->element;
-	vfs_inode_t *inode = desc->inode;
-	vfs_write(inode, 0, &ASCII, 1);
-}
+
 	if (ASCII) {
+		struct list_node *node = current_thread->process->files->head->next;
+		struct fd *desc = NULL;
+		while(node->next != current_thread->process->files->head) {
+			desc = (vfs_inode_t*) node->element;
+			if(desc->id == 0) break;
+			else node = node->next;
+		}
+		vfs_inode_t *inode = desc->inode;
+		vfs_pipe_info_t *pipe = inode->base;
+		vfs_write(inode, pipe->length, "x", 1);
+		
+		
 		*tail = ASCII;
 		tail++;
 		if (tail == keybuffer + 512) {
