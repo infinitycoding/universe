@@ -189,7 +189,7 @@ int send_event(uint32_t ID)
     while(!list_is_last(trigger_list) && !list_is_empty(trigger_list))
     {
         struct trigger_entry *current_entry = list_get_current(trigger_list);
-        if(current_entry->ID == ID)
+        if(current_entry->ID == ID && current_entry->type == WAIT_EVENT)
         {
             if(current_entry->proc)
             {
