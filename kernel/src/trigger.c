@@ -184,6 +184,7 @@ int remove_event(uint32_t ID)
  */
 int send_event(uint32_t ID)
 {
+	printf("send_event\n");
     list_set_first(trigger_list);
     while(!list_is_last(trigger_list) && !list_is_empty(trigger_list))
     {
