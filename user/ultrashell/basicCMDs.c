@@ -13,11 +13,11 @@ int echo(int argc, char **argv)
 
 	for(counter = 1; counter < argc; counter++)
 	{
-		print(argv[counter]);
-		print(" ");
+		printf(argv[counter]);
+		printf(" ");
 	}
 
-	print("\n");
+	printf("\n");
 
 	return 0;
 }
@@ -27,7 +27,7 @@ int echo(int argc, char **argv)
 
 int sver(int argc, char **argv)
 {
-	print("Ultrashell v. 1.0.0 (debug)\n");
+	printf("Ultrashell v. 1.0.0 (debug)\n");
 
 	return 0;
 }
@@ -44,14 +44,14 @@ int mul(int argc, char **argv)
 
 	if(argc != 3)
 	{
-		print("mul: incorrect number of arguments");
+		printf("mul: incorrect number of arguments");
 		return -1;
 	}
 
 	result_i = atoi(argv[1]) * atoi(argv[2]);
 
-	print(itoa(result_i, result_s, 10));
-	print("\n");
+	printf(itoa(result_i, result_s, 10));
+	printf("\n");
 
 	return result_i;
 }

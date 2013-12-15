@@ -15,12 +15,8 @@ int main(void)
 	parserLine("echo 13 * 17 =\n");
 	parserLine("mul 13 17\n");
 
-	char buf[1];
 	while(1) {
-        while(buf[0] == 0)
-            linux_syscall(SYS_READ, 0, buf, 1, 0,0);
-		linux_syscall(SYS_WRITE, 1, buf, 1, 0,0);
-		buf[0] = 0;
+        printf("%c",getchar());
 	}
 
 	return 0;
@@ -46,7 +42,7 @@ int parserLine(const char *line)
 	else if(!strncmp(argv[0], "mul", 3))
 		return mul(argc, argv);
 	else
-		print("Unknown filename or command.\n");
+		printf("Unknown filename or command.\n");
 
 	return -1;
 }
