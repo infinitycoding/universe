@@ -1,26 +1,10 @@
 #include <universe.h>
 
-
-
-uint32_t linux_syscall(uint32_t function, uint32_t ebx, uint32_t ecx, uint32_t edx, uint32_t esi, uint32_t edi)
+// Linux stuff
+void exit(int retv)
 {
-    uint32_t retv = 0;
-    asm volatile(
-    "push %ebx;"
-    "push %esi;"
-    "push %edi"
-    );
-
-    asm volatile(
-    "int $128;"
-    "pop %%edi;"
-    "pop %%esi;"
-    "pop %%ebx;"
-    : "=a" (retv) : "a" (function),  "b" (ebx), "c"(ecx), "d"(edx), "S"(esi), "D"(edi));
-
-    return retv;
+    asm volatile("int $128" : : "a"(SYS_EXIT), "b"(retv));
 }
-
 
 uint32_t fork()
 {
@@ -29,54 +13,28 @@ uint32_t fork()
     return pid;
 }
 
-uint32_t alloc_memory(int pages)
-{
-	uint32_t addr;
-	asm volatile("int $112;" : "=a" (addr) : "a" (4), "b" (pages));
-	return addr;
-}
-
-
-uint32_t universe_syscall(uint32_t function, uint32_t ebx, uint32_t ecx, uint32_t edx, uint32_t esi, uint32_t edi)
-{
-    uint32_t retv = 0;
-    asm volatile(
-    "push %ebx;"
-    "push %esi;"
-    "push %edi"
-    );
-
-    asm volatile(
-    "int $112;"
-    "pop %%edi;"
-    "pop %%esi;"
-    "pop %%ebx;"
-    : "=a" (retv) : "a" (function),  "b" (ebx), "c"(ecx), "d"(edx), "S"(esi), "D"(edi));
-
-    return retv;
-}
+// universe stuff
 
 void thread_exit(int retv)
 {
-  asm volatile("int $112;": : "a" (1) , "b"(retv));
-}
-
-void exit(int retv)
-{
-    asm volatile("int $128" : : "a"(SYS_EXIT), "b"(retv));
-}
-
-uint32_t identify_universe(void)
-{
-    return universe_syscall(3,0,0,0,0,0);
+  asm volatile("int $112;": : "a" (SYS_THREAD_EXIT) , "b"(retv));
 }
 
 void thread_launch(void * function, int argc, void *argv)
 {
-    asm volatile("pushl %%ebx; int $112; popl %%ebx;": : "a"(2) , "b"(function), "c"(argc), "d" (argv), "S" (&thread_exit));
+    asm volatile("pushl %%ebx; int $112; popl %%ebx;": : "a"(SYS_THREAD_LAUNCH) , "b"(function), "c"(argc), "d" (argv), "S" (&thread_exit));
 }
 
-void print(char *str)
+uint32_t alloc_memory(int pages)
 {
-    asm volatile("pushl %%ebx; int $112; popl %%ebx;": : "a"(0) , "b"(str));
+	uint32_t addr;
+	asm volatile("int $112;" : "=a" (addr) : "a" (SYS_ALLOC_MEMORY), "b" (pages));
+	return addr;
 }
+
+uint32_t identify_universe(void)
+{
+    return universe_syscall(SYS_IDENTIFY_UNIVERSE,0,0,0,0,0);
+}
+
+

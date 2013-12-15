@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <stdarg.h>
 
-
+// Linux Syscalls
 #define SYS_EXIT 1
 #define SYS_FORK 2
 #define SYS_READ 3
@@ -39,6 +39,13 @@ static inline uint32_t linux_syscall(uint32_t function, uint32_t ebx, uint32_t e
 
     return retv;
 }
+
+
+//Universe Syscalls
+#define SYS_THREAD_EXIT 0
+#define SYS_THREAD_LAUNCH 1
+#define SYS_ALLOC_MEMORY 2
+#define SYS_IDENTIFY_UNIVERSE 3
 
 
 static inline uint32_t universe_syscall(uint32_t function, uint32_t ebx, uint32_t ecx, uint32_t edx, uint32_t esi, uint32_t edi)
