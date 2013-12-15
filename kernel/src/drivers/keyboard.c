@@ -35,6 +35,8 @@ char keybuffer[512];
 char* head = keybuffer;
 char* tail = keybuffer;
 
+vfs_inode_t *kbd_inode = NULL;
+
 /**
  * Send a command to the Keyboard Controler
  *
@@ -127,17 +129,10 @@ void kbd_irq_handler(void) {
 	}
 
 	if (ASCII) {
-		struct list_node *node = current_thread->process->files->head->next;
-		struct fd *desc = NULL;
-		while(node->next != current_thread->process->files->head) {
-			desc = (vfs_inode_t*) node->element;
-			if(desc->id == 0) break;
-			else node = node->next;
+		if(kbd_inode != NULL) {
+			vfs_pipe_info_t *info = kbd_inode->base;
+			vfs_write(kbd_inode, info->length, &ASCII, 1);
 		}
-		vfs_inode_t *inode = desc->inode;
-		vfs_pipe_info_t *pipe = inode->base;
-		vfs_write(inode, pipe->length, "x", 1);
-		
 		
 		*tail = ASCII;
 		tail++;
