@@ -17,10 +17,12 @@ int main(void)
 
 	char buf[1];
 	while(1) {
-		linux_syscall(SYS_READ, 0, buf, 1, 0,0);
+        while(buf[0] == 0)
+            linux_syscall(SYS_READ, 0, buf, 1, 0,0);
 		linux_syscall(SYS_WRITE, 1, buf, 1, 0,0);
+		buf[0] = 0;
 	}
-	
+
 	return 0;
 }
 
