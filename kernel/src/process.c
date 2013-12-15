@@ -106,6 +106,9 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
     if(stdout == NULL) stdout = vfs_create_pipe();
     if(stderr == NULL) stderr = vfs_create_pipe();
 
+	extern vfs_inode_t *kbd_inode;
+	kbd_inode = stdin;
+
     struct fd *desc0 = malloc(sizeof(struct fd));
     desc0->id = 0;
     desc0->mode = 0x7ff;

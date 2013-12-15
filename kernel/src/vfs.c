@@ -164,6 +164,7 @@ int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
 		int block_off= off % PAGE_SIZE;
 		
 		vfs_pipe_info_t *info = (vfs_pipe_info_t*) node->base;
+		
 		vfs_pipe_buffer_block_t *block = NULL;
 		struct list_node *bn = info->pipe_buffer->head->next;
 		int i,found = 0;
@@ -203,6 +204,7 @@ int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
 		}
 		
 		send_event(info->event_id);
+		info->event_id = get_new_event_ID();
 	} else {
 		int old_len = node->length;
 		if( (off + bytes) > node->length) {
@@ -255,7 +257,6 @@ void* vfs_read(vfs_inode_t *node, uintptr_t offset) {
 				bn = bn->next;
 			}
 			
-			info->length -= offset;
 			return (void*) block->base + block_off;
 		}
 	} else if(offset <= node->length) {
@@ -502,11 +503,13 @@ void sys_read(struct cpu_state **cpu) {
 		vfs_pipe_info_t *pipe = inode->base;
 		
 		if(inode->type == VFS_PIPE &&
-		   pipe->length < 1 &&
+		   desc->pos >= pipe->length &&
 		   pipe->num_writers > 0)
 		{
+			add_trigger(WAIT_EVENT, pipe->event_id, 0, current_thread, NULL);
 			suspend_thread(current_thread);
-			add_trigger(WAIT_EVENT, pipe->event_id, 0, current_thread);
+			cpu = task_schedule(*cpu);
+			return;
 		} else {
 			void *read = vfs_read(inode, desc->pos);
 			if(read != NULL) {
