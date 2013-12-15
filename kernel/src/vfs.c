@@ -122,15 +122,15 @@ vfs_inode_t *vfs_create_pipe(void) {
 	vfs_pipe_info_t *pipe = malloc(sizeof(vfs_pipe_info_t));
 	pipe->num_readers = 1;
 	pipe->num_writers = 1;
-	pipe->pipe_buffer = list_create();	
+	pipe->pipe_buffer = list_create();
 	pipe->event_id = get_new_event_ID();
 	pipe->length = 0;
-	
+
 	inode->type = VFS_PIPE;
 	inode->base = pipe;
 	inode->length = sizeof(vfs_pipe_info_t);
-	
-	return inode;		
+
+	return inode;
 }
 
 /**
@@ -158,13 +158,13 @@ vfs_dentry_t* vfs_create_dir_entry(vfs_inode_t *entry_inode) {
  */
 int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
 	GET_INODE(node);
-	
+
 	if(node->type == VFS_PIPE) {
 		int block_id = off / PAGE_SIZE;
 		int block_off= off % PAGE_SIZE;
-		
+
 		vfs_pipe_info_t *info = (vfs_pipe_info_t*) node->base;
-		
+
 		vfs_pipe_buffer_block_t *block = NULL;
 		struct list_node *bn = info->pipe_buffer->head->next;
 		int i,found = 0;
@@ -176,7 +176,7 @@ int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
 			}
 			bn = bn->next;
 		}
-		
+
 		uint8_t *data = (uint8_t*) base;
 		for(i = 0; i < bytes; i++) {
 			int index = block_off + i;
@@ -189,7 +189,7 @@ int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
 					block = (vfs_pipe_buffer_block_t*) bn->element;
 				}
 			}
-			
+
 			if(! found) { // create a new block
 				block = malloc(sizeof(vfs_pipe_buffer_block_t*));
 				block->base = malloc(PAGE_SIZE);
@@ -198,11 +198,11 @@ int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
 				list_push_back(info->pipe_buffer, block);
 				found = 1;
 			}
-			
+
 			block->base[index] = data[i];
 			info->length++;
 		}
-		
+
 		send_event(info->event_id);
 		info->event_id = get_new_event_ID();
 	} else {
@@ -211,7 +211,7 @@ int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
 			node->length = off + bytes;
 			node->stat.st_size = node->length;
 		}
-		
+
 		if (node->base == NULL) {
 			node->base = malloc(node->length);
 		} else {
@@ -220,12 +220,12 @@ int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
 			if(pages_new > pages_old)
 				node->base = realloc(node->base, node->length);
 		}
-		
+
 		uint8_t *nbase = (uint8_t*) node->base + off;
 		uint8_t *wbase = (uint8_t*) base;
 		memcpy(nbase, wbase, bytes);
 	}
-	
+
 	return bytes;
 }
 
@@ -242,9 +242,9 @@ void* vfs_read(vfs_inode_t *node, uintptr_t offset) {
 	if(node->type == VFS_PIPE) {
 		int block_id = offset / PAGE_SIZE;
 		int block_off= offset % PAGE_SIZE;
-		
+
 		vfs_pipe_info_t *info = (vfs_pipe_info_t*) node->base;
-		
+
 		if(info->length > 0) {
 			vfs_pipe_buffer_block_t *block = NULL;
 			struct list_node *bn = info->pipe_buffer->head->next;
@@ -256,13 +256,13 @@ void* vfs_read(vfs_inode_t *node, uintptr_t offset) {
 				}
 				bn = bn->next;
 			}
-			
+
 			return (void*) block->base + block_off;
 		}
 	} else if(offset <= node->length) {
 		return (void*) node->base + offset;
 	}
-	
+
 	return NULL;
 }
 
@@ -441,7 +441,7 @@ void sys_pipe(struct cpu_state **cpu) {
 	   get_fd(id[1]) != NULL)
 	{
 		vfs_inode_t *inode = vfs_create_pipe();
-		
+
 		// create read channel
 		struct fd *desc0 = malloc(sizeof(struct fd));
 		desc0->id = id[0];
@@ -501,7 +501,7 @@ void sys_read(struct cpu_state **cpu) {
 	{
 		vfs_inode_t *inode = desc->inode;
 		vfs_pipe_info_t *pipe = inode->base;
-		
+
 		if(inode->type == VFS_PIPE &&
 		   desc->pos >= pipe->length &&
 		   pipe->num_writers > 0)
@@ -530,7 +530,7 @@ void sys_write(struct cpu_state **cpu) {
 	char *buf = (void*) (*cpu)->CPU_ARG2;
 	size_t len = (*cpu)->CPU_ARG3;
 
-	if(fd < 3) {
+	if(fd < 3 && fd > 0) {
 		int i;
 		for(i = 0; i < len; i++) {
 			printf("%c", buf[i]);
@@ -568,7 +568,7 @@ void sys_creat(struct cpu_state **cpu) {
 	char *name = (*cpu)->CPU_ARG1;
 	int mode = (*cpu)->CPU_ARG2;
 	vfs_inode_t *inode = vfs_create_inode(name, mode, root);
-	
+
 	struct fd *desc = malloc(sizeof(struct fd));
 	desc->id = list_length(current_thread->process->files);
 	desc->mode = mode;
@@ -584,7 +584,7 @@ void sys_creat(struct cpu_state **cpu) {
 void sys_link(struct cpu_state **cpu) {
 	char *src_path = (*cpu)->CPU_ARG1;
 	char *dest_path = (*cpu)->CPU_ARG2;
-	
+
 	vfs_inode_t *src_inode = vfs_lookup_path(src_path);
 	vfs_inode_t *dest_inode = vfs_create_inode(dest_path, src_inode->stat.st_mode, root);
 	dest_inode->type = VFS_LINK;
@@ -595,7 +595,7 @@ void sys_link(struct cpu_state **cpu) {
 
 void sys_unlink(struct cpu_state **cpu) {
 	char *path = (*cpu)->CPU_ARG1;
-	
+
 	vfs_inode_t *link = vfs_lookup_path(path);
 	link->base = NULL;
 	link->type = VFS_REGULAR;
