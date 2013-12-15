@@ -37,11 +37,6 @@ extern struct thread_state *current_thread;
 extern struct process_state *kernel_state;
 
 
-void print(struct cpu_state **cpu)
-{
-    printf("%s", (char *)(*cpu)->CPU_ARG1);
-    (*cpu)->CPU_ARG0 = 0;
-}
 
 void identify_os(struct cpu_state **cpu)
 {
@@ -68,10 +63,10 @@ void linux_syscall_handler(struct cpu_state **cpu)
 }
 
 
-#define DEFINED_UNIVERSE_FUNCTIONS 5
+#define DEFINED_UNIVERSE_FUNCTIONS 4
 void (*universe_functions[])(struct cpu_state **cpu) =
 {
-    print,thread_exit,launch_thread,identify_os,alloc_memory
+    thread_exit,launch_thread,alloc_memory,identify_os
 };
 
 
