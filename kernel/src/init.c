@@ -86,9 +86,8 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
     INIT_TRIGGER();
 	asm volatile("sti");
 
-	INIT_PIT(50);
+	INIT_PIT(500);
 	INIT_CMOS();
-	INIT_KEYBOARD();
 	INIT_SCHEDULER();
 
 	//print Logo and loading message
@@ -107,7 +106,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	INIT_CPUID();
 	printf("\n");
 	INIT_PCI();
-
+    INIT_KEYBOARD();
 
 
 
