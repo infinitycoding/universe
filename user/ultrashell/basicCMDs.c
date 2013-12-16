@@ -35,6 +35,50 @@ int sver(int argc, char **argv)
 
 // from here test only
 
+// adds two values and prints the result
+
+int add(int argc, char **argv)
+{
+	int result_i;
+	char result_s[20];
+
+	if(argc != 3)
+	{
+		printf("add: incorrect number of arguments\n");
+		return -1;
+	}
+
+	result_i = atoi(argv[1]) + atoi(argv[2]);
+
+	printf(itoa(result_i, result_s, 10));
+	printf("\n");
+
+	return result_i;
+}
+
+
+// subtracts two values and prints the result
+
+int sub(int argc, char **argv)
+{
+	int result_i;
+	char result_s[20];
+
+	if(argc != 3)
+	{
+		printf("sub: incorrect number of arguments\n");
+		return -1;
+	}
+
+	result_i = atoi(argv[1]) - atoi(argv[2]);
+
+	printf(itoa(result_i, result_s, 10));
+	printf("\n");
+
+	return result_i;
+}
+
+
 // multiplies two values and prints the result
 
 int mul(int argc, char **argv)
@@ -44,11 +88,39 @@ int mul(int argc, char **argv)
 
 	if(argc != 3)
 	{
-		printf("mul: incorrect number of arguments");
+		printf("mul: incorrect number of arguments\n");
 		return -1;
 	}
 
 	result_i = atoi(argv[1]) * atoi(argv[2]);
+
+	printf(itoa(result_i, result_s, 10));
+	printf("\n");
+
+	return result_i;
+}
+
+
+// divides two values and prints the result
+
+int div(int argc, char **argv)
+{
+	int result_i;
+	char result_s[20];
+
+	if(argc != 3)
+	{
+		printf("div: incorrect number of arguments\n");
+		return -1;
+	}
+
+	if(atoi(argv[2]) == 0)
+	{
+		printf("div: divide by zero\n");
+		return -2;
+	}
+
+	result_i = atoi(argv[1]) / atoi(argv[2]);
 
 	printf(itoa(result_i, result_s, 10));
 	printf("\n");

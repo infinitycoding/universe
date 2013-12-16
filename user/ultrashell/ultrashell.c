@@ -11,12 +11,37 @@
 
 int main(void)
 {
-	parserLine("sver\n");
-	parserLine("echo 13 * 17 =\n");
-	parserLine("mul 13 17\n");
+	int counter = 0;
+	char inchar;
+	char inbuffer[MAX_LINE_LENGTH] = "";
 
-	while(1) {
-        printf("%c",getchar());
+	while(1)
+	{
+		inchar = getchar();
+		printf("%c", inchar);
+
+		switch(inchar)
+		{
+			case '\0':
+			break;
+
+			case '\b':
+				inbuffer[--counter] = '\0';
+			break;
+
+			default:
+				inbuffer[counter++] = inchar;
+				inbuffer[counter] = '\0';
+			break;
+		}
+
+        	if(inchar == '\n')
+		{
+			parserLine(inbuffer);
+
+			counter = 0;
+			inbuffer[counter] = '\0';
+		}
 	}
 
 	return 0;
@@ -39,10 +64,16 @@ int parserLine(const char *line)
 		return echo(argc, argv);
 	else if(!strncmp(argv[0], "sver", 4))
 		return sver(argc, argv);
+	else if(!strncmp(argv[0], "add", 3))
+		return add(argc, argv);
+	else if(!strncmp(argv[0], "sub", 3))
+		return sub(argc, argv);
 	else if(!strncmp(argv[0], "mul", 3))
 		return mul(argc, argv);
+	else if(!strncmp(argv[0], "div", 3))
+		return div(argc, argv);
 	else
-		printf("Unknown filename or command.\n");
+		printf("%s : unknown filename or command.\n", argv[0]);
 
 	return -1;
 }

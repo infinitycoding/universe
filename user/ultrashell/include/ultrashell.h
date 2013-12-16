@@ -3,6 +3,7 @@
 
 
 
+#define MAX_LINE_LENGTH 50
 #define MAX_TOKEN_LENGTH 20
 
 
