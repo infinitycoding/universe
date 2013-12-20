@@ -27,7 +27,7 @@
 
 typedef unsigned int pckid_t;
 
-//default Request types (driver->host)
+
 typedef enum
 {
     REQ_DEV_LST = 0,
@@ -44,8 +44,18 @@ typedef enum
 }resp_t;
 
 
-// default responses (host->driver)
 
+//default Request types
+typedef struct
+{
+    pckid_t id;
+    size_t size;
+    req_t type;
+}default_request;
+
+
+
+// default responses
 typedef struct
 {
     pckid_t id;
