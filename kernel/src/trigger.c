@@ -2,6 +2,9 @@
 #include <list.h>
 #include <heap.h>
 
+extern struct thread_state *current_thread;
+
+
 extern list_t *process_list;
 extern list_t *running_threads;
 
@@ -197,10 +200,18 @@ int send_event(uint32_t ID)
             }
             else
             {
-                if(current_entry->callback)
-                    current_entry->callback(&(((struct thread_state *)current_entry->object)->state));
-                wakeup_thread(current_entry->object);
-                remove_event_trigger(current_entry->object, current_entry->ID);
+		struct thread_state *thread = current_entry->object;
+		remove_event_trigger(current_entry->object, current_entry->ID);
+                wakeup_thread(thread);
+                if(current_entry->callback != NULL) {
+			struct cpu_state **cpu = &thread->state;
+			struct thread_state *tmp = current_thread;
+			current_thread = thread;
+			vmm_switch_context(&current_thread->context);
+                	current_entry->callback(cpu);
+			current_thread = tmp;
+			vmm_switch_context(&current_thread->context);
+                }
             }
 
             remove_event(ID);

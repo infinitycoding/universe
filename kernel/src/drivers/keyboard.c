@@ -130,8 +130,7 @@ void kbd_irq_handler(void) {
 
 	if (ASCII) {
 		if(kbd_inode != NULL) {
-			vfs_pipe_info_t *info = kbd_inode->base;
-			vfs_write(kbd_inode, info->length, &ASCII, 1);
+			vfs_write(kbd_inode, kbd_inode->length, &ASCII, 1);
 		}
 		
 		*tail = ASCII;

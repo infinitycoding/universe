@@ -124,12 +124,10 @@ vfs_inode_t *vfs_create_pipe(void) {
 	pipe->num_writers = 1;
 	pipe->pipe_buffer = list_create();
 	pipe->event_id = get_new_event_ID();
-	pipe->length = 0;
 
 	inode->type = VFS_PIPE;
 	inode->base = pipe;
-	inode->length = sizeof(vfs_pipe_info_t);
-
+	inode->length = 0;
 	return inode;
 }
 
@@ -158,6 +156,12 @@ vfs_dentry_t* vfs_create_dir_entry(vfs_inode_t *entry_inode) {
  */
 int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
 	GET_INODE(node);
+
+	int old_len = node->length;
+	if( (off + bytes) > node->length) {
+		node->length = off + bytes;
+		node->stat.st_size = node->length;
+	}
 
 	if(node->type == VFS_PIPE) {
 		int block_id = off / PAGE_SIZE;
@@ -200,18 +204,11 @@ int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
 			}
 
 			block->base[index] = data[i];
-			info->length++;
 		}
 
 		send_event(info->event_id);
 		info->event_id = get_new_event_ID();
 	} else {
-		int old_len = node->length;
-		if( (off + bytes) > node->length) {
-			node->length = off + bytes;
-			node->stat.st_size = node->length;
-		}
-
 		if (node->base == NULL) {
 			node->base = malloc(node->length);
 		} else {
@@ -237,7 +234,7 @@ int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
  *
  * @return readed data
  */
-void* vfs_read(vfs_inode_t *node, uintptr_t offset) {
+void *vfs_read(vfs_inode_t *node, uintptr_t offset) {
 	GET_INODE(node);
 	if(node->type == VFS_PIPE) {
 		int block_id = offset / PAGE_SIZE;
@@ -245,7 +242,7 @@ void* vfs_read(vfs_inode_t *node, uintptr_t offset) {
 
 		vfs_pipe_info_t *info = (vfs_pipe_info_t*) node->base;
 
-		if(info->length > 0) {
+		if(node->length > offset) {
 			vfs_pipe_buffer_block_t *block = NULL;
 			struct list_node *bn = info->pipe_buffer->head->next;
 			int i;
@@ -502,23 +499,18 @@ void sys_read(struct cpu_state **cpu) {
 		vfs_inode_t *inode = desc->inode;
 		vfs_pipe_info_t *pipe = inode->base;
 
-		if(inode->type == VFS_PIPE &&
-		   desc->pos >= pipe->length &&
-		   pipe->num_writers > 0)
-		{
-			add_trigger(WAIT_EVENT, pipe->event_id, 0, current_thread, NULL);
+		void *read = vfs_read(inode, desc->pos);
+		
+		if(read != NULL) {
+			memcpy((void*)buf, read, len);
+			desc->pos += len;
+			(*cpu)->CPU_ARG0 = len;
+		} else if(inode->type == VFS_PIPE) {
+			add_trigger(WAIT_EVENT, pipe->event_id, 0, current_thread, sys_read);
 			suspend_thread(current_thread);
-			cpu = task_schedule(*cpu);
-			return;
+			*cpu = task_schedule(*cpu);
 		} else {
-			void *read = vfs_read(inode, desc->pos);
-			if(read != NULL) {
-				memcpy((void*)buf, read, len);
-				desc->pos += len;
-				(*cpu)->CPU_ARG0 = len;
-			} else {
-				(*cpu)->CPU_ARG0 = -2;
-			}
+			(*cpu)->CPU_ARG0 = -2;
 		}
 	} else {
 		(*cpu)->CPU_ARG0 = -3;

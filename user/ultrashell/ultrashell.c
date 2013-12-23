@@ -4,7 +4,7 @@
 #include <universe.h>
 #include <string.h>
 #include <stdlib.h>
-
+#include <stdio.h>
 
 
 // main is needed to compile, currently test only
