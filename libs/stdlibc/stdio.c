@@ -45,7 +45,7 @@ int close(int fd)
 
 int getchar(void)
 {
-	char c = 0;
-        while(!read(stdin, &c, 1));
-    return (int)c;
+	char c;
+        read(stdin, &c, 1);
+    	return (int)c;
 }

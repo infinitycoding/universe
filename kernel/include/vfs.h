@@ -68,7 +68,6 @@ typedef struct vfs_pipe_info {
 	
 	list_t *pipe_buffer;
 	int num_blocks;
-	int length;
 } vfs_pipe_info_t;
 
 typedef struct vfs_pipe_buffer_block {
