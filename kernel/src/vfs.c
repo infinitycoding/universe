@@ -110,9 +110,8 @@ vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent) {
 	node->stat.st_ino = nodes++;
 	node->stat.st_uid = uid;
 	node->stat.st_gid = gid;
-	node->stat.st_atime = *get_time();
-	node->stat.st_mtime = *get_time();
-
+	update_time(&node->stat.st_atime);
+	update_time(&node->stat.st_mtime);
 	return node;
 }
 
