@@ -64,10 +64,13 @@ char **get_tabel_section(char * token, char *table)
     // copy
     for(j = 0; j < num_entries; j++) {
         i = start[j];
-        entries[j] = malloc(len[j]);
+        entries[j] = malloc(len[j]+1);
         for(k = 0; k < len[j]; k++) {
             entries[j][k] = table[i];
             i++;
         }
+        entries[k] = '\0';
     }
+
+    return entries;
 }
