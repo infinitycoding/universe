@@ -23,7 +23,14 @@
 	@author Tom Slawik <tom.slawik@gmail.com>
 */
 
+#include <printf.h>
+
 // WARNING: ONLY values up to 99
 #define BCD_DECODE(x) ((0b1111 & x) + (10 * (((0b1111 << 4) & x) >> 4)))
+
+static inline char *BCD_ENCODE(char *bcd_str, int x) {
+  sprintf(bcd_str, "%d", x);
+  return bcd_str;
+}
 
 #endif
