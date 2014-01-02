@@ -29,19 +29,22 @@ char **get_tabel_section(char * token, char *table)
     while( table[i] != '{' ) {
         i++;
     }
+    i++;
 
     entries_start = i;
 
     // count entries until '}'
-    while( 1 ) {
-        while( table[i] != ' ' && table[i] != '\n') {i++;}
-        if( table[i] == '}' ) {
-            break;
-        } else {
-            num_entries ++;
+    while( table[i] != '}' && table[i] != '\0') {
+        while(table[i] == ' ' || table[i] == '\n') {
+            i++;
         }
+	num_entries++;
+        while(table[i] != ' ' && table[i] != '\n') {
+            i++;
+        }
+        i++;
     }
-
+    printf("%d entries\n", num_entries);
     entries = malloc(num_entries * sizeof(uintptr_t));
     int start[num_entries];
     int len[num_entries];
@@ -57,10 +60,11 @@ char **get_tabel_section(char * token, char *table)
             i++;
         }
     }
-
+    
     // copy
     for(j = 0; j < num_entries; j++) {
         i = start[j];
+        entries[j] = malloc(len[j]);
         for(k = 0; k < len[j]; k++) {
             entries[j][k] = table[i];
             i++;
