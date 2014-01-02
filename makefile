@@ -25,6 +25,11 @@ user: libs
 iso-img:
 	@genisoimage -R -b boot/grub/stage2_eltorito -input-charset utf-8 -no-emul-boot -boot-load-size 4 -boot-info-table -o cdrom.iso build
 
+usb:
+	mount /dev/sdb /mnt
+	cp -R ./build /mnt
+	grub-install --root-directory=/mnt --no-floppy --recheck /dev/sdb
+
 qemu: kernel user iso-img
 	$(QEMU) -cdrom cdrom.iso -net nic,model=rtl8139 -net user
 

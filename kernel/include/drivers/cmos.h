@@ -42,14 +42,14 @@
 #include <stdint.h>
 #include <drivers/timer.h>
 
-typedef struct cmos_register  {
+struct cmos_register  {
 	uint8_t register_a;
 	uint8_t register_b;
 	uint8_t register_c;
 	uint8_t register_d;
-} cmos_register_t;
+} cmos_register;
 
-typedef struct cmos_hardware_data {
+struct cmos_hardware_data {
 	uint8_t post_diagnostig_status_byte;
 	uint8_t shutdown_status_byte;
 	uint8_t floppy_disk_type;
@@ -75,20 +75,18 @@ typedef struct cmos_hardware_data {
 	uint8_t extendedmenory_high;
 
 //		uint16_t reserved3 : 13;
-} cmos_hardware_data_t;
+};
 
-typedef struct cmos_data {
-	time_t *time;
-	cmos_register_t registers;
-	cmos_hardware_data_t hardware;
-} cmos_data_t;
-
+struct cmos_data {
+	struct cmos_register registers;
+	struct cmos_hardware_data hardware;
+};
 
 void INIT_CMOS(void);
-cmos_data_t* get_cmos_data(void);
+void get_cmos_data(struct cmos_data *cmos);
 
 uint8_t cmos_read_byte(uint8_t offset);
-void cmos_write_byte(uint8_t offset,uint8_t value);
+void cmos_write_byte(uint8_t offset, uint8_t value);
 
 #endif
 

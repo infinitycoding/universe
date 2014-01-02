@@ -1,5 +1,5 @@
 /*
-	Copyright 2012 universe coding group (UCG) all rights reserved
+	Copyright 2012-2013 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
 
 	Universe Kernel is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 */
 
 /**
-	@author Michael Sippel <micha.linuxfreak@gmail.com>
+	@author Michael Sippel <michamimosa@gmail.com>
 */
 
 #include <stdint.h>
@@ -27,9 +27,10 @@
 #include <drivers/cmos.h>
 #include <drivers/timer.h>
 #include <printf.h>
+#include <heap.h>
 
-time_t current_time;
-cmos_data_t *cmos;
+struct time *current_time;
+struct cmos_data *cmos;
 
 /**
  * set PIT Fequency
@@ -42,8 +43,6 @@ void set_pit_freq(int freq) {
    	outb(0x40,counter & 0xFF);
    	outb(0x40,counter >> 8);
 }
-
-
 
 /**
  * Initalize the Programmable Intervall Timer
@@ -63,80 +62,49 @@ void INIT_PIT(int freq) {
  * @return void
  */
 void INIT_RTC(void) {
-	install_irq(0x8, &rtc_irq_handler);
-
-	cmos = get_cmos_data();
-	cmos_write_byte(0x0A, (cmos->registers.register_a & 0xF0) | 0x0F);
-	cmos_write_byte(0x0B, cmos->registers.register_b | 0x40);
-
-	update_time();
-}
-/**
- * IRQ-handler for the RTC
- *
- * @param void
- * @return void
- */
-void rtc_irq_handler(void) {
-	cmos->registers.register_c = cmos_read_byte(0x0C);
-	update_time();
+	cmos = malloc(sizeof(struct cmos_data));
+	current_time = malloc(sizeof(struct time));
+	get_cmos_data(cmos);
+	update_time(current_time);
 }
 
 /**
  * Updates the time from CMOS-RTC
  *
  * @param void
- *
- * @return success
  */
-int update_time(void)
-{
-	current_time.second =       BCD_DECODE(cmos_read_byte(0x00));
-	current_time.alarm_sec =    BCD_DECODE(cmos_read_byte(0x01));
-	current_time.minute =       BCD_DECODE(cmos_read_byte(0x02));
-	current_time.alarm_min =    BCD_DECODE(cmos_read_byte(0x03));
-	current_time.hour =         BCD_DECODE(cmos_read_byte(0x04));
-	current_time.alarm_hour =   BCD_DECODE(cmos_read_byte(0x05));
-	current_time.week_day =     BCD_DECODE(cmos_read_byte(0x06)) - 1;
-	current_time.day_in_month = BCD_DECODE(cmos_read_byte(0x07));
-	current_time.month =        BCD_DECODE(cmos_read_byte(0x08));
-	current_time.year =         BCD_DECODE(cmos_read_byte(0x09));
-	current_time.century =      BCD_DECODE(cmos_read_byte(0x32));
-
-	return 0;
+void update_time(struct time *time) {
+	time->second =       BCD_DECODE(cmos_read_byte(0x00));
+	time->alarm_sec =    BCD_DECODE(cmos_read_byte(0x01));
+	time->minute =       BCD_DECODE(cmos_read_byte(0x02));
+	time->alarm_min =    BCD_DECODE(cmos_read_byte(0x03));
+	time->hour =         BCD_DECODE(cmos_read_byte(0x04));
+	time->alarm_hour =   BCD_DECODE(cmos_read_byte(0x05));
+	time->week_day =     BCD_DECODE(cmos_read_byte(0x06)) - 1;
+	time->day_in_month = BCD_DECODE(cmos_read_byte(0x07));
+	time->month =        BCD_DECODE(cmos_read_byte(0x08));
+	time->year =         BCD_DECODE(cmos_read_byte(0x09));
+	time->century =      BCD_DECODE(cmos_read_byte(0x32));
 }
+
 /**
  * Changes the Time from CMOS
  *
  * @param time New time
- *
- * @return success
  */
-/* TODO: BCD_ENCODE */
-int change_time(time_t time) {
-	cmos_write_byte(0x00, time.second);
-	cmos_write_byte(0x01, time.alarm_sec);
-	cmos_write_byte(0x02, time.minute);
-	cmos_write_byte(0x03, time.alarm_min);
-	cmos_write_byte(0x04, time.hour);
-	cmos_write_byte(0x05, time.alarm_hour);
-	cmos_write_byte(0x06, time.week_day);
-	cmos_write_byte(0x07, time.day_in_month);
-	cmos_write_byte(0x08, time.month);
-	cmos_write_byte(0x09, time.year);
-	cmos_write_byte(0x32, time.century);
-
-	return 0;
-}
-/**
- * Get the current time
- *
- * @param void
- *
- * @return pointer to the current_time
- */
-time_t *get_time(void) {
-	return &current_time;
+void change_time(struct time *time) {
+        char bcd_str[2];
+	cmos_write_byte(0x00, BCD_ENCODE(bcd_str, time->second));
+	cmos_write_byte(0x01, BCD_ENCODE(bcd_str, time->alarm_sec));
+	cmos_write_byte(0x02, BCD_ENCODE(bcd_str, time->minute));
+	cmos_write_byte(0x03, BCD_ENCODE(bcd_str, time->alarm_min));
+	cmos_write_byte(0x04, BCD_ENCODE(bcd_str, time->hour));
+	cmos_write_byte(0x05, BCD_ENCODE(bcd_str, time->alarm_hour));
+	cmos_write_byte(0x06, BCD_ENCODE(bcd_str, time->week_day));
+	cmos_write_byte(0x07, BCD_ENCODE(bcd_str, time->day_in_month));
+	cmos_write_byte(0x08, BCD_ENCODE(bcd_str, time->month));
+	cmos_write_byte(0x09, BCD_ENCODE(bcd_str, time->year));
+	cmos_write_byte(0x32, BCD_ENCODE(bcd_str, time->century));
 }
 
 const int day_to_current_month[] = {0,31,59,90,120,151,181,212,243,273,304,334}; // regeljahr
@@ -147,8 +115,7 @@ const int day_to_current_month[] = {0,31,59,90,120,151,181,212,243,273,304,334};
  *
  * @return unix timestamp
  */
-int unix_time(time_t *time)
-{
+time_t unix_time(struct time *time) {
 	int year = (time->century*100)+time->year;
 	int leap_years = ((year - 1) - 1968) / 4 - ((year - 1) - 1900) / 100 + ((year - 1) - 1600) / 400;
 	int unix_time = time->second + (time->minute *60) + (time->hour *60*60) + ((day_to_current_month[time->month - 1] + time->day_in_month - 1) *24*60*60) + (((year-1970)*365+leap_years)*24*60*60);
@@ -157,9 +124,9 @@ int unix_time(time_t *time)
 	return unix_time;
 }
 
-void sys_time(struct cpu_state **cpu)
-{
-    int stamp = unix_time(get_time());
+void sys_time(struct cpu_state **cpu) {
+    update_time(current_time);
+    int stamp = unix_time(current_time);
     if((*cpu)->CPU_ARG1)
         *((int*)(*cpu)->CPU_ARG1) = stamp;
     return stamp;
@@ -169,8 +136,7 @@ void sys_time(struct cpu_state **cpu)
 /**
  * Print datetime
  */
-void print_time(time_t * time)
-{
+void print_time(struct time *time) {
 	char *day_string;
 	switch (time->week_day) {
 		case 0: day_string = "Sonntag";		break;

@@ -87,7 +87,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	asm volatile("sti");
 
 	INIT_PIT(200);
-	INIT_CMOS();
+	INIT_RTC();
 	INIT_SCHEDULER();
 
 	//print Logo and loading message
@@ -99,14 +99,16 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
 
 	//print current time
-	print_time(get_time()); //crashes on a real computer and on virtual box
+        struct time t;
+        update_time(&t);
+	print_time(&t); //crashes on a real computer and on virtual box
 	printf("\n");
-	printf("Timestamp:%d\n",unix_time(get_time()));
+	printf("Timestamp:%d\n\n",unix_time(&t));
 
 	INIT_CPUID();
 	printf("\n");
 	INIT_PCI();
-    INIT_KEYBOARD();
+        INIT_KEYBOARD();
 
 
 
