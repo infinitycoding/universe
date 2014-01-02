@@ -18,16 +18,18 @@ char **get_tabel_section(char * token, char *table)
     char **entries;
 
     // search for the token
-    while(! strcmp(read_token, token) ) {
-        strcpy(read_token, table + i);
-        i++;
+    memcpy(read_token, table + i, token_len);
+    read_token[token_len] = '\0';
+    while(!strcmp(read_token, token) && table[i] != '\0') {
+      memcpy(read_token, table + i, token_len);
+      read_token[token_len] = '\0';
     }
 
     // search '{'
     while( table[i] != '{' ) {
         i++;
     }
-printf(".");
+
     entries_start = i;
 
     // count entries until '}'
@@ -39,13 +41,13 @@ printf(".");
             num_entries ++;
         }
     }
-printf(".");
+
     entries = malloc(num_entries * sizeof(uintptr_t));
     int start[num_entries];
     int len[num_entries];
     memset(start, 0, num_entries * sizeof(int));
     memset(len, 0, num_entries * sizeof(int));
-printf(".");
+
     i = entries_start;
     for(j = 0; j < num_entries; j++) {
         while( table[i] == ' ' || table[i] == '\n') i++;
@@ -55,7 +57,7 @@ printf(".");
             i++;
         }
     }
-printf(".");
+
     // copy
     for(j = 0; j < num_entries; j++) {
         i = start[j];
@@ -64,5 +66,4 @@ printf(".");
             i++;
         }
     }
-printf(".");
 }
