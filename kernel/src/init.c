@@ -115,8 +115,8 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
     size_t len = modules[0].mod_end - modules[0].mod_start;
     pages = NUM_PAGES(len);
     char *drv_list = (void*)vmm_automap_kernel_range(current_context,(paddr_t) modules[0].mod_start, pages, VMM_WRITABLE);
-    get_tabel_section("UHOST",drv_list);
-    //printf(drv_list) ;
+    char **list = get_tabel_section("UHOST",drv_list);
+    printf(list[0]) ;
 
 
 	return 0;
