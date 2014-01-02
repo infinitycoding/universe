@@ -65,7 +65,7 @@
 */
 extern struct thread_state *current_thread;
 extern struct process_state *kernel_state;
-
+extern char **get_tabel_section(char * token, char *table);
 
 
 int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
@@ -108,22 +108,17 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	INIT_CPUID();
 	printf("\n");
 	INIT_PCI();
-        INIT_KEYBOARD();
+    INIT_KEYBOARD();
 
 
+    struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
+    size_t len = modules[0].mod_end - modules[0].mod_start;
+    pages = NUM_PAGES(len);
+    char *drv_list = (void*)vmm_automap_kernel_range(current_context,(paddr_t) modules[0].mod_start, pages, VMM_WRITABLE);
+    get_tabel_section("UHOST",drv_list);
+     //printf([0]) ;
 
-	// Load modules
-	int i;
-	struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
-        for(i = 0; i < mb_info->mods_count; i++) {
-        	size_t len = modules[i].mod_end - modules[i].mod_start;
-        	size_t pages = NUM_PAGES(len);
-        	void *mod = (void*)vmm_automap_kernel_range(current_context,(paddr_t) modules[i].mod_start, pages, VMM_WRITABLE);
-            load_elf(mod);
-        }
 
-	//thread_kill(current_thread);
-	//while(1){}
 	return 0;
 }
 
