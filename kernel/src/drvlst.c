@@ -62,16 +62,17 @@ char **get_tabel_section(char * token, char *table)
             i++;
         }
     }
-    
+
     return entries;
 }
+
+
 /**
  * Get module Data Block
  * @param 0 multiboot struct
  * @param 1module name
  * return moduel information
   **/
-  
 struct mods_add* find_module(struct multiboot_struct *mb_info, char *name)
 {
     int i;
@@ -90,5 +91,5 @@ struct mods_add* find_module(struct multiboot_struct *mb_info, char *name)
     }
     return NULL;
 }
-        
+
 

@@ -27,8 +27,6 @@
 
 typedef unsigned int pckid_t;
 
-#define REQUEST_FLAG 0x00000008
-
 
 typedef enum
 {
@@ -41,8 +39,8 @@ typedef enum
 
 typedef enum
 {
-    SUCESS = 0,
-    FAILURE = 1
+    SUCESS = 1,
+    FAILURE = 0
 }resp_t;
 
 
