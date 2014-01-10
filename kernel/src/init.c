@@ -117,19 +117,20 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
     void *phys = (void*)((int)modules[0].string & (int)~0xfff);
     void *virt = (void*) vmm_automap_kernel(current_context, phys, VMM_WRITABLE);
     for(i = 0; i < mb_info->mods_count; i++) {
-        int diff = (int)modules[i].string - (int)phys;
-        modules[i].string = virt + diff;
+        //int diff = (int)modules[i].string - (int)phys;
+        //modules[i].string = virt + diff;
     }
 
-    struct mods_add* mod = find_module(mb_info, "drivers.dat");
+    struct mods_add* mod = modules;//find_module(mb_info, "drivers.dat");
     size_t len = mod->mod_end - mod->mod_start;
     size_t pages = NUM_PAGES(len);
     char *drv_list = (void*)vmm_automap_kernel_range(current_context,(paddr_t) modules[i].mod_start, pages, VMM_WRITABLE);
-
+    printf(drv_list);
      int argc = 2;
      void *argv[2];
      argv[1] = mb_info;
      argv[0] = get_tabel_section("UHOST",drv_list);
      thread_create(kernel_state,KERNELMODE, INIT_UHOST, NULL,argc, argv, NULL, NULL);
+     return 0;
 }
 
