@@ -108,17 +108,17 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	INIT_CPUID();
 	printf("\n");
 	INIT_PCI();
-    INIT_KEYBOARD();
+	INIT_KEYBOARD();
 
-
-    struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
-    size_t len = modules[0].mod_end - modules[0].mod_start;
-    pages = NUM_PAGES(len);
-    char *drv_list = (void*)vmm_automap_kernel_range(current_context,(paddr_t) modules[0].mod_start, pages, VMM_WRITABLE);
-    char **list = get_tabel_section("UHOST",drv_list);
-    printf(list[0]) ;
-
-
+	struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
+	int i;
+	void *phys = (void*)((int)modules[0].string & (int)~0xfff);
+	void *virt = (void*) vmm_automap_kernel(current_context, phys, VMM_WRITABLE);
+	for(i = 0; i < mb_info->mods_count; i++) {
+		int diff = (int)modules[i].string - (int)phys;
+		modules[i].string = virt + diff;
+	}
+	
 	return 0;
 }
 
