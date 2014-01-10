@@ -24,6 +24,7 @@
 */
 
 #include <stdint.h>
+#include <vfs.h>
 
 // File Types
 #define ET_NONE		0x0 /* No type */
@@ -112,6 +113,6 @@ struct elf_program_header {
 	uint32_t alignment;
 } __attribute__((packed));
 
-struct process_state *load_elf(void *image);
+struct process_state *load_elf(void *image,vfs_inode_t *stdin,vfs_inode_t *stdout,vfs_inode_t *stderr);
 
 #endif
