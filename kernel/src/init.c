@@ -55,6 +55,8 @@
 
 #include "memory_layout.h"
 
+#include <drivers/hosts/uhost.h>
+
 /**
 * Initalize the Kernel
 *
@@ -65,7 +67,7 @@
 */
 extern struct thread_state *current_thread;
 extern struct process_state *kernel_state;
-extern char **get_tabel_section(char * token, char *table);
+
 
 
 int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
@@ -95,8 +97,8 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	puts("Universe wird gestartet...\n");
 
 	// count free memory and display it
-	uint32_t pages = pmm_count_free_pages();
-	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
+	/*uint32_t pages = pmm_count_free_pages();
+	printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);*/
 
 	//print current time
         struct time t;
@@ -110,15 +112,24 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 	INIT_PCI();
 	INIT_KEYBOARD();
 
-	struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
-	int i;
-	void *phys = (void*)((int)modules[0].string & (int)~0xfff);
-	void *virt = (void*) vmm_automap_kernel(current_context, phys, VMM_WRITABLE);
-	for(i = 0; i < mb_info->mods_count; i++) {
-		int diff = (int)modules[i].string - (int)phys;
-		modules[i].string = virt + diff;
-	}
-	
-	return 0;
+    struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
+    int i;
+    void *phys = (void*)((int)modules[0].string & (int)~0xfff);
+    void *virt = (void*) vmm_automap_kernel(current_context, phys, VMM_WRITABLE);
+    for(i = 0; i < mb_info->mods_count; i++) {
+        int diff = (int)modules[i].string - (int)phys;
+        modules[i].string = virt + diff;
+    }
+
+    struct mods_add* mod = find_module(mb_info, "drivers.dat");
+    size_t len = mod->mod_end - mod->mod_start;
+    size_t pages = NUM_PAGES(len);
+    char *drv_list = (void*)vmm_automap_kernel_range(current_context,(paddr_t) modules[i].mod_start, pages, VMM_WRITABLE);
+
+     int argc = 2;
+     void *argv[2];
+     argv[1] = mb_info;
+     argv[0] = get_tabel_section("UHOST",drv_list);
+     thread_create(kernel_state,KERNELMODE, INIT_UHOST, NULL,argc, argv, NULL, NULL);
 }
 
