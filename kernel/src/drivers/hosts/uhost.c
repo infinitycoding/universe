@@ -16,6 +16,7 @@ void INIT_UHOST(int argc, void **argv)
     struct multiboot_struct *mb_info =  argv[0];
     char **drv_list =  argv[1];
 
+
     list_t *drivers = list_create();
     int index;
     while(drv_list[index] != NULL)
