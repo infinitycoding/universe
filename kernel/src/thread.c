@@ -74,7 +74,7 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
             *--stack = (uint32_t) argv;
             *--stack = argc;
             *--stack = (uint32_t) return_address;
-	    vmm_unmap(current_context, stack);
+	    vmm_unmap(current_context, (vaddr_t) stack);
 	}
 
 	new_state->cs = 0x1b;
