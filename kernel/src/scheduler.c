@@ -50,9 +50,17 @@ extern list_t *zombie_list;
  */
 void INIT_SCHEDULER(void)
 {
-	set_GDT_entry(5, (uint32_t) &tss, sizeof(tss), 0x89, 0x8);
-	load_gdt(5);
+	set_GDT_entry(5, (uint32_t) &tss, sizeof(tss), 0x89, 0x8); //qemu does not support TSS-Desc on position 7... wiered hardware stuff
+
+    //Ring 1 descriptirs
+	set_GDT_entry(6,0,0xFFFFF,0xBA,0xC);
+	set_GDT_entry(7,0,0xFFFFF,0xB2,0xC);
+	load_gdt(7);
+
 	asm volatile("ltr %%ax" : : "a" (5 << 3));
+
+
+
 	kernelstack = malloc(KERNEL_STACK_SIZE) + KERNEL_STACK_SIZE;
 	tss.esp0 = (uint32_t)kernelstack;
 
