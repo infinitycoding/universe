@@ -53,10 +53,14 @@ void load_gdt(uint16_t last_entry)
 void INIT_GDT(void)
 {
 	set_GDT_entry(0,0,0,0,0);
+	//Ring 0 Descriptors
 	set_GDT_entry(1,0,0xFFFFF,0x9A,0xC);
 	set_GDT_entry(2,0,0xFFFFF,0x92,0xC);
-	set_GDT_entry(3,0,0xfffff,0xFA,0xC);
-	set_GDT_entry(4,0,0xfffff,0xF2,0xC);
+
+	//Ring 3 Descriptors
+	set_GDT_entry(3,0,0xFFFFF,0xFA,0xC);
+	set_GDT_entry(4,0,0xFFFFF,0xF2,0xC);
+
 	load_gdt(4);
 	asm volatile(
 		"mov $0x10, %ax;"
