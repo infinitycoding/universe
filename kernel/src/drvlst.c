@@ -87,8 +87,13 @@ struct mods_add* find_module(struct multiboot_struct *mb_info, char *name)
     for(i = 0; i < mb_info->mods_count; i++)
      {
         if(strncmp(name, modules[i].string, n))
+        {
+            printf("found file!\n");
             return &modules[i];
+        }
+
     }
+    printf("no file!\n");
     return NULL;
 }
 
