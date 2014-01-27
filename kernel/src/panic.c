@@ -25,24 +25,6 @@
 #include <cpu.h>
 #include <printf.h>
 
-void halt(void) {
-	while (1) {
-		asm volatile("cli; hlt");
-	}
-}
-
-char *exception_messages[] =
-{
-	"Division By Zero",        "Debug",                         "Non Maskable Interrupt",    "Breakpoint",
-	"Into Detected Overflow",  "Out of Bounds",                 "Invalid Opcode",            "No Coprocessor",
-	"Double Fault",            "Coprocessor Segment Overrun",   "Bad TSS",                   "Segment Not Present",
-	"Stack Fault",             "General Protection Fault",      "Page Fault",                "Unknown Interrupt",
-	"Coprocessor Fault",       "Alignment Check",               "Machine Check",             "SIMD Floating Point",
-	"Reserved",                "Reserved",                      "Reserved",                  "Reserved",
-	"Reserved",                "Reserved",                      "Reserved",                  "Reserved",
-	"Reserved",                "Reserved",                      "Reserved",                  "Reserved"
-};
-
 int cpu_dump(struct cpu_state* cpu, char *str)
 {
 	int len = 0;

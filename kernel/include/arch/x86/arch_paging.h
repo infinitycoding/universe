@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <multiboot.h>
 #include <cpu.h>
+#include <pmm.h>
 
 #define PD_LENGTH 1024
 #define PT_LENGTH 1024
