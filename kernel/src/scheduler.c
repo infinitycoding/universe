@@ -51,11 +51,7 @@ extern list_t *zombie_list;
 void INIT_SCHEDULER(void)
 {
 	set_GDT_entry(5, (uint32_t) &tss, sizeof(tss), 0x89, 0x8); //qemu does not support TSS-Desc on position 7... wiered hardware stuff
-
-    //Ring 1 descriptirs
-	set_GDT_entry(6,0,0xFFFFF,0xBA,0xC);
-	set_GDT_entry(7,0,0xFFFFF,0xB2,0xC);
-	load_gdt(7);
+	load_gdt(5);
 
 	asm volatile("ltr %%ax" : : "a" (5 << 3));
 
@@ -78,6 +74,10 @@ void INIT_SCHEDULER(void)
 struct cpu_state *task_schedule(struct cpu_state *cpu)
 {
     memcpy(current_thread->state, cpu, sizeof(struct cpu_state));
+    if(current_thread->flags & THREAD_KERNELMODE)
+    {
+        current_thread->state.esp = cpu+(sizeof(struct cpu_state)-8);
+    }
     if(current_thread->flags & THREAD_ZOMBIE)
     {
         thread_kill_sub(current_thread);
