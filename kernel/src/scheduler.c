@@ -76,7 +76,7 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
     memcpy(current_thread->state, cpu, sizeof(struct cpu_state));
     if(current_thread->flags & THREAD_KERNELMODE)
     {
-        current_thread->state.esp = cpu+(sizeof(struct cpu_state)-8);
+        current_thread->state->esp = cpu+(sizeof(struct cpu_state)-8);
     }
     if(current_thread->flags & THREAD_ZOMBIE)
     {
