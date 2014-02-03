@@ -17,7 +17,10 @@
 #define SYS_CREAT 8
 #define SYS_LINK 9
 #define SYS_UNLINK 10
-#define SYS_PIPE 11 // TODO
+//#define SYS_EXECVE 11
+#define SYS_CHDIR 12
+#define SYS_TIME 13
+#define SYS_PIPE 14 // TODO
 
 
 
