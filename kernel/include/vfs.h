@@ -109,5 +109,6 @@ void sys_write(struct cpu_state **cpu);
 void sys_creat(struct cpu_state **cpu);
 void sys_link(struct cpu_state **cpu);
 void sys_unlink(struct cpu_state **cpu);
+void sys_chdir(struct cpu_state **cpu);
 
 #endif

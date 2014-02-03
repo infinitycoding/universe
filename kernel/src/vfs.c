@@ -595,3 +595,19 @@ void sys_unlink(struct cpu_state **cpu) {
 	(*cpu)->CPU_ARG0 = 0;
 }
 
+void sys_chdir(struct cpu_state **cpu) {
+	char *path = (*cpu)->CPU_ARG1;
+	
+	vfs_inode_t *nwd = vfs_lookup_path(path);
+	if(nwd != NULL) {
+		if(S_ISDIR(nwd->stat)) {
+			current_thread->process->cwd = nwd;
+			(*cpu)->CPU_ARG0 = 0;
+		} else {
+			(*cpu)->CPU_ARG0 = -1;
+		}
+	} else {
+		(*cpu)->CPU_ARG0 = -2;
+	}
+}
+

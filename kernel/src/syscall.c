@@ -50,7 +50,9 @@ void identify_os(struct cpu_state **cpu)
 
 void (*linux_functions[])(struct cpu_state **cpu) =
 {
-    NULL,sys_exit,sys_fork,sys_read,sys_write,sys_open,sys_close,sys_waitpid,sys_creat,sys_link,sys_unlink,/*sys_chdir,*/ sys_time,/*FIXME: pipe kommt weiter hinten*/ sys_pipe
+    NULL, sys_exit, sys_fork, sys_read, sys_write, sys_open, sys_close, sys_waitpid,
+    sys_creat, sys_link, sys_unlink, NULL /*sys_execve*/, sys_chdir, sys_time,
+    /*FIXME: pipe kommt weiter hinten*/ sys_pipe
 };
 
 void linux_syscall_handler(struct cpu_state **cpu)
