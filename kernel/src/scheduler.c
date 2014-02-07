@@ -73,11 +73,15 @@ void INIT_SCHEDULER(void)
  */
 struct cpu_state *task_schedule(struct cpu_state *cpu)
 {
-    memcpy(current_thread->state, cpu, sizeof(struct cpu_state));
-    if(current_thread->flags & THREAD_KERNELMODE)
+    if((current_thread->flags & THREAD_KERNELMODE))
     {
-        current_thread->state->esp = cpu+(sizeof(struct cpu_state)-8);
+        current_thread->state = cpu;
     }
+    else
+    {
+        memcpy(current_thread->state, cpu, sizeof(struct cpu_state));
+    }
+
     if(current_thread->flags & THREAD_ZOMBIE)
     {
         thread_kill_sub(current_thread);
@@ -100,7 +104,16 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
             list_set_first(running_threads);
         current_thread = list_get_current(running_threads);
         vmm_switch_context(&current_thread->context);
-        memcpy(cpu, current_thread->state, sizeof(struct cpu_state));
+
+        if(current_thread->flags & THREAD_KERNELMODE)
+        {
+            cpu = current_thread->state;
+        }
+        else
+        {
+            cpu = kernelstack;
+            memcpy(cpu, current_thread->state, sizeof(struct cpu_state));
+        }
     }
     else
     {

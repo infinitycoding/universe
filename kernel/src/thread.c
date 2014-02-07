@@ -10,9 +10,11 @@
 extern list_t *running_threads;
 extern struct thread_state* current_thread;
 
-void thread_sync_context(struct thread_state *thread) {
+void thread_sync_context(struct thread_state *thread)
+{
     struct thread_state *main_thread = thread->process->main_thread;
-    if(thread != main_thread && main_thread != NULL && thread != NULL) {
+    if(thread != main_thread && main_thread != NULL && thread != NULL)
+    {
         int end = PDE_INDEX(0xB0000000);
         arch_sync_pts(&main_thread->context.arch_context, &thread->context.arch_context, 0, end);
     }
@@ -34,7 +36,7 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     new_thread->return_value = 0;
 
     void *kernel_stack = malloc(0x1000);
-    struct cpu_state *new_state = kernel_stack + 0x1000 - sizeof(struct cpu_state);
+    struct cpu_state *new_state = kernel_stack + (0x1000 - sizeof(struct cpu_state))-12;
     new_thread->state = new_state;
 
     if(process->main_thread == NULL) {
@@ -55,12 +57,15 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     if(prev == KERNELMODE)
     {
         new_thread->flags |= THREAD_KERNELMODE;
-
-	new_state->cs = 0x08;
-	new_state->ds = 0x10;
-	new_state->es = 0x10;
-	new_state->fs = 0x10;
-	new_state->gs = 0x10;
+        new_state->cs = 0x08;
+        new_state->ds = 0x10;
+        new_state->es = 0x10;
+        new_state->fs = 0x10;
+        new_state->gs = 0x10;
+        uint32_t *stack = kernel_stack + 0x1000-8;
+        *--stack = (uint32_t) argv;
+        *--stack = argc;
+        *--stack = (uint32_t) return_address;
     }
     else
     {
