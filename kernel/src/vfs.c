@@ -521,7 +521,7 @@ void sys_write(struct cpu_state **cpu) {
 	char *buf = (void*) (*cpu)->CPU_ARG2;
 	size_t len = (*cpu)->CPU_ARG3;
 
-	if(fd < 3 && fd > 0) {
+	if(fd < 3 && fd > 0) { // TODO
 		int i;
 		for(i = 0; i < len; i++) {
 			printf("%c", buf[i]);
