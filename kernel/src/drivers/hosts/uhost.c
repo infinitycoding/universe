@@ -10,11 +10,9 @@
 list_t *drivers;
 void INIT_UHOST(int argc, void **argv)
 {
-
+    printf("uhost-init sagt hallo!\n");while(1);
     if(argc < 2)
         return;
-
-
 
     struct multiboot_struct *mb_info =  argv[0];
     char **drv_list =  argv[1];

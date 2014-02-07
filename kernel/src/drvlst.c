@@ -86,7 +86,7 @@ struct mods_add* find_module(struct multiboot_struct *mb_info, char *name)
     struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
     for(i = 0; i < mb_info->mods_count; i++)
      {
-        if(strncmp(name, modules[i].string, n))
+        if(! strncmp(name, modules[i].string, n))
         {
             return &modules[i];
         }
