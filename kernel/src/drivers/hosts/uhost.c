@@ -10,7 +10,9 @@
 list_t *drivers;
 void INIT_UHOST(int argc, void **argv)
 {
-    printf("uhost-init sagt hallo!\n");while(1);
+    printf("uhost-init sagt hallo!\n");
+    while(1);
+    /*
     if(argc < 2)
         return;
 
@@ -41,5 +43,5 @@ void INIT_UHOST(int argc, void **argv)
 
         index++;
 
-    }
+    }*/
 }

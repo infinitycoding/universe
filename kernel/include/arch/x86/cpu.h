@@ -54,7 +54,7 @@ struct cpu_state
 #define CPU_ARG4 esi
 #define CPU_ARG5 edi
 
-#ifndef _cpu.c_
+#ifndef _cpu_c_
     extern char *exception_messages[];
 #endif
 

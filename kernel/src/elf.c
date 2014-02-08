@@ -25,12 +25,11 @@
 #include <paging.h>
 #include <pmm.h>
 #include <memory_layout.h>
-#include <process.h>
 #include <thread.h>
 #include <printf.h>
 #include <string.h>
 
-struct process_state *load_elf(void *image, vfs_inode_t *stdin, vfs_inode_t *stdout, vfs_inode_t *stderr) {
+struct process_state *load_elf(void *image, uid_t uid) {
 	struct elf_header *header = image;
 	struct elf_program_header *ph;
 
@@ -47,7 +46,7 @@ struct process_state *load_elf(void *image, vfs_inode_t *stdin, vfs_inode_t *std
 	int i,j;
 	ph = (struct elf_program_header*) (image + header->ph_offset);
 
-	struct process_state *proc = process_create("", "", PROCESS_ACTIVE, NULL, stdin, stdout, stderr);
+	struct process_state *proc = process_create("", "", PROCESS_ACTIVE, NULL, uid);
 	struct thread_state *new_thread = thread_create(proc, 3, header->entry, NULL, 0, NULL, NULL, NULL);
 
 	for(i = 0; i < header->ph_entry_count; i++, ph++) {

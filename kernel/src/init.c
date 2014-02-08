@@ -96,7 +96,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
         int diff = (int)modules[i].string - (int)phys;
         modules[i].string = virt + diff;
     }
-    
+
     struct mods_add *mod = find_module(mb_info, "/boot/drivers.dat");
     if(mod != NULL) {
     	size_t len = mod->mod_end - mod->mod_start;
@@ -110,15 +110,15 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
      	argv[0] = get_tabel_section("UHOST",drv_list);
         thread_create(kernel_state,KERNELMODE, INIT_UHOST, NULL,argc, argv, NULL, NULL);
     }
-
+    /*
     struct mods_add *shell_mod = find_module(mb_info, "/ultrashell.elf");
     if(shell_mod != NULL) {
 	size_t sh_len = shell_mod->mod_end - shell_mod->mod_start;
         size_t sh_pages = NUM_PAGES(sh_len);
         void *shell = (void*)vmm_automap_kernel_range(current_context,(paddr_t) shell_mod->mod_start, sh_pages, VMM_WRITABLE);
-        load_elf(shell, NULL, NULL, NULL);
-    }
-     
+        load_elf(shell,0);
+    }*/
+
     return 0;
 }
 

@@ -6,6 +6,8 @@
 #include <vfs.h>
 
 typedef uint32_t tid_t;
+typedef uint32_t uid_t;
+typedef uint32_t gid_t;
 
 typedef enum
 {
@@ -26,6 +28,7 @@ typedef enum
 struct process_state
 {
     pid_t pid;
+    uid_t uid;
     char *name;
     char *desc;
     struct process_state* parent;
@@ -46,7 +49,7 @@ struct child
     struct process_state *process;
 };
 
-    struct process_state *process_create(const char *name, const char *desc, uint16_t flags,struct process_state *parent,vfs_inode_t *stdin,vfs_inode_t *stdout,vfs_inode_t *stderr);
+    struct process_state *process_create(const char *name, const char *desc, uint16_t flags,struct process_state *parent, uid_t uid);
     void process_kill(struct process_state *process);
     struct process_state *process_find(pid_t id);
     void sys_exit(struct cpu_state **cpu);
