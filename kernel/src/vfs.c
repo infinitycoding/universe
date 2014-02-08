@@ -38,9 +38,6 @@ extern struct thread_state *current_thread;
 vfs_inode_t *root = NULL;
 uint32_t nodes = 0;
 
-static uid_t uid = 0;
-static gid_t gid = 0;
-
 // solve a link
 #define GET_INODE(i) if(i->type == VFS_LINK) i = (vfs_inode_t*) i->base;
 
@@ -62,26 +59,6 @@ void INIT_VFS(void) {
 
 	vfs_inode_t *foo = vfs_create_inode("foo.txt", 0x1ff, root);
 	vfs_write(foo, 0, "Hallo Welt!\n", 13);
-}
-
-/**
- * Set the User-ID
- *
- * @param new_uid the new user-id
- * @return void
- */
-void set_vfs_uid(uid_t new_uid) {
-	uid = new_uid;
-}
-
-/**
- * Set the Group-ID
- *
- * @param new_gid the new group-id
- * @return void
- */
-void set_vfs_gid(gid_t new_gid) {
-	gid = new_gid;
 }
 
 /**
@@ -233,7 +210,7 @@ int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
  *
  * @return readed data
  */
-void *vfs_read(vfs_inode_t *node, uintptr_t offset) {
+void *vfs_read(vfs_inode_t *node, uintptr_t offset) { // TODO: use a external buffer
 	GET_INODE(node);
 	if(node->type == VFS_PIPE) {
 		int block_id = offset / PAGE_SIZE;
@@ -289,7 +266,7 @@ int vfs_stat(vfs_inode_t *node, struct stat *buffer) {
  *
  * @return
  */
-int vfs_access(vfs_inode_t *node, mode_t modus) {
+int vfs_access(vfs_inode_t *node, mode_t modus, uid_t uid, gid_t gid) {
 	if (node->stat.st_uid == uid)
 	{
 		if ((modus & R_OK) &&
@@ -387,7 +364,7 @@ struct fd *get_fd(int fd) {
 			node = node->next;
 		}
 	}
-
+        
 	return NULL;
 }
 
@@ -395,39 +372,54 @@ void sys_open(struct cpu_state **cpu) {
 	char *path = (char *) (*cpu)->CPU_ARG1;
 	int oflags = (*cpu)->CPU_ARG2;
 	mode_t mode = (*cpu)->CPU_ARG3;
-
-	vfs_inode_t *inode = vfs_lookup_path(path);
-
+        
+	vfs_inode_t *inode = vfs_lookup_path(path);        
+        
 	if(inode == NULL) {
-		if(oflags & O_CREAT) {// create inode
-			char *name = malloc(strlen((char*)path));
-			strcpy(name, path);
-			inode = vfs_create_inode(name, mode, root);
+		if(oflags & O_CREAT) { // create inode
+			char *name = malloc(strlen((char*)path));// FIXME TODO
+			strcpy(name, path);// FIXME TODO
+			vfs_inode_t *parent = root; // FIXME TODO
+			if(vfs_access(parent, W_OK, current_thread->process->uid, current_thread->process->gid == 0) {
+				inode = vfs_create_inode(name, mode, parent);
+			} else {
+				(*cpu)->CPU_ARG0 = NO_PERMISSION;
+				return;
+			}
 		} else {
-			(*cpu)->CPU_ARG0 = -1;
+			(*cpu)->CPU_ARG0 = FAILURE;
 			return;
 		}
 	} else {
 		if(oflags & O_EXCL) {
-			(*cpu)->CPU_ARG0 = -2;
+			(*cpu)->CPU_ARG0 = FAILURE;
 			return;
 		}
 	}
-
-	if(oflags & O_TRUNC) {
-		memset(inode->base, 0, inode->length);
+        
+	if(vfs_access(inode, R_OK, current_thread->process->uid, current_thread->process->gid == 0) {
+		if(oflags & O_TRUNC) {
+			if(vfs_access(inode, W_OK, current_thread->process->uid, current_thread->process->gid == 0) {
+				memset(inode->base, 0, inode->length);
+			} else {
+				(*cpu)->CPU_ARG0 = NO_PERMISSION;
+				return;
+			}
+		}
+		
+		struct fd *desc = malloc(sizeof(struct fd));
+		desc->id = list_length(current_thread->process->files);
+		desc->mode = mode;
+		desc->flags = oflags;
+		desc->pos = 0;
+		desc->inode = inode;
+                
+		list_push_back(current_thread->process->files, desc);
+                
+	        (*cpu)->CPU_ARG0 = desc->id;
+	} else {
+		(*cpu)->CPU_ARG0 = NO_PERMISSION;
 	}
-
-	struct fd *desc = malloc(sizeof(struct fd));
-	desc->id = list_length(current_thread->process->files);
-	desc->mode = mode;
-	desc->flags = oflags;
-	desc->pos = 0;
-	desc->inode = inode;
-
-	list_push_back(current_thread->process->files, desc);
-
-	(*cpu)->CPU_ARG0 = desc->id;
 }
 
 void sys_pipe(struct cpu_state **cpu) {
@@ -456,29 +448,29 @@ void sys_pipe(struct cpu_state **cpu) {
 		desc1->inode = inode;
 		list_push_back(current_thread->process->files, desc1);
 
-		(*cpu)->CPU_ARG0 = 0;
+		(*cpu)->CPU_ARG0 = SUCCESS;
 	} else {
-		(*cpu)->CPU_ARG0 = -1;
+		(*cpu)->CPU_ARG0 = FAILURE;
 	}
 }
 
 void sys_close(struct cpu_state **cpu) {
 	int fd = (*cpu)->CPU_ARG1;
-
+        
 	struct list_node *node = current_thread->process->files->head->next;
 	int i;
 	for(i = 0; i < list_length(current_thread->process->files); i++) {
 		struct fd *desc = node->element;
 		if(desc->id == fd) {
 			list_remove_node(node);
-			(*cpu)->CPU_ARG0 = 0;
+			(*cpu)->CPU_ARG0 = SUCCESS;
 			return;
 		} else {
 			node = node->next;
 		}
 	}
-
-	(*cpu)->CPU_ARG0 = -1;
+        
+	(*cpu)->CPU_ARG0 = FAILURE;
 }
 
 void sys_read(struct cpu_state **cpu) {
@@ -487,32 +479,35 @@ void sys_read(struct cpu_state **cpu) {
 	size_t len = (*cpu)->CPU_ARG3;
 
 	struct fd *desc = get_fd(fd);
-	if(desc == NULL) {
-		(*cpu)->CPU_ARG0 = -1;
-		return;
-	}
-
-	if(desc->flags & O_RDONLY ||
-	   desc->flags & O_RDWR)
-	{
-		vfs_inode_t *inode = desc->inode;
-		vfs_pipe_info_t *pipe = inode->base;
-
-		void *read = vfs_read(inode, desc->pos);
+	if(desc != NULL) {
+		if(desc->flags & O_RDONLY ||
+		   desc->flags & O_RDWR)
+		{
+			vfs_inode_t *inode = desc->inode;
+			vfs_pipe_info_t *pipe = inode->base;
 		
-		if(read != NULL) {
-			memcpy((void*)buf, read, len);
-			desc->pos += len;
-			(*cpu)->CPU_ARG0 = len;
-		} else if(inode->type == VFS_PIPE) {
-			add_trigger(WAIT_EVENT, pipe->event_id, 0, current_thread, sys_read);
-			suspend_thread(current_thread);
-			*cpu = task_schedule(*cpu);
+			if(vfs_access(inode, R_OK, current_thread->process->uid, current_thread->process->gid == 0) {
+				void *read = vfs_read(inode, desc->pos);
+			
+				if(read != NULL) {
+					memcpy((void*)buf, read, len);
+					desc->pos += len;
+					(*cpu)->CPU_ARG0 = len;
+				} else if(inode->type == VFS_PIPE) {
+					add_trigger(WAIT_EVENT, pipe->event_id, 0, current_thread, sys_read);
+					suspend_thread(current_thread);
+					*cpu = task_schedule(*cpu);
+				} else {
+					(*cpu)->CPU_ARG0 = FAILURE;
+				}
+			} else {
+				(*cpu)->CPU_ARG0 = NO_PERMISSION;
+			}
 		} else {
-			(*cpu)->CPU_ARG0 = -2;
+			(*cpu)->CPU_ARG0 = NO_PERMISSION;
 		}
 	} else {
-		(*cpu)->CPU_ARG0 = -3;
+		(*cpu)->CPU_ARG0 = FAILURE;
 	}
 }
 
@@ -521,55 +516,73 @@ void sys_write(struct cpu_state **cpu) {
 	char *buf = (void*) (*cpu)->CPU_ARG2;
 	size_t len = (*cpu)->CPU_ARG3;
 
-	if(fd < 3 && fd > 0) { // TODO
+	if(fd < 3 && fd > 0) { // TODO FIXME
 		int i;
 		for(i = 0; i < len; i++) {
 			printf("%c", buf[i]);
 		}
-		(*cpu)->CPU_ARG0 = 0;
+		(*cpu)->CPU_ARG0 = SUCCESS;
 		return;
 	}
 
 	struct fd *desc = get_fd(fd);
-	if(desc == NULL) {
-		(*cpu)->CPU_ARG0 = -1;
-		return;
-	}
+	if(desc != NULL) {
+		if(desc->flags & O_WRONLY ||
+		   desc->flags & O_RDWR)
+		{
+			if(vfs_access(inode, W_OK, current_thread->process->uid, current_thread->process->gid == 0) {
+				if(! (desc->flags & O_APPEND) ) {
+					desc->pos = 0;
+					desc->flags |= O_APPEND;
+				}
 
-	if(desc->flags & O_WRONLY ||
-	   desc->flags & O_RDWR)
-	{
-		if(! (desc->flags & O_APPEND) ) {
-			desc->pos = 0;
-			desc->flags |= O_APPEND;
-		}
-
-		vfs_inode_t *inode = desc->inode;
-		int ret = vfs_write(inode, desc->pos, buf, len);
-		(*cpu)->CPU_ARG0 = ret;
-		if(ret > 0) {
-			desc->pos += len;
+				vfs_inode_t *inode = desc->inode;
+				int ret = vfs_write(inode, desc->pos, buf, len);
+				(*cpu)->CPU_ARG0 = ret;
+				if(ret > 0) {
+					desc->pos += len;
+				}
+			} else {
+				(*cpu)->CPU_ARG0 = NO_PERMISSION;
+			}
+		} else {
+			(*cpu)->CPU_ARG0 = NO_PERMISSION;
 		}
 	} else {
-		(*cpu)->CPU_ARG0 = -3;
+		(*cpu)->CPU_ARG0 = FAILURE;
 	}
 }
 
 void sys_creat(struct cpu_state **cpu) {
 	char *name = (*cpu)->CPU_ARG1;
 	int mode = (*cpu)->CPU_ARG2;
-	vfs_inode_t *inode = vfs_create_inode(name, mode, root);
 
-	struct fd *desc = malloc(sizeof(struct fd));
-	desc->id = list_length(current_thread->process->files);
-	desc->mode = mode;
-	desc->flags = O_RDWR;
-	desc->pos = 0;
-	desc->inode = inode;
+        // FIXME: only works in root
+	vfs_inode_t *parent = root; // FIXME TODO
+	if(parent != NULL) {
+		if(vfs_access(parent, W_OK, current_thread->process->uid, current_thread->process->gid == 0) {
+			vfs_inode_t *inode = vfs_create_inode(name, mode, parent);
+			
+			if(inode != NULL) {
+				struct fd *desc = malloc(sizeof(struct fd));
+				desc->id = list_length(current_thread->process->files);
+				desc->mode = mode;
+				desc->flags = O_RDWR;
+				desc->pos = 0;
+				desc->inode = inode;
 
-	list_push_back(current_thread->process->files, desc);
+				list_push_back(current_thread->process->files, desc);
 
-	(*cpu)->CPU_ARG0 = desc->id;
+				(*cpu)->CPU_ARG0 = desc->id;
+			} else {
+				(*cpu)->CPU_ARG0 = FAILURE;
+			}
+		} else {
+			(*cpu)->CPU_ARG0 = NO_PERMISSION;
+		}
+	} else {
+		(*cpu)->CPU_ARG0 = FAILURE;
+	}
 }
 
 void sys_link(struct cpu_state **cpu) {
@@ -577,22 +590,47 @@ void sys_link(struct cpu_state **cpu) {
 	char *dest_path = (*cpu)->CPU_ARG2;
 
 	vfs_inode_t *src_inode = vfs_lookup_path(src_path);
-	vfs_inode_t *dest_inode = vfs_create_inode(dest_path, src_inode->stat.st_mode, root);
-	dest_inode->type = VFS_LINK;
-	dest_inode->base = dest_inode;
+        
+	// FIXME: only works in root
+	vfs_inode_t *dest_parent = root; // FIXME TODO
+	
+	if(src_inode != NULL && dest_parent != NULL) {
+		if(vfs_access(src_inode, R_OK, current_thread->process->uid, current_thread->process->gid == 0 &&
+		   vfs_access(dest_parent, W_OK, current_thread->process->uid, current_thread->process->gid == 0) {
+			vfs_inode_t *dest_inode = vfs_create_inode(dest_path, src_inode->stat.st_mode, dest_parent);
+			
+			if(dest_inode != NULL) {
+				dest_inode->type = VFS_LINK;
+				dest_inode->base = dest_inode;
 
-	(*cpu)->CPU_ARG0 = 0;
+				(*cpu)->CPU_ARG0 = SUCCESS;
+			} else {
+				(*cpu)->CPU_ARG0 = FAILURE;
+			}
+		} else {
+			*cpu)->CPU_ARG0 = NO_PERMISSION;
+		}
+	} else {
+		(*cpu)->CPU_ARG0 = FAILURE;
+	}
 }
 
 void sys_unlink(struct cpu_state **cpu) {
 	char *path = (*cpu)->CPU_ARG1;
 
 	vfs_inode_t *link = vfs_lookup_path(path);
-	link->base = NULL;
-	link->type = VFS_REGULAR;
-	free(link);
-
-	(*cpu)->CPU_ARG0 = 0;
+	if(link != NULL) {
+		if(vfs_access(link, W_OK, current_thread->process->uid, current_thread->process->gid == 0) {
+			link->base = NULL;
+			link->type = VFS_REGULAR;
+			free(link);
+			(*cpu)->CPU_ARG0 = SUCCESS;
+		} else {
+			(*cpu)->CPU_ARG0 = NO_PERMISSION;
+		}
+	} else {
+		(*cpu)->CPU_ARG0 = FAILURE;
+	}
 }
 
 void sys_chdir(struct cpu_state **cpu) {
@@ -601,13 +639,17 @@ void sys_chdir(struct cpu_state **cpu) {
 	vfs_inode_t *nwd = vfs_lookup_path(path);
 	if(nwd != NULL) {
 		if(S_ISDIR(nwd->stat)) {
-			current_thread->process->cwd = nwd;
-			(*cpu)->CPU_ARG0 = 0;
+			if(vfs_access(nwd, R_OK, current_thread->process->uid, current_thread->process->gid == 0) {
+				current_thread->process->cwd = nwd;
+				(*cpu)->CPU_ARG0 = SUCCESS;
+			} else {
+				(*cpu)->CPU_ARG0 = NO_PERMISSION;
+			}
 		} else {
-			(*cpu)->CPU_ARG0 = -1;
+			(*cpu)->CPU_ARG0 = FAILURE;
 		}
 	} else {
-		(*cpu)->CPU_ARG0 = -2;
+		(*cpu)->CPU_ARG0 = FAILURE;
 	}
 }
 

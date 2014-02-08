@@ -29,6 +29,7 @@ struct process_state
 {
     pid_t pid;
     uid_t uid;
+    gid_t gid;
     char *name;
     char *desc;
     struct process_state* parent;

@@ -20,7 +20,7 @@
 */
 
 /**
-	@author Michael Sippel <micha.linuxfreak@gmail.com>
+	@author Michael Sippel <michamimosa@gmail.com>
 */
 
 #include <stdint.h>
