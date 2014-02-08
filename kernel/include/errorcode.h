@@ -1,8 +1,8 @@
-#ifndef _unistd_h_
-#define _unistd_h_
+#ifndef _error_h_
+#define _error_h_
 
 /*
-	Copyright 2012 universe coding group (UCG) all rights reserved
+	Copyright 2014 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
 
 	Universe Kernel is free software: you can redistribute it and/or modify
@@ -22,11 +22,10 @@
 /**
 	@author Michael Sippel <michamimosa@gmail.com>
 */
-#include <stdint.h>
 
-#define R_OK 0x1
-#define W_OK 0x2
-#define X_OK 0x4
-#define F_OK 0x8
-  
+#define SUCCESS        0
+#define FAILURE       -1
+#define NO_PERMISSION -2
+
 #endif
+

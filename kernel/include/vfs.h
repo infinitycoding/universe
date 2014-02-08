@@ -2,7 +2,7 @@
 #define _vfs_h_
 
 /*
-	Copyright 2012 universe coding group (UCG) all rights reserved
+	Copyright 2012-2014 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
 
 	Universe Kernel is free software: you can redistribute it and/or modify
@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <cpu.h>
 #include <list.h>
+#include <errorcode.h>
 
 #define R_OK 0x1
 #define W_OK 0x2
@@ -90,8 +91,6 @@ struct fd {
 };
 
 void INIT_VFS(void);
-void set_vfs_uid(uid_t new_uid);
-void set_vfs_gid(gid_t new_gid);
 vfs_inode_t *vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent);
 vfs_inode_t *vfs_create_pipe(void);
 vfs_dentry_t *vfs_create_dir_entry(vfs_inode_t *entry_inode);
@@ -112,3 +111,4 @@ void sys_unlink(struct cpu_state **cpu);
 void sys_chdir(struct cpu_state **cpu);
 
 #endif
+
