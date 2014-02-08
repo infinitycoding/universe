@@ -23,9 +23,9 @@
 	@author Michael Sippel <michamimosa@gmail.com>
 */
 
-#define SUCCESS        0
-#define FAILURE       -1
-#define NO_PERMISSION -2
+#define _SUCCESS (0)
+#define _FAILURE (-1)
+#define _NO_PERMISSION (-2)
 
 #endif
 
