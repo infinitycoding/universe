@@ -30,11 +30,6 @@
 #include <list.h>
 #include <errorcode.h>
 
-#define R_OK 0x1
-#define W_OK 0x2
-#define X_OK 0x4
-#define F_OK 0x8
-
 #define SEEK_SET 0x1
 #define SEEK_CUR 0x2
 #define SEEK_END 0x3
@@ -91,13 +86,13 @@ struct fd {
 };
 
 void INIT_VFS(void);
-vfs_inode_t *vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent);
-vfs_inode_t *vfs_create_pipe(void);
+vfs_inode_t *vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_t uid, gid_t gid);
+vfs_inode_t *vfs_create_pipe(uid_t uid, gid_t gid);
 vfs_dentry_t *vfs_create_dir_entry(vfs_inode_t *entry_inode);
 int vfs_write(vfs_inode_t *inode, int off, void *base, int bytes);
 void* vfs_read(vfs_inode_t *inode, uintptr_t offset);
 int vfs_stat(vfs_inode_t *inode, struct stat *buffer);
-int vfs_access(vfs_inode_t *inode, mode_t modus);
+int vfs_access(vfs_inode_t *inode, mode_t modus, uid_t uid, gid_t gid);
 vfs_inode_t *vfs_lookup_path(char *path);
 
 void sys_open(struct cpu_state **cpu);

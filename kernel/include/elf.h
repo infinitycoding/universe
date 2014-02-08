@@ -114,6 +114,6 @@ struct elf_program_header {
 	uint32_t alignment;
 } __attribute__((packed));
 
-struct process_state *load_elf(void *image,uid_t uid);
+struct process_state *load_elf(void *image, uid_t uid, gid_t gid);
 
 #endif

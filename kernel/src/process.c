@@ -50,7 +50,7 @@ void dump_thread_list(list_t *threads)
  * @param parent    pointer to the parent process struct (NULL: Kernel Init = parent)
  * @return
  */
-struct process_state *process_create(const char *name, const char *desc, uint16_t flags,struct process_state *parent, uid_t uid)
+struct process_state *process_create(const char *name, const char *desc, uint16_t flags,struct process_state *parent, uid_t uid, gid_t gid)
 {
 
     struct process_state *state = malloc(sizeof(struct process_state));
@@ -71,6 +71,7 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
     state->ports = list_create();
     state->tid_counter = 1;
     state->uid = uid;
+    state->gid = gid;
 
     if (parent == NULL)
         state->parent = kernel_state;
@@ -102,10 +103,10 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
     asm volatile("sti");
 
 
-    /* create stream files
-    if(stdin == NULL)*/vfs_inode_t * stdin = vfs_create_pipe();
-    /*if(stdout == NULL)*/vfs_inode_t * stdout = vfs_create_pipe();
-    /*if(stderr == NULL)*/vfs_inode_t * stderr = vfs_create_pipe();
+    /* create stream files*/
+    vfs_inode_t *stdin = vfs_create_pipe(uid, gid);
+    vfs_inode_t *stdout = vfs_create_pipe(uid, gid);
+    vfs_inode_t *stderr = vfs_create_pipe(uid, gid);
 
 	extern vfs_inode_t *kbd_inode;
 	kbd_inode = stdin;
@@ -260,7 +261,7 @@ void sys_fork(struct cpu_state **cpu)
     vmm_context_t context;
     vmm_create_context(&context);
     arch_fork_context(&current_thread->context.arch_context, &context.arch_context);
-    struct process_state *new_process = process_create(current_thread->process->name ,current_thread->process->desc ,current_thread->process->flags ,current_thread->process, current_thread->process->uid);
+    struct process_state *new_process = process_create(current_thread->process->name ,current_thread->process->desc ,current_thread->process->flags ,current_thread->process, current_thread->process->uid, current_thread->process->gid);
     struct thread_state *new_thread = thread_create(new_process, !(current_thread->flags & THREAD_KERNELMODE), 0, *cpu, 0, NULL, NULL, &context);
 
     void *stack_src = MEMORY_LAYOUT_STACK_TOP - THREAD_STACK_SIZE;
