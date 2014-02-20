@@ -124,7 +124,7 @@ time_t unix_time(struct time *time) {
 	return unix_time;
 }
 
-void sys_time(struct cpu_state **cpu) {
+int sys_time(struct cpu_state **cpu) {
     update_time(current_time);
     int stamp = unix_time(current_time);
     if((*cpu)->CPU_ARG1)

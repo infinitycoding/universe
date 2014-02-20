@@ -21,6 +21,8 @@
 */
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
+#include <universe.h>
 
 #define HEAP_STATUS_FREE 0x0
 #define HEAP_STATUS_USED 0x1
@@ -51,14 +53,14 @@ alloc_t *heap_expand(int pages) {
 
 void *malloc(size_t size) {
 	alloc_t *header = first_node;
-	vaddr_t data = 0;
+	//vaddr_t data = 0;
 	int n_size = size + sizeof(alloc_t);
 
 	while(header != NULL) {
 		if(header->size >= size && header->status == HEAP_STATUS_FREE) {
 			header->status = HEAP_STATUS_USED;
 			if(header->size > n_size) {
-				alloc_t *new_header = header->base + size;
+				alloc_t *new_header = (alloc_t *)(header->base + size);
 				new_header->base    = header->base + n_size;
 				new_header->size = header->size - n_size;
 				new_header->status = HEAP_STATUS_FREE;

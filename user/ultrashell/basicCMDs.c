@@ -2,6 +2,7 @@
 
 #include <universe.h>
 #include <atoi.h>
+#include <stdio.h>
 
 
 

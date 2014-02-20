@@ -21,7 +21,7 @@
 
 
 
-char **get_tabel_section(char * token, char *table);
+char **get_table_section(char * token, char *table);
 struct mods_add* find_module(struct multiboot_struct *mb_info, char *name);
 
 #endif

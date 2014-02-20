@@ -6,6 +6,7 @@
 #include <paging.h>
 #include <memory_layout.h>
 #include <trigger.h>
+#include <printf.h>
 
 extern struct process_state *kernel_state;
 extern struct thread_state *current_thread;
@@ -31,7 +32,7 @@ inline int min(int a, int b)
 void dump_thread_list(list_t *threads)
 {
     list_set_first(threads);
-    printf("-----%d-----\n",list_length(threads));
+    printf("-----%d-----\n", list_length(threads));
     while(!list_is_empty(threads) && !list_is_last(threads))
     {
         struct thread_state *t = list_get_current(threads);
@@ -264,10 +265,10 @@ void sys_fork(struct cpu_state **cpu)
     struct process_state *new_process = process_create(current_thread->process->name ,current_thread->process->desc ,current_thread->process->flags ,current_thread->process, current_thread->process->uid, current_thread->process->gid);
     struct thread_state *new_thread = thread_create(new_process, !(current_thread->flags & THREAD_KERNELMODE), 0, *cpu, 0, NULL, NULL, &context);
 
-    void *stack_src = MEMORY_LAYOUT_STACK_TOP - THREAD_STACK_SIZE;
+    void *stack_src = (void *)(MEMORY_LAYOUT_STACK_TOP - THREAD_STACK_SIZE);
     paddr_t pframe = pmm_alloc_page();
     vmm_map(&new_thread->context, pframe, MEMORY_LAYOUT_STACK_TOP-0x1000, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
-    void *stack = vmm_automap_kernel(current_context, pframe, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
+    void *stack = (void *)vmm_automap_kernel(current_context, pframe, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
     memcpy(stack, stack_src, THREAD_STACK_SIZE);
 
 	struct list_node *node = current_thread->process->files->head->next;

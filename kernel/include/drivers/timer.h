@@ -50,7 +50,7 @@ void change_time(struct time *time);
 void set_pit_freq(int freq);
 void print_time(struct time *time);
 time_t unix_time(struct time *time);
-void sys_time(struct cpu_state **cpu);
+int sys_time(struct cpu_state **cpu);
 
 #endif
 
