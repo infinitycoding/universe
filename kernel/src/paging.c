@@ -136,14 +136,14 @@ vaddr_t vmm_automap_user_range(vmm_context_t *context, paddr_t pframe, int pages
 void alloc_memory(struct cpu_state **cpu) {
 	int pages = (*cpu)->CPU_ARG1;
 
-	uint32_t *dest = arch_vaddr_find(&current_context->arch_context, pages, MEMORY_LAYOUT_USER_HEAP_START, MEMORY_LAYOUT_USER_HEAP_END, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
+	uint32_t *dest = (uint32_t *)arch_vaddr_find(&current_context->arch_context, pages, MEMORY_LAYOUT_USER_HEAP_START, MEMORY_LAYOUT_USER_HEAP_END, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
 	
 	int i;
 	for(i = 0; i < pages; i++) {
-		uint32_t *paddr = pmm_alloc_page();
+		uint32_t *paddr = (uint32_t *)pmm_alloc_page();
 		uint32_t *vaddr = dest + i*PAGE_SIZE;
-		vmm_map(current_context, paddr, vaddr, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
+		vmm_map(current_context, (paddr_t)paddr, (vaddr_t)vaddr, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
 	}
-	(*cpu)->CPU_ARG0 = dest;
+	(*cpu)->CPU_ARG0 = (uint32_t)dest;
 }
 

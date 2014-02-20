@@ -6,6 +6,7 @@
 #include <heap.h>
 #include <paging.h>
 #include <memory_layout.h>
+#include <printf.h>
 
 list_t *drivers;
 void INIT_UHOST(int argc, void **argv)

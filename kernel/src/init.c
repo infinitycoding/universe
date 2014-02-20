@@ -43,6 +43,7 @@
 #include <mutex.h>
 #include "memory_layout.h"
 #include <drivers/hosts/uhost.h>
+#include <drvlst.h>
 /**
 * Initalize the Kernel
 *
@@ -91,13 +92,13 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
     struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
     int i;
     void *phys = (void*)((int)modules[0].string & (int)~0xfff);
-    void *virt = (void*) vmm_automap_kernel(current_context, phys, VMM_WRITABLE);
+    void *virt = (void*) vmm_automap_kernel(current_context, (paddr_t)phys, VMM_WRITABLE);
     for(i = 0; i < mb_info->mods_count; i++) {
         int diff = (int)modules[i].string - (int)phys;
         modules[i].string = virt + diff;
     }
 
-    struct mods_add *mod = find_module(mb_info, "/boot/drivers.dat");
+    struct mods_add *mod = (struct mods_add *)find_module(mb_info, "/boot/drivers.dat");
     if(mod != NULL) {
     	size_t len = mod->mod_end - mod->mod_start;
     	size_t pages = NUM_PAGES(len);
@@ -107,8 +108,8 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
      	int argc = 2;
      	void *argv[2];
      	argv[1] = mb_info;
-     	argv[0] = get_tabel_section("UHOST",drv_list);
-        thread_create(kernel_state,KERNELMODE, INIT_UHOST, NULL,argc, argv, NULL, NULL);
+     	argv[0] = (void *)get_table_section("UHOST",drv_list);
+        thread_create(kernel_state,KERNELMODE, (uintptr_t)INIT_UHOST, NULL,argc, argv, NULL, NULL);
     }
     /*
     struct mods_add *shell_mod = find_module(mb_info, "/ultrashell.elf");

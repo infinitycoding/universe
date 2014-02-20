@@ -128,8 +128,8 @@ void arch_fork_context(arch_vmm_context_t *src, arch_vmm_context_t *dest) {
 	int i;
 	for(i = 0; i < 1024; i++) {
 		if(src->entries[i] & VMM_PRESENT) {
-			pt_t *pt_src = pt_get(src, i, VMM_PRESENT | VMM_WRITABLE);
-			pt_t *pt_dest = pt_create(dest, i, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
+			pt_t *pt_src = (pt_t *)pt_get(src, i, VMM_PRESENT | VMM_WRITABLE);
+			pt_t *pt_dest = (pt_t *)pt_create(dest, i, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
 			memcpy(pt_dest, pt_src, 4096);
 		}
 	}

@@ -35,7 +35,7 @@ int read(int fd, void *buffer,size_t n)
 
 int open(const char *path, int file_access, int filemode)
 {
-    return linux_syscall(SYS_OPEN, path, file_access, filemode, 0, 0);
+    return linux_syscall(SYS_OPEN, (uint32_t)path, file_access, filemode, 0, 0);
 }
 
 int close(int fd)

@@ -111,7 +111,7 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
         }
         else
         {
-            cpu = kernelstack;
+            cpu = (struct cpu_state *)kernelstack;
             memcpy(cpu, current_thread->state, sizeof(struct cpu_state));
         }
     }

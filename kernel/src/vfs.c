@@ -22,6 +22,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <scheduler.h>
 #include <heap.h>
 #include <printf.h>
 #include <unistd.h>
@@ -497,7 +498,7 @@ void sys_read(struct cpu_state **cpu) {
 				} else if(inode->type == VFS_PIPE) {
 					add_trigger(WAIT_EVENT, pipe->event_id, 0, current_thread, sys_read);
 					suspend_thread(current_thread);
-					*cpu = task_schedule(*cpu);
+					*cpu = (struct cpu_state *)task_schedule(*cpu);
 				} else {
 					(*cpu)->CPU_ARG0 = _FAILURE;
 				}
@@ -555,7 +556,7 @@ void sys_write(struct cpu_state **cpu) {
 }
 
 void sys_creat(struct cpu_state **cpu) {
-	char *name = (*cpu)->CPU_ARG1;
+	char *name = (char *)(*cpu)->CPU_ARG1;
 	int mode = (*cpu)->CPU_ARG2;
 
         // FIXME: only works in root
@@ -587,8 +588,8 @@ void sys_creat(struct cpu_state **cpu) {
 }
 
 void sys_link(struct cpu_state **cpu) {
-	char *src_path = (*cpu)->CPU_ARG1;
-	char *dest_path = (*cpu)->CPU_ARG2;
+	char *src_path = (char *)(*cpu)->CPU_ARG1;
+	char *dest_path = (char *)(*cpu)->CPU_ARG2;
 
 	vfs_inode_t *src_inode = vfs_lookup_path(src_path);
         
@@ -617,7 +618,7 @@ void sys_link(struct cpu_state **cpu) {
 }
 
 void sys_unlink(struct cpu_state **cpu) {
-	char *path = (*cpu)->CPU_ARG1;
+	char *path = (char *)(*cpu)->CPU_ARG1;
 
 	vfs_inode_t *link = vfs_lookup_path(path);
 	if(link != NULL) {
@@ -635,7 +636,7 @@ void sys_unlink(struct cpu_state **cpu) {
 }
 
 void sys_chdir(struct cpu_state **cpu) {
-	char *path = (*cpu)->CPU_ARG1;
+	char *path = (char *)(*cpu)->CPU_ARG1;
 	
 	vfs_inode_t *nwd = vfs_lookup_path(path);
 	if(nwd != NULL) {

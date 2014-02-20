@@ -1,12 +1,13 @@
 #include <stdint.h>
 #include <string.h>
 #include <multiboot.h>
+#include <heap.h>
 
 /**
  *@param 0 the table token
  *@param 1  the driver list
  **/
-char **get_tabel_section(char * token, char *table)
+char **get_table_section(char * token, char *table)
 {
     int token_len = strlen(token);
     char read_token[token_len+1];
@@ -76,7 +77,7 @@ char **get_tabel_section(char * token, char *table)
 struct mods_add* find_module(struct multiboot_struct *mb_info, char *name)
 {
     int i;
-    while(*name == ' ' || *name == ' \t')
+    while(*name == ' ' || *name == '\t')
         name++;
     int n = 0;
     while(name[n]  != ' ' && name[n] != '\0')
