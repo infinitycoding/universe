@@ -212,33 +212,37 @@ int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
  *
  * @return readed data
  */
-void *vfs_read(vfs_inode_t *node, uintptr_t offset) { // TODO: use a external buffer
+void vfs_read(vfs_inode_t *node, uintptr_t offset, int len, void *buffer) {
 	GET_INODE(node);
-	if(node->type == VFS_PIPE) {
-		int block_id = offset / PAGE_SIZE;
-		int block_off= offset % PAGE_SIZE;
-
-		vfs_pipe_info_t *info = (vfs_pipe_info_t*) node->base;
-
-		if(node->length > offset) {
+	if(node->length >= (offset+len)) {
+		if(node->type == VFS_PIPE) {
+			int block_id = offset / PAGE_SIZE;
+			int block_off= offset % PAGE_SIZE;
+			int end_block_id = (offset + len) / PAGE_SIZE;
+			int end_block_off= (offset + len) % PAGE_SIZE;
+			
+			vfs_pipe_info_t *info = (vfs_pipe_info_t*) node->base;
 			vfs_pipe_buffer_block_t *block = NULL;
 			struct list_node *bn = info->pipe_buffer->head->next;
+			
 			int i;
 			for(i = 0; i < info->num_blocks; i++) {
 				block = (vfs_pipe_buffer_block_t*) bn->element;
 				if(block->block_id == block_id) {
-					break;
+					if(block_id == end_block_id) {
+						memcpy(buffer, block->base + block_off, end_block_off);
+					} else {
+						memcpy(buffer, block->base + block_off, PAGE_SIZE - block_off);
+						block_off = 0;
+						block_id ++;
+					}
 				}
 				bn = bn->next;
 			}
-
-			return (void*) block->base + block_off;
+		} else {
+			memcpy(buffer, node->base + offset, len);
 		}
-	} else if(offset <= node->length) {
-		return (void*) node->base + offset;
 	}
-
-	return NULL;
 }
 
 /**
@@ -333,7 +337,7 @@ vfs_inode_t *vfs_lookup_path(char *path) {
 	char *str = (char*) strtok(path, delimiter);
 	while(str != NULL) {
 		int num = parent->length / sizeof(vfs_dentry_t);
-		vfs_dentry_t *entries = vfs_read(parent, 0);
+		vfs_dentry_t *entries = parent->base;
 		int found = 0;
 		int i;
 		for(i = 0; i < num; i++) {
@@ -489,10 +493,8 @@ void sys_read(struct cpu_state **cpu) {
 			vfs_pipe_info_t *pipe = inode->base;
 			
 			if(vfs_access(inode, R_OK, current_thread->process->uid, current_thread->process->gid == 0)) {
-				void *read = vfs_read(inode, desc->pos);
-			
-				if(read != NULL) {
-					memcpy((void*)buf, read, len);
+				if(inode->length >= (desc->pos+len)) {
+					vfs_read(inode, desc->pos, len, buf);
 					desc->pos += len;
 					(*cpu)->CPU_ARG0 = len;
 				} else if(inode->type == VFS_PIPE) {
