@@ -11,7 +11,8 @@ typedef enum
     WAIT_PID = 0,
     WAIT_TID = 1,
     WAIT_EVENT = 2,
-    WAIT_TIME = 3
+    WAIT_TIME = 3,
+    WAIT_PIPE = 4,
 }trigger_t;
 
 struct trigger_entry

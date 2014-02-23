@@ -57,7 +57,7 @@ pckid_t mgr_send_package(pckmgr *mgr, pcktype_t type, size_t size, void *data)
     package_t *header = malloc(sizeof(package_t));
     pckid_t id = gen_pckid(mgr);
     header->id = id;
-    header->size = size;
+    header->size = size+12;
     header->type = type;
     write(mgr->out,header,sizeof(package_t));
     free(header);

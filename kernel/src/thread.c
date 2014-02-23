@@ -20,6 +20,12 @@ void thread_sync_context(struct thread_state *thread)
     }
 }
 
+void kernel_thread_exit(void)
+{
+    printf("Fixme: Thread could not be killed!\n");
+    while(1){}
+}
+
 struct thread_state *thread_create(struct process_state *process, privilege_t prev, uint32_t eip, struct cpu_state *state, int argc, void **argv, void *return_address, vmm_context_t *context)
 {
     struct thread_state *new_thread = malloc(sizeof(struct thread_state));
@@ -38,6 +44,9 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     void *kernel_stack = malloc(0x1000);
     struct cpu_state *new_state = kernel_stack + (0x1000 - sizeof(struct cpu_state))-12;
     new_thread->state = new_state;
+
+    if(return_address == NULL)
+        return_address = &kernel_thread_exit;
 
     if(process->main_thread == NULL) {
         process->main_thread = new_thread;

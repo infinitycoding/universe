@@ -11,38 +11,11 @@
 list_t *drivers;
 void INIT_UHOST(int argc, void **argv)
 {
-    printf("uhost-init sagt hallo!\n");
-    while(1);
-    /*
-    if(argc < 2)
-        return;
+    printf("uhost-init sagt hallo! argc:%d \n", argc);
 
-    struct multiboot_struct *mb_info =  argv[0];
-    char **drv_list =  argv[1];
+    struct multiboot_struct *mb_info =  argv[1];
+    char **drv_list =  argv[0];
+    printf("%s\n",drv_list[0]);
 
-
-    list_t *drivers = list_create();
-    int index;
-    while(drv_list[index] != NULL)
-    {
-
-        struct mods_add* module = find_module(mb_info, drv_list[index]);
-        if(module)
-        {
-
-            struct uhost_driver *current_driver = malloc(sizeof(struct uhost_driver));
-            current_driver->stdin   = vfs_create_pipe();
-            current_driver->stdout = vfs_create_pipe();
-            current_driver->stderr = vfs_create_pipe();
-            current_driver->last_packageID = 0;
-            list_push_front(drivers,current_driver);
-            size_t len = module->mod_end - module->mod_start;
-            size_t pages = NUM_PAGES(len);
-            void *mod = (void*)vmm_automap_kernel_range(current_context,(paddr_t) module->mod_start, pages, VMM_WRITABLE);
-            load_elf(mod, current_driver->stdin, current_driver->stdout, current_driver->stderr);
-        }
-
-        index++;
-
-    }*/
+    return; /// i don't know why, but it is necessary to return into kernel_thread_exit()
 }

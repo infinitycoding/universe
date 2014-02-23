@@ -107,8 +107,9 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 
      	int argc = 2;
      	void *argv[2];
+     	char ** c = get_table_section("UHOST",drv_list);
      	argv[1] = mb_info;
-     	argv[0] = (void *)get_table_section("UHOST",drv_list);
+     	argv[0] = c;
         thread_create(kernel_state,KERNELMODE, (uintptr_t)INIT_UHOST, NULL,argc, argv, NULL, NULL);
     }
     /*
@@ -119,7 +120,6 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
         void *shell = (void*)vmm_automap_kernel_range(current_context,(paddr_t) shell_mod->mod_start, sh_pages, VMM_WRITABLE);
         load_elf(shell,0);
     }*/
-
     return 0;
 }
 
