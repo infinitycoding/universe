@@ -22,8 +22,9 @@ void thread_sync_context(struct thread_state *thread)
 
 void kernel_thread_exit(void)
 {
-    printf("Fixme: Thread could not be killed!\n");
+    current_thread->flags |= THREAD_ZOMBIE;
     while(1){}
+    asm("int $32"); ///i don't know why ther's a pagefalut when i call the system scheduler
 }
 
 struct thread_state *thread_create(struct process_state *process, privilege_t prev, uint32_t eip, struct cpu_state *state, int argc, void **argv, void *return_address, vmm_context_t *context)

@@ -84,17 +84,25 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
 
     if(current_thread->flags & THREAD_ZOMBIE)
     {
-        thread_kill_sub(current_thread);
-        if(list_is_empty(running_threads))
+        if(current_thread->flags & THREAD_KERNELMODE)
         {
-            asm volatile("sti");
-            while(list_is_empty(running_threads)){}
-            asm volatile("cli");
+            ///Well, the problem is here, but the thread does not appear to be in the thread list
+
         }
-        list_set_first(running_threads);
-        current_thread = list_get_current(running_threads);
-        vmm_switch_context(&current_thread->context);
-        memcpy(cpu, current_thread->state, sizeof(struct cpu_state));
+        else
+        {
+            thread_kill_sub(current_thread);
+            if(list_is_empty(running_threads))
+            {
+                asm volatile("sti");
+                while(list_is_empty(running_threads)){}
+                asm volatile("cli");
+            }
+            list_set_first(running_threads);
+            current_thread = list_get_current(running_threads);
+            vmm_switch_context(&current_thread->context);
+            memcpy(cpu, current_thread->state, sizeof(struct cpu_state));
+        }
     }
     else if(current_thread->ticks == 0)
     {

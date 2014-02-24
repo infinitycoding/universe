@@ -45,7 +45,7 @@ void identify_os(struct cpu_state **cpu)
 
 
 
-#define DEFINED_LINUX_FUNCTIONS 12
+#define DEFINED_LINUX_FUNCTIONS 15
 
 
 void (*linux_functions[])(struct cpu_state **cpu) =
