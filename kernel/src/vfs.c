@@ -230,7 +230,7 @@ void vfs_read(vfs_inode_t *node, uintptr_t offset, int len, void *buffer) {
 				block = (vfs_pipe_buffer_block_t*) bn->element;
 				if(block->block_id == block_id) {
 					if(block_id == end_block_id) {
-						memcpy(buffer, block->base + block_off, end_block_off);
+						memcpy(buffer, block->base + block_off, end_block_off - block_off);
 					} else {
 						memcpy(buffer, block->base + block_off, PAGE_SIZE - block_off);
 						block_off = 0;
