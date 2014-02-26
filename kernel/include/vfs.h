@@ -77,6 +77,12 @@ typedef struct vfs_dentry {
 	vfs_inode_t *inode;
 } vfs_dentry_t;
 
+typedef struct dirent {
+  int id;
+  char name[256];
+  struct stat stat;
+} dirent_t;
+
 struct fd {
 	unsigned int id;
 	vfs_inode_t *inode;
@@ -104,6 +110,7 @@ void sys_creat(struct cpu_state **cpu);
 void sys_link(struct cpu_state **cpu);
 void sys_unlink(struct cpu_state **cpu);
 void sys_chdir(struct cpu_state **cpu);
+void sys_readdir(struct cpu_state **cpu);
 
 #endif
 

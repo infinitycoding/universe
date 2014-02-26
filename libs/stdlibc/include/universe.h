@@ -21,8 +21,8 @@
 #define SYS_CHDIR 12
 #define SYS_TIME 13
 #define SYS_PIPE 14 // TODO
-
-
+#define SYS_READDIR 15 // at 141 TODO
+#define SYS_GETDENTS 15 // at 141 TODO
 
 static inline uint32_t linux_syscall(uint32_t function, uint32_t ebx, uint32_t ecx, uint32_t edx, uint32_t esi, uint32_t edi)
 {

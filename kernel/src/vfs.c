@@ -657,3 +657,30 @@ void sys_chdir(struct cpu_state **cpu) {
 	}
 }
 
+void sys_readdir(struct cpu_state **cpu) {
+	static int pos = 0;
+	static int old_fd = -1;
+	int fd = (*cpu)->CPU_ARG1;
+	int count = (*cpu)->CPU_ARG2;
+	
+	vfs_inode_t *parent = get_fd(fd)->inode;
+	dirent_t *dentry = (*cpu)->CPU_ARG2;
+	
+	vfs_dentry_t *entries = parent->base;
+	int num = parent->length / sizeof(vfs_dentry_t);
+	
+	if(pos < num && fd == old_fd || old_fd == -1) {
+		vfs_inode_t *ino = entries[pos++].inode;
+	    	
+		strcpy(dentry->name, ino->name);
+		memcpy(&dentry->stat, &ino->stat, sizeof(struct stat));
+		dentry->id = ino->stat.st_ino;
+		(*cpu)->CPU_ARG0 = (uint32_t) dentry;
+	} else {
+		pos = 0;
+		(*cpu)->CPU_ARG0 = (uint32_t) NULL;
+	}
+	
+	old_fd = fd;
+}
+
