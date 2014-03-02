@@ -34,6 +34,22 @@ int sver(int argc, char **argv)
 }
 
 
+// this function always returns true
+
+int cmdtrue(int argc, char **argv)
+{
+	return 0;
+}
+
+
+// this function always returns false
+
+int cmdfalse(int argc, char **argv)
+{
+	return 1;
+}
+
+
 // from here test only
 
 // adds two values and prints the result
