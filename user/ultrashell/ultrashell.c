@@ -64,6 +64,10 @@ int parserLine(const char *line)
 		return echo(argc, argv);
 	else if(!strncmp(argv[0], "sver", 4))
 		return sver(argc, argv);
+	else if(!strncmp(argv[0], "true", 4))
+		return cmdtrue(argc, argv);
+	else if(!strncmp(argv[0], "false", 5))
+		return cmdfalse(argc, argv);
 	else if(!strncmp(argv[0], "add", 3))
 		return add(argc, argv);
 	else if(!strncmp(argv[0], "sub", 3))
