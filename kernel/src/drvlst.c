@@ -57,7 +57,8 @@ char **get_table_section(char * token, char *table)
     // copy
     for(j = 0; j < num_entries; j++) {
         i = start[j];
-        entries[j] = malloc(len[j]);
+        entries[j] = malloc(len[j]+1);
+        memset(entries[j],0,len[j]+1);
         for(k = 0; k < len[j]; k++) {
             entries[j][k] = table[i];
             i++;
