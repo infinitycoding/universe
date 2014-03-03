@@ -9,6 +9,7 @@
 
 extern list_t *running_threads;
 extern struct thread_state* current_thread;
+extern struct process_state *kernel_state;
 
 void thread_sync_context(struct thread_state *thread)
 {
@@ -26,6 +27,14 @@ void kernel_thread_exit(void)
     while(1){}
     asm("int $32"); ///i don't know why ther's a pagefalut when i call the system scheduler
 }
+
+
+
+static inline struct thread_state *kernel_thread_create(uintptr_t eip, int argc, void **argv)
+{
+    return thread_create(kernel_state, KERNELMODE, (uint32_t) eip, NULL, argc, argv, NULL, NULL);
+}
+
 
 struct thread_state *thread_create(struct process_state *process, privilege_t prev, uint32_t eip, struct cpu_state *state, int argc, void **argv, void *return_address, vmm_context_t *context)
 {
