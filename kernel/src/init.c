@@ -54,6 +54,7 @@
 */
 extern struct thread_state *current_thread;
 extern struct process_state *kernel_state;
+extern list_t *running_threads;
 int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
     clear_screen();
     if (magic_number != 0x2BADB002) {
@@ -99,7 +100,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
     }
 
     struct mods_add *mod = (struct mods_add *)find_module(mb_info, "/boot/drivers.dat");
-    
+
     if(mod != NULL) {
     	size_t len = mod->mod_end - mod->mod_start;
     	size_t pages = NUM_PAGES(len);
@@ -107,11 +108,13 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
      	int argc = 2;
      	void *argv[2];
      	char ** c = get_table_section("UHOST",drv_list);
-     	
+
         argv[1] = mb_info;
      	argv[0] = c;
         thread_create(kernel_state,KERNELMODE, (uintptr_t)INIT_UHOST, NULL,argc, argv, NULL, NULL);
     }
+
+
 
     struct mods_add *shell_mod = find_module(mb_info, "/ultrashell.elf");
     if(shell_mod != NULL) {
@@ -120,6 +123,10 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
         void *shell = (void*)vmm_automap_kernel_range(current_context,(paddr_t) shell_mod->mod_start, sh_pages, VMM_WRITABLE);
         load_elf(shell,0,0);
     }
+
+    dump_thread_list(running_threads);
+
+
 
     return 0;
 }
