@@ -61,7 +61,8 @@ typedef struct vfs_pipe_info {
 	unsigned int num_writers;
 	
 	uint32_t event_id;
-	
+	list_t *handlers;
+
 	list_t *pipe_buffer;
 	int num_blocks;
 } vfs_pipe_info_t;
@@ -71,6 +72,12 @@ typedef struct vfs_pipe_buffer_block {
 	uint32_t block_id;
 	uint32_t length;
 } vfs_pipe_buffer_block_t;
+
+typedef struct vfs_pipe_trigger {
+	uint32_t eip;
+	int argc;
+	void **argv;
+} vfs_pipe_trigger_t;
 
 typedef struct vfs_dentry {
 	ino_t ino;
@@ -111,6 +118,8 @@ void sys_link(struct cpu_state **cpu);
 void sys_unlink(struct cpu_state **cpu);
 void sys_chdir(struct cpu_state **cpu);
 void sys_readdir(struct cpu_state **cpu);
+void launch_pipe_handlers(vfs_pipe_info_t *pipe);
+void set_pipe_trigger(struct cpu_state **cpu);
 
 #endif
 

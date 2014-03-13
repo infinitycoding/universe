@@ -187,6 +187,7 @@ int remove_event(uint32_t ID)
  */
 int send_event(uint32_t ID)
 {
+    int ret = false;
     list_set_first(trigger_list);
     while(!list_is_last(trigger_list) && !list_is_empty(trigger_list))
     {
@@ -195,14 +196,15 @@ int send_event(uint32_t ID)
         {
             if(current_entry->proc)
             {
-                wakeup_process(current_entry->object);
-                remove_event_trigger(current_entry->object, current_entry->ID);
+		wakeup_process(current_entry->object);
+		remove_event_trigger(current_entry->object, current_entry->ID);
             }
             else
             {
 		struct thread_state *thread = current_entry->object;
 		remove_event_trigger(current_entry->object, current_entry->ID);
-                wakeup_thread(thread);
+		wakeup_thread(thread);
+		
                 if(current_entry->callback != NULL) {
 			struct cpu_state **cpu = &thread->state;
 			struct thread_state *tmp = current_thread;
@@ -215,11 +217,11 @@ int send_event(uint32_t ID)
             }
 
             remove_event(ID);
-            return true;
+            ret = true;
         }
         list_next(trigger_list);
     }
-    return false;
+    return ret;
 }
 
 

@@ -95,13 +95,14 @@ vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_
 
 vfs_inode_t *vfs_create_pipe(uid_t uid, gid_t gid) {
 	vfs_inode_t *inode = vfs_create_inode("pipe", 0, NULL, uid, gid);
-
+	
 	vfs_pipe_info_t *pipe = malloc(sizeof(vfs_pipe_info_t));
 	pipe->num_readers = 1;
 	pipe->num_writers = 1;
 	pipe->pipe_buffer = list_create();
 	pipe->event_id = get_new_event_ID();
-
+	pipe->handlers = list_create();
+	
 	inode->type = VFS_PIPE;
 	inode->base = pipe;
 	inode->length = 0;
@@ -186,6 +187,7 @@ int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
 
 		send_event(info->event_id);
 		info->event_id = get_new_event_ID();
+		launch_pipe_handlers(info);
 	} else {
 		if (node->base == NULL) {
 			node->base = malloc(node->length);
@@ -664,23 +666,58 @@ void sys_readdir(struct cpu_state **cpu) {
 	int count = (*cpu)->CPU_ARG2;
 	
 	vfs_inode_t *parent = get_fd(fd)->inode;
-	dirent_t *dentry = (*cpu)->CPU_ARG2;
+	if(vfs_access(parent, R_OK, current_thread->process->uid, current_thread->process->gid == 0)) {
+		dirent_t *dentry = (*cpu)->CPU_ARG2;
 	
-	vfs_dentry_t *entries = parent->base;
-	int num = parent->length / sizeof(vfs_dentry_t);
+		vfs_dentry_t *entries = parent->base;
+		int num = parent->length / sizeof(vfs_dentry_t);
 	
-	if(pos < num && fd == old_fd || old_fd == -1) {
-		vfs_inode_t *ino = entries[pos++].inode;
-	    	
-		strcpy(dentry->name, ino->name);
-		memcpy(&dentry->stat, &ino->stat, sizeof(struct stat));
-		dentry->id = ino->stat.st_ino;
-		(*cpu)->CPU_ARG0 = (uint32_t) dentry;
+		if(pos < num && fd == old_fd || old_fd == -1) {
+			vfs_inode_t *ino = entries[pos++].inode;
+		    	
+			strcpy(dentry->name, ino->name);
+			memcpy(&dentry->stat, &ino->stat, sizeof(struct stat));
+			dentry->id = ino->stat.st_ino;
+			(*cpu)->CPU_ARG0 = (uint32_t) dentry;
+		} else {
+			pos = 0;
+			(*cpu)->CPU_ARG0 = (uint32_t) NULL;
+		}
+		
+		old_fd = fd;
 	} else {
-		pos = 0;
-		(*cpu)->CPU_ARG0 = (uint32_t) NULL;
+		(*cpu)->CPU_ARG0 = _NO_PERMISSION;
 	}
+}
+
+void launch_pipe_handlers(vfs_pipe_info_t *pipe) {
+	struct list_node *node = pipe->handlers->head->next;
+	struct list_node *head = pipe->handlers->head;
 	
-	old_fd = fd;
+	while(node != head) {
+		vfs_pipe_trigger_t *trigger = (vfs_pipe_trigger_t*) node->element;
+		thread_create(current_thread->process, USERMODE, trigger->eip, NULL, trigger->argc, trigger->argv, NULL, NULL);
+		
+		node = node->next;
+	}
+}
+
+void set_pipe_trigger(struct cpu_state **cpu) {
+	int fd = (*cpu)->CPU_ARG1;
+	vfs_inode_t *inode = get_fd(fd)->inode;
+	
+	if(vfs_access(inode, R_OK, current_thread->process->uid, current_thread->process->gid == 0)) {
+		vfs_pipe_info_t *pipe = inode->base;
+
+		vfs_pipe_trigger_t *trigger = malloc(sizeof(vfs_pipe_trigger_t));
+		trigger->eip = (*cpu)->CPU_ARG2;
+		trigger->argc = (*cpu)->CPU_ARG3;
+		trigger->argv = (*cpu)->CPU_ARG4;
+		list_push_back(pipe->handlers, (void*) trigger);
+		
+		(*cpu)->CPU_ARG0 = _SUCCESS;
+	} else {
+		(*cpu)->CPU_ARG0 = _NO_PERMISSION;
+	}
 }
 

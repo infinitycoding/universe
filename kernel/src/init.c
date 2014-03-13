@@ -114,8 +114,6 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
         thread_create(kernel_state,KERNELMODE, (uintptr_t)INIT_UHOST, NULL,argc, argv, NULL, NULL);
     }
 
-
-
     struct mods_add *shell_mod = find_module(mb_info, "/ultrashell.elf");
     if(shell_mod != NULL) {
 	size_t sh_len = shell_mod->mod_end - shell_mod->mod_start;
