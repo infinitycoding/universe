@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
 // main is needed to compile, currently test only
 
 int main(void)
@@ -15,6 +14,7 @@ int main(void)
 	char inchar;
 	char inbuffer[MAX_LINE_LENGTH] = "";
 
+	
 	while(1)
 	{
 		inchar = getchar();
