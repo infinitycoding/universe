@@ -559,7 +559,7 @@ void sys_write(struct cpu_state **cpu) {
 	}
 }
 
-void sys_creat(struct cpu_state **cpu) {
+void sys_create(struct cpu_state **cpu) {
 	char *name = (char *)(*cpu)->CPU_ARG1;
 	int mode = (*cpu)->CPU_ARG2;
 
@@ -663,16 +663,16 @@ void sys_readdir(struct cpu_state **cpu) {
 	static int pos = 0;
 	static int old_fd = -1;
 	int fd = (*cpu)->CPU_ARG1;
-	int count = (*cpu)->CPU_ARG2;
+	//int count = (*cpu)->CPU_ARG2;		// count is currently unused, so i commented it out
 	
 	vfs_inode_t *parent = get_fd(fd)->inode;
 	if(vfs_access(parent, R_OK, current_thread->process->uid, current_thread->process->gid == 0)) {
-		dirent_t *dentry = (*cpu)->CPU_ARG2;
+		dirent_t *dentry = (dirent_t *)(*cpu)->CPU_ARG2;
 	
 		vfs_dentry_t *entries = parent->base;
 		int num = parent->length / sizeof(vfs_dentry_t);
 	
-		if(pos < num && fd == old_fd || old_fd == -1) {
+		if(pos < num && (fd == old_fd || old_fd == -1)) {
 			vfs_inode_t *ino = entries[pos++].inode;
 		    	
 			strcpy(dentry->name, ino->name);
@@ -712,7 +712,7 @@ void set_pipe_trigger(struct cpu_state **cpu) {
 		vfs_pipe_trigger_t *trigger = malloc(sizeof(vfs_pipe_trigger_t));
 		trigger->eip = (*cpu)->CPU_ARG2;
 		trigger->argc = (*cpu)->CPU_ARG3;
-		trigger->argv = (*cpu)->CPU_ARG4;
+		trigger->argv = (void **)(*cpu)->CPU_ARG4;
 		list_push_back(pipe->handlers, (void*) trigger);
 		
 		(*cpu)->CPU_ARG0 = _SUCCESS;
