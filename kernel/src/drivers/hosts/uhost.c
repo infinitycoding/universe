@@ -27,7 +27,7 @@ void INIT_UHOST(int argc, void **argv)
             size_t drv_pages = NUM_PAGES(drv_len);
             void *driver = (void*)vmm_automap_kernel_range(current_context,(paddr_t) drv_mod->mod_start, drv_pages, VMM_WRITABLE);
             load_elf(driver,0,0);
-            printf("%s: %#08x\n",drv_list[i], drv_mod);
+            printf("%s: %p\n",drv_list[i], drv_mod);
         }
     }
     while(1);

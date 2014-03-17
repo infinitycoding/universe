@@ -169,10 +169,8 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 			continue;
 
 		case 'p':
-			if (width == -1) {
-				width = 2 * sizeof(void *);
-				flags |= ZEROPAD;
-			}
+			width = 2 * sizeof(void *);
+			flags |= ZEROPAD;
 			flags |= SPECIAL;
 			itoa_ex((unsigned long)va_arg(args, void *), buf, 16, flags, width);
 			while (*++buf);

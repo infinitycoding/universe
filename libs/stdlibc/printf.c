@@ -37,7 +37,7 @@ int printf(const char *fmt, ...)
 
 	size = vsprintf(buffer, fmt, args);
 
-    write(stdout,buffer,strlen(buffer));
+    	write(stdout,buffer,strlen(buffer));
 
 	va_end(args);
 	return size;
