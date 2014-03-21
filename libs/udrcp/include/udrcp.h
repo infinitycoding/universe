@@ -29,14 +29,46 @@
 
 typedef unsigned int pckid_t;
 typedef unsigned int pcktype_t;
+
+#define UHOST_DEFAULT_ASYNCHRON "1:00"
+#define UHOST_DEFAULT_SYNCHRON  "1:00:S"
 #define MAX_ID 0xFFFFFFFF
+
+// Subsystem Request
+#define RESET_CON   0
+#define PING        1
+#define SHUTDOWN    2
+#define RESTART     3
+#define CHKDEV      4
+
+
+// Subsystem Response
+#define ERROR       0
+#define CONFIRM     1
+#define SUCESS      2
+
+
+// Host Request
+
+
+// Host Response
+#define PONG 1
+
 
 typedef struct
 {
     pckid_t id;
     size_t size;
     pcktype_t type;
-}package_t;
+}pckhead_t;
+
+typedef struct
+{
+    pckid_t id;
+    size_t size;
+    pcktype_t type;
+    unsigned char *data;
+}pck_t;
 
 
 typedef struct
@@ -48,10 +80,23 @@ typedef struct
     int out;
     int err;
     list_t *recieved_pcks;
+    char *version;
+    int connection_state;
 }pckmgr;
 
 
+pckmgr *new_pckmgr(int in, int out, int err);
 pckid_t gen_pckid(pckmgr *mgr);
 bool free_pckid(pckmgr *mgr, pckid_t id);
+pckid_t send_package(pckmgr *mgr, pcktype_t type, size_t size, void *data);
+bool subsystem_connect(pckmgr *mgr, char *protocol_version);
+
+//todo
+pck_t *poll_next(pckmgr *mgr);
+void poll_queue(pckmgr *mgr);
+
+pck_t *pck_fetch(pckmgr *mgr,pckid_t id);
+pck_t *pck_poll(pckmgr *mgr, pckid_t id);
+
 
 #endif

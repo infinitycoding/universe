@@ -1,16 +1,18 @@
 #include <universe.h>
 #include <stdio.h>
-#include <math.h>
+#include <udrcp.h>
 
-void kbd_thread(void) {
-  printf("X");
-  thread_exit(0);
-}
 
 int main(int argc, char **argv) {
-    printf("subsystem\n");
+    //printf("subsystem\n");
+    //write(STDERR,"connection established",22);
+    pckmgr *mgr = new_pckmgr(STDIN, STDOUT, STDERR);
+    if(!subsystem_connect(mgr, UHOST_DEFAULT_ASYNCHRON))
+        while(1);
 
-    universe_syscall(SYS_PIPE_TRIGGER, stdin, (uint32_t)&kbd_thread,0,0,0);
+    write(STDERR,"connection established",22);
+
+
 
     while(1){}
 	return 0;
