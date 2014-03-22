@@ -77,6 +77,7 @@ typedef struct vfs_pipe_trigger {
 	uint32_t eip;
 	int argc;
 	void **argv;
+	struct thread_state *thread;
 } vfs_pipe_trigger_t;
 
 typedef struct vfs_dentry {

@@ -32,13 +32,6 @@
 int printf(const char *fmt, ...);
 int sprintf(char *buf, const char *fmt, ...);
 int vsprintf(char *buf, const char *fmt, va_list args);
-
-
-int open(const char *path, int file_access, int filemode);
-int close(int fd);
-int read(int fd, void *buffer,size_t n);
-int write(int fd,void *buffer, size_t n);
-
-
 int getchar(void);
+
 #endif

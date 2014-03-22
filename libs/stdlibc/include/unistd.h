@@ -35,4 +35,11 @@ typedef struct dirent {
   stat_t stat;
 } dirent_t;
 
+int open(const char *path, int file_access, int filemode);
+int close(int fd);
+int read(int fd, void *buffer,size_t n);
+int write(int fd,void *buffer, size_t n);
+dirent_t *readdir(int fd);
+int chdir(const char *path);
+
 #endif
