@@ -30,7 +30,7 @@ void kernel_thread_exit(void)
 
 
 
-static inline struct thread_state *kernel_thread_create(uintptr_t eip, int argc, void **argv)
+inline struct thread_state *kernel_thread_create(uintptr_t eip, int argc, void **argv)
 {
     return thread_create(kernel_state, KERNELMODE, (uint32_t) eip, NULL, argc, argv, NULL, NULL);
 }

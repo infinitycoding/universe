@@ -43,6 +43,15 @@ int close(int fd)
     return linux_syscall(SYS_CLOSE, fd, 0, 0, 0, 0);
 }
 
+dirent_t *readdir(int fd) {
+  dirent_t d;
+  return linux_syscall(SYS_READDIR, fd, 0, 0, 0, 0);
+}
+
+int chdir(const char *path) {
+  return linux_syscall(SYS_CHDIR, path, 0, 0, 0, 0);
+}
+
 int getchar(void)
 {
 	char c;
