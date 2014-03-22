@@ -21,6 +21,7 @@
  **/
 
 #include <universe.h>
+#include <unistd.h>
 #include <stdio.h>
 
 int write(int fd,void *buffer, size_t n)

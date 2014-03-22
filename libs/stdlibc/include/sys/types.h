@@ -1,5 +1,5 @@
-#ifndef _unistd_h_
-#define _unistd_h_
+#ifndef _types_h_
+#define _types_h_
 
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
@@ -22,25 +22,17 @@
 /**
 	@author Michael Sippel <micha.linuxfreak@gmail.com>
 */
+
 #include <stdint.h>
-#include <sys/stat.h>
 
-#define R_OK 0x1
-#define W_OK 0x2
-#define X_OK 0x4
-#define F_OK 0x8
-
-typedef struct dirent {
-  int id;
-  char name[256];
-  struct stat stat;
-} dirent_t;
-
-int open(const char *path, int file_access, int filemode);
-int close(int fd);
-int read(int fd, void *buffer,size_t n);
-int write(int fd,void *buffer, size_t n);
-dirent_t *readdir(int fd);
-int chdir(const char *path);
+typedef unsigned int ino_t;
+typedef unsigned int id_t;
+typedef unsigned int uid_t;
+typedef unsigned int gid_t;
+typedef unsigned int mode_t;
+typedef unsigned int nlink_t;
+typedef signed int blkcnt_t;
+typedef signed int off_t;
+typedef unsigned int time_t;
 
 #endif
