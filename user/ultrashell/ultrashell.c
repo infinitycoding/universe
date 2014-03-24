@@ -14,10 +14,7 @@ int main(void)
 	int counter = 0;
 	char inchar;
 	char inbuffer[MAX_LINE_LENGTH] = "";
-	struct function *first_cmd = (struct function *) malloc(sizeof(struct function));
-	first_cmd->command = "sver";
-	first_cmd->f = sver;
-	binary_tree *cmds = create_tree(first_cmd);
+	binary_tree *cmds = initBinaryTree();
 	
 	while(1)
 	{
@@ -41,7 +38,7 @@ int main(void)
 
         	if(inchar == '\n')
 		{
-			parserLine(inbuffer, cmds);
+			parserLine(cmds, inbuffer);
 
 			counter = 0;
 			inbuffer[counter] = '\0';
@@ -52,9 +49,65 @@ int main(void)
 }
 
 
+// creates the binary tree with the commands
+
+binary_tree *initBinaryTree()
+{
+	binary_tree *cmdTree = NULL;
+
+	struct function *newCmd = (struct function *) malloc(sizeof(struct function));
+	newCmd->command = "dummy";
+	newCmd->f = dummy;
+
+	cmdTree = create_tree(newCmd);
+	
+	newCmd = (struct function *) malloc(sizeof(struct function));
+	newCmd->command = "echo";
+	newCmd->f = echo;
+	addFunction(cmdTree, newCmd);
+
+	newCmd = (struct function *) malloc(sizeof(struct function));
+	newCmd->command = "sver";
+	newCmd->f = sver;
+	addFunction(cmdTree, newCmd);
+
+	newCmd = (struct function *) malloc(sizeof(struct function));
+	newCmd->command = "true";
+	newCmd->f = cmdtrue;
+	addFunction(cmdTree, newCmd);
+
+	newCmd = (struct function *) malloc(sizeof(struct function));
+	newCmd->command = "false";
+	newCmd->f = cmdfalse;
+	addFunction(cmdTree, newCmd);
+
+	newCmd = (struct function *) malloc(sizeof(struct function));
+	newCmd->command = "add";
+	newCmd->f = add;
+	addFunction(cmdTree, newCmd);
+
+	newCmd = (struct function *) malloc(sizeof(struct function));
+	newCmd->command = "sub";
+	newCmd->f = sub;
+	addFunction(cmdTree, newCmd);
+
+	newCmd = (struct function *) malloc(sizeof(struct function));
+	newCmd->command = "mul";
+	newCmd->f = mul;
+	addFunction(cmdTree, newCmd);
+
+	newCmd = (struct function *) malloc(sizeof(struct function));
+	newCmd->command = "div";
+	newCmd->f = div;
+	addFunction(cmdTree, newCmd);
+
+	return cmdTree;
+}
+
+
 // parsers and executes a line (strange, with this name...)
 
-int parserLine(const char *line, binary_tree *tree)
+int parserLine(binary_tree *tree, const char *line)
 {
 	char **argv = NULL;
 	int argc = 0;

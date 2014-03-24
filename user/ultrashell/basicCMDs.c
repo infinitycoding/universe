@@ -6,6 +6,16 @@
 
 
 
+// this isn't the function you are looking for
+
+int dummy(int argc, char **argv)
+{
+	printf("This isn't the function you are looking for.\n");	
+
+	return 0;
+}
+
+
 // the echo function
 
 int echo(int argc, char **argv)
@@ -62,7 +72,7 @@ int add(int argc, char **argv)
 	if(argc != 3)
 	{
 		printf("add: incorrect number of arguments\n");
-		return -1;
+		return 1;
 	}
 
 	result_i = atoi(argv[1]) + atoi(argv[2]);
@@ -84,7 +94,7 @@ int sub(int argc, char **argv)
 	if(argc != 3)
 	{
 		printf("sub: incorrect number of arguments\n");
-		return -1;
+		return 1;
 	}
 
 	result_i = atoi(argv[1]) - atoi(argv[2]);
@@ -106,7 +116,7 @@ int mul(int argc, char **argv)
 	if(argc != 3)
 	{
 		printf("mul: incorrect number of arguments\n");
-		return -1;
+		return 1;
 	}
 
 	result_i = atoi(argv[1]) * atoi(argv[2]);
@@ -128,13 +138,13 @@ int div(int argc, char **argv)
 	if(argc != 3)
 	{
 		printf("div: incorrect number of arguments\n");
-		return -1;
+		return 1;
 	}
 
 	if(atoi(argv[2]) == 0)
 	{
 		printf("div: divide by zero\n");
-		return -2;
+		return 2;
 	}
 
 	result_i = atoi(argv[1]) / atoi(argv[2]);
