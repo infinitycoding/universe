@@ -1,7 +1,7 @@
 #include <udrcp.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <unistd.h>
 
 pckmgr *new_pckmgr(int in, int out, int err)
 {
@@ -62,8 +62,20 @@ pckid_t send_package(pckmgr *mgr, pcktype_t type, size_t size, void *data)
     header->size = size+12;
     header->type = type;
     write(mgr->out,header,sizeof(pckhead_t));
-    free(header);
     write(mgr->out,data,size);
+    free(header);
+    return id;
+}
+
+void respond(pckmgr *mgr,pckid_t id,pcktype_t type, size_t size, void *data)
+{
+    pckhead_t *header = malloc(sizeof(pckhead_t));
+    header->id = id;
+    header->size = size+12;
+    header->type = type;
+    write(mgr->out,header,sizeof(pckhead_t));
+    write(mgr->out,data,size);
+    free(header);
     return id;
 }
 

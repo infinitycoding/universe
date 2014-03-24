@@ -19,11 +19,4 @@
 
 void INIT_UHOST(int argc, void **argv);
 
-struct uhost_driver
-{
-    uint32_t last_packageID;
-    vfs_inode_t *stdin;
-    vfs_inode_t *stdout;
-    vfs_inode_t *stderr;
-};
 #endif

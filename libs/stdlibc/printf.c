@@ -21,6 +21,7 @@
 	@author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de> (usermode modification)
 */
 
+#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -37,7 +38,7 @@ int printf(const char *fmt, ...)
 
 	size = vsprintf(buffer, fmt, args);
 
-    	write(stdout,buffer,strlen(buffer));
+    write(stdout,buffer,strlen(buffer));
 
 	va_end(args);
 	return size;
