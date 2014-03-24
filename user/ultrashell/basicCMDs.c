@@ -38,7 +38,7 @@ int echo(int argc, char **argv)
 
 int sver(int argc, char **argv)
 {
-	printf("Ultrashell v. 1.0.0 (debug)\n");
+	printf("Ultrashell v. 1.1.0 (debug)\n");
 
 	return 0;
 }

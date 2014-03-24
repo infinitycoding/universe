@@ -10,6 +10,7 @@
 #define SUCCESS 0
 #define BINARY_TREE_CORRUPTED -1
 #define COMMAND_ALREADY_ADDED -2
+#define ALLOCATE_ERROR -3
 
 
 
@@ -56,9 +57,10 @@ union branchElement
 
 
 
-struct function *searchFunction(binary_tree *tree, char *function_name);
-int addFunction(binary_tree *tree, struct function *new_function);
 binary_tree *create_tree(struct function *dummy);
+int loadFunction(binary_tree *tree, char *cmd, int (*fct)(int, char **));
+int addFunction(binary_tree *tree, struct function *new_function);
+struct function *searchFunction(binary_tree *tree, char *function_name);
 
 
 
