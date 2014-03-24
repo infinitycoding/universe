@@ -7,14 +7,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-// main is needed to compile, currently test only
+// main loop which pulls the inputs and tells the other functions what to do 
 
 int main(void)
 {
+	binary_tree *cmds = initBinaryTree();
+
 	int counter = 0;
 	char inchar;
-	char inbuffer[MAX_LINE_LENGTH] = "";
-	binary_tree *cmds = initBinaryTree();
+	char inbuffer[MAX_LINE_LENGTH] = "";	
 	
 	while(1)
 	{
@@ -61,45 +62,14 @@ binary_tree *initBinaryTree()
 
 	cmdTree = create_tree(newCmd);
 	
-	newCmd = (struct function *) malloc(sizeof(struct function));
-	newCmd->command = "echo";
-	newCmd->f = echo;
-	addFunction(cmdTree, newCmd);
-
-	newCmd = (struct function *) malloc(sizeof(struct function));
-	newCmd->command = "sver";
-	newCmd->f = sver;
-	addFunction(cmdTree, newCmd);
-
-	newCmd = (struct function *) malloc(sizeof(struct function));
-	newCmd->command = "true";
-	newCmd->f = cmdtrue;
-	addFunction(cmdTree, newCmd);
-
-	newCmd = (struct function *) malloc(sizeof(struct function));
-	newCmd->command = "false";
-	newCmd->f = cmdfalse;
-	addFunction(cmdTree, newCmd);
-
-	newCmd = (struct function *) malloc(sizeof(struct function));
-	newCmd->command = "add";
-	newCmd->f = add;
-	addFunction(cmdTree, newCmd);
-
-	newCmd = (struct function *) malloc(sizeof(struct function));
-	newCmd->command = "sub";
-	newCmd->f = sub;
-	addFunction(cmdTree, newCmd);
-
-	newCmd = (struct function *) malloc(sizeof(struct function));
-	newCmd->command = "mul";
-	newCmd->f = mul;
-	addFunction(cmdTree, newCmd);
-
-	newCmd = (struct function *) malloc(sizeof(struct function));
-	newCmd->command = "div";
-	newCmd->f = div;
-	addFunction(cmdTree, newCmd);
+	loadFunction(cmdTree, "echo", echo);
+	loadFunction(cmdTree, "sver", sver);
+	loadFunction(cmdTree, "true", cmdtrue);
+	loadFunction(cmdTree, "false", cmdfalse);
+	loadFunction(cmdTree, "add", add);
+	loadFunction(cmdTree, "sub", sub);
+	loadFunction(cmdTree, "mul", mul);
+	loadFunction(cmdTree, "div", div);
 
 	return cmdTree;
 }
