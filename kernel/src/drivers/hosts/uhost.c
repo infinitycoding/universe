@@ -27,8 +27,8 @@ void INIT_UHOST(int argc, void **argv)
     struct multiboot_struct *mb_info =  argv[1];
     char **drv_list =  argv[0];
     int i;
-    printf("uhost subsystems:\n");
     pckmgr *pman;
+    printf("uhost subsystems:\n");
     for(i = 0; drv_list[i]; i++)
     {
         struct mods_add *drv_mod = (struct mods_add *)find_module(mb_info, drv_list[i]);
@@ -45,24 +45,44 @@ void INIT_UHOST(int argc, void **argv)
     }
     printf("\n");
     //Poll packages
+    if(list_is_empty(subdrivers))
+    {
+        printf("could not load any subsystem!\n");
+        while(1);
+    }
 
+    list_set_first(subdrivers);
+
+    /** NOTE: current implementation is based in polling. Switch to pipetrigger as fast as possible**/
     while(1)
     {
+        pman = list_get_current(subdrivers);
+        pck_t *pck = fetch_pipe(pman);
+        if(!pck)
+        {
+            list_next(subdrivers);
+            if(list_is_last(subdrivers))
+                list_set_first(subdrivers);
+            continue;
+        }
 
-            pck_t *pck = poll_next(pman);
-            printf("host: recieved package %d    size:%d    type:%x\n",pck->id,pck->size,pck->type);
-            switch(pck->type)
-            {
-                case RESET_CON:
-                    printf("host: connection reset\n");
-                continue;
+        //printf("host: recieved package %d    size:%d    type:%x\n",pck->id,pck->size,pck->type);
+        switch(pck->type)
+        {
+            case RESET_CON:
+                printf("host: connection reset\n");
+            continue;
 
-                case PING:
-                    printf("host: recieved ping -> sending pong\n");
-                    respond(pman,pck->id,PONG,UHOST_DEFAULT_ASYNCHRON_SIZE,UHOST_DEFAULT_ASYNCHRON);
-                continue;
+            case PING:
+                printf("host: recieved ping -> sending pong\n");
+                respond(pman,pck->id,PONG,UHOST_DEFAULT_ASYNCHRON_SIZE,UHOST_DEFAULT_ASYNCHRON);
+            continue;
 
-            };
+        };
+
+        list_next(subdrivers);
+        if(list_is_last(subdrivers))
+            list_set_first(subdrivers);
 
     }
 
