@@ -113,7 +113,7 @@ bool subsystem_connect(pckmgr *mgr, char *protocol_version);
 pck_t *poll_next(pckmgr *mgr);
 void poll_queue(pckmgr *mgr);
 
-pck_t *pck_fetch(pckmgr *mgr,pckid_t id);
+pck_t *fetch_queue(pckmgr *mgr,pckid_t id);
 pck_t *pck_poll(pckmgr *mgr, pckid_t id);
 
 

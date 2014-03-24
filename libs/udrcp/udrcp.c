@@ -76,7 +76,6 @@ void respond(pckmgr *mgr,pckid_t id,pcktype_t type, size_t size, void *data)
     write(mgr->out,header,sizeof(pckhead_t));
     write(mgr->out,data,size);
     free(header);
-    return id;
 }
 
 bool subsystem_connect(pckmgr *mgr, char *protocol_version)
@@ -122,7 +121,7 @@ void poll_queue(pckmgr *mgr)
     list_push_front(mgr->recieved_pcks,poll_next(mgr));
 }
 
-pck_t *pck_fetch(pckmgr *mgr,pckid_t id)
+pck_t *fetch_queue(pckmgr *mgr,pckid_t id)
 {
     list_set_first(mgr->recieved_pcks);
     while(!list_is_last(mgr->recieved_pcks) && !list_is_empty(mgr->recieved_pcks))
@@ -141,7 +140,7 @@ pck_t *pck_fetch(pckmgr *mgr,pckid_t id)
 
 pck_t *pck_poll(pckmgr *mgr, pckid_t id)
 {
-    pck_t *pck = pck_fetch(mgr,id);
+    pck_t *pck = fetch_queue(mgr,id);
     if(pck)
         return pck;
 
