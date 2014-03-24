@@ -38,51 +38,31 @@ void INIT_UHOST(int argc, void **argv)
             size_t drv_pages = NUM_PAGES(drv_len);
             void *driver = (void*)vmm_automap_kernel_range(current_context,(paddr_t) drv_mod->mod_start, drv_pages, VMM_WRITABLE);
             pman = new_pckmgr(vfs_create_pipe(0, 0), vfs_create_pipe(0, 0), vfs_create_pipe(0, 0));
-            load_elf(driver,0,0,&pman->p);
+            load_elf(driver,0,0,&pman->pset);
             list_push_front(subdrivers,pman);
             printf("%s: %p\n",drv_list[i], drv_mod);
         }
     }
     printf("\n");
     //Poll packages
-    unsigned int buffer[128];
-    struct pipeset *p = &pman->p;
-    int len = p->stdout->length;
 
     while(1)
     {
-        while(len == p->stdout->length){}
-        int readed = p->stdout->length-len;
-        printf("host: readed %d bytes\n", readed);
-        vfs_read(p->stdout, len, readed, buffer);
-        len = p->stdout->length;
-        int offset = 0;
 
-        while(offset < (readed/4))
-        {
-            printf("host: ");
-            printf("recieved package %d    size:%d    type:%x\n",buffer[offset],buffer[offset+1],buffer[offset+2]);
-            switch(buffer[offset+2])
+            pck_t *pck = poll_next(pman);
+            printf("host: recieved package %d    size:%d    type:%x\n",pck->id,pck->size,pck->type);
+            switch(pck->type)
             {
                 case RESET_CON:
                     printf("host: connection reset\n");
-                    offset += 3;
                 continue;
 
                 case PING:
                     printf("host: recieved ping -> sending pong\n");
-                    respond(pman,buffer[offset],PONG,UHOST_DEFAULT_ASYNCHRON_SIZE,UHOST_DEFAULT_ASYNCHRON);
-                    offset += buffer[offset+1];
-                continue;
-
-                default:
-                    offset += buffer[offset+1];
+                    respond(pman,pck->id,PONG,UHOST_DEFAULT_ASYNCHRON_SIZE,UHOST_DEFAULT_ASYNCHRON);
                 continue;
 
             };
-
-
-        }
 
     }
 

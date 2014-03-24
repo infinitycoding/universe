@@ -31,10 +31,12 @@ pckmgr *new_pckmgr(vfs_inode_t *in, vfs_inode_t *out, vfs_inode_t *err)
     pckmgr *mgr = malloc(sizeof(pckmgr));
     mgr->counter = 0;
     mgr->used_ids = list_create();
-    mgr->p.stdin = in;
-    mgr->p.stdout = out;
-    mgr->p.stderr = err;
+    mgr->pset.stdin = in;
+    mgr->pset.stdout = out;
+    mgr->pset.stderr = err;
     mgr->recieved_pcks = list_create();
+    mgr->stdout_seeker = out->length;
+    mgr->stderr_seeker = err->length;
     return mgr;
 }
 
@@ -85,8 +87,8 @@ pckid_t send_package(pckmgr *mgr, pcktype_t type, size_t size, void *data)
     header->id = id;
     header->size = size+12;
     header->type = type;
-    vfs_write(mgr->p.stdin,mgr->p.stdin->length,header,sizeof(pckhead_t));
-    vfs_write(mgr->p.stdin,mgr->p.stdin->length,data,size);
+    vfs_write(mgr->pset.stdin,mgr->pset.stdin->length,header,sizeof(pckhead_t));
+    vfs_write(mgr->pset.stdin,mgr->pset.stdin->length,data,size);
     free(header);
     return id;
 }
@@ -98,10 +100,73 @@ void respond(pckmgr *mgr,pckid_t id,pcktype_t type, size_t size, void *data)
     header->id = id;
     header->size = size+12;
     header->type = type;
-    vfs_write(mgr->p.stdin,mgr->p.stdin->length,header,sizeof(pckhead_t));
-    vfs_write(mgr->p.stdin,mgr->p.stdin->length,data,size);
+    vfs_write(mgr->pset.stdin,mgr->pset.stdin->length,header,sizeof(pckhead_t));
+    vfs_write(mgr->pset.stdin,mgr->pset.stdin->length,data,size);
     free(header);
-    return id;
 }
 
+pck_t *poll_next(pckmgr *mgr)
+{
+    pck_t *pck = malloc(sizeof(pck_t));
+    while((mgr->pset.stdout->length - mgr->stdout_seeker) < sizeof(pckhead_t));
+    vfs_read(mgr->pset.stdout,mgr->stdout_seeker,sizeof(pckhead_t),pck);
+    mgr->stdout_seeker += sizeof(pckhead_t);
+    if(pck->size > 12)
+    {
+        int data_size = pck->size-12;
+        pck->data = malloc(data_size);
+        while((mgr->pset.stdout->length - mgr->stdout_seeker) < data_size);
+        vfs_read(mgr->pset.stdout,mgr->stdout_seeker,data_size,pck->data);
+        mgr->stdout_seeker += data_size;
+    }
+    else
+        pck->data = NULL;
+    return pck;
+}
+
+void poll_queue(pckmgr *mgr)
+{
+    list_push_front(mgr->recieved_pcks,poll_next(mgr));
+}
+
+pck_t *fetch_queue(pckmgr *mgr,pckid_t id)
+{
+    list_set_first(mgr->recieved_pcks);
+    while(!list_is_last(mgr->recieved_pcks) && !list_is_empty(mgr->recieved_pcks))
+    {
+        pck_t *current = list_get_current(mgr->recieved_pcks);
+        if(current->id == id)
+        {
+            list_remove(mgr->recieved_pcks);
+            return current;
+        }
+        list_next(mgr->recieved_pcks);
+    }
+    return NULL;
+}
+
+
+pck_t *pck_poll(pckmgr *mgr, pckid_t id)
+{
+    pck_t *pck = fetch_queue(mgr,id);
+    if(pck)
+        return pck;
+
+    pck = poll_next(mgr);
+    while(pck->id != id)
+    {
+        list_push_front(mgr->recieved_pcks,pck);
+        pck = poll_next(mgr);
+    }
+    return pck;
+}
+
+
+
+pck_t *fetch_pipe(pckmgr *mgr)
+{
+    if((mgr->pset.stdout->length - mgr->stdout_seeker) < sizeof(pckhead_t))
+        return NULL;
+    return poll_next(mgr);
+}
 
