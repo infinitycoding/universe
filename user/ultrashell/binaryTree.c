@@ -18,37 +18,18 @@ binary_tree *create_tree(struct function *dummy)
 }
 
 
-struct function *searchFunction(binary_tree *tree, char *function_name)
-{	
-	struct branch *current_node = tree;
+int loadFunction(binary_tree *tree, char *cmd, int (*fct)(int, char **))
+{
+	struct function *newFunction = NULL;
+	newFunction = (struct function *) malloc(sizeof(struct function));
 
-	while(current_node != NULL && current_node->type != branchEnd)
-	{
-		if(current_node->type == moreBranching)
-		{
-			if(function_name[current_node->element->b->c->number] == current_node->element->b->c->value)
-			{
-				current_node = current_node->element->b->left;
-			}			
-			else
-			{
-				current_node = current_node->element->b->right;
-			}
-		}
-	}
+	if(newFunction == NULL)
+		return ALLOCATE_ERROR;
 
-	if(current_node == NULL)
-	{
-		return NULL;
-	}	
-	else if(strncmp(current_node->element->f->command, function_name, MAX_COMMAND_LENGTH))
-	{
-		return NULL;
-	}
-	else
-	{
-		return current_node->element->f;
-	}
+	newFunction->command = cmd;
+	newFunction->f = fct;
+
+	return addFunction(tree, newFunction);
 }
 
 
@@ -97,5 +78,39 @@ int addFunction(binary_tree *tree, struct function *new_function)
 		current_node->element->b->right->element = oldElement;
 
 		return SUCCESS;
+	}
+}
+
+
+struct function *searchFunction(binary_tree *tree, char *function_name)
+{	
+	struct branch *current_node = tree;
+
+	while(current_node != NULL && current_node->type != branchEnd)
+	{
+		if(current_node->type == moreBranching)
+		{
+			if(function_name[current_node->element->b->c->number] == current_node->element->b->c->value)
+			{
+				current_node = current_node->element->b->left;
+			}			
+			else
+			{
+				current_node = current_node->element->b->right;
+			}
+		}
+	}
+
+	if(current_node == NULL)
+	{
+		return NULL;
+	}	
+	else if(strncmp(current_node->element->f->command, function_name, MAX_COMMAND_LENGTH))
+	{
+		return NULL;
+	}
+	else
+	{
+		return current_node->element->f;
 	}
 }
