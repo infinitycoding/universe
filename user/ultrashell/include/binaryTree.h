@@ -3,6 +3,16 @@
 
 
 
+#define binary_tree struct branch
+
+#define MAX_COMMAND_LENGTH 20
+
+#define SUCCESS 0
+#define BINARY_TREE_CORRUPTED -1
+#define COMMAND_ALREADY_ADDED -2
+
+
+
 enum branchType
 {
 	moreBranching, branchEnd
@@ -43,6 +53,12 @@ union branchElement
 	struct branching *b;
 	struct function *f;
 };
+
+
+
+struct function *searchFunction(binary_tree *tree, char *function_name);
+int addFunction(binary_tree *tree, struct function *new_function);
+binary_tree *create_tree(struct function *dummy);
 
 
 

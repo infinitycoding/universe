@@ -1,5 +1,6 @@
 #include <ultrashell.h>
 #include <basicCMDs.h>
+#include <binaryTree.h>
 
 #include <universe.h>
 #include <string.h>
@@ -13,7 +14,10 @@ int main(void)
 	int counter = 0;
 	char inchar;
 	char inbuffer[MAX_LINE_LENGTH] = "";
-
+	struct function *first_cmd = (struct function *) malloc(sizeof(struct function));
+	first_cmd->command = "sver";
+	first_cmd->f = sver;
+	binary_tree *cmds = create_tree(first_cmd);
 	
 	while(1)
 	{
@@ -37,7 +41,7 @@ int main(void)
 
         	if(inchar == '\n')
 		{
-			parserLine(inbuffer);
+			parserLine(inbuffer, cmds);
 
 			counter = 0;
 			inbuffer[counter] = '\0';
@@ -48,34 +52,18 @@ int main(void)
 }
 
 
-// parsers a line (strange, with this name...)
+// parsers and executes a line (strange, with this name...)
 
-int parserLine(const char *line)
+int parserLine(const char *line, binary_tree *tree)
 {
 	char **argv = NULL;
 	int argc = 0;
+	struct function *fct = NULL;
 
 	argc = getTokens(line, &argv);
 
-	// TODO:
-	// write from here (next lines are test only)
-
-	if(!strncmp(argv[0], "echo", 4))
-		return echo(argc, argv);
-	else if(!strncmp(argv[0], "sver", 4))
-		return sver(argc, argv);
-	else if(!strncmp(argv[0], "true", 4))
-		return cmdtrue(argc, argv);
-	else if(!strncmp(argv[0], "false", 5))
-		return cmdfalse(argc, argv);
-	else if(!strncmp(argv[0], "add", 3))
-		return add(argc, argv);
-	else if(!strncmp(argv[0], "sub", 3))
-		return sub(argc, argv);
-	else if(!strncmp(argv[0], "mul", 3))
-		return mul(argc, argv);
-	else if(!strncmp(argv[0], "div", 3))
-		return div(argc, argv);
+	if((fct = searchFunction(tree, argv[0])) != NULL)
+		fct->f(argc, argv);
 	else
 		printf("%s : unknown filename or command.\n", argv[0]);
 
