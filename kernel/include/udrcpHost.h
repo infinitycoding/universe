@@ -95,8 +95,9 @@ typedef struct
 {
     unsigned int counter;
     list_t *used_ids;
-        //pipes
-    struct pipeset p;
+    struct pipeset pset;
+    int stdout_seeker;
+    int stderr_seeker;
     list_t *recieved_pcks;
     char *version;
     int connection_state;
@@ -108,7 +109,11 @@ pckid_t gen_pckid(pckmgr *mgr);
 bool free_pckid(pckmgr *mgr, pckid_t id);
 pckid_t send_package(pckmgr *mgr, pcktype_t type, size_t size, void *data);
 void respond(pckmgr *mgr,pckid_t id,pcktype_t type, size_t size, void *data);
-
+pck_t *poll_next(pckmgr *mgr);
+void poll_queue(pckmgr *mgr);
+pck_t *fetch_queue(pckmgr *mgr,pckid_t id);
+pck_t *pck_poll(pckmgr *mgr, pckid_t id);
+pck_t *fetch_pipe(pckmgr *mgr);
 
 
 #endif
