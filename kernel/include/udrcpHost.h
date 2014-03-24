@@ -1,5 +1,5 @@
-#ifndef _udrcp_h_
-#define _udrcp_h_
+#ifndef _udrcpHost_h_
+#define _udrcpHost_h_
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
@@ -20,12 +20,15 @@
 **/
 
 /**
-  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
-  */
+ *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
+ **/
+
 
 #include <stdint.h>
 #include <list.h>
-#include <stdio.h>
+#include <vfs.h>
+#include <heap.h>
+#include <process.h>
 
 typedef unsigned int pckid_t;
 typedef unsigned int pcktype_t;
@@ -43,12 +46,13 @@ typedef unsigned int pcktype_t;
 
 
 //uhost specivic
-#define DMA_ALLOC   3
-#define DMA_FREE    4
-#define INT_REG     5
-#define INT_FREE    6
-#define PORT_ALLOC  7
-#define PORT_FREE   8
+#define DMA_ALLOC   5
+#define DMA_FREE    6
+#define INT_REG     7
+#define INT_FREE    8
+#define PORT_ALLOC  9
+#define PORT_FREE   10
+
 
 
 /// Subsystem Response
@@ -59,7 +63,6 @@ typedef unsigned int pcktype_t;
 
 /// Host Request
 #define RESET_CON   0
-#define DISCONNECT  1
 #define SHUTDOWN    2
 #define RESTART     3
 #define CHKDEV      4
@@ -70,6 +73,7 @@ typedef unsigned int pcktype_t;
 #define CONFIRM     1
 #define SUCCESS     2
 #define PONG        3
+
 
 
 typedef struct
@@ -87,34 +91,24 @@ typedef struct
     unsigned char *data;
 }pck_t;
 
-
 typedef struct
 {
     unsigned int counter;
     list_t *used_ids;
         //pipes
-    int in;
-    int out;
-    int err;
+    struct pipeset p;
     list_t *recieved_pcks;
     char *version;
     int connection_state;
 }pckmgr;
 
 
-pckmgr *new_pckmgr(int in, int out, int err);
+pckmgr *new_pckmgr(vfs_inode_t *in, vfs_inode_t *out, vfs_inode_t *err);
 pckid_t gen_pckid(pckmgr *mgr);
 bool free_pckid(pckmgr *mgr, pckid_t id);
 pckid_t send_package(pckmgr *mgr, pcktype_t type, size_t size, void *data);
 void respond(pckmgr *mgr,pckid_t id,pcktype_t type, size_t size, void *data);
-bool subsystem_connect(pckmgr *mgr, char *protocol_version);
 
-//todo
-pck_t *poll_next(pckmgr *mgr);
-void poll_queue(pckmgr *mgr);
-
-pck_t *pck_fetch(pckmgr *mgr,pckid_t id);
-pck_t *pck_poll(pckmgr *mgr, pckid_t id);
 
 
 #endif
