@@ -12,7 +12,8 @@
 
 
 int main(void);
-int parserLine(const char *line, binary_tree *tree);
+binary_tree *initBinaryTree();
+int parserLine(binary_tree *tree, const char *line);
 int getTokens(const char *instring, char ***tokens);
 int countTokens(const char *instring);
 

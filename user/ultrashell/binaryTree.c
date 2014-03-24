@@ -19,23 +19,36 @@ binary_tree *create_tree(struct function *dummy)
 
 
 struct function *searchFunction(binary_tree *tree, char *function_name)
-{
+{	
 	struct branch *current_node = tree;
 
 	while(current_node != NULL && current_node->type != branchEnd)
 	{
-		if(function_name[current_node->element->b->c->number] == current_node->element->b->c->value)
-			current_node = current_node->element->b->left;
-		else
-			current_node = current_node->element->b->right;
+		if(current_node->type == moreBranching)
+		{
+			if(function_name[current_node->element->b->c->number] == current_node->element->b->c->value)
+			{
+				current_node = current_node->element->b->left;
+			}			
+			else
+			{
+				current_node = current_node->element->b->right;
+			}
+		}
 	}
 
 	if(current_node == NULL)
+	{
 		return NULL;
+	}	
 	else if(strncmp(current_node->element->f->command, function_name, MAX_COMMAND_LENGTH))
+	{
 		return NULL;
+	}
 	else
+	{
 		return current_node->element->f;
+	}
 }
 
 
@@ -56,12 +69,16 @@ int addFunction(binary_tree *tree, struct function *new_function)
 	}
 
 	if(current_node == NULL)
+	{
 		return BINARY_TREE_CORRUPTED;
+	}	
 	else if(!strncmp(current_node->element->f->command, new_function->command, MAX_COMMAND_LENGTH))
+	{	
 		return COMMAND_ALREADY_ADDED;
+	}	
 	else
 	{
-		for(i = 0; current_node->element->f->command[i] != new_function->command[i]; i++);
+		for(i = 0; current_node->element->f->command[i] == new_function->command[i]; i++);
 
 		current_node->type = moreBranching;
 		oldElement = current_node->element;
