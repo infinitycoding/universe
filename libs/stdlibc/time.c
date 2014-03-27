@@ -23,7 +23,16 @@
 
 
 #include <time.h>
+
 #include <universe.h>
+#include <string.h>
+#include <stdlib.h>
+#include <atoi.h>
+
+
+
+char static_string[STATIC_TIME_STRING_LENGTH];
+struct tm static_tm;
 
 
 
@@ -74,17 +83,27 @@ time_t mktime(struct tm *timer)
 
 char *asctime(struct tm *timer)
 {
-	// TODO
+	memset(static_string, ' ', sizeof(char) * STATIC_TIME_STRING_LENGTH);
 
-	return NULL;
+	strncpy(static_string[0], weekday_name_short[timer->tm_weday], 4);
+	strncpy(static_string[5], month_name_short[timer->tm_mon], 4);
+	itoa(timer->tm_mday, static_string[10], 10);
+	itoa(timer->tm_hour, static_string[13], 10);
+	static_string[15] = ':';
+	itoa(timer->tm_min, static_string[16], 10);
+	static_string[18] = ':';
+	itoa(timer->tm_sec, static_string[19], 10);
+	itoa(timer->tm_year + 1900, static_string[23], 10);
+	static_string[27] = '\n';
+	static_string[28] = '\0';
+
+	return static_string;
 }
 
 
 char *ctime(const time_t *timer)
 {
-	// TODO
-
-	return NULL;
+	return asctime(localtime(timer));
 }
 
 
@@ -107,6 +126,30 @@ size_t strftime(char *buffer, int maxchars, const char *format, struct tm *timer
 	// TODO
 
 	return 0;
+}
+
+
+int validtm(const struct tm *timer)
+{
+	if(timer == NULL)
+		return INVALID_TIME;
+
+	if(timer->tm_sec < 0 || timer->tm_sec > 59 || timer->tm_min < 0 || timer->tm_min > 59 || timer->tm_hours < 0 || timer->tm_hours > 23 || timer->tm_mday < 1 || timer->tm_mday > 31 || timer->tm_year < 70 || timer->tm_wday < 0 || timer->tm_wday > 6 || timer->tm_yday < 0 || timer->tm_yday > 365 || (timer->tm_yday > 364 && (timer->tm_yday % 4 != 0 || (timer->tm_yday % 100 == 0 && (timer->tm_yday + 1900) % 400 != 0))))
+		return INVALID_TIME;
+
+	return VALID_TIME;
+}
+
+
+int validtimestamp(const time_t *timer)
+{
+	if(timer == NULL)
+		return INVALID_TIME;
+
+	if(timer < 0)
+		return INVALID_TIME;
+
+	return VALID_TIME;
 }
 
 
