@@ -25,10 +25,6 @@
 
 
 
-#include <stdlib.h>
-
-
-
 //#define CLOCKS_PER_SEC 1000
 
 #ifndef NULL
@@ -48,6 +44,11 @@
 #define SECONDS_PER_LEAP_YEAR (SECONDS_PER_DAY * DAYS_PER_LEAP-YEAR)
 #define DAYS_PER_WEEK 7
 
+// ignore the following symbolic constants, they are intern use only
+#define STATIC_TIME_STRING_LENGTH 29
+#define VALID_TIME 1
+#define INVALID_TIME 0
+
 
 
 typedef unsigned int time_t;
@@ -58,10 +59,10 @@ typedef unsigned int size_t;
 
 struct tm
 {
-	int tm_sec;		// seconds
-	int tm_min;		// minutes
-	int tm_hour;		// hours
-	int tm_mday;		// day of the month (0 - 31)
+	int tm_sec;		// seconds (0 - 59)
+	int tm_min;		// minutes (0 - 59)
+	int tm_hour;		// hours (0 - 23)
+	int tm_mday;		// day of the month (1 - 31)
 	int tm_mon;		// month (0 - 11)
 	int tm_year;		// years since 1900
 	int tm_wday;		// days since sunday (0 - 6)
@@ -100,22 +101,35 @@ enum weekday	// not part of the standart implementation, only for intern use and
 
 
 
-time_t time(time_t *timer);
+// the following arrays are not part of the standart implementation
+// they are only for intern use and universe-only programs
+char weekday_name_short[][] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+char weekday_name_long[][] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+char month_name_short[][] = {"Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"};
+char month_name_long[][] = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"}; 
 
-struct tm *localtime(const time_t *timer);
-struct tm *gmtime(const time_t *timer);
 
-time_t mktime(struct tm *timer);
-char *asctime(struct tm *timer);
 
-char *ctime(const time_t *timer);
+time_t time(time_t *timer);			// returns a unix timestamp
 
-double difftime(time_t time1, time_t time0);
+struct tm *localtime(const time_t *timer);	// converts a unix timestamp into a struct tm of the local time
+struct tm *gmtime(const time_t *timer);		// converts a unix timestamp into a struct tm of the greenwitch time
 
-clock_t clock(void);
+time_t mktime(struct tm *timer);		// converts a struct tm into a unix timestamp
+char *asctime(struct tm *timer);		// converts a struct tm into a string
 
-size_t strftime(char *buffer, int maxchars, const char *format, struct tm *timer);
+char *ctime(const time_t *timer);		// converts a unix timestamp into a string
 
+double difftime(time_t time1, time_t time0);	// returns the difference between the two times
+
+clock_t clock(void);				// returns how many cpu clocks the program is running
+
+size_t strftime(char *buffer, int maxchars, const char *format, struct tm *timer);	// prints the time in a given format
+
+// the following functions are not part of the standart implmentation
+// they are only for intern use and universe-only programs
+int validtm(const struct tm *timer);		// checks if the given struct tm is valid
+int validtimestamp(const time_t *timer);	// checks if the given unix timestamp is valid
 
 
 #endif
