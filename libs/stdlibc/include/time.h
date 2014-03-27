@@ -30,7 +30,10 @@
 
 
 //#define CLOCKS_PER_SEC 1000
+
+#ifndef NULL
 #define NULL (void *) 0
+#endif
 
 // the following symbolic constants are not part of the standart implementation
 // they are only for intern use and universe-only programs
@@ -40,9 +43,9 @@
 #define HOURS_PER_DAY 24
 #define SECONDS_PER_DAY (SECONDS_PER_HOUR * HOURS_PER_DAY)
 #define DAYS_PER_YEAR 365
-#define DAYS_PER_LEAP-YEAR 366
+#define DAYS_PER_LEAP_YEAR 366
 #define SECONDS_PER_YEAR (SECONDS_PER_DAY * DAYS_PER_YEAR)
-#define SECONDS_PER_LEAP-YEAR (SECONDS_PER_DAY * DAYS_PER_LEAP-YEAR)
+#define SECONDS_PER_LEAP_YEAR (SECONDS_PER_DAY * DAYS_PER_LEAP-YEAR)
 #define DAYS_PER_WEEK 7
 
 
