@@ -37,7 +37,7 @@ pckid_t gen_pckid(pckmgr *mgr)
 }
 
 
-bool free_pckid(pckmgr *mgr, pckid_t id)
+int free_pckid(pckmgr *mgr, pckid_t id)
 {
     list_set_first(mgr->used_ids);
     while(!list_is_empty(mgr->used_ids) && !list_is_last(mgr->used_ids))
@@ -78,7 +78,7 @@ void respond(pckmgr *mgr,pckid_t id,pcktype_t type, size_t size, void *data)
     free(header);
 }
 
-bool subsystem_connect(pckmgr *mgr, char *protocol_version)
+int subsystem_connect(pckmgr *mgr, char *protocol_version)
 {
     send_package(mgr, RESET_CON, 0, NULL);
     pckid_t ping_id = send_package(mgr, PING, strlen(protocol_version), protocol_version);

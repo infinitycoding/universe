@@ -40,15 +40,22 @@ typedef struct
     pckmgr *mgr;
 }port_t;
 
+typedef struct
+{
+    unsigned int port;
+    unsigned int len;
+}portpck_t;
+
+
 port_t *port_alloc(pckmgr *mgr,unsigned int port);
-bool port_free(port_t *p);
+int port_free(port_t *p);
 
 unsigned char inb(port_t *p);
 unsigned short inw(port_t *p);
 unsigned long inl(port_t *p);
 
-int outb(port_t *p, unsigned char v);
-int outw(port_t *p, unsigned short v);
-int outl(port_t *p, unsigned long v);
+void outb(port_t *p, unsigned char v);
+void outw(port_t *p, unsigned short v);
+void outl(port_t *p, unsigned long v);
 
 #endif

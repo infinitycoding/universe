@@ -26,37 +26,31 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <universe.h>
+#include <string.h>
 
 
-
-
-static inline void hw_outb(uint16_t port, uint8_t value) {
-	asm volatile("outb %1, %0" : : "Nd" (port), "a" (value));
-}
-
-static inline void hw_outw(uint16_t port, uint16_t value) {
-	asm volatile("outw %1, %0" : : "Nd" (port), "a" (value));
-}
-
-static inline void hw_outl(uint16_t port, uint32_t value) {
-	asm volatile("outl %1, %0" : : "Nd" (port), "a" (value));
-}
+// Todo: error handling for hosted ports
 
 
 port_t *port_alloc(pckmgr *mgr,unsigned int port_nr)
 {
    pckid_t id = send_package(mgr,PORT_ALLOC,sizeof(unsigned int),&port_nr);
    port_t *port;
+   int retv;
    while(1)
    {
        pck_t *response = pck_poll(mgr,id);
        switch(response->type)
        {
             case ERROR:
-                return (port_t*)(*((unsigned int*)response->data));
+                retv = *((unsigned int*)response->data);
+                free(response->data);
+                free(response);
+                return (port_t*)retv;
             break;
 
             case CONFIRM:
+                free(response);
             break;
 
             case SUCCESS:
@@ -66,6 +60,8 @@ port_t *port_alloc(pckmgr *mgr,unsigned int port_nr)
                 if(port->type == file_port)
                 {
                     port->port = open((const char*)(response->data+sizeof(port_type)),3,0);
+                    free(response->data);
+                    free(response);
                     if(port->port <= 0)
                     {
                         free(port);
@@ -74,6 +70,8 @@ port_t *port_alloc(pckmgr *mgr,unsigned int port_nr)
                     return port;
                 }
                 port->port = port_nr;
+                free(response->data);
+                free(response);
                 return port;
             break;
 
@@ -86,7 +84,8 @@ port_t *port_alloc(pckmgr *mgr,unsigned int port_nr)
    return NULL; // just to keep the compiler happy
 }
 
-bool port_free(port_t *p)
+
+int port_free(port_t *p)
 {
     pckid_t id = send_package(p->mgr,PORT_FREE,sizeof(unsigned int),&p->port);
     if(p->type == file_port)
@@ -98,13 +97,16 @@ bool port_free(port_t *p)
         switch(response->type)
         {
             case ERROR:
+                free(response);
                 return false;
             break;
 
             case CONFIRM:
+                free(response);
             break;
 
             case SUCCESS:
+                free(response);
                 return true;
             break;
 
@@ -117,12 +119,44 @@ bool port_free(port_t *p)
 }
 
 
+int host_in(port_t *p,void *data,int size)
+{
+    portpck_t req;
+    req.port = p->port;
+    req.len = size;
+    pckid_t id = send_package(p->mgr,VPORT_R,sizeof(portpck_t),&req);
+    pck_t *response;
+    int retv;
+    while(1)
+    {
+        response = pck_poll(p->mgr,id);
+        switch(response->type)
+        {
+            case ERROR:
+                retv = *((unsigned int*)response->data);
+                free(response->data);
+                free(response);
+                return retv;
+            break;
+
+            case CONFIRM:
+                free(response);
+            break;
+
+            case SUCCESS:
+                memcpy(data,response->data,size);
+                free(response->data);
+                free(response);
+                return true;
+            break;
+        };
+    }
+}
+
 
 unsigned char inb(port_t *p)
 {
     unsigned char result;
-    pck_t *response;
-    pckid_t id;
     switch(p->type)
     {
         case hw_port:
@@ -131,26 +165,9 @@ unsigned char inb(port_t *p)
         break;
 
         case host_port:
-            id = send_package(p->mgr,VPORT_R,sizeof(unsigned int),&p->port);
-            while(1)
-            {
-                response = pck_poll(p->mgr,id);
-                switch(response->type)
-                {
-                    case ERROR:
-                        write(stderr,"could not read from port\n",24);
-                        exit(1);
-                    break;
-
-                    case CONFIRM:
-                    break;
-
-                    case SUCCESS:
-                        return *response->data;
-                    break;
-                };
-            }
-            break;
+            host_in(p,&result,sizeof(unsigned char));
+            return result;
+        break;
 
         case file_port:
             read(p->port,&result,sizeof(unsigned char));
@@ -166,11 +183,10 @@ unsigned char inb(port_t *p)
     return result; // just to keep the compiler happy
 }
 
+
 unsigned short inw(port_t *p)
 {
     unsigned short result;
-    pck_t *response;
-    pckid_t id;
     switch(p->type)
     {
         case hw_port:
@@ -179,26 +195,9 @@ unsigned short inw(port_t *p)
         break;
 
         case host_port:
-            id = send_package(p->mgr,VPORT_R,sizeof(unsigned int),&p->port);
-            while(1)
-            {
-                response = pck_poll(p->mgr,id);
-                switch(response->type)
-                {
-                    case ERROR:
-                        write(stderr,"could not read from port\n",25);
-                        exit(1);
-                    break;
-
-                    case CONFIRM:
-                    break;
-
-                    case SUCCESS:
-                        return *((unsigned short*)response->data);
-                    break;
-                };
-            }
-            break;
+            host_in(p,&result,sizeof(unsigned short));
+            return result;
+        break;
 
         case file_port:
             read(p->port,&result,sizeof(unsigned short));
@@ -214,11 +213,10 @@ unsigned short inw(port_t *p)
     return result; // just to keep the compiler happy
 }
 
+
 unsigned long inl(port_t *p)
 {
     unsigned long result;
-    pck_t *response;
-    pckid_t id;
     switch(p->type)
     {
         case hw_port:
@@ -227,26 +225,9 @@ unsigned long inl(port_t *p)
         break;
 
         case host_port:
-            id = send_package(p->mgr,VPORT_R,sizeof(unsigned int),&p->port);
-            while(1)
-            {
-                response = pck_poll(p->mgr,id);
-                switch(response->type)
-                {
-                    case ERROR:
-                        write(stderr,"could not read from port\n",25);
-                        exit(1);
-                    break;
-
-                    case CONFIRM:
-                    break;
-
-                    case SUCCESS:
-                        return *((unsigned long*)response->data);
-                    break;
-                };
-            }
-            break;
+            host_in(p,&result,sizeof(unsigned long));
+            return result;
+        break;
 
         case file_port:
             read(p->port,&result,sizeof(unsigned long));
@@ -263,5 +244,112 @@ unsigned long inl(port_t *p)
 }
 
 
+int host_out(port_t *p, void *value, int size)
+{
+    pck_t *response;
+    pckid_t id;
+    unsigned int *buffer = malloc(size+sizeof(unsigned int));
+    buffer[0] = p->port;
+    memcpy(buffer + sizeof(unsigned int),value,size);
+    id = send_package(p->mgr,VPORT_W,size+sizeof(unsigned int),buffer);
+    free(buffer);
+    int retv;
+    while(1)
+    {
+        response = pck_poll(p->mgr,id);
+        switch(response->type)
+        {
+            case ERROR:
+                retv = *((unsigned int*)response->data);
+                free(response->data);
+                free(response);
+                return retv;
+            break;
+
+            case CONFIRM:
+                free(response);
+            break;
+
+            case SUCCESS:
+                free(response->data);
+                free(response);
+                return true;
+            break;
+        };
+    }
+    return retv;
+}
 
 
+void outb(port_t *p, unsigned char v)
+{
+    switch(p->type)
+    {
+        case hw_port:
+            asm volatile("outb %1, %0" : : "Nd" ((uint16_t)p->port), "a" (v));
+        break;
+
+        case host_port:
+            host_out(p, &v, sizeof(unsigned char));
+        break;
+
+        case file_port:
+            write(p->port,&v,sizeof(unsigned char));
+        break;
+
+        default:
+            write(stderr,"error: a unsupported port-type is used\n",40);
+            exit(1);
+        break;
+    };
+}
+
+
+
+void outw(port_t *p, unsigned short v)
+{
+    switch(p->type)
+    {
+        case hw_port:
+            asm volatile("outw %1, %0" : : "Nd" ((uint16_t)p->port), "a" (v));
+        break;
+
+        case host_port:
+            host_out(p, &v, sizeof(unsigned short));
+        break;
+
+        case file_port:
+            write(p->port,&v,sizeof(unsigned short));
+        break;
+
+        default:
+            write(stderr,"error: a unsupported port-type is used\n",40);
+            exit(1);
+        break;
+    };
+}
+
+
+
+void outl(port_t *p, unsigned long v)
+{
+    switch(p->type)
+    {
+        case hw_port:
+            asm volatile("outl %1, %0" : : "Nd" ((uint16_t)p->port), "a" (v));
+        break;
+
+        case host_port:
+            host_out(p, &v, sizeof(unsigned long));
+        break;
+
+        case file_port:
+            write(p->port,&v,sizeof(unsigned long));
+        break;
+
+        default:
+            write(stderr,"error: a unsupported port-type is used\n",40);
+            exit(1);
+        break;
+    };
+}
