@@ -46,6 +46,8 @@ typedef unsigned int pcktype_t;
 #define INT_FREE    6
 #define PORT_ALLOC  7
 #define PORT_FREE   8
+#define VPORT_R     9
+#define VPORT_W     10
 
 
 /// Subsystem Response

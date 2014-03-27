@@ -37,17 +37,18 @@ typedef struct
 {
     port_type type;
     unsigned int port;
+    pckmgr *mgr;
 }port_t;
 
 port_t *port_alloc(pckmgr *mgr,unsigned int port);
-void port_free(port_t *p);
+bool port_free(port_t *p);
 
-unsigned char port_inb(port_t *p);
-unsigned short port_inw(port_t *p);
-unsigned long port_inl(port_t *p);
+unsigned char inb(port_t *p);
+unsigned short inw(port_t *p);
+unsigned long inl(port_t *p);
 
-int port_outb(port_t *p, unsigned char v);
-int port_outw(port_t *p, unsigned short v);
-int port_outl(port_t *p, unsigned long v);
+int outb(port_t *p, unsigned char v);
+int outw(port_t *p, unsigned short v);
+int outl(port_t *p, unsigned long v);
 
 #endif
