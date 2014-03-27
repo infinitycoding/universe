@@ -1,5 +1,4 @@
 #include <drivers/hosts/uhost.h>
-#include <udrcp.h>
 #include <list.h>
 #include <drvlst.h>
 #include <elf.h>
@@ -17,6 +16,7 @@ TEST IMPLEMENTATION
 PLEASE DONT USE IT
 I'LL PORT THE USERMODE LIBRARY LATER
 */
+#define DEBUG
 
 
 list_t *subdrivers;
@@ -70,11 +70,15 @@ void INIT_UHOST(int argc, void **argv)
         switch(pck->type)
         {
             case RESET_CON:
-                printf("host: connection reset\n");
+                #ifdef DEBUG
+                    printf("host: connection reset\n");
+                #endif
             continue;
 
             case PING:
-                printf("host: recieved ping -> sending pong\n");
+                #ifdef DEBUG
+                    printf("host: recieved ping -> sending pong\n");
+                #endif
                 respond(pman,pck->id,PONG,UHOST_DEFAULT_ASYNCHRON_SIZE,UHOST_DEFAULT_ASYNCHRON);
             continue;
 
