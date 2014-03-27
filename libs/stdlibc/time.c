@@ -1,20 +1,20 @@
 /*
-	Copyright 2012 universe coding group (UCG) all rights reserved
-	This file is part of the Universe Kernel.
-
-	Universe Kernel is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	any later version.
-
-	Universe Kernel is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
-*/
+     Copyright 2014 Infinitycoding all rights reserved
+     This file is part of the Universe Kernel.
+ 
+     Universe Kernel is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     any later version.
+ 
+     Universe Kernel is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+ 
+     You should have received a copy of the GNU General Public License
+     along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 /**
   @author Peter Hösch aka. BlitzBasic <phoesch@gmx.de>
@@ -48,9 +48,19 @@ struct tm *localtime(const time_t *timer)
 
 struct tm *gmtime(const time_t *timer)
 {
-	// TODO
+	struct tm *decoded_time = (struct tm *) malloc(sizeof(struct tm));
+	
+	int days = *timer / SECONDS_PER_DAY;
+	int remaining_seconds = *timer % SECONDS_PER_DAY;
 
-	return NULL;
+	// TODO
+	
+	decoded_time->tm_sec = (remaining_seconds % SECONDS_PER_MINUTE);
+	decoded_time->tm_min = ((remaining_seconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE);
+	decoded_time->tm_hour = (remaining_seconds / SECONDS_PER_HOUR);11
+	decoded_time->tm_wday = (thursday + (days % DAYS_PER_WEEK));
+
+	return decoded_time;
 }
 
 
@@ -88,7 +98,7 @@ clock_t clock()
 {
 	// TODO
 
-	return 0;
+	return -1;
 }
 
 
