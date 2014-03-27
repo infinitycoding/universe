@@ -57,7 +57,7 @@ struct tm *gmtime(const time_t *timer)
 	
 	decoded_time->tm_sec = (remaining_seconds % SECONDS_PER_MINUTE);
 	decoded_time->tm_min = ((remaining_seconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE);
-	decoded_time->tm_hour = (remaining_seconds / SECONDS_PER_HOUR);11
+	decoded_time->tm_hour = (remaining_seconds / SECONDS_PER_HOUR);
 	decoded_time->tm_wday = (thursday + (days % DAYS_PER_WEEK));
 
 	return decoded_time;
