@@ -1,5 +1,5 @@
-#ifndef _udrcp_h_
-#define _udrcp_h_
+#ifndef _ioport_h_
+#define _ioport_h_
 /*
 	Copyright 2012 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
@@ -23,49 +23,31 @@
   @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
   */
 
-#include <stdint.h>
-
-typedef unsigned int pckid_t;
-
-#define REQUEST_FLAG 0x00000008
-
+#include <udrcp.h>
 
 typedef enum
 {
-    REQ_DEV_LST = 0,
-    REQ_DEV_USE = 1,
-    REQ_TRIGGER = 2,
-    REQ_SHM = 3,
-    // the rest can be used to specify host specific requests
-}req_t;
-
-typedef enum
-{
-    SUCESS = 0,
-    FAILURE = 1
-}resp_t;
+    hw_port,
+    host_port,
+    file_port,
+}port_type;
 
 
-
-//default Request types
 typedef struct
 {
-    pckid_t id;
-    size_t size;
-    req_t type;
-}default_request;
+    port_type type;
+    unsigned int port;
+}port_t;
 
+port_t *port_alloc(pckmgr *mgr,unsigned int port);
+void port_free(port_t *p);
 
+unsigned char port_inb(port_t *p);
+unsigned short port_inw(port_t *p);
+unsigned long port_inl(port_t *p);
 
-// default responses
-typedef struct
-{
-    pckid_t id;
-    resp_t sucess; // bit[0]: resp_t; rest: if bit[0] == FAILURE -> error code, if bit[0] == SUCESS -> size of response package
-}default_response;
-
-
-
-
+int port_outb(port_t *p, unsigned char v);
+int port_outw(port_t *p, unsigned short v);
+int port_outl(port_t *p, unsigned long v);
 
 #endif

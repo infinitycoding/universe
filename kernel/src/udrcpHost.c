@@ -40,6 +40,17 @@ pckmgr *new_pckmgr(vfs_inode_t *in, vfs_inode_t *out, vfs_inode_t *err)
     return mgr;
 }
 
+void reset_conn(pckmgr *mgr)
+{
+    mgr->counter = 0;
+    list_set_first(mgr->used_ids);
+    while(!list_is_empty(mgr->used_ids))
+        list_pop_front(mgr->used_ids);
+    list_set_first(mgr->recieved_pcks);
+    while(!list_is_empty(mgr->recieved_pcks))
+        list_pop_front(mgr->recieved_pcks);
+}
+
 
 pckid_t gen_pckid(pckmgr *mgr)
 {
