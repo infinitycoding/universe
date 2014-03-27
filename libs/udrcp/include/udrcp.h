@@ -104,10 +104,10 @@ typedef struct
 pckmgr *new_pckmgr(int in, int out, int err);
 pckid_t gen_pckid(pckmgr *mgr);
 void reset_conn(pckmgr *mgr);
-bool free_pckid(pckmgr *mgr, pckid_t id);
+int free_pckid(pckmgr *mgr, pckid_t id);
 pckid_t send_package(pckmgr *mgr, pcktype_t type, size_t size, void *data);
 void respond(pckmgr *mgr,pckid_t id,pcktype_t type, size_t size, void *data);
-bool subsystem_connect(pckmgr *mgr, char *protocol_version);
+int subsystem_connect(pckmgr *mgr, char *protocol_version);
 
 //todo
 pck_t *poll_next(pckmgr *mgr);
