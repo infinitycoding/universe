@@ -154,7 +154,16 @@ pck_t *pck_poll(pckmgr *mgr, pckid_t id)
 }
 
 
-
+void reset_conn(pckmgr *mgr)
+{
+    mgr->counter = 0;
+    list_set_first(mgr->used_ids);
+    while(!list_is_empty(mgr->used_ids))
+        list_pop_front(mgr->used_ids);
+    list_set_first(mgr->recieved_pcks);
+    while(!list_is_empty(mgr->recieved_pcks))
+        list_pop_front(mgr->recieved_pcks);
+}
 
 
 
