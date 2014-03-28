@@ -1,13 +1,16 @@
-all: kernel user iso-img
+all: kernel libs drivers user iso-img
 
 # PPC
 # I386
+# ARM
 ARCH=I386
 
 ifeq ($(ARCH),PPC)
 QEMU = qemu-system-ppc
 else ifeq ($(ARCH),I386)
-QEMU = qemu-system-i386
+QEMU = qemu-system-i386 -cdrom cdrom.iso -net nic,model=rtl8139 -net user
+else ifeq ($(ARCH),ARM)
+QEMU = qemu-system-arm -cpu arm1176 -M versatilepb -m 256M -nographic -kernel universe.bin
 endif
 
 kernel:
@@ -15,10 +18,13 @@ kernel:
 	@cp kernel/src/kernel32.elf build/kernel32.elf
 
 libs:
-	@$(MAKE) -C libs
+	@$(MAKE) -C libs ARCH=$(ARCH)
+
+drivers:libs
+	@$(MAKE) -C drivers ARCH=$(ARCH)
 
 user: libs
-	@$(MAKE) -C user
+	@$(MAKE) -C user ARCH=$(ARCH)
 	@cp user/ultrashell/ultrashell.elf build/ultrashell.elf
 	@cp user/test/test.elf build/test.elf
 
@@ -30,8 +36,8 @@ usb:
 	cp -R ./build /mnt
 	grub-install --root-directory=/mnt --no-floppy --recheck /dev/sdb
 
-qemu: kernel user iso-img
-	$(QEMU) -cdrom cdrom.iso -net nic,model=rtl8139 -net user
+qemu: kernel libs drivers user iso-img
+	$(QEMU) 
 
 clean:
 	@$(MAKE) -C kernel/src clean
@@ -39,4 +45,4 @@ clean:
 	@$(MAKE) -C libs clean
 	@rm *.iso -f
 
-.PHONY: all kernel libs user clean qemu
+.PHONY: all kernel libs drivers user clean qemu
