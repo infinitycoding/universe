@@ -43,6 +43,13 @@
 #define SECONDS_PER_YEAR (SECONDS_PER_DAY * DAYS_PER_YEAR)
 #define SECONDS_PER_LEAP_YEAR (SECONDS_PER_DAY * DAYS_PER_LEAP-YEAR)
 #define DAYS_PER_WEEK 7
+#define MONTHS_PER_YEAR 12
+#define WEEKDAY_NUMBER DAYS_PER_WEEK
+#define MONTHS_NUMBER MONTHS_PER_YEAR
+#define MAX_WEEKDAY_NAME_SHORT_LENGTH 4
+#define MAX_WEEKDAY_NAME_LONG_LENGTH 10
+#define MAX_MONTH_NAME_SHORT_LENGTH 5
+#define MAX_MONTH_NAME_LONG_LENGTH 9
 
 // ignore the following symbolic constants, they are intern use only
 #define STATIC_TIME_STRING_LENGTH 29
@@ -103,10 +110,10 @@ enum weekday	// not part of the standart implementation, only for intern use and
 
 // the following arrays are not part of the standart implementation
 // they are only for intern use and universe-only programs
-char weekday_name_short[][] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-char weekday_name_long[][] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-char month_name_short[][] = {"Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"};
-char month_name_long[][] = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"}; 
+extern const char weekday_name_short[WEEKDAY_NUMBER][MAX_WEEKDAY_NAME_SHORT_LENGTH];
+extern const char weekday_name_long[WEEKDAY_NUMBER][MAX_WEEKDAY_NAME_LONG_LENGTH];
+extern const char month_name_short[MONTHS_NUMBER][MAX_MONTH_NAME_SHORT_LENGTH];
+extern const char month_name_long[MONTHS_NUMBER][MAX_MONTH_NAME_LONG_LENGTH];
 
 
 
@@ -130,6 +137,7 @@ size_t strftime(char *buffer, int maxchars, const char *format, struct tm *timer
 // they are only for intern use and universe-only programs
 int validtm(const struct tm *timer);		// checks if the given struct tm is valid
 int validtimestamp(const time_t *timer);	// checks if the given unix timestamp is valid
+struct tm *gmtolocal(struct tm *timer);		// converts a time given in greenwitch time to the local time
 
 
 #endif

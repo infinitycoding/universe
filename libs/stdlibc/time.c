@@ -31,6 +31,11 @@
 
 
 
+const char weekday_name_short[WEEKDAY_NUMBER][MAX_WEEKDAY_NAME_SHORT_LENGTH] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+const char weekday_name_long[WEEKDAY_NUMBER][MAX_WEEKDAY_NAME_LONG_LENGTH] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+const char month_name_short[MONTHS_NUMBER][MAX_MONTH_NAME_SHORT_LENGTH] = {"Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"};
+const char month_name_long[MONTHS_NUMBER][MAX_MONTH_NAME_LONG_LENGTH] = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+
 char static_string[STATIC_TIME_STRING_LENGTH];
 struct tm static_tm;
 
@@ -49,51 +54,62 @@ time_t time(time_t *timer)
 
 struct tm *localtime(const time_t *timer)
 {
-	// TODO
-
-	return NULL;
+	return gmtolocal(gmtime(timer));
 }
 
 
 struct tm *gmtime(const time_t *timer)
 {
-	struct tm *decoded_time = (struct tm *) malloc(sizeof(struct tm));
-	
+	if(validtimestamp(timer) == INVALID_TIME)
+		return NULL;
+
 	int days = *timer / SECONDS_PER_DAY;
 	int remaining_seconds = *timer % SECONDS_PER_DAY;
 
 	// TODO
 	
-	decoded_time->tm_sec = (remaining_seconds % SECONDS_PER_MINUTE);
-	decoded_time->tm_min = ((remaining_seconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE);
-	decoded_time->tm_hour = (remaining_seconds / SECONDS_PER_HOUR);
-	decoded_time->tm_wday = (thursday + (days % DAYS_PER_WEEK));
+	static_tm.tm_sec = (remaining_seconds % SECONDS_PER_MINUTE);
+	static_tm.tm_min = ((remaining_seconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE);
+	static_tm.tm_hour = (remaining_seconds / SECONDS_PER_HOUR);
+	static_tm.tm_wday = (thursday + (days % DAYS_PER_WEEK));
 
-	return decoded_time;
+	return &static_tm;
 }
 
 
 time_t mktime(struct tm *timer)
 {
-	// TODO
+	if(validtm(timer) == INVALID_TIME)
+		return -1;
 
-	return 0;
+	int year = 1900 + timer->tm_year;
+	int leap_years = ((year - 1) - 1968) / 4 - ((year - 1) - 1900) / 100 + ((year - 1) - 1600) / 400;
+
+	time_t timestamp = timer->tm_sec + (timer->tm_min * SECONDS_PER_MINUTE) + (timer->tm_hour * SECONDS_PER_HOUR) + (timer->tm_yday * SECONDS_PER_DAY) + (((year-1970)*DAYS_PER_YEAR+leap_years)*SECONDS_PER_DAY);
+
+	if((timer->tm_mon >2) && (year%4==0 && (year%100!=0 || year%400==0)))
+		timestamp += SECONDS_PER_DAY;
+
+	return timestamp;
 }
 
 
 char *asctime(struct tm *timer)
 {
+	if(validtm(timer) == INVALID_TIME)
+		return NULL;
+
 	memset(static_string, ' ', sizeof(char) * STATIC_TIME_STRING_LENGTH);
 
-	strncpy(static_string[0], weekday_name_short[timer->tm_weday], 4);
-	strncpy(static_string[5], month_name_short[timer->tm_mon], 4);
-	itoa(timer->tm_mday, static_string[10], 10);
-	itoa(timer->tm_hour, static_string[13], 10);
+	strncpy(&static_string[0], weekday_name_short[timer->tm_wday], 4);
+	strncpy(&static_string[5], month_name_short[timer->tm_mon], 4);
+	itoa(timer->tm_mday, &static_string[10], 10);
+	itoa(timer->tm_hour, &static_string[13], 10);
 	static_string[15] = ':';
-	itoa(timer->tm_min, static_string[16], 10);
+	itoa(timer->tm_min, &static_string[16], 10);
 	static_string[18] = ':';
-	itoa(timer->tm_sec, static_string[19], 10);
-	itoa(timer->tm_year + 1900, static_string[23], 10);
+	itoa(timer->tm_sec, &static_string[19], 10);
+	itoa(timer->tm_year + 1900, &static_string[23], 10);
 	static_string[27] = '\n';
 	static_string[28] = '\0';
 
@@ -134,7 +150,7 @@ int validtm(const struct tm *timer)
 	if(timer == NULL)
 		return INVALID_TIME;
 
-	if(timer->tm_sec < 0 || timer->tm_sec > 59 || timer->tm_min < 0 || timer->tm_min > 59 || timer->tm_hours < 0 || timer->tm_hours > 23 || timer->tm_mday < 1 || timer->tm_mday > 31 || timer->tm_year < 70 || timer->tm_wday < 0 || timer->tm_wday > 6 || timer->tm_yday < 0 || timer->tm_yday > 365 || (timer->tm_yday > 364 && (timer->tm_yday % 4 != 0 || (timer->tm_yday % 100 == 0 && (timer->tm_yday + 1900) % 400 != 0))))
+	if(timer->tm_sec < 0 || timer->tm_sec > 59 || timer->tm_min < 0 || timer->tm_min > 59 || timer->tm_hour < 0 || timer->tm_hour > 23 || timer->tm_mday < 1 || timer->tm_mday > 31 || timer->tm_year < 70 || timer->tm_wday < 0 || timer->tm_wday > 6 || timer->tm_yday < 0 || timer->tm_yday > 365 || (timer->tm_yday > 364 && (timer->tm_yday % 4 != 0 || (timer->tm_yday % 100 == 0 && (timer->tm_yday + 1900) % 400 != 0))))
 		return INVALID_TIME;
 
 	return VALID_TIME;
@@ -150,6 +166,17 @@ int validtimestamp(const time_t *timer)
 		return INVALID_TIME;
 
 	return VALID_TIME;
+}
+
+
+struct tm *gmtolocal(struct tm *timer)
+{
+	if(validtm(timer) == INVALID_TIME)
+		return NULL;
+
+	// TODO
+
+	return timer;
 }
 
 
