@@ -1,10 +1,10 @@
 #include <trigger.h>
 #include <list.h>
 #include <heap.h>
+#include <scheduler.h>
+#include <idt.h>
 
 extern struct thread_state *current_thread;
-
-
 extern list_t *process_list;
 extern list_t *running_threads;
 
@@ -204,7 +204,7 @@ int send_event(uint32_t ID)
 		struct thread_state *thread = current_entry->object;
 		remove_event_trigger(current_entry->object, current_entry->ID);
 		wakeup_thread(thread);
-		
+
                 if(current_entry->callback != NULL) {
 			struct cpu_state **cpu = &thread->state;
 			struct thread_state *tmp = current_thread;
@@ -280,6 +280,58 @@ void add_trigger(trigger_t type, uint32_t ID, bool proc, void *object, void (*ca
     list_push_front(trigger_list,new_entry);
 }
 
+
+/**
+ * adds a interrupt trigger which activates a thread immediately
+ * @param 0 IRQ number
+ * @param 1 pointer to the thread (optional NULL)
+ * @param 2 callback function (optional NULL)
+ * @return true = sucess, false = failure
+ **/
+int add_int_trigger(int irq, struct thread_state *object,void (*callback)(int irq))
+{
+    if(install_irq(irq,handle_interupts))
+    {
+        add_trigger(WAIT_INT, irq, false, object,(void (*)(struct cpu_state **cpu))callback);
+        return true;
+    }
+    return false;
+}
+
+
+/**
+ * pulls a interrupt trigger
+ * @param 0 cpu-state of the current process
+ * @return void
+ **/
+void handle_interupts(struct cpu_state **cpu)
+{
+    list_set_first(trigger_list);
+    while(!list_is_empty(trigger_list) && !list_is_last(trigger_list))
+    {
+        struct trigger_entry *trg = list_get_current(trigger_list);
+        if(trg->type == WAIT_INT && trg->ID == (*cpu)->CPU_ARG0-IRQ_OFFSET)
+        {
+            if(trg->callback)
+            {
+                ((void (*)(int irq))trg->callback)(trg->ID);
+            }
+
+            if(trg->object && ! (((struct thread_state *)trg->object)->flags & THREAD_ACTIV))
+            {
+                ((struct thread_state *)trg->object)->flags |= THREAD_ACTIV;
+                list_insert_after(running_threads,trg->object);
+                ((struct thread_state *)trg->object)->ticks = 10;
+                current_thread->ticks = 0;
+                *cpu = task_schedule(*cpu);
+                return;
+            }
+
+
+        }
+        list_next(trigger_list);
+    }
+}
 
 /**
  * pulls waitpid triggers when a process has been killed
