@@ -13,6 +13,7 @@ typedef enum
     WAIT_EVENT = 2,
     WAIT_TIME = 3,
     WAIT_PIPE = 4,
+    WAIT_INT = 5,
 }trigger_t;
 
 struct trigger_entry
@@ -37,4 +38,7 @@ uint32_t get_new_event_ID(void);
 uint32_t add_event_trigger(bool proc, void *object, void (*callback)(struct cpu_state **cpu));
 void add_trigger(trigger_t type, uint32_t ID, bool proc, void *object, void (*callback)(struct cpu_state **cpu));
 void send_killed_process(struct process_state *proc);
+void handle_interupts(struct cpu_state **cpu);
+int add_int_trigger(int irq, struct thread_state *object,void (*callback)(int irq));
+
 #endif
