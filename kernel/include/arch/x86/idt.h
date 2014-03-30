@@ -30,6 +30,8 @@ enum INT_NUM {
 	INT_PAGE_FAULT = 0x0E
 };
 
+#define IRQ_OFFSET 32
+
 extern void isr_0(void);
 extern void isr_1(void);
 extern void isr_2(void);
