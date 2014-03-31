@@ -34,7 +34,6 @@
 #include <heap.h>
 #include <vfs.h>
 #include <trigger.h>
-#include <drivers/keyboard.h>
 #include <drivers/timer.h>
 #include <drivers/cmos.h>
 #include <drivers/video.h>
@@ -88,7 +87,6 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
     INIT_CPUID();
     printf("\n");
     INIT_PCI();
-    INIT_KEYBOARD();
 
     struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
     int i;

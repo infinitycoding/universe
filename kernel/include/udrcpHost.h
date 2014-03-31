@@ -46,7 +46,7 @@ typedef unsigned int pcktype_t;
 #define PING        2
 #define DMA_ALLOC   3
 #define DMA_FREE    4
-#define INT_REG     5
+#define INT_REQ     5
 #define INT_FREE    6
 #define PORT_ALLOC  7
 #define PORT_FREE   8
@@ -66,6 +66,9 @@ typedef unsigned int pcktype_t;
 #define SHUTDOWN    2
 #define RESTART     3
 #define CHKDEV      4
+
+///Host Signals
+#define INTSIG      5
 
 
 /// Host Response

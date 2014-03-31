@@ -42,7 +42,7 @@ typedef unsigned int pcktype_t;
 #define PING        2
 #define DMA_ALLOC   3
 #define DMA_FREE    4
-#define INT_REG     5
+#define INT_REQ     5
 #define INT_FREE    6
 #define PORT_ALLOC  7
 #define PORT_FREE   8
@@ -62,6 +62,9 @@ typedef unsigned int pcktype_t;
 #define SHUTDOWN    2
 #define RESTART     3
 #define CHKDEV      4
+
+///Host Signals
+#define INTSIG      5
 
 
 /// Host Response
@@ -105,6 +108,7 @@ pckmgr *new_pckmgr(int in, int out, int err);
 pckid_t gen_pckid(pckmgr *mgr);
 void reset_conn(pckmgr *mgr);
 int free_pckid(pckmgr *mgr, pckid_t id);
+void free_pck(pck_t *package);
 pckid_t send_package(pckmgr *mgr, pcktype_t type, size_t size, void *data);
 void respond(pckmgr *mgr,pckid_t id,pcktype_t type, size_t size, void *data);
 int subsystem_connect(pckmgr *mgr, char *protocol_version);
@@ -115,6 +119,9 @@ void poll_queue(pckmgr *mgr);
 
 pck_t *fetch_queue(pckmgr *mgr,pckid_t id);
 pck_t *pck_poll(pckmgr *mgr, pckid_t id);
+
+int free_intsig(pckmgr *mgr, unsigned int num);
+int req_intsig(pckmgr *mgr, unsigned int num);
 
 
 #endif
