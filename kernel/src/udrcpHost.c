@@ -96,10 +96,11 @@ pckid_t send_package(pckmgr *mgr, pcktype_t type, size_t size, void *data)
     pckhead_t *header = malloc(sizeof(pckhead_t));
     pckid_t id = gen_pckid(mgr);
     header->id = id;
-    header->size = size+12;
+    header->size = size+sizeof(pckhead_t);
     header->type = type;
     vfs_write(mgr->pset.stdin,mgr->pset.stdin->length,header,sizeof(pckhead_t));
-    vfs_write(mgr->pset.stdin,mgr->pset.stdin->length,data,size);
+    if(size)
+        vfs_write(mgr->pset.stdin,mgr->pset.stdin->length,data,size);
     free(header);
     return id;
 }
@@ -112,7 +113,8 @@ void respond(pckmgr *mgr,pckid_t id,pcktype_t type, size_t size, void *data)
     header->size = size+12;
     header->type = type;
     vfs_write(mgr->pset.stdin,mgr->pset.stdin->length,header,sizeof(pckhead_t));
-    vfs_write(mgr->pset.stdin,mgr->pset.stdin->length,data,size);
+    if(size)
+        vfs_write(mgr->pset.stdin,mgr->pset.stdin->length,data,size);
     free(header);
 }
 
