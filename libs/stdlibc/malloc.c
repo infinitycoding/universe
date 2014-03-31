@@ -30,7 +30,7 @@
 typedef struct alloc {
 	size_t size;
 	uint32_t base;
-	int status;	
+	int status;
 
 	struct alloc *next;
 } alloc_t;
@@ -47,7 +47,7 @@ alloc_t *heap_expand(int pages) {
 
 	new_header->next = first_node;
 	first_node = new_header;
-	
+
 	return new_header;
 }
 
@@ -85,6 +85,8 @@ void *malloc(size_t size) {
 }
 
 void free(void *ptr) {
+    if(ptr <= 0)
+        return;
 	alloc_t *header = (alloc_t*)((uintptr_t)ptr - sizeof(alloc_t));
 	header->status = HEAP_STATUS_FREE;
 }

@@ -222,7 +222,7 @@ struct cpu_state* irq_handler(struct cpu_state* cpu)
 	//IRQs
 	else if (cpu->intr < 46)
 	{
-	    int irqnum = cpu->intr - 32;
+	    int irqnum = cpu->intr - IRQ_OFFSET;
 		if (irq[irqnum] != NULL)
 		{
 			irq[irqnum](&cpu);
