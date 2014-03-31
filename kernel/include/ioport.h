@@ -1,5 +1,5 @@
-#ifndef _uhost_h_
-#define _uhost_h_
+#ifndef _ioport_h_
+#define _ioport_h_
 /*
      Copyright 2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
@@ -22,17 +22,40 @@
 /**
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  **/
+
 #include <udrcpHost.h>
 
-struct int_relation
+typedef enum
 {
-    unsigned int intnr;
-    pckmgr *drv;
-};
+    hw_port,
+    host_port,
+    file_port,
+}port_type;
 
 
-void INIT_UHOST(int argc, void **argv);
+typedef struct
+{
+    port_type type;
+    unsigned int port;
+    pckmgr *mgr;
+}port_t;
+
+typedef struct
+{
+    unsigned int port;
+    unsigned int len;
+}portpck_t;
 
 
+port_t *port_alloc(pckmgr *mgr,unsigned int port);
+int port_free(port_t *p);
+
+unsigned char inb(port_t *p);
+unsigned short inw(port_t *p);
+unsigned long inl(port_t *p);
+
+void outb(port_t *p, unsigned char v);
+void outw(port_t *p, unsigned short v);
+void outl(port_t *p, unsigned long v);
 
 #endif
