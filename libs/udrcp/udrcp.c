@@ -77,6 +77,13 @@ int free_pckid(pckmgr *mgr, pckid_t id)
     return false;
 }
 
+void free_pck(pck_t *package)
+{
+    if(package->data > 0)
+        free(package->data);
+    free(package);
+}
+
 pckid_t send_package(pckmgr *mgr, pcktype_t type, size_t size, void *data)
 {
     pckhead_t *header = malloc(sizeof(pckhead_t));
@@ -109,16 +116,17 @@ int subsystem_connect(pckmgr *mgr, char *protocol_version)
     read(mgr->in,pck_header,sizeof(pckhead_t));
     if(pck_header->id == ping_id && pck_header->type == PONG)
     {
-        mgr->version = malloc(pck_header->size+1);
-        mgr->version[pck_header->size] = 0;
+        mgr->version = malloc(pck_header->size);
         read(mgr->in,mgr->version,pck_header->size-sizeof(pckhead_t));
     }
     else
     {
         write(mgr->err,"invalind ping response from host",32);
+        free(pck_header);
         return false;
     }
     //todo: check udrcp version
+    free(pck_header);
     return true;
 }
 
@@ -129,9 +137,9 @@ pck_t *poll_next(pckmgr *mgr)
     read(mgr->in,pck,sizeof(pckhead_t));
     if(pck->size > 12)
     {
-        int data_size = pck->size-12;
-        pck->data = malloc(data_size);
-        read(mgr->in,pck->data,data_size);
+        pck->size -= 12;
+        pck->data = malloc(pck->size);
+        read(mgr->in,pck->data,pck->size);
     }
     else
         pck->data = NULL;
@@ -180,18 +188,83 @@ pck_t *pck_poll(pckmgr *mgr, pckid_t id)
 void reset_conn(pckmgr *mgr)
 {
     mgr->counter = 0;
-    list_set_first(mgr->used_ids);
     while(!list_is_empty(mgr->used_ids))
-        list_pop_front(mgr->used_ids);
-    list_set_first(mgr->recieved_pcks);
+        free_pck(list_pop_front(mgr->used_ids));
     while(!list_is_empty(mgr->recieved_pcks))
-        list_pop_front(mgr->recieved_pcks);
+        free_pck(list_pop_front(mgr->recieved_pcks));
 }
 
 
 
+int req_intsig(pckmgr *mgr, unsigned int num)
+{
+    pckid_t id = send_package(mgr, INT_REQ, sizeof(unsigned int), &num);
+    int errorcode = true;
+    while(errorcode)
+    {
+        pck_t *resp = pck_poll(mgr,id);
+        switch(resp->type)
+        {
+            case ERROR:
+                if(resp->size >= 4)
+                    errorcode = *((unsigned int*)resp->data);
+                else
+                    errorcode = -1;
+            break;
 
+            case CONFIRM:
+            break;
 
+            case SUCCESS:
+                free_pck(resp);
+                return true;
+            break;
+
+            default:
+                write(mgr->err,"unknown response\n",18);
+                errorcode = -2;
+            break;
+
+        }
+        //free_pck(resp);
+    }
+    return errorcode;
+}
+
+int free_intsig(pckmgr *mgr, unsigned int num)
+{
+    pckid_t id = send_package(mgr, INT_FREE, sizeof(unsigned int), &num);
+    int errorcode = true;
+    while(errorcode)
+    {
+        pck_t *resp = pck_poll(mgr,id);
+        switch(resp->type)
+        {
+            case ERROR:
+                if(resp->size >= 4)
+                    errorcode = *((unsigned int*)resp->data);
+                else
+                    errorcode = -1;
+            break;
+
+            case CONFIRM:
+            break;
+
+            case SUCCESS:
+                free_pck(resp);
+                return true;
+            break;
+
+            default:
+                write(mgr->err,"unknown response\n",18);
+                errorcode = -2;
+            break;
+
+        }
+        free_pck(resp);
+    }
+    return errorcode;
+}
 
 
 
