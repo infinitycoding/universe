@@ -26,8 +26,6 @@
 #include <udrcp.h>
 #include <ioport.h>
 #include <unistd.h>
-
-#include <keyboard.h>
 #include <keymap_de.h>
 #include <string.h>
 
@@ -37,7 +35,7 @@ static bool numlock = false;
 static bool caps = false;
 port_t *kbc_stat;
 port_t *kbc_io;
-
+void kbd_irq_handler(void);
 
 /**
  * Initalize the Keyboard
@@ -50,7 +48,7 @@ int main(void)
     pckmgr *conn = new_pckmgr(stdin, stdout, stderr);
     if(!subsystem_connect(conn,UHOST_DEFAULT_SYNCHRON))
     {
-        write(stderr,"could not connect to host",strlen("could not connect to host"));
+        write(stderr,"could not connect to host",27);
         return -1;
     }
 
@@ -60,12 +58,11 @@ int main(void)
 
     if(!kbc_io || !kbc_stat)
     {
-        write(stderr,"could not allocate port",strlen("could not allocate port"));
+        write(stderr,"could not allocate port",25);
         return -2;
     }
 
-
-  	while (!(inb(kbc_stat) & 0x4));
+      	while (!(inb(kbc_stat) & 0x4));
   	// Puffer leeren
   	while (inb(kbc_stat) & 0x1)
   		inb(kbc_io);
@@ -75,8 +72,45 @@ int main(void)
   	outb(kbc_io, 0xF4);
   	while (inb(kbc_io) != 0xFA);
 
-    // Todo
-  	//install_irq(0x1, &kbd_irq_handler);
+
+    if(!req_intsig(conn, 0x1))
+    {
+        write(stderr,"could not get interrupt signal for IRQ 0x1\n",46);
+    }
+
+
+    while(1)
+    {
+        printf("got package!\n");
+        pck_t *signal = poll_next(conn);
+        switch(signal->type)
+        {
+            case INTSIG:
+                printf("handle input\n");
+                kbd_irq_handler();
+            break;
+
+            case RESET_CON:
+                reset_conn(conn);
+            break;
+
+            case SHUTDOWN:
+                while(1);
+            break;
+
+            case RESTART:
+            case CHKDEV:
+                write(conn->err,"unusual signal\n",16);
+            break;
+
+            default:
+                write(conn->err,"unknown signal\n",16);
+            break;
+        }
+        //free_pck(signal);
+    }
+
+    return 0;
 }
 
 /**
@@ -85,7 +119,8 @@ int main(void)
  * @param void
  * @return void
  */
-void kbd_irq_handler(void) {
+void kbd_irq_handler(void)
+{
 	uint8_t input = 0, ASCII = 0;
 	while (inb(kbc_stat)&1) {
 		input = inb(kbc_io);
@@ -127,10 +162,9 @@ void kbd_irq_handler(void) {
 
 	}
 
-	if (ASCII) {
-
-
-
+	if (ASCII)
+    {
+        printf("%c",ASCII);
 	}
 
 }
