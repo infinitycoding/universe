@@ -310,7 +310,7 @@ void handle_interupts(struct cpu_state **cpu)
     while(!list_is_empty(trigger_list) && !list_is_last(trigger_list))
     {
         struct trigger_entry *trg = list_get_current(trigger_list);
-        if(trg->type == WAIT_INT && trg->ID == (*cpu)->CPU_ARG0-IRQ_OFFSET)
+        if(trg->type == WAIT_INT && trg->ID == (*cpu)->intr-IRQ_OFFSET)
         {
             if(trg->callback)
             {
