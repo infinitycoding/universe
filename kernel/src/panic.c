@@ -87,10 +87,10 @@ void panic(char *message)
 		       "\n\n      To help us improving our systems, please report this incident to us."
 	);
 
-	set_color(WHITE | RED << 4);
-	clear_screen();
+	//set_color(WHITE | RED << 4);
+	//clear_screen();
 
-	gotoxy(0, (25 / 2) - (lines / 2) - 1);
+	//gotoxy(0, (25 / 2) - (lines / 2) - 1);
 	puts(buffer);
 	printf("\n\n      ");
 
