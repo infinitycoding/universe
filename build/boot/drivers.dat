@@ -1,4 +1,3 @@
 UHOST{
-/test.elf
 /drivers/keyboard.elf
 }
