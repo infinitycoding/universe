@@ -46,7 +46,6 @@ list_t *interrupts;
 
 void subsystem_isr(int irq)
 {
-    //printf("catched interrupt\n");
     list_set_first(interrupts);
     while(!list_is_last(interrupts) && !list_is_empty(interrupts))
     {

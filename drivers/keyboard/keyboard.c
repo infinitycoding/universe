@@ -81,12 +81,10 @@ int main(void)
 
     while(1)
     {
-        printf("got package!\n");
         pck_t *signal = poll_next(conn);
         switch(signal->type)
         {
             case INTSIG:
-                printf("handle input\n");
                 kbd_irq_handler();
             break;
 
@@ -95,6 +93,7 @@ int main(void)
             break;
 
             case SHUTDOWN:
+                printf("shutdown!\n");
                 while(1);
             break;
 
