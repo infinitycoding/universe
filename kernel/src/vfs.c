@@ -141,8 +141,9 @@ int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
 		node->length = off + bytes;
 		node->stat.st_size = node->length;
 	}
-
+	
 	if(node->type == VFS_PIPE) {
+		printf("writing %d bytes\n", bytes);
 		int block_id = off / PAGE_SIZE;
 		int block_off= off % PAGE_SIZE;
 
@@ -161,11 +162,11 @@ int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
 		}
 
 		uint8_t *data = (uint8_t*) base;
+                int index = block_off;
 		for(i = 0; i < bytes; i++) {
-			int index = block_off + i;
 			if(index >= PAGE_SIZE) {
 				block_id++;
-				if(block_id > info->num_blocks) {
+				if(block_id >= info->num_blocks) {
 					found = 0;
 				} else {
 					bn = bn->next;
@@ -174,15 +175,18 @@ int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
 			}
 
 			if(! found) { // create a new block
+				printf("create block..\n");
 				block = malloc(sizeof(vfs_pipe_buffer_block_t*));
 				block->base = malloc(PAGE_SIZE);
 				block->length = 0;
-				block->block_id = info->num_blocks++;
+				block->block_id = block_id =  info->num_blocks++;
 				list_push_back(info->pipe_buffer, block);
 				found = 1;
+				block_off = 0;
+				index = 0;
 			}
 
-			block->base[index] = data[i];
+			block->base[index++] = data[i];
 		}
 
 		send_event(info->event_id);
