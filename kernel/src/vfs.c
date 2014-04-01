@@ -143,7 +143,6 @@ int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
 	}
 	
 	if(node->type == VFS_PIPE) {
-		printf("writing %d bytes\n", bytes);
 		int block_id = off / PAGE_SIZE;
 		int block_off= off % PAGE_SIZE;
 
@@ -175,7 +174,6 @@ int vfs_write(vfs_inode_t *node, int off, void *base, int bytes) {
 			}
 
 			if(! found) { // create a new block
-				printf("create block..\n");
 				block = malloc(sizeof(vfs_pipe_buffer_block_t*));
 				block->base = malloc(PAGE_SIZE);
 				block->length = 0;
