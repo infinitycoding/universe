@@ -307,9 +307,11 @@ int add_int_trigger(int irq, struct thread_state *object,void (*callback)(int ir
 void handle_interupts(struct cpu_state **cpu)
 {
     list_set_first(trigger_list);
+    int x = 0;
     while(!list_is_empty(trigger_list) && !list_is_last(trigger_list))
     {
         struct trigger_entry *trg = list_get_current(trigger_list);
+        list_next(trigger_list);
         if(trg->type == WAIT_INT && trg->ID == (*cpu)->intr-IRQ_OFFSET)
         {
             if(trg->callback)
@@ -327,9 +329,8 @@ void handle_interupts(struct cpu_state **cpu)
                 return;
             }
 
-
         }
-        list_next(trigger_list);
+
     }
 }
 
