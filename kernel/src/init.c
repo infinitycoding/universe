@@ -41,7 +41,7 @@
 #include <elf.h>
 #include <mutex.h>
 #include "memory_layout.h"
-#include <drivers/hosts/uhost.h>
+#include <hypervisor.h>
 #include <drvlst.h>
 /**
 * Initalize the Kernel
@@ -51,7 +51,6 @@
 *
 * @return 0
 */
-extern struct thread_state *current_thread;
 extern struct process_state *kernel_state;
 extern list_t *running_threads;
 int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
@@ -109,7 +108,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 
         argv[1] = mb_info;
      	argv[0] = c;
-        thread_create(kernel_state,KERNELMODE, (uintptr_t)INIT_UHOST, NULL,argc, argv, NULL, NULL);
+     	kernel_thread_create((uintptr_t)INIT_HYPERVISOR,argc,argv);
     }
 
     struct mods_add *shell_mod = find_module(mb_info, "/ultrashell.elf");

@@ -1,5 +1,5 @@
-#ifndef _udrcpHost_h_
-#define _udrcpHost_h_
+#ifndef _udrcp_h_
+#define _udrcp_h_
 
 /*
      Copyright 2014 Infinitycoding all rights reserved

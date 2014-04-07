@@ -1,5 +1,6 @@
-#ifndef _ioport_h_
-#define _ioport_h_
+#ifndef	_pfp_h_
+#define	_pfp_h_
+
 /*
      Copyright 2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
@@ -23,39 +24,38 @@
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  **/
 
-#include <udrcp.h>
+#include <list.h>
 
 typedef enum
 {
-    hw_port,
-    host_port,
-    file_port,
-}port_type;
+    essential = 1,
+    optional = 0
+}ess_t;
 
 
-typedef struct
+struct pnode
 {
-    port_type type;
-    unsigned int port;
-    pckmgr *mgr;
-}port_t;
+    char *file;
+    list_t *subtree;
+};
 
-typedef struct
+struct section
 {
-    unsigned int port;
-    unsigned int len;
-}portpck_t;
+    ess_t state;
+    struct pnode *service;
+    struct pnode *pipeline;
+};
+
+struct pipe_tree
+{
+    struct section *boot;
+    struct section *common;
+    struct section *fallback;
+};
 
 
-port_t *port_alloc(pckmgr *mgr,unsigned int port);
-int port_free(port_t *p);
-
-unsigned char inb(port_t *p);
-unsigned short inw(port_t *p);
-unsigned long inl(port_t *p);
-
-void outb(port_t *p, unsigned char v);
-void outw(port_t *p, unsigned short v);
-void outl(port_t *p, unsigned long v);
+char *get_section(const char *p, const char *section);
+struct pipe_tree *pfp(char *p);
+struct pnode *parser_sub_section(const char *p, const char *section);
 
 #endif
