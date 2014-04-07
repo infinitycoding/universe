@@ -45,4 +45,6 @@ void thread_kill(struct thread_state *thread);
 void thread_kill_sub(struct thread_state *thread);
 void thread_exit(struct cpu_state **cpu);
 void launch_thread(struct cpu_state **cpu);
+struct thread_state *kernel_thread_create(uintptr_t eip, int argc, void **argv);
+void kernel_thread_exit(void);
 #endif
