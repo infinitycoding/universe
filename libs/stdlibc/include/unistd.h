@@ -30,6 +30,18 @@
 #define X_OK 0x4
 #define F_OK 0x8
 
+#define SEEK_SET 0x1
+#define SEEK_CUR 0x2
+#define SEEK_END 0x3
+
+#define O_RDONLY 0x01 /* read only */
+#define O_WRONLY 0x02 /* write only */
+#define O_RDWR 0x04 /* read and write */
+#define O_APPEND 0x08 /* append at end of file */
+#define O_TRUNC 0x10 /* clear the file */
+#define O_CREAT 0x20 /* create the file */
+#define O_EXCL 0x40 /* forced file creation. if it already exist: fail */
+
 typedef struct dirent {
   int id;
   char name[256];
@@ -40,7 +52,9 @@ int open(const char *path, int file_access, int filemode);
 int close(int fd);
 int read(int fd, void *buffer,size_t n);
 int write(int fd,void *buffer, size_t n);
+int lseek(int fd, int off, int whence);
 dirent_t *readdir(int fd);
 int chdir(const char *path);
 
 #endif
+

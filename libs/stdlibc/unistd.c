@@ -54,9 +54,14 @@ int chdir(const char *path)
   return linux_syscall(SYS_CHDIR,(uint32_t)path, 0, 0, 0, 0);
 }
 
+int lseek(int fd, int off, int whence) {
+  return linux_syscall(SYS_LSEEK, fd, off, whence, 0, 0);
+}
+
 int getchar(void)
 {
 	char c;
         read(stdin, &c, 1);
     	return (int)c;
 }
+

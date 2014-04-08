@@ -52,7 +52,9 @@ void (*linux_functions[])(struct cpu_state **cpu) =
 {
     NULL, sys_exit, sys_fork, sys_read, sys_write, sys_open, sys_close, sys_waitpid,
     sys_create, sys_link, sys_unlink, NULL /*sys_execve*/, sys_chdir, sys_time,
-    /*FIXME: pipe kommt weiter hinten*/ sys_pipe, /* 141: sys_getdents hab ich mal readdir genannt */ sys_readdir
+    /*FIXME: pipe kommt weiter hinten*/ sys_pipe, /* 141: sys_getdents hab ich mal readdir genannt */ sys_readdir,
+    NULL, NULL, NULL, 
+    sys_seek
 };
 
 void linux_syscall_handler(struct cpu_state **cpu)
