@@ -1,5 +1,5 @@
-#ifndef _uhost_h_
-#define _uhost_h_
+#ifndef _hypervisor_h_
+#define _hypervisor_h_
 /*
      Copyright 2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
@@ -22,7 +22,7 @@
 /**
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  **/
-#include <udrcpHost.h>
+#include <udrcp.h>
 
 struct int_relation
 {
@@ -31,7 +31,7 @@ struct int_relation
 };
 
 
-void INIT_UHOST(int argc, void **argv);
+void INIT_HYPERVISOR(int argc, void **argv);
 
 
 
