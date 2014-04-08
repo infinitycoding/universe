@@ -692,6 +692,32 @@ void sys_readdir(struct cpu_state **cpu) {
 	}
 }
 
+void sys_seek(struct cpu_state **cpu) {
+	int fd = (*cpu)->CPU_ARG1;
+	int off = (*cpu)->CPU_ARG2;
+	int whence = (*cpu)->CPU_ARG3;
+	
+	struct fd *file = get_fd(fd);	
+	
+	file->flags |= O_APPEND;
+	switch(whence) {
+		case SEEK_SET: // absolute
+			file->pos = off;
+			break;
+		case SEEK_CUR: // relative from current position
+			file->pos += off;
+			break;
+		case SEEK_END: // relative from end
+			file->pos = file->inode->length - off;
+			break;
+		default: // ???
+			(*cpu)->CPU_ARG0 = _FAILURE;
+			return;
+	}
+	
+	(*cpu)->CPU_ARG0 = file->pos;
+}
+
 void launch_pipe_handlers(vfs_pipe_info_t *pipe) {
 	struct list_node *node = pipe->handlers->head->next;
 	struct list_node *head = pipe->handlers->head;
