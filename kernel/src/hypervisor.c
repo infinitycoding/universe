@@ -34,7 +34,7 @@
 #include <vfs.h>
 #include <process.h>
 #include <ioport.h>
-#include <drivers/hosts/uhost.h>
+#include <hypervisor.h>
 #include <trigger.h>
 
 
@@ -56,7 +56,7 @@ void subsystem_isr(int irq)
     }
 }
 
-void INIT_UHOST(int argc, void **argv)
+void INIT_HYPERVISOR(int argc, void **argv)
 {
     subdrivers = list_create();
     interrupts = list_create();
@@ -64,7 +64,7 @@ void INIT_UHOST(int argc, void **argv)
     char **drv_list =  argv[0];
     int i;
     pckmgr *pman;
-    printf("uhost subsystems:\n");
+    printf("hypervisor subsystems:\n");
     for(i = 0; drv_list[i]; i++)
     {
         struct mods_add *drv_mod = (struct mods_add *)find_module(mb_info, drv_list[i]);
