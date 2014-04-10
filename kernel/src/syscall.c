@@ -45,7 +45,7 @@ void identify_os(struct cpu_state **cpu)
 
 
 
-#define DEFINED_LINUX_FUNCTIONS 17
+#define DEFINED_LINUX_FUNCTIONS 21
 
 
 void (*linux_functions[])(struct cpu_state **cpu) =
@@ -54,7 +54,7 @@ void (*linux_functions[])(struct cpu_state **cpu) =
     sys_create, sys_link, sys_unlink, NULL /*sys_execve*/, sys_chdir, sys_time,
     /*FIXME: pipe kommt weiter hinten*/ sys_pipe, /* 141: sys_getdents hab ich mal readdir genannt */ sys_readdir,
     NULL, NULL, NULL, 
-    sys_seek
+    sys_seek, /*FIXME: getcwd kommt weiter hinten (183)*/ sys_getcwd
 };
 
 void linux_syscall_handler(struct cpu_state **cpu)

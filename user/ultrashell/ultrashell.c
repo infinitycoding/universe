@@ -23,15 +23,19 @@
 #include <binaryTree.h>
 
 #include <universe.h>
+#include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
+
 // main loop which pulls the inputs and tells the other functions what to do 
 
-int main(void)
+int main(int argc, char **argv)
 {
-	struct shell_state shell;
+	printf("Ultrashell started.\n");
+	struct shell_state shell;	
+	shell.last_ret_value = 0;
 	shell.cmds = initBinaryTree();
 
 	int counter = 0;
@@ -60,7 +64,7 @@ int main(void)
 
         	if(inchar == '\n')
 		{
-			parserLine(shell.cmds, inbuffer);
+			parserLine(&shell, inbuffer);
 
 			counter = 0;
 			inbuffer[counter] = '\0';
@@ -87,6 +91,8 @@ binary_tree *initBinaryTree()
 	loadFunction(cmdTree, "sver", sver);
 	loadFunction(cmdTree, "true", cmdtrue);
 	loadFunction(cmdTree, "false", cmdfalse);
+	loadFunction(cmdTree, "cd", cd);
+	loadFunction(cmdTree, "pwd", pwd);
 	loadFunction(cmdTree, "add", add);
 	loadFunction(cmdTree, "sub", sub);
 	loadFunction(cmdTree, "mul", mul);
@@ -98,7 +104,7 @@ binary_tree *initBinaryTree()
 
 // parsers and executes a line (strange, with this name...)
 
-int parserLine(binary_tree *tree, const char *line)
+int parserLine(struct shell_state *state, const char *line)
 {
 	char **argv = NULL;
 	int argc = 0;
@@ -106,12 +112,16 @@ int parserLine(binary_tree *tree, const char *line)
 
 	argc = getTokens(line, &argv);
 
-	if((fct = searchFunction(tree, argv[0])) != NULL)
-		fct->f(argc, argv);
+	if((fct = searchFunction(state->cmds, argv[0])) != NULL)
+	{
+		state->last_ret_value = fct->f(argc, argv);
+		return 0;
+	}
 	else
+	{
 		printf("%s : unknown filename or command.\n", argv[0]);
-
-	return -1;
+		return -1;	
+	}
 }
 
 
