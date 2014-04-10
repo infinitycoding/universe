@@ -3,7 +3,7 @@ OBJS = $(addsuffix .o,$(basename $(SRCS)))
 
 CFLAGS = -m32 -Wall -fno-stack-protector -fno-builtin -fno-builtin-log -Wimplicit-function-declaration -nostdinc -I include
 
-stdlibc.a: $(OBJS)
+libc.a: $(OBJS)
 	@nasm -f elf32 -o entry.o entry.asm
 	@ar -rcs $@ $^
 
@@ -12,7 +12,7 @@ stdlibc.a: $(OBJS)
 
 clean:
 	@rm $(OBJS) -f
-	@rm stdlibc.a -f
+	@rm libc.a -f
 
 .PHONY: clean
 
