@@ -1,6 +1,8 @@
 #ifndef	_pfp_h_
 #define	_pfp_h_
 
+
+
 /*
      Copyright 2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
@@ -22,40 +24,61 @@
 
 /**
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
+ *  @author Peter Hösch aka. BlitzBasic <peter.hoesch@infinitycoding.de>
  **/
 
-#include <list.h>
 
-typedef enum
+
+#include <list.h>
+#include <stdint.h>
+
+
+
+#define ESSENTIAL  1
+#define SERVICE  2
+#define KERNELROOT 4
+
+#define STRING_SECTION_LEN 7
+
+
+
+typedef unsigned int ptype;
+
+
+
+struct ptype_ext
 {
-    essential = 1,
-    optional = 0
-}ess_t;
+    ptype essential;
+    ptype service;
+    ptype kernelroot;
+};
 
 
 struct pnode
 {
     char *file;
+    ptype type;
+    struct pnode *fallback;
     list_t *subtree;
 };
 
+
 struct section
 {
-    ess_t state;
-    struct pnode *service;
-    struct pnode *pipeline;
-};
-
-struct pipe_tree
-{
-    struct section *boot;
-    struct section *common;
-    struct section *fallback;
+    ptype type;
+    char *name;
+    list_t *subtree;
 };
 
 
-char *get_section(const char *p, const char *section);
-struct pipe_tree *pfp(char *p);
-struct pnode *parser_sub_section(const char *p, const char *section);
+
+list_t *pfp(char *pipeline_file);
+bool validate_pf(char *pipelines);
+int count_sections(char *pipelines);
+struct section parser_section(char *pipelines, char *section);
+struct ptype_ext extend_ptype(ptype type);
+ptype compress_ptype(struct ptype_ext type);
+
+
 
 #endif
