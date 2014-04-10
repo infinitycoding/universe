@@ -21,6 +21,7 @@
 #include <basicCMDs.h>
 
 #include <universe.h>
+#include <unistd.h>
 #include <atoi.h>
 #include <stdio.h>
 
@@ -77,6 +78,50 @@ int cmdtrue(int argc, char **argv)
 int cmdfalse(int argc, char **argv)
 {
 	return 1;
+}
+
+
+// changes the working directory
+
+int cd(int argc, char **argv)
+{
+	if(argc != 2)
+	{
+		printf("cd: incorrect number of arguments\n");
+		return 1;
+	}
+
+	if(chdir(argv[1]) == -1)
+	{
+		printf("cd: %s: unable to find file or directory", argv[1]);
+		return 2;
+	}
+
+	return 0;
+}
+
+
+// printf the current working directory
+
+int pwd(int argc, char **argv)
+{
+	if(argc != 1)
+	{
+		printf("pwd: incorrect number of arguments\n");
+		return 1;
+	}
+
+	char wd[80];
+
+	if(getcwd(wd, 80) == NULL)
+	{
+		printf("pwd: some error has occured during calling getcwd\n");
+		return 2;
+	}
+
+	printf("%s\n", wd);
+
+	return 0;	
 }
 
 

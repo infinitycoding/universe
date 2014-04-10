@@ -25,6 +25,7 @@
 #define SYS_GETDENTS 15 // at 141 TODO
 // TODO
 #define SYS_LSEEK 19
+#define SYS_GETCWD 20
 
 static inline uint32_t linux_syscall(uint32_t function, uint32_t ebx, uint32_t ecx, uint32_t edx, uint32_t esi, uint32_t edi)
 {

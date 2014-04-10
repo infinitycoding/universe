@@ -65,3 +65,7 @@ int getchar(void)
     	return (int)c;
 }
 
+char *getcwd(char *buf, int buflen){
+ return linux_syscall(SYS_GETCWD, buf, buflen, 0, 0, 0);
+}
+

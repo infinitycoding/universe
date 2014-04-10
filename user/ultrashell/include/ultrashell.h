@@ -36,16 +36,18 @@
 
 struct shell_state
 {
+	int last_ret_value;
 	binary_tree *cmds;
-	char working_directory[MAX_PATH_LENGTH];
 };
 
 
 
-int main(void);
+int main(int argc, char **argv);
 binary_tree *initBinaryTree();
-int parserLine(binary_tree *tree, const char *line);
+int parserLine(struct shell_state *state, const char *line);
 int getTokens(const char *instring, char ***tokens);
 int countTokens(const char *instring);
+
+
 
 #endif

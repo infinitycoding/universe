@@ -718,6 +718,58 @@ void sys_seek(struct cpu_state **cpu) {
 	(*cpu)->CPU_ARG0 = file->pos;
 }
 
+void sys_getcwd(struct cpu_state **cpu)
+{
+	char *buffer = (char *)(*cpu)->CPU_ARG1;
+	int buffersize = (int)(*cpu)->CPU_ARG2;
+	int currentend = 0;
+	int cwdsize = 1;				// the final size of the final '\0'
+
+	vfs_inode_t *inode = current_thread->process->cwd;
+
+	if(inode == root)
+		cwdsize++;
+
+	while(inode != root)
+	{
+		cwdsize += strlen(inode->name);		// add the lenght of the directory name
+		cwdsize++;				// add the length of the '/' between the directorys
+		inode = inode->parent;			// next directory
+	}
+
+	if(buffer == NULL)
+	{
+		(*cpu)->CPU_ARG0 = NULL;
+		return;
+		/*buffer = (char *)malloc(sizeof(char) * cwdsize);
+		buffersize = cwdsize;*/					// TODO: make this working (some problems with kernel malloc)
+	}
+
+	if(buffersize < cwdsize)
+	{
+		(*cpu)->CPU_ARG0 = NULL;
+		return;
+	}
+
+	currentend = cwdsize - 1;		// because first element is buffer[0] (instead of buffer[1])
+	buffer[currentend--] = '\0';	
+	inode = current_thread->process->cwd;
+
+	if(inode == root)
+		buffer[currentend] = '/';
+
+	while(inode != root)
+	{
+		currentend -= (strlen(inode->name) - 1);
+		strcpy(&buffer[currentend--], inode->name);
+		buffer[currentend--] = '/';
+		inode = inode->parent;
+	}
+
+	(*cpu)->CPU_ARG0 = buffer;
+	return;
+}
+
 void launch_pipe_handlers(vfs_pipe_info_t *pipe) {
 	struct list_node *node = pipe->handlers->head->next;
 	struct list_node *head = pipe->handlers->head;
