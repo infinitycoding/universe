@@ -19,6 +19,7 @@
 
 /**
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
+ *  @author Peter Hösch aka. BlitzBasic <peter.hoesch@infinitycoding.de>
  **/
 
 
@@ -26,91 +27,70 @@
  #include <heap.h>
  #include <pfp.h>
 
-/**
- * pipline file parser (pfp)
- * @param 0 pipeline file content
- * @return pipeline ram struct
- */
-struct pipe_tree *pfp(char *p)
+
+
+list_t *pfp(char *pipelines)
 {
-    struct pipe_tree *tree = malloc(sizeof(struct pipe_tree));
-    tree->boot = malloc(sizeof(struct section));
-    char *boot = get_section(p,"boot");
-    if(boot)
+    bool valid = validate_pf(pipelines);
+
+    if(valid == true)
     {
-        tree->boot->service = parser_sub_section(boot,"service");
-        tree->boot->pipeline = parser_sub_section(boot,"pipeline");
+        list_t *pipes = list_create();
+        int sections_nr = count_sections(pipelines);
+
+        return pipes;
     }
     else
     {
-        tree->boot->service = NULL;
-        tree->boot->pipeline = NULL;
+        return NULL;
     }
-
-
-    tree->common = malloc(sizeof(struct section));
-    char *common = get_section(p,"common");
-    if(common)
-    {
-        tree->common->service = parser_sub_section(common,"service");
-        tree->common->pipeline = parser_sub_section(common,"pipeline");
-    }
-    else
-    {
-        tree->common->service = NULL;
-        tree->common->pipeline = NULL;
-    }
-
-    tree->fallback = malloc(sizeof(struct section));
-    char *fallback = get_section(p,"boot");
-    if(fallback)
-    {
-        tree->fallback->service = parser_sub_section(fallback,"service");
-        tree->fallback->pipeline = parser_sub_section(fallback,"pipeline");
-    }
-    else
-    {
-        tree->fallback->service = NULL;
-        tree->fallback->pipeline = NULL;
-    }
-    return tree;
 }
 
 
-char *get_section(const char *p, const char *section)
+bool validate_pf(char *pipelines)
 {
-    int plen = strlen(p);
-    int slen = strlen(section);
-    int i;
-    for(i = 0; i < plen-slen; i++)
-    {
-        if((strncmp(p+i,"section ",8) == 0 || strncmp(p+i,"SECTION ",8) == 0) && strncmp(p+i+8,section,slen) == 0)
-        {
-            int j;
-            char *r;
-            for(j = i; j < plen-8; j++)
-            {
-                if(strncmp(p+j,"section ",8) == 0)
-                {
-                    r = malloc((j-i)+1);
-                    r[j-i] = 0;
-                    strncpy(r,p+i,j-i);
-                    return r;
-                }
-            }
 
-            r = malloc((plen-i)+1);
-            r[plen-i] = 0;
-            strncpy(r,p+i,plen);
-            return r;
-        }
-    }
-    return NULL;
 }
 
 
-struct pnode *parser_sub_section(const char *p, const char *section)
+int count_sections(char *pipelines)
 {
-    //TODO...
-    return NULL;
+    int i = 0;
+    int nr = 0;
+
+    for(i = 0; pipelines[i + STRING_SECTION_LEN] != '\0'; i++)
+        if(strncmp(pipelines[i], "section", STRING_SECTION_LEN) == 0)
+            nr++;
+
+    return nr;
+}
+
+
+struct section parser_section(char *pipelines, char *section)
+{
+
+}
+
+
+struct ptype_ext extend_ptype(ptype type)
+{
+    struct ptype_ext result;
+
+    result.essential = type & ESSENTIAL;
+    result.service = type & SERVICE;
+    result.kernelroot = type & KERNELROOT;
+
+    return result;
+}
+
+
+ptype compress_ptype(struct ptype_ext type)
+{
+    ptype result = 0;
+
+    result |= type.essential;
+    result |= type.service;
+    result |= type.kernelroot;
+
+    return result;
 }
