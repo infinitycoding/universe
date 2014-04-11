@@ -739,7 +739,7 @@ void sys_getcwd(struct cpu_state **cpu)
 
 	if(buffer == NULL)
 	{
-		(*cpu)->CPU_ARG0 = NULL;
+		(*cpu)->CPU_ARG0 = 0;
 		return;
 		/*buffer = (char *)malloc(sizeof(char) * cwdsize);
 		buffersize = cwdsize;*/					// TODO: make this working (some problems with kernel malloc)
@@ -747,7 +747,7 @@ void sys_getcwd(struct cpu_state **cpu)
 
 	if(buffersize < cwdsize)
 	{
-		(*cpu)->CPU_ARG0 = NULL;
+		(*cpu)->CPU_ARG0 = 0;
 		return;
 	}
 
@@ -766,7 +766,7 @@ void sys_getcwd(struct cpu_state **cpu)
 		inode = inode->parent;
 	}
 
-	(*cpu)->CPU_ARG0 = buffer;
+	(*cpu)->CPU_ARG0 =(unsigned int) buffer;
 	return;
 }
 

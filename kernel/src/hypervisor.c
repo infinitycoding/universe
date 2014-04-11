@@ -89,7 +89,8 @@ void INIT_HYPERVISOR(int argc, void **argv)
 
     list_set_first(subdrivers);
 
-    /** NOTE: current implementation is based in polling. Switch to pipetrigger as fast as possible**/
+    /** NOTE: current implementation is based on polling. Switch to pipetrigger as fast as possible**/
+
     while(1)
     {
 
