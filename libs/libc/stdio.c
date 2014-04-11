@@ -24,6 +24,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <sys/stat.h>
 
 FILE *fopen(const char *path, char *modus) {
 	FILE *file = malloc(sizeof(FILE));
@@ -49,7 +51,7 @@ FILE *fopen(const char *path, char *modus) {
 		file->alloc = stat.st_size;
 
 		if(m |= O_APPEND) {
-			file->fpos = file->alloc;
+			file->fpos = (char *)file->alloc;
 		} else {
 			file->fpos = 0;
 		}
@@ -74,8 +76,8 @@ size_t fread(void *buf, size_t size, size_t n, FILE *file) {
 size_t fwrite(void *buf, size_t size, size_t n, FILE *file) {
 	size_t bytes = size * n;
 	file->fpos += write(file->handle, buf, bytes);
-	if(file->fpos + bytes > file->alloc) {
-		file->alloc = file->fpos + bytes;
+	if((unsigned long)(file->fpos + bytes) > file->alloc) { //is that really correct?
+		file->alloc = (unsigned long) (file->fpos + bytes);
 	}
 	
 	return n;
@@ -84,13 +86,13 @@ size_t fwrite(void *buf, size_t size, size_t n, FILE *file) {
 void fseek(FILE *file, int off, int whence) {
 	switch(whence) {
 		case SEEK_SET: // absolute
-			file->fpos = off;
+			file->fpos = (char *)off;
 			break;
 		case SEEK_CUR: // relative from current position
 			file->fpos += off;
 			break;
 		case SEEK_END: // relative from end
-			file->fpos = file->alloc - off;
+			file->fpos = (char*)(file->alloc - off);
 			break;
 	}
 	lseek(file->handle, off, whence);

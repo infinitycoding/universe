@@ -36,7 +36,7 @@ list_t *pfp(char *pipelines)
     if(valid == true)
     {
         list_t *pipes = list_create();
-        int sections_nr = count_sections(pipelines);
+        //int sections_nr = count_sections(pipelines);
 
         return pipes;
     }
@@ -49,7 +49,7 @@ list_t *pfp(char *pipelines)
 
 bool validate_pf(char *pipelines)
 {
-
+    return false;
 }
 
 
@@ -59,17 +59,16 @@ int count_sections(char *pipelines)
     int nr = 0;
 
     for(i = 0; pipelines[i + STRING_SECTION_LEN] != '\0'; i++)
-        if(strncmp(pipelines[i], "section", STRING_SECTION_LEN) == 0)
+        if(strncmp(pipelines+i, "section", STRING_SECTION_LEN) == 0)
             nr++;
 
     return nr;
 }
 
 
-struct section parser_section(char *pipelines, char *section)
+/*struct section parser_section(char *pipelines, char *section)
 {
-
-}
+}*/
 
 
 struct ptype_ext extend_ptype(ptype type)
