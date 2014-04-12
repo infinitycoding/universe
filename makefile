@@ -2,19 +2,40 @@ all: kernel libs drivers user iso-img
 
 # PPC
 # I386
-# ARM
+# arm
 ARCH=I386
+
+CFLAGS = -m32 -Wall -g -nostdinc -fno-stack-protector -fno-builtin-log -Wimplicit-function-declaration 
+ASFLAGS =  -f elf32
+LDFLAGS = -melf_i386
+
 
 ifeq ($(ARCH),PPC)
 QEMU = qemu-system-ppc
+
 else ifeq ($(ARCH),I386)
 QEMU = qemu-system-i386 -cdrom cdrom.iso -net nic,model=rtl8139 -net user
+CC = gcc
+ASM = nasm
+LD = ld
+
 else ifeq ($(ARCH),ARM)
+CC = arm-linux-gnueabi-gcc
+ASM = arm-linux-gnueabi-as
+LD = arm-linux-gnueabi-ld
 QEMU = qemu-system-arm -cpu arm1176 -M versatilepb -m 256M -nographic -kernel universe.bin
 endif
 
+# Export for subfiles 
+export CC
+export ASM
+export LD
+export CFLAGS
+export ASFLAGS
+export LDFLAGS
+
 kernel:
-	@$(MAKE) -C kernel/src ARCH=$(ARCH)
+	@$(MAKE) -C kernel/src ARCH=$(ARCH) 
 	@cp kernel/src/kernel32.elf build/kernel32.elf
 
 libs:

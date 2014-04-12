@@ -1,8 +1,6 @@
 #ifndef	_pfp_h_
 #define	_pfp_h_
 
-
-
 /*
      Copyright 2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.

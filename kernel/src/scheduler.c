@@ -67,6 +67,7 @@ void INIT_SCHEDULER(void)
     current_thread = thread_create(kernel_state, KERNELMODE, 0, NULL, 0, 0,0, NULL);
 }
 
+
 /**
  * performs context switches
  * @param process pointer to the process state
@@ -86,6 +87,20 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
     {
         if(current_thread->flags & THREAD_KERNELMODE)
         {
+            list_set_first(running_threads);
+            while(!list_is_last(running_threads))
+            {
+                struct thread_state *t = list_get_current(running_threads);
+                if(t == current_thread)
+                {
+                    list_remove(running_threads);
+                    break;
+                }
+            
+            list_next(running_threads);
+            }
+            //while(1);
+            list_set_first(running_threads);
             ///Well, the problem is here, but the thread does not appear to be in the thread list
 
         }

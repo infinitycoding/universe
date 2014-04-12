@@ -2,21 +2,21 @@ SRCS = $(shell find -name '*.c')
 SRCS += $(shell find -name '*.asm')
 OBJS = $(addsuffix .o,$(basename $(SRCS)))
 
-CC = gcc
-ASM = nasm
-LD = ld
 
+CFLAGS +=  -I ../include 
 ASFLAGS =  -f elf32
-CFLAGS = -m32 -Wall -g -nostdinc -fno-stack-protector -fno-builtin-log -Wimplicit-function-declaration -I ../include 
+LDFLAGS = -melf_i386 -Tlinkerscript.x
 
 ifeq ($(ARCH),PPC)
 CFLAGS +=  -I ../include/arch/ppc
 else ifeq ($(ARCH),I386)
 CFLAGS +=  -I ../include/arch/x86
+else ifeq ($(ARCH),arm)
+CFLAGS +=  -I ../include/arch/arm
 endif
 
 
-LDFLAGS = -melf_i386 -Tlinkerscript.x
+
 
 kernel32.elf: $(OBJS) linkerscript.x
 	@$(LD) $(LDFLAGS) -o $@ $^
