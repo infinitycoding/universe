@@ -14,6 +14,12 @@
     You should have received a copy of the GNU General Public License
     along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+/**
+ *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
+ **/
+
+
 #include <stdint.h>
 #include <process.h>
 #include <list.h>
@@ -47,4 +53,5 @@ void thread_exit(struct cpu_state **cpu);
 void launch_thread(struct cpu_state **cpu);
 struct thread_state *kernel_thread_create(uintptr_t eip, int argc, void **argv);
 void kernel_thread_exit(void);
+
 #endif

@@ -1,3 +1,21 @@
+/*
+     Copyright 2014 Infinitycoding all rights reserved
+     This file is part of the Universe Kernel.
+
+     Universe Kernel is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     any later version.
+
+     Universe Kernel is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <process.h>
 #include <thread.h>
 #include <heap.h>
@@ -322,4 +340,18 @@ void sys_waitpid(struct cpu_state **cpu)
 }
 
 
+/**
+ * executes a programm
+ * @param cpu registers of the current process
+ * todo: can not load file form VFS. Files are still modules.
+ */
+void sys_execve(struct cpu_state **cpu)
+{
+    /*char *filename = (char*) (*cpu)->CPU_ARG1;
+    char **argv = (char**) (*cpu)->CPU_ARG2;
+    char **envp = (char**) (*cpu)->CPU_ARG3;
+    ...
+    thread_create(current_thread->process,
+    thread_kill(current_thread);*/
+}
 
