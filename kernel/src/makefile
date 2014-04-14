@@ -3,9 +3,8 @@ SRCS += $(shell find -name '*.asm')
 OBJS = $(addsuffix .o,$(basename $(SRCS)))
 
 
-CFLAGS +=  -I ../include 
-ASFLAGS =  -f elf32
-LDFLAGS = -melf_i386 -Tlinkerscript.x
+CFLAGS += -I ../include 
+LDFLAGS += -Tlinkerscript.x
 
 ifeq ($(ARCH),PPC)
 CFLAGS +=  -I ../include/arch/ppc
