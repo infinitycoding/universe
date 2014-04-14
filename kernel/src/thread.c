@@ -169,9 +169,15 @@ void thread_kill_sub(struct thread_state *thread)
             list_next(running_threads);
         }
     }
-    free(thread->state);
 
-    if(! (thread->process->flags & PROCESS_ZOMBIE))
+    // only delete the cpu state of usermode threads. Freeing the kernel cpu-state can cause pagefaults
+    if(! (thread->flags & THREAD_KERNELMODE))
+    {
+        free(thread->state);
+        arch_vmm_destroy_context(&thread->context);
+    }
+
+    if(thread->process->flags & PROCESS_ZOMBIE)
     {
         list_push_front(thread->process->zombie_tids,(void *) thread->tid);
         list_set_first(thread->process->threads);
@@ -187,8 +193,8 @@ void thread_kill_sub(struct thread_state *thread)
             }
             list_next(thread->process->threads);
         }
+        free(thread);
     }
-    free(thread);
 }
 
 void thread_exit(struct cpu_state **cpu)
