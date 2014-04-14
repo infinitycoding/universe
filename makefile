@@ -35,8 +35,8 @@ export ASFLAGS
 export LDFLAGS
 
 kernel:
-	@$(MAKE) -C kernel/src ARCH=$(ARCH) 
-	@cp kernel/src/kernel32.elf build/kernel32.elf
+	@$(MAKE) -C kernel ARCH=$(ARCH) 
+	@cp kernel/kernel32.elf build/kernel32.elf
 
 libs:
 	@$(MAKE) -C libs ARCH=$(ARCH)
@@ -61,7 +61,7 @@ qemu: kernel libs drivers user iso-img
 	$(QEMU) 
 
 clean:
-	@$(MAKE) -C kernel/src clean
+	@$(MAKE) -C kernel clean
 	@$(MAKE) -C user clean
 	@$(MAKE) -C libs clean
 	@rm *.iso -f

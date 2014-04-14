@@ -3,15 +3,15 @@ SRCS += $(shell find -name '*.asm')
 OBJS = $(addsuffix .o,$(basename $(SRCS)))
 
 
-CFLAGS += -I ../include 
+CFLAGS += -Iinclude 
 LDFLAGS += -Tlinkerscript.x
 
 ifeq ($(ARCH),PPC)
-CFLAGS +=  -I ../include/arch/ppc
+CFLAGS +=  -Iinclude/arch/ppc
 else ifeq ($(ARCH),I386)
-CFLAGS +=  -I ../include/arch/x86
+CFLAGS +=  -Iinclude/arch/x86
 else ifeq ($(ARCH),arm)
-CFLAGS +=  -I ../include/arch/arm
+CFLAGS +=  -Iinclude/arch/arm
 endif
 
 
