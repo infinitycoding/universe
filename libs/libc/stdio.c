@@ -102,3 +102,7 @@ int ftell(FILE *file) {
 	return (int)file->fpos;
 }
 
+int fstat(int fildes, struct stat *buf)
+{
+	return linux_syscall(SYS_FSTAT, fildes, (uint32_t) buf, 0, 0, 0);
+}

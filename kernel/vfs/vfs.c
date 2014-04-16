@@ -801,3 +801,22 @@ void set_pipe_trigger(struct cpu_state **cpu) {
 	}
 }
 
+
+void sys_fstat(struct cpu_state **cpu)
+{
+	if((*cpu)->CPU_ARG2 == 0)
+	{
+		(*cpu)->CPU_ARG0 = -1;
+		return;
+	}
+
+	list_set_first(current_thread->process->files);
+	while(!list_is_empty(current_thread->process->files) && !list_is_last(current_thread->process->files))
+	{
+		struct fd *file = list_get_current(current_thread->process->files);
+		if(file->id == (*cpu)->CPU_ARG1)
+			return vfs_stat(file->inode, (struct stat *)(*cpu)->CPU_ARG2);
+		list_next(current_thread->process->files);
+	}
+	(*cpu)->CPU_ARG0 = -1;
+}

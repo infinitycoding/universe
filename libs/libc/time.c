@@ -180,4 +180,20 @@ struct tm *gmtolocal(struct tm *timer)
 }
 
 
+int gettimeofday(struct timeval *tp, struct timezone *tzp)
+{
+	if(tp)
+	{
+		tp->tv_sec = linux_syscall(SYS_TIME, 0, 0, 0, 0, 0);
+		tp->tv_usec = 0; // kernel can't log usecs at the time of implementation
+	}
+
+	if(tzp)
+	{
+		tzp->tz_minuteswest = 23*60; // timeshift westwards from GMT -> timezone of middle europe
+		tzp->tz_dsttime = 4; // 
+	}
+	return 0;
+}
+
 
