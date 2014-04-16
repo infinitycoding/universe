@@ -45,13 +45,13 @@ void identify_os(struct cpu_state **cpu)
 
 
 
-#define DEFINED_LINUX_FUNCTIONS 21
+#define DEFINED_LINUX_FUNCTIONS 22
 
 
 void (*linux_functions[])(struct cpu_state **cpu) =
 {
     NULL, sys_exit, sys_fork, sys_read, sys_write, sys_open, sys_close, sys_waitpid,
-    sys_create, sys_link, sys_unlink, NULL /*sys_execve*/, sys_chdir, sys_time,
+    sys_create, sys_link, sys_unlink, NULL /*sys_execve*/, sys_chdir, sys_time,sys_fstat,
     /*FIXME: pipe kommt weiter hinten*/ sys_pipe, /* 141: sys_getdents hab ich mal readdir genannt */ sys_readdir,
     NULL, NULL, NULL, 
     sys_seek, /*FIXME: getcwd kommt weiter hinten (183)*/ sys_getcwd

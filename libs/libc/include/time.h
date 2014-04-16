@@ -61,6 +61,7 @@
 typedef unsigned int time_t;
 typedef unsigned int clock_t;
 typedef unsigned int size_t;
+typedef unsigned int suseconds_t;
 
 
 
@@ -106,7 +107,15 @@ enum weekday	// not part of the standart implementation, only for intern use and
 	saturday = 6
 };
 
+struct timeval {
+    time_t      tv_sec;
+    suseconds_t tv_usec;
+};
 
+struct timezone {
+    int tz_minuteswest;
+    int tz_dsttime;
+};
 
 // the following arrays are not part of the standart implementation
 // they are only for intern use and universe-only programs
@@ -138,6 +147,6 @@ size_t strftime(char *buffer, int maxchars, const char *format, struct tm *timer
 int validtm(const struct tm *timer);		// checks if the given struct tm is valid
 int validtimestamp(const time_t *timer);	// checks if the given unix timestamp is valid
 struct tm *gmtolocal(struct tm *timer);		// converts a time given in greenwitch time to the local time
-
+int gettimeofday(struct timeval *tp,struct timezone *tzp);
 
 #endif

@@ -20,6 +20,7 @@
 
 #include <stdint.h>
 #include <stdarg.h>
+#include <unistd.h>
 
 #define stdin 0
 #define stdout 1
@@ -53,6 +54,7 @@ size_t fread(void *buf, size_t size, size_t n, FILE *file);
 size_t fwrite(void *buf, size_t size, size_t n, FILE *file);
 void fseek(FILE *file, int off, int whence);
 int ftell(FILE *file);
+int fstat(int fildes, struct stat *buf);
 
 #endif
 

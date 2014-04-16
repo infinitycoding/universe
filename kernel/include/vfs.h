@@ -123,6 +123,7 @@ void sys_seek(struct cpu_state **cpu);
 void sys_getcwd(struct cpu_state **cpu);
 void launch_pipe_handlers(vfs_pipe_info_t *pipe);
 void set_pipe_trigger(struct cpu_state **cpu);
+void sys_fstat(struct cpu_state **cpu);
 
 #endif
 
