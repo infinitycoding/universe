@@ -1,8 +1,5 @@
-#ifndef _stdlib_h_
-#define _stdlib_h_
-
 /*
-	Copyright 2013 universe coding group (UCG) all rights reserved
+	Copyright 2014 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
 
 	Universe Kernel is free software: you can redistribute it and/or modify
@@ -20,18 +17,14 @@
 */
 
 /**
-	@author Michael Sippel <michamimosa@gmail.com>
+	@author Michael Sippel (Universe Team) <michamimosa@gmail.com>
 */
+#include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
+#include <universe.h>
 
-#define NUM_PAGES(n) ((((n) + 0xfff) & 0xfffff000) / 4096)
-
-void *malloc(size_t size);
-void free(void *ptr);
-void *calloc(size_t num, size_t size);
-void *realloc(void *ptr, size_t size);
-
-char *getenv(const char *name);
-
-#endif
+char *getenv(const char *name) {
+  return name;
+}
 

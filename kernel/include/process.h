@@ -64,6 +64,7 @@ struct process_state
     vfs_inode_t *cwd;
     list_t *files;
     list_t *ports;
+    list_t *env;
     list_t *threads;
     tid_t tid_counter;
     struct thread_state *main_thread;
