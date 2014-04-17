@@ -355,3 +355,15 @@ void sys_execve(struct cpu_state **cpu)
     thread_kill(current_thread);*/
 }
 
+/**
+ * set / get environment variables
+ */
+void sys_setenv(struct cpu_state **cpu) {
+  // TODO entry in liste 'env' eintragen
+}
+
+void sys_getenv(struct cpu_state **cpu) {
+  // TODO liste auslesen
+}
+
+

@@ -4,7 +4,6 @@ title Universe
     kernel /kernel32.elf
     module /boot/drivers.dat
     module /ultrashell.elf
-    module /test.elf
     module /drivers/keyboard.elf
     boot
 
