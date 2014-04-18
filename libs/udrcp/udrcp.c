@@ -1,30 +1,32 @@
 /*
-     Copyright 2014 Infinitycoding all rights reserved
-     This file is part of the Universe Kernel.
-
-     Universe Kernel is free software: you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published by
+     Copyright 2012-2014 Infinitycoding all rights reserved
+     This file is part of the UDRCP-library.
+ 
+     The UDRCP-library is free software: you can redistribute it and/or modify
+     it under the terms of the GNU Lesser General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
-
-     Universe Kernel is distributed in the hope that it will be useful,
+ 
+     The UDRCP-library is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-     GNU General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
+     GNU Lesser General Public License for more details.
+ 
+     You should have received a copy of the GNU Lesser General Public License
+     along with the UDRCP-library.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 
 /**
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
- **/
+ */
 
 #include <udrcp.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdio.h>
 
 pckmgr *new_pckmgr(int in, int out, int err)
 {
@@ -221,7 +223,7 @@ int req_intsig(pckmgr *mgr, unsigned int num)
             break;
 
             default:
-                write(mgr->err,"unknown response\n",18);
+                udrcp_error(mgr,"unknown response type. [ID: %d, size: %d, type: %d]\n",resp->id,resp->size,resp->type);
                 errorcode = -2;
             break;
 
@@ -256,7 +258,7 @@ int free_intsig(pckmgr *mgr, unsigned int num)
             break;
 
             default:
-                write(mgr->err,"unknown response\n",18);
+                udrcp_error(mgr,"unknown response type. [ID: %d, size: %d, type: %d]\n",resp->id,resp->size,resp->type);
                 errorcode = -2;
             break;
 
@@ -266,5 +268,15 @@ int free_intsig(pckmgr *mgr, unsigned int num)
     return errorcode;
 }
 
+
+int udrcp_error(pckmgr *mgr,const char *format,...)
+{
+  char buffer[512]; //todo: should be dynamic
+  va_list args;
+  va_start (args, format);
+  vsprintf (buffer,format, args);
+  va_end (args);
+  return write(mgr->err,buffer,strlen(buffer));
+}
 
 

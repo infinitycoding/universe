@@ -1,10 +1,18 @@
-extern main
 
-global _start
-_start:
-	call main
-	mov ebx, eax
-	mov eax, 1
-	int 0x80
-	jmp $
+SECTION .init
+global _init
+align 16
+
+_init:
+push ebp
+mov esp,ebp
+sub esp,8
+
+
+SECTION .fini
+global _fini
+align 16
+_fini:
+push ebp
+mov ebp,esp
 

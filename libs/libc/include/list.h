@@ -33,6 +33,7 @@ list_t*	list_previous(list_t *list);
 int 	list_is_last(list_t *list);
 list_t*	list_set_last(list_t *list);
 list_t*	list_set_first(list_t *list);
-bool	list_is_empty();
+bool	list_is_empty(list_t *list);
+void*   list_get(list_t *list, size_t index);
 
 #endif

@@ -1,3 +1,4 @@
+SECTION .text
 extern main
 
 global _start
