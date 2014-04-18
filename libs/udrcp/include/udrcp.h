@@ -1,27 +1,28 @@
 #ifndef _udrcp_h_
 #define _udrcp_h_
 /*
-     Copyright 2014 Infinitycoding all rights reserved
-     This file is part of the Universe Kernel.
-
-     Universe Kernel is free software: you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published by
+     Copyright 2012-2014 Infinitycoding all rights reserved
+     This file is part of the UDRCP-library.
+ 
+     The UDRCP-library is free software: you can redistribute it and/or modify
+     it under the terms of the GNU Lesser General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
-
-     Universe Kernel is distributed in the hope that it will be useful,
+ 
+     The UDRCP-library is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-     GNU General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
+     GNU Lesser General Public License for more details.
+ 
+     You should have received a copy of the GNU Lesser General Public License
+     along with the UDRCP-library.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 
 /**
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
- **/
+ */
 
 #include <stdint.h>
 #include <list.h>
@@ -113,7 +114,6 @@ pckid_t send_package(pckmgr *mgr, pcktype_t type, size_t size, void *data);
 void respond(pckmgr *mgr,pckid_t id,pcktype_t type, size_t size, void *data);
 int subsystem_connect(pckmgr *mgr, char *protocol_version);
 
-//todo
 pck_t *poll_next(pckmgr *mgr);
 void poll_queue(pckmgr *mgr);
 
@@ -123,5 +123,6 @@ pck_t *pck_poll(pckmgr *mgr, pckid_t id);
 int free_intsig(pckmgr *mgr, unsigned int num);
 int req_intsig(pckmgr *mgr, unsigned int num);
 
+int udrcp_error(pckmgr *mgr,const char *format,...);
 
 #endif

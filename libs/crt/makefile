@@ -8,6 +8,9 @@ ASFLAGS =  -f elf32
 crt: $(OBJS)
 	@nasm -f elf32 -o entry.o entry.asm
 	@nasm -f elf32 -o crt0.o crt0.asm 
+	@nasm -f elf32 -o crt1.o crt1.asm 
+	@nasm -f elf32 -o crti.o crti.asm 
+	@nasm -f elf32 -o crtn.o crtn.asm 
 
 %.o: %.c @$(CC) $(CFLAGS) -c -o $@ $^
 

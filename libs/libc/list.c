@@ -166,3 +166,45 @@ bool list_is_empty(list_t *list)
 {
 	return (list->head == list->head->next);
 }
+
+void *list_get(list_t *list, size_t index)
+{
+    int i;
+    struct list_node *node = list->head;
+    for(i = 0; i <= index; i++)
+    {
+        node = node->next;
+        if(node == list->head)
+            return NULL;
+    }
+    return node->element;
+}
+
+list_t *list_insert(list_t *list, size_t index, void* element)
+{
+    struct list_node *node = (struct list_node *) malloc(sizeof(struct list_node));
+    node->element = element;
+    node->next = node;
+    node->prev = node;
+
+    int i;
+    struct list_node *head = list->head;
+    for(i = 0; i < index; i++)
+        head = head->next;
+     
+    list_splice(node, node, head);
+    return list;
+}
+
+void* list_remove_from_index(list_t *list, size_t index)
+{
+     int i;
+     struct list_node *node = list->head;
+     for(i = 0; i <= index; i++)
+     {
+          node = node->next;
+          if(node == list->head)
+               return NULL;
+     }
+     return list_remove_node(node);
+}
