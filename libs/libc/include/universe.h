@@ -20,13 +20,14 @@
 //#define SYS_EXECVE 11
 #define SYS_CHDIR 12
 #define SYS_TIME 13
-#define SYS_FSTAT 14
-#define SYS_PIPE 15 // TODO
-#define SYS_READDIR 16 // at 141 TODO
-#define SYS_GETDENTS 17 // at 141 TODO
+#define SYS_STAT 14
+#define SYS_FSTAT 15
+#define SYS_PIPE 16 // TODO
+#define SYS_READDIR 17 // at 141 TODO
+#define SYS_GETDENTS 18 // at 141 TODO
 // TODO
-#define SYS_LSEEK 20
-#define SYS_GETCWD 21
+#define SYS_LSEEK 21
+#define SYS_GETCWD 22
 
 static inline uint32_t linux_syscall(uint32_t function, uint32_t ebx, uint32_t ecx, uint32_t edx, uint32_t esi, uint32_t edi)
 {
