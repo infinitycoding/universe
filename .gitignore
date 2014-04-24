@@ -9,6 +9,10 @@ Thumbs.db
 #Kernel Ausführbare Dateien ignoriere
 *.elf
 
+#glibc nicht mit nehmen
+libs/glibc/build
+libs/glibc/glibc
+
 #Andere unerwünschte Daten
 .directory
 .cproject
