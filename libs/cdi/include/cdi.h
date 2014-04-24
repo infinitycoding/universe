@@ -25,7 +25,7 @@
  *  based on the CDI reference implementation by Kevin Wolf
  */
 
-
+#include <cdi/lists.h>
 
 typedef enum {
     CDI_UNKNOWN         = 0,
