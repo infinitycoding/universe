@@ -2,7 +2,7 @@ SHELL = /bin/bash
 
 all: download configure build
 
-KERNEL_HEADERS = ../../../include
+KERNEL_HEADERS = `pwd`/../../../include
 
 download:
 	@ if [ ! -d glibc ]; then \
@@ -13,7 +13,7 @@ configure: download
 	@ mkdir -p build; \
 	cd build; \
 	if [ ! -f config.log ]; then \
-		../glibc/configure --prefix=$(PWD) --without-misc --with-headers=/home/simon/coding/universe/include --host=i686-unknown-linux-gnu --build=i686-unknown-linux-gnu CC="gcc -m32" CXX="g++ -m32" CFLAGS="-O2 -march=i686" CXXFLAGS="-O2 -march=i686";\
+		../glibc/configure --prefix=$(PWD) --without-misc --with-headers=$(KERNEL_HEADERS) --host=i686-unknown-linux-gnu --build=i686-unknown-linux-gnu CC="gcc -m32" CXX="g++ -m32" CFLAGS="-O2 -march=i686" CXXFLAGS="-O2 -march=i686";\
 	fi
 
 build: configure
