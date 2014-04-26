@@ -38,6 +38,33 @@ binary_tree *create_tree(struct function *dummy)
 }
 
 
+void deleteTree(binary_tree *tree)
+{
+	deleteBranch((struct brach *)tree);
+}
+
+
+void deleteBranch(struct branch *b)
+{
+	if(b->type == branchEnd)
+	{
+		free(b->element->f->command);
+		free(b->element->f);
+	}
+	else
+	{
+		deleteBranch(b->element->b->left);
+		deleteBranch(b->element->b->right);
+
+		free(b->element->b->c);
+		free(b->element->b);
+	}
+
+	free(b->element);
+	free(b);
+}
+
+
 int loadFunction(binary_tree *tree, char *cmd, int (*fct)(int, char **))
 {
 	struct function *newFunction = NULL;

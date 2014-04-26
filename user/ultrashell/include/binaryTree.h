@@ -78,6 +78,8 @@ union branchElement
 
 
 binary_tree *create_tree(struct function *dummy);
+void deleteTree(binary_tree *tree);
+void deleteBranch(struct branch *b);
 int loadFunction(binary_tree *tree, char *cmd, int (*fct)(int, char **));
 int addFunction(binary_tree *tree, struct function *new_function);
 struct function *searchFunction(binary_tree *tree, char *function_name);
