@@ -2,7 +2,7 @@ universe
 ========
 
 Universe is a small unix-compatible operating system kernel.
-It can nativly run linux programms und has a very generic driver piplie system.
+It can nativly run linux programs und has a very generic driver pipeline system.
 
 License: GNU GPL v.3
 
