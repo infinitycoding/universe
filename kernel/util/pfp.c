@@ -36,7 +36,20 @@ list_t *pfp(char *pipelines)
     if(valid == true)
     {
         list_t *pipes = list_create();
-        //int sections_nr = count_sections(pipelines);
+
+        int sections_nr = count_sections(pipelines);
+
+        if(sections_nr == 0)
+            return NULL;
+
+        int i = 0;
+        int current_position = 0;
+
+        for(i = 0; i < sections_nr; i++)
+        {
+            struct section *current_section = parser_section(pipelines, &current_position);
+            list_push_back(pipes, current_section);
+        }
 
         return pipes;
     }
@@ -49,7 +62,9 @@ list_t *pfp(char *pipelines)
 
 bool validate_pf(char *pipelines)
 {
-    return false;
+    // TODO
+
+    return FALSE;
 }
 
 
@@ -59,37 +74,130 @@ int count_sections(char *pipelines)
     int nr = 0;
 
     for(i = 0; pipelines[i + STRING_SECTION_LEN] != '\0'; i++)
-        if(strncmp(pipelines+i, "section", STRING_SECTION_LEN) == 0)
+    {
+        if(pipelines[i] == '#')
+            for(; pipelines[i] != '\n'; i++);
+
+        if(strncmp(&pipelines[i], "section", STRING_SECTION_LEN) == 0)
             nr++;
+    }
+        
 
     return nr;
 }
 
 
-/*struct section parser_section(char *pipelines, char *section)
+struct section *parser_section(char *pipelines, int *section_pos)
 {
-}*/
+    find_next_section(pipelines, section_pos);
 
+    (*section_pos) += 7;
 
-struct ptype_ext extend_ptype(ptype type)
-{
-    struct ptype_ext result;
+    skip_whitespaces(pipelines, section_pos);
 
-    result.essential = type & ESSENTIAL;
-    result.service = type & SERVICE;
-    result.kernelroot = type & KERNELROOT;
+    int section_name_length = count_sectionname_length(pipelines, section_pos);
 
-    return result;
+    struct section *this = (struct section *)malloc(sizeof(struct section));
+    this->name = (char *)malloc(sizeof(char) * (section_name_length + 1));
+    memset(this->name, '\0',sizeof(char) * (section_name_length + 1));
+    strncpy(this->name, &pipelines[(*section_pos)], section_name_length);
+    (*section_pos) += section_name_length;
+    this->type = get_section_type(pipelines, section_pos);
+
+    // TODO
+
+    return this;
 }
 
 
-ptype compress_ptype(struct ptype_ext type)
+int find_next_section(char *pipelines, int *search_begin)
 {
-    ptype result = 0;
+    for(; pipelines[(*search_begin) + STRING_SECTION_LEN] != '\0'; (*search_begin)++)
+    {
+        if(pipelines[(*search_begin)] == '#')
+            for(; pipelines[(*search_begin)] != '\n'; (*search_begin)++);
 
-    result |= type.essential;
-    result |= type.service;
-    result |= type.kernelroot;
+        if(strncmp(&pipelines[(*search_begin)], "section", STRING_SECTION_LEN) == 0)
+            break;
+    }
+        
 
-    return result;
+    return (*search_begin);
+}
+
+
+bool is_whitespace(char character)
+{
+    return ((character == ' ' || character == '\t' || character == '\n') ? true : false);
+}
+
+
+int skip_whitespaces(char *pipelines, int *start)
+{
+    for(; is_whitespace(pipelines[(*start)]); (*start)++);
+
+    return (*start);
+}
+
+
+int count_sectionname_length(char *pipelines, int *start)
+{
+    int i = (*start);
+    int nr = 0;
+
+    for(nr = 0; !is_whitespace(pipelines[i]); i++)
+        nr++;
+
+    return nr;
+}
+
+
+ptype get_section_type(char *pipelines, int *start)
+{
+    ptype t = NOTHING;
+
+    if(check_section_type_given(pipelines, start) == FALSE)
+        return UNDEFINED;
+
+    skip_whitespaces(pipelines, start);
+    (*start)++;
+
+    if(strncmp(&pipelines[(*start)], "replace", STRING_REPLACE_LEN) == 0)
+    {
+        t |= REPLACE;
+        (*start) += (STRING_REPLACE_LEN + 1);
+    }
+    else if(strncmp(&pipelines[(*start)], "append", STRING_APPEND_LEN) == 0)
+    {
+        t |= APPEND;
+        (*start) += (STRING_APPEND_LEN + 1);
+    }
+    else
+    {
+        t |= FAILTURE;
+        skip_until_whitespace(pipelines, start);
+    }
+
+    return t;
+}
+
+
+bool check_section_type_given(char *pipelines, int *start)
+{
+    int i = (*start);
+
+    for(; pipelines[i] != ':'; i++)
+        if(pipelines[i] == '(')
+            return TRUE;
+
+    return FALSE;
+
+}
+
+
+int skip_until_whitespace(char *pipelines, int *start)
+{
+    for(; !is_whitespace(pipelines[(*start)]); (*start)++);
+
+    return (*start);
 }
