@@ -1,22 +1,22 @@
 #ifndef _cdi_lists_h_
-#define _dci_lists_h_
+#define _cdi_lists_h_
 
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
-     This file is part of the CDI-wrapper-library.
+     This file is part of the Universe Kernel.
  
-     The CDI-wrapper-library is free software: you can redistribute it and/or modify
-     it under the terms of the GNU Lesser General Public License as published by
+     The Universe Kernel is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
  
-     The CDI-wrapper-library is distributed in the hope that it will be useful,
+     The Universe Kernel is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-     GNU Lesser General Public License for more details.
+     GNU General Public License for more details.
  
-     You should have received a copy of the GNU Lesser General Public License
-     along with the CDI-wrapper-library.  If not, see <http://www.gnu.org/licenses/>.
+     You should have received a copy of the GNU General Public License
+     along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
 
 

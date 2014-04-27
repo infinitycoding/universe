@@ -28,3 +28,7 @@ char *getenv(const char *name) {
   return name;
 }
 
+void exit(int retv)
+{
+    asm volatile("int $128" : : "a"(SYS_EXIT), "b"(retv));
+}

@@ -1,34 +1,38 @@
 /*
-     Copyright 2014 Infinitycoding all rights reserved
+     Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
-
-     Universe Kernel is free software: you can redistribute it and/or modify
+ 
+     The Universe Kernel is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
-
-     Universe Kernel is distributed in the hope that it will be useful,
+ 
+     The Universe Kernel is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU General Public License for more details.
-
+ 
      You should have received a copy of the GNU General Public License
-     along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
+     along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
 
 
 /**
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
- **/
+ */
 
+// Libc includes
 #include <stdint.h>
 #include <stdio.h>
-#include <udrcp.h>
-#include <ioport.h>
 #include <unistd.h>
-#include <keymap_de.h>
 #include <string.h>
 
+// udrcp includes
+#include <udrcp.h>
+#include <ioport.h>
+
+// modules includes
+#include <keymap_de.h>
 
 static bool shift = false;
 static bool numlock = false;
@@ -48,7 +52,7 @@ int main(void)
     pckmgr *conn = new_pckmgr(stdin, stdout, stderr);
     if(!subsystem_connect(conn,UHOST_DEFAULT_SYNCHRON))
     {
-        write(stderr,"could not connect to host",27);
+        udrcp_error(conn,"could not connect to host\n");
         return -1;
     }
 
@@ -58,11 +62,11 @@ int main(void)
 
     if(!kbc_io || !kbc_stat)
     {
-        write(stderr,"could not allocate port",25);
+        udrcp_error(conn,"could not allocate port");
         return -2;
     }
 
-      	while (!(inb(kbc_stat) & 0x4));
+    while (!(inb(kbc_stat) & 0x4));
   	// Puffer leeren
   	while (inb(kbc_stat) & 0x1)
   		inb(kbc_io);
@@ -75,7 +79,7 @@ int main(void)
 
     if(!req_intsig(conn, 0x1))
     {
-        write(stderr,"could not get interrupt signal for IRQ 0x1\n",46);
+        udrcp_error(conn,"could not get interrupt signal for IRQ 0x1\n");
     }
 
 
@@ -99,14 +103,14 @@ int main(void)
 
             case RESTART:
             case CHKDEV:
-                write(conn->err,"unusual signal\n",16);
+                udrcp_error(conn,"unusual signal\n");
             break;
 
             default:
-                write(conn->err,"unknown signal\n",16);
+                udrcp_error(conn,"unknown signal\n");
             break;
         }
-        //free_pck(signal);
+        free_pck(signal);
     }
 
     return 0;

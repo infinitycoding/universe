@@ -20,9 +20,10 @@
  *  @author Peter Hösch aka. BlitzBasic <peter.hoesch@infinitycoding.de>
  **/
 
-#include <user.h>
+#include <vfs/user.h>
+#include <mm/heap.h>
 #include <string.h>
-#include <heap.h>
+
 
 list_t *users;		// user list
 list_t *groups;		// group list

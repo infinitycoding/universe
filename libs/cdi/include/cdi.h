@@ -26,6 +26,7 @@
  */
 
 #include <cdi/lists.h>
+#include <stdlib.h>
 
 typedef enum {
     CDI_UNKNOWN         = 0,
@@ -41,6 +42,7 @@ typedef enum {
     CDI_PCI             = 10,
 }cdi_device_type_t;
 
+struct cdi_driver;
 
 struct cdi_driver
 {
@@ -64,6 +66,6 @@ struct cdi_device{
 
 
 void cdi_init(void);
-void cdi_driver_init(struct cdi_driver* driver);
-void cdi_driver_destroy(struct cdi_driver* driver);
+void cdi_driver_init(struct cdi_driver *driver);
+void cdi_driver_destroy(struct cdi_driver *driver);
 #endif
