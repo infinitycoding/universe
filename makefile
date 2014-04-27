@@ -4,8 +4,7 @@ all: kernel libs drivers user iso-img
 # I386
 # arm
 ARCH=I386
-
-CFLAGS = -m32 -Wall -g -nostdinc -fno-stack-protector -fno-builtin-log -Wimplicit-function-declaration 
+CFLAGS = -m32 -Wall -g -nostdinc -fno-stack-protector -fno-builtin-log -Wimplicit-function-declaration
 ASFLAGS =  -f elf32
 LDFLAGS = -melf_i386
 

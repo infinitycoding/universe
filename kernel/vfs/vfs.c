@@ -22,16 +22,16 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <scheduler.h>
-#include <heap.h>
+#include <sched/scheduler.h>
+#include <mm/heap.h>
 #include <printf.h>
-#include <unistd.h>
-#include <vfs.h>
+#include <sys/unistd.h>
+#include <vfs/vfs.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <memory_layout.h>
-#include <paging.h>
-#include <thread.h>
+#include <mm/paging.h>
+#include <sched/thread.h>
 #include <trigger.h>
 
 extern struct thread_state *current_thread;

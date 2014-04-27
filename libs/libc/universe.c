@@ -1,10 +1,5 @@
 #include <universe.h>
 
-// Linux stuff
-void exit(int retv)
-{
-    asm volatile("int $128" : : "a"(SYS_EXIT), "b"(retv));
-}
 
 uint32_t fork()
 {

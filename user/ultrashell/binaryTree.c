@@ -40,7 +40,7 @@ binary_tree *create_tree(struct function *dummy)
 
 void deleteTree(binary_tree *tree)
 {
-	deleteBranch((struct brach *)tree);
+	deleteBranch((struct branch *)tree);
 }
 
 

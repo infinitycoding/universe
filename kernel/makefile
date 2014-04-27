@@ -3,7 +3,7 @@ SRCS += $(shell find -name '*.asm')
 OBJS = $(addsuffix .o,$(basename $(SRCS)))
 
 
-CFLAGS += -Iinclude 
+CFLAGS += -Iinclude -Iinclude/util
 LDFLAGS += -Tlinkerscript.x
 
 ifeq ($(ARCH),PPC)

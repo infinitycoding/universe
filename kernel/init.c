@@ -1,48 +1,52 @@
 /*
-    Copyright 2012 universe coding group (UCG) all rights reserved
-    This file is part of the Universe Kernel.
-    Universe Kernel is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    any later version.
-    Universe Kernel is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-    You should have received a copy of the GNU General Public License
-    along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
-**/
-/**
-  @author Simon Diepold aka. Tdotu (Universe Team) <simon.diepold@infinitycoding.de>
-  @author Michael Sippel <micha.linuxfreak@gmail.com>
-  @author Christian Klahn <christian.klahn1@gmail.com>
-  @author Tom Slawik <tom.slawik@gmail.com>
-  - everyone else
+     Copyright 2012-2014 Infinitycoding all rights reserved
+     This file is part of the Universe Kernel.
+ 
+     The Universe Kernel is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     any later version.
+ 
+     The Universe Kernel is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+ 
+     You should have received a copy of the GNU General Public License
+     along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
+
+/**
+ * @author Simon Diepold aka. Tdotu (Universe Team) <simon.diepold@infinitycoding.de>
+ * @author Michael Sippel <micha.linuxfreak@gmail.com>
+ * @author Christian Klahn <christian.klahn1@gmail.com>
+ * @author Tom Slawik <tom.slawik@gmail.com>
+ */
+
 #include <stdint.h>
 #include <printf.h>
-#include <multiboot.h>
+#include <sys/multiboot.h>
 #include <panic.h>
 #include <pmm.h>
-#include <paging.h>
+#include <mm/paging.h>
 #include <gdt.h>
 #include <idt.h>
 #include <io.h>
 #include <cpuid.h>
 #include <logo.h>
-#include <scheduler.h>
-#include <heap.h>
-#include <vfs.h>
+#include <sched/scheduler.h>
+#include <mm/heap.h>
+#include <vfs/vfs.h>
 #include <trigger.h>
 #include <drivers/timer.h>
 #include <drivers/cmos.h>
 #include <drivers/video.h>
 #include <drivers/pci.h>
-#include <elf.h>
+#include <sched/elf.h>
 #include <mutex.h>
 #include "memory_layout.h"
-#include <hypervisor.h>
-#include <drvlst.h>
+#include <udrcp/hypervisor.h>
+#include <udrcp/drvlst.h>
 /**
 * Initalize the Kernel
 *
