@@ -19,11 +19,14 @@
 /**
  *  @author Peter Hösch aka. BlitzBasic <peter.hoesch@infinitycoding.de>
  **/
-
+#include <sched/thread.h>
 #include <vfs/user.h>
 #include <mm/heap.h>
 #include <string.h>
+#include <cpu.h>
 
+
+extern struct thread_state *current_thread;
 
 list_t *users;		// user list
 list_t *groups;		// group list
@@ -33,7 +36,9 @@ void USER_INIT(void)
 	users = list_create();
 	groups = list_create();
 
-	add_group("kernel", 0);
+	add_group("root", 0);
+	add_user("root","","/",0);
+	add_user_to_group(get_user_by_id(0), get_group_by_id(0));
 }
 
 int add_user(const char *uname, const char *upasswd, const char *uhome, uid_t uid)
@@ -331,4 +336,24 @@ int user_name_exists(const char *name)
 	}
 
 	return NO;
+}
+
+
+void sys_getuid(struct cpu_state **cpu)
+{
+	(*cpu)->CPU_ARG0 = current_thread->process->uid;
+}
+
+void sys_setuid(struct cpu_state **cpu)
+{
+	if(user_id_exists((*cpu)->CPU_ARG1))
+	{
+		(*cpu)->CPU_ARG0 = -1;
+		return;
+	}
+
+	user_t *user = get_user_by_id(current_thread->process->uid);
+	user->id = (*cpu)->CPU_ARG1;
+	//todo: change the uids of each process and file in the home durectory
+	(*cpu)->CPU_ARG0 = 1;
 }

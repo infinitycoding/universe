@@ -64,5 +64,8 @@ int user_id_exists(uid_t id);
 int group_name_exists(const char *name);
 int user_name_exists(const char *name);
 
+void sys_getuid(struct cpu_state **cpu);
+void sys_setuid(struct cpu_state **cpu);
+
 
 #endif
