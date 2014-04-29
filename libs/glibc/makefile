@@ -2,7 +2,7 @@ SHELL = /bin/bash
 
 all: download configure build
 
-KERNEL_HEADERS = `pwd`/../../../include
+KERNEL_HEADERS = `pwd`/../../../kernel/include/linux-meta
 
 download:
 	@ if [ ! -d glibc ]; then \

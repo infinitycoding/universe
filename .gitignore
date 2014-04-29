@@ -12,6 +12,8 @@ Thumbs.db
 #glibc nicht mit nehmen
 libs/glibc/build
 libs/glibc/glibc
+cc/gcc-4.4.2
+cc/build
 
 #Andere unerwünschte Daten
 .directory
