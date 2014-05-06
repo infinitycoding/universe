@@ -1,5 +1,6 @@
 
 all:
+	mkdir -p ../build/drivers
 	@$(MAKE) -C keyboard
 	#@$(MAKE) -C pci
 
