@@ -17,7 +17,8 @@ download:
 	mkdir -p target
 	mkdir -p build
 
-configure_binutils: download
+configure_binutils: download	
+	cp -rT binutils_adapt $(BINUTILS); \
 	mkdir -p build/$(BINUTILS); \
 	cd build/$(BINUTILS); \
 	if [ ! -f config.log ]; then \
