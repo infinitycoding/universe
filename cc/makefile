@@ -1,26 +1,50 @@
 SHELL = /bin/bash
 
-all: download configure build
+all: download configure_binutils binutils configure_gcc gcc
 
-KERNEL_HEADERS = `pwd`/../../../kernel/include/linux-meta
+BINUTILS = binutils-2.24
+GCC = gcc-4.7.3
 
 download:
-	@ if [ ! -d gcc-4.9.0 ]; then \
-		wget http://www.mirrorservice.org/sites/sourceware.org/pub/gcc/releases/gcc-4.9.0/gcc-4.9.0.tar.bz2; \
-		tar -xjf gcc-4.9.0.tar.bz2; \
+	@ if [ ! -d $(BINUTILS) ]; then \
+		wget ftp.gnu.org/gnu/binutils/$(BINUTILS).tar.bz2; \
+		tar -xjf $(BINUTILS).tar.bz2; \
 	fi
+	@ if [ ! -d $(GCC) ]; then \
+		wget ftp.gnu.org/gnu/gcc/$(GCC)/$(GCC).tar.bz2; \
+		tar -xjf $(GCC).tar.bz2; \
+	fi
+	mkdir -p target
+	mkdir -p build
 
-configure: download
-	@ mkdir -p build; \
-	cd build; \
+configure_binutils: download
+	mkdir -p build/$(BINUTILS); \
+	cd build/$(BINUTILS); \
 	if [ ! -f config.log ]; then \
-		../gcc-4.9.0/configure --prefix=$(PWD) --target=i386-elf --disable-nls --enable-languages=c --program-prefix=universe --disable-shared --disable-libssp --without-headers; \
-	fi
+		../../$(BINUTILS)/configure --prefix="`pwd`/../../target" --with-sysroot=`pwd` --target=i686-elf -disable-nls  CFLAGS="-w"; \
+	fi;\
+	cd ../..;
 
-build: configure
-	$(MAKE) -C build
+binutils: configure_binutils
+	$(MAKE) -C build/$(BINUTILS)
+	$(MAKE) -C build/$(BINUTILS) install
+
+configure_gcc: download binutils
+	export PATH = $PATH:`pwd`/../../target/bin; \
+	mkdir -p build/$(GCC); \
+	cd build/$(GCC) ;\
+	if [ ! -f config.log ]; then \
+		../../$(GCC)/configure --prefix="`pwd`/../../target" --target=i686-elf --disable-nls --enable-languages=c --disable-shared --disable-libssp --without-docdir CFLAGS="-I/usr/include/"; \
+	fi;\
+	cd ../..;
+
+gcc: configure_gcc
+	$(MAKE) -C build/$(GCC)
+	$(MAKE) -C build/$(GCC) install
 
 clean:
-	rm build/config.log
-	$(MAKE) -C build clean
+	rm build/$(BINUTILS)/config.log
+	rm build/$(GCC)/config.log
+	$(MAKE) -C build/$(BINUTILS) clean
+	$(MAKE) -C build/$(GCC) clean
 
