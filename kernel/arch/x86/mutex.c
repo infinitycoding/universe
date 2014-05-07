@@ -41,5 +41,5 @@ bool try_lock(mutex *m)
         "xchg %%eax,(%1);"
         : "=a"(r) : "D" (m)
     );
-    return r;
+    return !r;
 }
