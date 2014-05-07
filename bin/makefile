@@ -18,7 +18,9 @@ download:
 	mkdir -p build
 
 configure_binutils: download	
-	cp -rT binutils_adapt $(BINUTILS); \
+	cd $(BINUTILS); \
+	patch -p1 < ../binutils.patch; \
+	cd ..; \
 	mkdir -p build/$(BINUTILS); \
 	cd build/$(BINUTILS); \
 	if [ ! -f config.log ]; then \

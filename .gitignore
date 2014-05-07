@@ -10,8 +10,7 @@ Thumbs.db
 *.elf
 
 #glibc nicht mit nehmen
-libs/glibc/build
-libs/glibc/glibc
+bin/
 cc/gcc-4.4.2
 cc/build
 
