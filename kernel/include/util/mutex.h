@@ -26,11 +26,11 @@
 
 #include <stdint.h>
 
-typedef int* mutex;
+typedef int mutex;
 
-void lock(mutex m);
-void unlock(mutex m);
-bool try_lock(mutex m);
+void lock(mutex *m);
+void unlock(mutex *m);
+bool try_lock(mutex *m);
 
 
 

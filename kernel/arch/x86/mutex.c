@@ -22,32 +22,24 @@
 
 #include <mutex.h>
 
-void lock(mutex m)
+void lock(mutex *m)
 {
-    asm volatile(
-        "mov $1, %%eax;"
-        "xchg %0 ,%%eax;"
-        :: "m" (*m)
-    );
+    while(!try_lock(m));
 }
 
-void unlock(mutex m)
+void unlock(mutex *m)
 {
-    asm volatile(
-        "mov $0, %%eax;"
-        "xchg %0 ,%%eax;"
-        :: "m" (*m)
-    );
+    *m = false;
 }
 
 
-bool try_lock(mutex m)
+bool try_lock(mutex *m)
 {
-    bool r;
-    asm volatile(
+    int r;
+    asm(
         "mov $1, %%eax;"
-        "xchg %0 ,%%eax;"
-        : "=a"(r) : "m" (*m)
+        "xchg %%eax,(%1);"
+        : "=a"(r) : "D" (m)
     );
-    return !r;
+    return r;
 }
