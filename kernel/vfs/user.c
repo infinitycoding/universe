@@ -212,13 +212,13 @@ int remove_group(group_t *group)
 			free(grp);
 
 			list_remove(&grps_itr);
-			lust_unlock(groups);
+			list_unlock(groups);
 			return SUCCESS;
 		}
 
 		list_next(&grps_itr);
 	}
-	lust_unlock(groups);
+	list_unlock(groups);
 	return FAILTURE;
 }
 
