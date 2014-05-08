@@ -1,20 +1,24 @@
 /*
-     Copyright 2014 Infinitycoding all rights reserved
-     This file is part of the Universe Kernel.
+     Copyright 2012-2014 Infinitycoding all rights reserved
+     This file is part of the Ultrashell.
  
-     Universe Kernel is free software: you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published by
+     The Ultrashell is free software: you can redistribute it and/or modify
+     it under the terms of the GNU Lesser General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
  
-     Universe Kernel is distributed in the hope that it will be useful,
+     The Ultrashell is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-     GNU General Public License for more details.
+     GNU Lesser General Public License for more details.
  
-     You should have received a copy of the GNU General Public License
-     along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
+     You should have received a copy of the GNU Lesser General Public License
+     along with the Ultrashell.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+/**
+ *  @author Peter Hösch aka. BlitzBasic <peter.hoesch@infinitycoding.de>
+ **/
 
 
 
@@ -27,7 +31,9 @@
 
 
 
-// this isn't the function you are looking for
+/**
+ * @brief this isn't the function you are looking for
+ */
 
 int dummy(int argc, char **argv)
 {
@@ -37,7 +43,9 @@ int dummy(int argc, char **argv)
 }
 
 
-// the echo function
+/**
+ * @brief the echo function
+ */
 
 int echo(int argc, char **argv)
 {
@@ -55,7 +63,9 @@ int echo(int argc, char **argv)
 }
 
 
-// this function prints the version of the shell
+/**
+ * @brief this function prints the version of the shell
+ */
 
 int sver(int argc, char **argv)
 {
@@ -65,15 +75,18 @@ int sver(int argc, char **argv)
 }
 
 
-// this function always returns true
-
+/**
+ * @brief this function always returns true
+ */
 int cmdtrue(int argc, char **argv)
 {
 	return 0;
 }
 
 
-// this function always returns false
+/**
+ * @brief this function always returns false
+ */
 
 int cmdfalse(int argc, char **argv)
 {
@@ -81,7 +94,9 @@ int cmdfalse(int argc, char **argv)
 }
 
 
-// changes the working directory
+/**
+ * @brief changes the working directory
+ */
 
 int cd(int argc, char **argv)
 {
@@ -101,7 +116,9 @@ int cd(int argc, char **argv)
 }
 
 
-// printf the current working directory
+/**
+ * @brief prints the current working directory
+ */
 
 int pwd(int argc, char **argv)
 {
@@ -125,9 +142,32 @@ int pwd(int argc, char **argv)
 }
 
 
+/**
+ * @brief creates a new directory
+ */
+
+/*int mkdir(int argc, char **argv)
+{
+
+}*/
+
+
+/**
+ * @brief removes a empty directory
+ */
+
+/*int rmdir(int argc, char **argv)
+{
+
+}*/
+
+
+
 // from here test only
 
-// adds two values and prints the result
+/**
+ * @brief adds two values and prints the result
+ */
 
 int add(int argc, char **argv)
 {
@@ -149,7 +189,9 @@ int add(int argc, char **argv)
 }
 
 
-// subtracts two values and prints the result
+/**
+ * @brief substracts two values and prints the result
+ */
 
 int sub(int argc, char **argv)
 {
@@ -171,7 +213,9 @@ int sub(int argc, char **argv)
 }
 
 
-// multiplies two values and prints the result
+/**
+ * @brief multiplies two values and prints the result
+ */
 
 int mul(int argc, char **argv)
 {
@@ -193,7 +237,9 @@ int mul(int argc, char **argv)
 }
 
 
-// divides two values and prints the result
+/**
+ * @brief divides two values and prints the result
+ */
 
 int div(int argc, char **argv)
 {

@@ -1,20 +1,24 @@
 /*
-     Copyright 2014 Infinitycoding all rights reserved
-     This file is part of the Universe Kernel.
+     Copyright 2012-2014 Infinitycoding all rights reserved
+     This file is part of the Ultrashell.
  
-     Universe Kernel is free software: you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published by
+     The Ultrashell is free software: you can redistribute it and/or modify
+     it under the terms of the GNU Lesser General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
  
-     Universe Kernel is distributed in the hope that it will be useful,
+     The Ultrashell is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-     GNU General Public License for more details.
+     GNU Lesser General Public License for more details.
  
-     You should have received a copy of the GNU General Public License
-     along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
+     You should have received a copy of the GNU Lesser General Public License
+     along with the Ultrashell.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+/**
+ *  @author Peter Hösch aka. BlitzBasic <peter.hoesch@infinitycoding.de>
+ **/
 
 
 
@@ -24,6 +28,11 @@
 #include <string.h>
 
 
+/**
+ * @brief creates a new binary tree
+ * @param dummy the first function in the tree (trees can't be empty in the moment)
+ * @return a pointer to the created tree
+ */
 
 binary_tree *create_tree(struct function *dummy)
 {
@@ -38,11 +47,23 @@ binary_tree *create_tree(struct function *dummy)
 }
 
 
+/**
+ * @brief deletes a binary tree
+ * @param tree the tree to delete
+ * @return no return value
+ */
+
 void deleteTree(binary_tree *tree)
 {
 	deleteBranch((struct branch *)tree);
 }
 
+
+/**
+ * @brief deletes a branch of a binary tree and all it's subbranches
+ * @param b the branch which should be deleted
+ * @return no return value
+ */
 
 void deleteBranch(struct branch *b)
 {
@@ -65,6 +86,17 @@ void deleteBranch(struct branch *b)
 }
 
 
+/**
+ * @brief creates a function struct in the ram and adds the function to a binary tree
+ * @param tree the tree in which the new function should be added
+ * @param cmd the command with which the function should be called later on
+ * @param fct a pointer to the function which should be added to the tree
+ * @return 0 = success
+ * @return -1 = binary tree corrupted
+ * @return -2 = command allready added
+ * @return -3 = allocate error
+ */
+
 int loadFunction(binary_tree *tree, char *cmd, int (*fct)(int, char **))
 {
 	struct function *newFunction = NULL;
@@ -79,6 +111,15 @@ int loadFunction(binary_tree *tree, char *cmd, int (*fct)(int, char **))
 	return addFunction(tree, newFunction);
 }
 
+
+/**
+ * @brief adds a new function to a binary tree
+ * @param tree the tree in which the new function should be added
+ * @param new_function the function struct which should be added to the binary tree
+ * @return 0 = success
+ * @return -1 = binary tree corrupted
+ * @return -2 = command allready added
+ */
 
 int addFunction(binary_tree *tree, struct function *new_function)
 {
@@ -128,6 +169,13 @@ int addFunction(binary_tree *tree, struct function *new_function)
 	}
 }
 
+
+/**
+ * @brief returns you a function out of a binary tree
+ * @param tree the tree in which the function should be searched
+ * @param function_name the name of the function which should be searched
+ * @return the function struct of the function
+ */
 
 struct function *searchFunction(binary_tree *tree, char *function_name)
 {	
