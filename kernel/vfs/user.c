@@ -101,10 +101,11 @@ int remove_user(user_t *user)
 			list_lock(usr->grps);
 			while(!list_is_last(&grps_itr))
 			{
-				remove_user_from_group(usr, (group_t *)list_get_current(&grps_itr));
+				remove_user_from_group_lockfree(usr, (group_t *)list_get_current(&grps_itr));
 
 				list_next(&grps_itr);
 			}
+			list_unlock(usr->grps);
 
 			free(usr->name);
 			free(usr->passwd);
@@ -200,12 +201,14 @@ int remove_group(group_t *group)
 			group_t *grp = ((group_t *)list_get_current(&grps_itr));
 
 			iterator_t user_itr = iterator_create(grp->users);
+			list_lock(grp->users);
 			while(!list_is_last(&user_itr))
 			{
-				remove_user_from_group((user_t *)list_get_current(&user_itr), grp);
+				remove_user_from_group_lockfree((user_t *)list_get_current(&user_itr), grp);
 
 				list_next(&user_itr);
 			}
+			list_unlock(grp->users);
 
 			free(grp->name);
 			list_destroy(&grp->users);
@@ -225,14 +228,20 @@ int remove_group(group_t *group)
 group_t *get_group_by_id(gid_t id)
 {
 	iterator_t grps_itr = iterator_create(groups);
+	list_lock(groups);
 
 	while(!list_is_last(&grps_itr))
 	{
 		if(((group_t *)list_get_current(&grps_itr))->id == id)
-			return ((group_t *)list_get_current(&grps_itr));
+		{
+			list_unlock(groups);
+			return ((group_t *)list_get_current(&grps_itr)); 
+		}	
 
 		list_next(&grps_itr);
 	}
+
+	list_unlock(groups);
 
 	return NULL;
 }
@@ -240,14 +249,20 @@ group_t *get_group_by_id(gid_t id)
 group_t *get_group_by_name(const char *gname)
 {
 	iterator_t grps_itr = iterator_create(groups);
+	list_lock(groups);
 
 	while(!list_is_last(&grps_itr))
 	{
 		if(strcmp(((group_t *)list_get_current(&grps_itr))->name, gname) == 0)
+		{
+			list_unlock(groups);
 			return ((group_t *)list_get_current(&grps_itr));
+		}
 
 		list_next(&grps_itr);
 	}
+
+	list_unlock(groups);
 
 	return NULL;
 }
@@ -257,13 +272,27 @@ int add_user_to_group(user_t *user, group_t *group)
 	if(user == NULL || group == NULL)
 		return FAILTURE;
 
+	list_lock(user->grps);
 	list_push_back(user->grps, group);
+	list_unlock(user->grps);
+
+	list_lock(group->users);
 	list_push_back(group->users, user);
+	list_unlock(group->users);
 
 	return SUCCESS;
 }
 
 int remove_user_from_group(user_t *user, group_t *group)
+{
+	list_lock(group->users);
+	int result = remove_user_from_group_lockfree(user, group);
+	list_unlock(group->users);
+
+	return result;
+}
+
+int remove_user_from_group_lockfree(user_t *user, group_t *group)
 {
 	iterator_t grps_itr = iterator_create(user->grps);
 
@@ -297,14 +326,20 @@ int remove_user_from_group(user_t *user, group_t *group)
 int group_id_exists(gid_t id)
 {
 	iterator_t grps_itr = iterator_create(groups);
+	list_lock(groups);
 
 	while(!list_is_last(&grps_itr))
 	{
 		if(((group_t *)list_get_current(&grps_itr))->id == id)
+		{
+			list_unlock(groups);
 			return YES;
+		}
 
 		list_next(&grps_itr);
 	}
+
+	list_unlock(groups);
 
 	return NO;
 }
@@ -312,14 +347,20 @@ int group_id_exists(gid_t id)
 int user_id_exists(uid_t id)
 {
 	iterator_t user_itr = iterator_create(users);
+	list_lock(users);
 
 	while(!list_is_last(&user_itr))
 	{
 		if(((user_t *)list_get_current(&user_itr))->id == id)
+		{
+			list_unlock(users);
 			return YES;
+		}
 
 		list_next(&user_itr);
 	}
+
+	list_unlock(users);
 
 	return NO;
 }
@@ -327,14 +368,20 @@ int user_id_exists(uid_t id)
 int group_name_exists(const char *name)
 {
 	iterator_t grps_itr = iterator_create(groups);
+	list_lock(groups);
 
 	while(!list_is_last(&grps_itr))
 	{
 		if(strcmp(((group_t *)list_get_current(&grps_itr))->name, name) == 0)
+		{
+			list_unlock(groups);
 			return YES;
+		}
 
 		list_next(&grps_itr);
 	}
+
+	list_unlock(groups);
 
 	return NO;
 }
@@ -342,14 +389,20 @@ int group_name_exists(const char *name)
 int user_name_exists(const char *name)
 {
 	iterator_t user_itr = iterator_create(users);
+	list_lock(users);
 
 	while(!list_is_last(&user_itr))
 	{
 		if(strcmp(((user_t *)list_get_current(&user_itr))->name, name) == 0)
+		{
+			list_unlock(users);
 			return YES;
+		}
 
 		list_next(&user_itr);
 	}
+	
+	list_unlock(users);
 
 	return NO;
 }
