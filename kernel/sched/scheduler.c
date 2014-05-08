@@ -44,6 +44,8 @@ struct process_state *kernel_state;
 struct thread_state *current_thread;
 list_t *running_threads;
 
+iterator_t thread_iterator;
+
 extern list_t *process_list;
 extern list_t *zombie_list;
 
@@ -63,6 +65,7 @@ void INIT_SCHEDULER(void)
 	tss.esp0 = (uint32_t)kernelstack;
 
     running_threads = list_create();
+    thread_iterator = iterator_create(running_threads);
     process_list = list_create();
     zombie_list = list_create();
     kernel_state = process_create("Kernel INIT", "initiate system", PROCESS_ACTIVE, NULL, 0, 0, NULL);
@@ -96,8 +99,8 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
             asm volatile("cli");
         }
 
-        list_set_first(running_threads);
-        current_thread = list_get_current(running_threads);
+        list_set_first(&thread_iterator);
+        current_thread = list_get_current(&thread_iterator);
         vmm_switch_context(&current_thread->context);
         memcpy(cpu, current_thread->state, sizeof(struct cpu_state));
         dump_thread_list(running_threads);
@@ -105,10 +108,10 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
     else if(current_thread->ticks == 0)
     {
         current_thread->ticks = 10;
-        list_next(running_threads);
-        if(list_is_last(running_threads))
-            list_set_first(running_threads);
-        current_thread = list_get_current(running_threads);
+        list_next(&thread_iterator);
+        if(list_is_last(&thread_iterator))
+            list_set_first(&thread_iterator);
+        current_thread = list_get_current(&thread_iterator);
         vmm_switch_context(&current_thread->context);
 
         if(current_thread->flags & THREAD_KERNELMODE)

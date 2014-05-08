@@ -156,16 +156,16 @@ void thread_kill_sub(struct thread_state *thread)
 {
     if(thread->flags & THREAD_ACTIV || thread->flags & THREAD_ZOMBIE)
     {
-        list_set_first(running_threads);
-        while(!list_is_last(running_threads))
+        iterator_t running_thread_it = iterator_create(running_threads);
+        while(!list_is_last(&running_thread_it))
         {
-            struct thread_state *t = list_get_current(running_threads);
+            struct thread_state *t = list_get_current(&running_thread_it);
             if(t == thread)
             {
-                list_remove(running_threads);
+                list_remove(&running_thread_it);
                 break;
             }
-            list_next(running_threads);
+            list_next(&running_thread_it);
         }
     }
 
@@ -179,18 +179,18 @@ void thread_kill_sub(struct thread_state *thread)
     if(thread->process->flags & PROCESS_ZOMBIE)
     {
         list_push_front(thread->process->zombie_tids,(void *) thread->tid);
-        list_set_first(thread->process->threads);
-        while(!list_is_last(thread->process->threads))
+        iterator_t thread_it = iterator_create(thread->process->threads);
+        while(!list_is_last(&thread_it))
         {
-            struct thread_state *t = list_get_current(thread->process->threads);
+            struct thread_state *t = list_get_current(&thread_it);
             if(t == thread)
             {
-                list_remove(thread->process->threads);
+                list_remove(&thread_it);
                 if(list_is_empty(thread->process->threads))
                     process_kill(thread->process);
                 break;
             }
-            list_next(thread->process->threads);
+            list_next(&thread_it);
         }
         free(thread);
     }

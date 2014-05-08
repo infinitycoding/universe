@@ -33,6 +33,7 @@
 extern struct process_state *kernel_state;
 extern struct thread_state *current_thread;
 extern list_t *running_threads;
+extern iterator_t thread_iterator;
 extern vfs_inode_t *root;
 
 
@@ -41,7 +42,7 @@ list_t *zombie_list = 0;
 pid_t pid_counter = 1;
 
 /**
- * returns the smaller inputvalue
+ * @brief returns the smaller inputvalue
  * @param a     inputvalue
  * @param b     inputvalue
  * @return the smallest inputvalue
@@ -51,27 +52,30 @@ inline int min(int a, int b)
     return (a < b) ? a : b;
 }
 
+/**
+ * @breif Prints a thread-list.
+ * @param The thread list
+ */
 void dump_thread_list(list_t *threads)
 {
-    list_set_first(threads);
+    iterator_t it = iterator_create(threads);
     printf("-----%d-----\n", list_length(threads));
-    while(!list_is_empty(threads) && !list_is_last(threads))
+    while(!list_is_empty(threads) && !list_is_last(&it))
     {
-        struct thread_state *t = list_get_current(threads);
+        struct thread_state *t = list_get_current(&it);
         printf("PID: %d  TID: %d  FLAG: %08x\n",t->process->pid, t->tid, t->flags);
-        list_next(threads);
+        list_next(&it);
     }
-    list_set_first(threads);
 }
 
 
 /**
- * creates a process
+ * @brief creates a process
  * @param name      name of the process (max. 255 characters)
  * @param desc      description of the process (max. 255 characters)
  * @param flags     process flags (activ, freezed, zombies)
  * @param parent    pointer to the parent process struct (NULL: Kernel Init = parent)
- * @return
+ * @return          The new process-state
  */
 struct process_state *process_create(const char *name, const char *desc, uint16_t flags,struct process_state *parent, uid_t uid, gid_t gid,struct pipeset *set)
 {
@@ -111,8 +115,7 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
     }
 
 
-    asm volatile("cli");
-
+    list_lock(process_list);
         if(state->pid != 1)
         {
             struct child *new_child = malloc(sizeof(struct child));
@@ -122,8 +125,7 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
         }
 
         list_push_front(process_list, state);
-
-    asm volatile("sti");
+    list_unlock(process_list);
 
 
     /* create stream files*/
@@ -178,14 +180,13 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
 
 
 /**
- * kills a process
+ * @brief kills a process
  * @param process pointer to the process state
  */
 void process_kill(struct process_state *process)
 {
     asm volatile("cli");
     send_killed_process(process);
-    list_set_first(process->threads);
 
     while(!list_is_empty(process->threads))
     {
@@ -199,7 +200,7 @@ void process_kill(struct process_state *process)
             thread_kill_sub(thread);
     }
 
-    list_set_first(process->children);
+    list_lock(process->children);
     while(!list_is_empty(process->children))
     {
         struct child *current_child = list_pop_front(process->children);
@@ -207,82 +208,86 @@ void process_kill(struct process_state *process)
             process_kill(current_child->process);
         free(current_child);
     }
+    free(process->children);
 
+    list_lock(process->parent->children);
+    iterator_t parents_children_it = iterator_create(process->parent->children);
 
-    list_set_first(process->parent->children);
-    while(!list_is_empty(process->parent->children))
+    while(!list_is_empty(process->parent->children) && !list_is_last(&parents_children_it))
     {
-        struct child *current_child = list_get_current(process->parent->children);
+        struct child *current_child = list_get_current(&parents_children_it);
         if(current_child->process == process)
         {
             current_child->process = 0;
             break;
         }
-        list_next(process->parent->children);
+        list_next(&parents_children_it);
     }
+    list_unlock(process->parent->children);
 
-    list_destroy(&process->ports);
-    list_destroy(&process->zombie_tids);
+    list_destroy(process->ports);
+    list_destroy(process->zombie_tids);
 
-    list_set_first(process_list);
+    list_lock(process_list);
+    iterator_t process_it = iterator_create(process_list);
 
-    while(!list_is_last(process_list))
+    while(!list_is_empty(process_list) &&!list_is_last(&process_it))
     {
-        if(((struct process_state *)list_get_current(process_list)) == process)
+        if(((struct process_state *)list_get_current(&process_it)) == process)
         {
-            list_remove(process_list);
+            list_remove(&process_it);
             break;
         }
-        list_next(process_list);
+        list_next(&process_it);
     }
+    list_unlock(process_list);
 
     free(process->name);
     free(process->desc);
 
-    if(! (process->flags & PROCESS_ZOMBIE) )
+    if(!(process->flags & PROCESS_ZOMBIE) )
     {
         free(process);
-        list_set_first(running_threads);
-        current_thread = list_get_current(running_threads);
     }
     asm volatile("sti");
 }
 
 /**
- * finds a process by ID
+ * @brief finds a process by ID
  * @param pid Process ID
  * @return process state pointer or NULL if the process does not exist
  */
 struct process_state *process_find(pid_t pid)
 {
-    list_set_first(process_list);
-    while(!list_is_last(process_list))
+    iterator_t process_it = iterator_create(process_list);
+    while(!list_is_empty(process_list) && !list_is_last(&process_it))
     {
-        if(((struct process_state *)list_get_current(process_list))->pid == pid)
+        if(((struct process_state *)list_get_current(&process_it))->pid == pid)
         {
-            return (struct process_state *)list_get_current(process_list);
+            return (struct process_state *)list_get_current(&process_it);
         }
-        list_next(process_list);
+        list_next(&process_it);
     }
     return 0;
 }
 
 /**
- * terminates the current process (linux function for the API)
+ * @brief terminates the current process (linux function for the API)
  * @param cpu registers of the corrent process
  */
 void sys_exit(struct cpu_state **cpu)
 {
-    list_set_first(current_thread->process->parent->children);
-    while(list_is_last(current_thread->process->parent->children))
+    iterator_t parents_children_it = iterator_create(current_thread->process->parent->children);
+
+    while(!list_is_empty(current_thread->process->parent->children) && !list_is_last(&parents_children_it))
     {
-        struct child *current_child = list_get_current(current_thread->process->parent->children);
+        struct child *current_child = list_get_current(&parents_children_it);
         if(current_child->process == current_thread->process)
         {
             current_child->status = (*cpu)->CPU_ARG1;
             break;
         }
-        list_next(current_thread->process->parent->children);
+        list_next(&parents_children_it);
     }
 
     process_kill(current_thread->process);
@@ -290,7 +295,7 @@ void sys_exit(struct cpu_state **cpu)
 }
 
 /**
- * creates a new child process (linux function for the API)
+ * @brief creates a new child process (linux function for the API)
  * @param cpu registers of the current process
  */
 void sys_fork(struct cpu_state **cpu)
@@ -323,19 +328,19 @@ void sys_fork(struct cpu_state **cpu)
 }
 
 /**
- *  wait for the termination of a child (linux function for the API)
+ *  @brief wait for the termination of a child (linux function for the API)
  *  @param cpu registers of the current process
  *  Not completed
  */
 
 void sys_waitpid(struct cpu_state **cpu)
 {
-    list_set_first(running_threads);
-    while(list_get_current(running_threads) != current_thread)
+    list_set_first(&thread_iterator);
+    while(list_get_current(&thread_iterator) != current_thread)
     {
-        list_next(running_threads);
+        list_next(&thread_iterator);
     }
-    list_remove(running_threads);
+    list_remove(&thread_iterator);
     current_thread->ticks = 0;
     current_thread->flags |= THREAD_WAITPID;
     current_thread->waitpid = (*cpu)->CPU_ARG1;
