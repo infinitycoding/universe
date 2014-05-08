@@ -57,8 +57,7 @@ void list_destroy(list_t *list)
 		free(node);
     }
 
-	free(*list);
-	*list = NULL;
+	free(list);
 	return;
 }
 

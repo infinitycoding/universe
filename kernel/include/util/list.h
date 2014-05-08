@@ -31,13 +31,13 @@ struct list_node
 {
 	struct list_node *next;
 	struct list_node *prev;
-     mutex lock;
 	void *element;
 };
 
 typedef struct
 {
-	struct list_node *head;
+     mutex lock;
+     struct list_node *head;
 } list_t;
 
 typedef struct
