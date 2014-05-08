@@ -59,6 +59,7 @@ group_t *get_group_by_id(gid_t id);
 group_t *get_group_by_name(const char *gname);
 int add_user_to_group(user_t *user, group_t *group);
 int remove_user_from_group(user_t *user, group_t *group);
+int remove_user_from_group_lockfree(user_t *user, group_t *group);
 int group_id_exists(gid_t id);
 int user_id_exists(uid_t id); 
 int group_name_exists(const char *name);
