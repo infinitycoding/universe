@@ -825,14 +825,14 @@ void sys_fstat(struct cpu_state **cpu)
 		return;
 	}
 
-	list_set_first(current_thread->process->files);
-	while(!list_is_empty(current_thread->process->files) && !list_is_last(current_thread->process->files)){
-		struct fd *file = list_get_current(current_thread->process->files);
+	iterator_t file_it = iterator_create(current_thread->process->files);
+	while(!list_is_empty(current_thread->process->files) && !list_is_last(&file_it)){
+		struct fd *file = list_get_current(&file_it);
 		if(file->id == (*cpu)->CPU_ARG1) {
 			(*cpu)->CPU_ARG0 = vfs_stat(file->inode, (struct stat *)(*cpu)->CPU_ARG2);
 			return;
 		}
-		list_next(current_thread->process->files);
+		list_next(&file_it);
 	}
 
 	(*cpu)->CPU_ARG0 = -1;
