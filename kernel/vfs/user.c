@@ -110,7 +110,7 @@ int remove_user(user_t *user)
 			free(usr->name);
 			free(usr->passwd);
 			free(usr->home);
-			list_destroy(&usr->grps);
+			list_destroy(usr->grps);
 			free(usr);
 
 			list_remove(&user_itr);
@@ -211,7 +211,7 @@ int remove_group(group_t *group)
 			list_unlock(grp->users);
 
 			free(grp->name);
-			list_destroy(&grp->users);
+			list_destroy(grp->users);
 			free(grp);
 
 			list_remove(&grps_itr);
