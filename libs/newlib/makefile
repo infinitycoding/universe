@@ -16,7 +16,7 @@ configure: download
 	@ mkdir -p target; \
 	cd build; \
 	if [ ! -f config.log ]; then \
-		../newlib-2.1.0/configure --prefix='`pwd`/../target' --target=i686-elf;\
+		../newlib-2.1.0/configure --prefix="`pwd`/../target" --target=i686-elf;\
 	fi
 
 build: configure
