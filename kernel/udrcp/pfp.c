@@ -103,8 +103,26 @@ struct section *parser_section(char *pipelines, int *section_pos)
     strncpy(this->name, &pipelines[(*section_pos)], section_name_length);
     (*section_pos) += section_name_length;
     this->type = get_section_type(pipelines, section_pos);
+    skip_until_colon(pipelines, section_pos);
+    int section_end = find_end_of_section(pipelines, section_pos);
+    this->subtree = list_create();
 
-    // TODO
+    for(; (*section_pos) < section_end; (*section_pos)++)
+    {
+        if(pipelines[(*section_pos)] == '#')
+        {
+            while(pipelines[(*section_pos)] != '\n' || pipelines[(*section_pos)] != '\0' || pipelines[(*section_pos)] >= section_end)
+                    (*section_pos)++;
+        }
+        else if(is_whitespace(pipelines[(*section_pos)]))
+        {
+            skip_whitespaces(pipelines, section_pos);
+        }
+        else if(pipelines[(*section_pos)] == '<')
+        {
+            list_push_back(this->subtree, parser_pnode(pipelines, section_pos, this->subtree));
+        }
+    }
 
     return this;
 }
@@ -123,6 +141,23 @@ int find_next_section(char *pipelines, int *search_begin)
         
 
     return (*search_begin);
+}
+
+
+int find_end_of_section(char *pipelines, int *search_begin)
+{
+    int i;
+
+    for(i = (*search_begin); pipelines[i + STRING_SECTION_LEN] != '\0'; i++)
+    {
+        if(pipelines[i] == '#')
+            for(; pipelines[i] != '\n'; i++);
+
+        if(strncmp(&pipelines[i], "section", STRING_SECTION_LEN) == 0)
+            break;
+    }
+
+    return i;
 }
 
 
@@ -200,4 +235,86 @@ int skip_until_whitespace(char *pipelines, int *start)
     for(; !is_whitespace(pipelines[(*start)]); (*start)++);
 
     return (*start);
+}
+
+
+int skip_until_colon(char *pipelines, int *start)
+{
+    for(; pipelines[(*start)] != ':'; (*start)++);
+
+    return (*start);
+}
+
+
+struct pnode *parser_pnode(char *pipelines, int *start, list_t *other)
+{
+    struct pnode *node = (struct pnode *)malloc(sizeof(struct pnode));
+    int pnode_end = find_pnode_end(pipelines, start);
+    node->type = get_ptype(pipelines, (*start), pnode_end);
+    node->file = get_pnode_filename(pipelines, (*start), pnode_end);
+
+    //TODO
+
+    return node;
+}
+
+
+int find_pnode_end(char *pipelines, int *start)
+{
+    int i;
+
+    for(i = (*start); pipelines[i] != '\0'; i++)
+    {
+        if(pipelines[i] == '#')
+            for(; pipelines[i] != '\n'; i++);
+
+        if(pipelines[i] == '>')
+            break;
+    }
+
+    return i;
+}
+
+
+bool is_service(char *pipelines, int start, int end)
+{
+    int i;
+
+    for(i = start; i < (end - STRING_SERVICE_LEN); i++)
+        if(strncmp(&pipelines[i], "service", STRING_SERVICE_LEN) == 0)
+            return true;
+
+    return false;
+}
+
+
+bool is_kernelroot(char *pipelines, int start, int end)
+{
+    int i;
+
+    for(i = start; i < (end - ARROW_LEN); i++)
+        if(strncmp(&pipelines[i], "->", ARROW_LEN) == 0)
+            return true;
+
+    return false;
+}
+
+
+ptype get_ptype(char *pipelines, int start, int end)
+{
+    ptype result = NOTHING;
+
+    if(is_service(pipelines, start, end))
+        result |= SERVICE;
+
+    if(is_kernelroot(pipelines, start, end))
+        result |= KERNELROOT;
+
+    return result;
+}
+
+
+char *get_pnode_filename(char *pipelines, int start, int end)
+{
+    // TODO
 }
