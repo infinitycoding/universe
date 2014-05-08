@@ -80,28 +80,30 @@ int add_user(const char *uname, const char *upasswd, const char *uhome, uid_t ui
 
 	new_user->id = uid;
 	new_user->grps = list_create();
+	list_lock(users);
 	list_push_back(users, new_user);
+	list_unlock(users);
 
 	return SUCCESS;
 }
 
 int remove_user(user_t *user)
 {
-	list_set_first(users);
-
-	while(!list_is_last(users))
+	iterator_t user_itr = iterator_create(users);
+	list_lock(users);
+	while(!list_is_last(&user_itr))
 	{
-		if(((user_t *)list_get_current(users)) == user)
+		if(((user_t *)list_get_current(&user_itr)) == user)
 		{
-			user_t *usr = ((user_t *)list_get_current(users));
+			user_t *usr = ((user_t *)list_get_current(&user_itr));
 
-			list_set_first(usr->grps);
-
-			while(!list_is_last(usr->grps))
+			iterator_t grps_itr = iterator_create(usr->grps);
+			list_lock(usr->grps);
+			while(!list_is_last(&grps_itr))
 			{
-				remove_user_from_group(usr, (group_t *)list_get_current(usr->grps));
+				remove_user_from_group(usr, (group_t *)list_get_current(&grps_itr));
 
-				list_next(usr->grps);
+				list_next(&grps_itr);
 			}
 
 			free(usr->name);
@@ -110,43 +112,55 @@ int remove_user(user_t *user)
 			list_destroy(&usr->grps);
 			free(usr);
 
-			list_remove(users);
+			list_remove(&user_itr);
+			list_unlock(users);
 			return SUCCESS;
 		}
 
-		list_next(users);
+		list_next(&user_itr);
 	}
 
+	list_unlock(users);
 	return FAILTURE;
 }
 
 user_t *get_user_by_id(uid_t id)
 {
-	list_set_first(users);
-
-	while(!list_is_last(users))
+	iterator_t user_itr = iterator_create(users);
+	list_lock(users);
+	while(!list_is_last(&user_itr))
 	{
-		if(((user_t *)list_get_current(users))->id == id)
-			return ((user_t *)list_get_current(users));
+		if(((user_t *)list_get_current(&user_itr))->id == id)
+		{
+			user_t *target = (user_t *)list_get_current(&user_itr);
+			list_unlock(users);
+			return target;
+		}
 
-		list_next(users);
+		list_next(&user_itr);
 	}
-
+	list_unlock(users);
 	return NULL;
 }
 
 user_t *get_user_by_name(const char *uname)
 {
-	list_set_first(users);
+	iterator_t user_itr = iterator_create(users);
+	list_lock(users);
 
-	while(!list_is_last(users))
+	while(!list_is_last(&user_itr))
 	{
-		if(strcmp(((user_t *)list_get_current(users))->name, uname) == 0)
-			return ((user_t *)list_get_current(users));
+		if(strcmp(((user_t *)list_get_current(&user_itr))->name, uname) == 0)
+		{ 
+			user_t *target = (user_t *)list_get_current(&user_itr);
+			list_unlock(users);
+			return target;
+		}
 
-		list_next(users);
+		list_next(&user_itr);
 	}
 
+	list_unlock(users);
 	return NULL;
 }
 
@@ -168,54 +182,56 @@ int add_group(const char *groupname, gid_t gid)
 
 	new_group->id = gid;
 	new_group->users = list_create();
+	list_lock(groups);
 	list_push_back(groups, new_group);
+	list_unlock(groups);
 
 	return SUCCESS;
 }
 
 int remove_group(group_t *group)
 {
-	list_set_first(groups);
-
-	while(!list_is_last(groups))
+	iterator_t grps_itr = iterator_create(groups);
+	list_lock(groups);
+	while(!list_is_last(&grps_itr))
 	{
-		if(((group_t *)list_get_current(groups)) == group)
+		if(((group_t *)list_get_current(&grps_itr)) == group)
 		{
-			group_t *grp = ((group_t *)list_get_current(groups));
+			group_t *grp = ((group_t *)list_get_current(&grps_itr));
 
-			list_set_first(grp->users);
-
-			while(!list_is_last(grp->users))
+			iterator_t user_itr = iterator_create(grp->users);
+			while(!list_is_last(&user_itr))
 			{
-				remove_user_from_group((user_t *)list_get_current(grp->users), grp);
+				remove_user_from_group((user_t *)list_get_current(&user_itr), grp);
 
-				list_next(grp->users);
+				list_next(&user_itr);
 			}
 
 			free(grp->name);
 			list_destroy(&grp->users);
 			free(grp);
 
-			list_remove(groups);
+			list_remove(&grps_itr);
+			lust_unlock(groups);
 			return SUCCESS;
 		}
 
-		list_next(groups);
+		list_next(&grps_itr);
 	}
-
+	lust_unlock(groups);
 	return FAILTURE;
 }
 
 group_t *get_group_by_id(gid_t id)
 {
-	list_set_first(groups);
+	iterator_t grps_itr = iterator_create(groups);
 
-	while(!list_is_last(groups))
+	while(!list_is_last(&grps_itr))
 	{
-		if(((group_t *)list_get_current(groups))->id == id)
-			return ((group_t *)list_get_current(groups));
+		if(((group_t *)list_get_current(&grps_itr))->id == id)
+			return ((group_t *)list_get_current(&grps_itr));
 
-		list_next(groups);
+		list_next(&grps_itr);
 	}
 
 	return NULL;
@@ -223,14 +239,14 @@ group_t *get_group_by_id(gid_t id)
 
 group_t *get_group_by_name(const char *gname)
 {
-	list_set_first(groups);
+	iterator_t grps_itr = iterator_create(groups);
 
-	while(!list_is_last(groups))
+	while(!list_is_last(&grps_itr))
 	{
-		if(strcmp(((group_t *)list_get_current(groups))->name, gname) == 0)
-			return ((group_t *)list_get_current(groups));
+		if(strcmp(((group_t *)list_get_current(&grps_itr))->name, gname) == 0)
+			return ((group_t *)list_get_current(&grps_itr));
 
-		list_next(groups);
+		list_next(&grps_itr);
 	}
 
 	return NULL;
@@ -249,30 +265,30 @@ int add_user_to_group(user_t *user, group_t *group)
 
 int remove_user_from_group(user_t *user, group_t *group)
 {
-	list_set_first(user->grps);
+	iterator_t grps_itr = iterator_create(user->grps);
 
-	while(!list_is_last(user->grps))
+	while(!list_is_last(&grps_itr))
 	{
-		if((group_t *)list_get_current(user->grps) == group)
+		if((group_t *)list_get_current(&grps_itr) == group)
 		{
-			list_remove(user->grps);
+			list_remove(&grps_itr);
 			break;
 		}
 
-		list_next(user->grps);
+		list_next(&grps_itr);
 	}
 
-	list_set_first(group->users);
+	iterator_t user_itr = iterator_create(group->users);
 
-	while(!list_is_last(group->users))
+	while(!list_is_last(&user_itr))
 	{
-		if((user_t *)list_get_current(group->users) == user)
+		if((user_t *)list_get_current(&user_itr) == user)
 		{
-			list_remove(group->users);
+			list_remove(&user_itr);
 			return SUCCESS;
 		}
 
-		list_next(group->users);
+		list_next(&user_itr);
 	}
 
 	return FAILTURE;
@@ -280,14 +296,14 @@ int remove_user_from_group(user_t *user, group_t *group)
 
 int group_id_exists(gid_t id)
 {
-	list_set_first(groups);
+	iterator_t grps_itr = iterator_create(groups);
 
-	while(!list_is_last(groups))
+	while(!list_is_last(&grps_itr))
 	{
-		if(((group_t *)list_get_current(groups))->id == id)
+		if(((group_t *)list_get_current(&grps_itr))->id == id)
 			return YES;
 
-		list_next(groups);
+		list_next(&grps_itr);
 	}
 
 	return NO;
@@ -295,14 +311,14 @@ int group_id_exists(gid_t id)
 
 int user_id_exists(uid_t id)
 {
-	list_set_first(users);
+	iterator_t user_itr = iterator_create(users);
 
-	while(!list_is_last(users))
+	while(!list_is_last(&user_itr))
 	{
-		if(((user_t *)list_get_current(users))->id == id)
+		if(((user_t *)list_get_current(&user_itr))->id == id)
 			return YES;
 
-		list_next(users);
+		list_next(&user_itr);
 	}
 
 	return NO;
@@ -310,14 +326,14 @@ int user_id_exists(uid_t id)
 
 int group_name_exists(const char *name)
 {
-	list_set_first(groups);
+	iterator_t grps_itr = iterator_create(groups);
 
-	while(!list_is_last(groups))
+	while(!list_is_last(&grps_itr))
 	{
-		if(strcmp(((group_t *)list_get_current(groups))->name, name) == 0)
+		if(strcmp(((group_t *)list_get_current(&grps_itr))->name, name) == 0)
 			return YES;
 
-		list_next(groups);
+		list_next(&grps_itr);
 	}
 
 	return NO;
@@ -325,14 +341,14 @@ int group_name_exists(const char *name)
 
 int user_name_exists(const char *name)
 {
-	list_set_first(users);
+	iterator_t user_itr = iterator_create(users);
 
-	while(!list_is_last(users))
+	while(!list_is_last(&user_itr))
 	{
-		if(strcmp(((user_t *)list_get_current(users))->name, name) == 0)
+		if(strcmp(((user_t *)list_get_current(&user_itr))->name, name) == 0)
 			return YES;
 
-		list_next(users);
+		list_next(&user_itr);
 	}
 
 	return NO;
