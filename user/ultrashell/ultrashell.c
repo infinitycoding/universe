@@ -1,20 +1,24 @@
 /*
-     Copyright 2014 Infinitycoding all rights reserved
-     This file is part of the Universe Kernel.
+     Copyright 2012-2014 Infinitycoding all rights reserved
+     This file is part of the Ultrashell.
  
-     Universe Kernel is free software: you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published by
+     The Ultrashell is free software: you can redistribute it and/or modify
+     it under the terms of the GNU Lesser General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
  
-     Universe Kernel is distributed in the hope that it will be useful,
+     The Ultrashell is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-     GNU General Public License for more details.
+     GNU Lesser General Public License for more details.
  
-     You should have received a copy of the GNU General Public License
-     along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
+     You should have received a copy of the GNU Lesser General Public License
+     along with the Ultrashell.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+/**
+ *  @author Peter Hösch aka. BlitzBasic <peter.hoesch@infinitycoding.de>
+ **/
 
 
 
@@ -29,7 +33,12 @@
 #include <stdio.h>
 
 
-// main loop which pulls the inputs and tells the other functions what to do 
+/**
+ * @brief the main function of the ultrashell.
+ * @param argc the number of arguments (standart in main functions, currently ignored)
+ * @param argv the arguments values (standart in main functions, currently ignored)
+ * @return currently useless, because main never terminates
+ */ 
 
 int main(int argc, char **argv)
 {
@@ -75,7 +84,10 @@ int main(int argc, char **argv)
 }
 
 
-// creates the binary tree with the commands
+/**
+ * @brief creates the binary tree with the standart commands
+ * @return a pointer to the created binary tree
+ */ 
 
 binary_tree *initBinaryTree()
 {
@@ -102,7 +114,13 @@ binary_tree *initBinaryTree()
 }
 
 
-// parsers and executes a line (strange, with this name...)
+/**
+ * @brief parsers and executes a line (strange, with this name...)
+ * @param state the current state of the shell in which the line should be executed
+ * @param line the line which should be executed
+ * @return 0 if the command in the line was executed
+ * @return -1 if the command in the line is unknown
+ */
 
 int parserLine(struct shell_state *state, const char *line)
 {
@@ -125,8 +143,12 @@ int parserLine(struct shell_state *state, const char *line)
 }
 
 
-// separates a string into tokens
-
+/**
+ * @brief separates a string into tokens
+ * @param instring the string which should be separated
+ * @param tokens the space in which the tokens should be placed
+ * @return the number of the tokens
+ */
 int getTokens(const char *instring, char ***tokens)
 {
 	char currentToken[MAX_TOKEN_LENGTH];
@@ -169,7 +191,11 @@ int getTokens(const char *instring, char ***tokens)
 }
 
 
-// counts the number of tokens in a string
+/**
+ * @brief counts the number of tokens in a string
+ * @param instring the string in which the tokens should be counted
+ * @return the number of the tokens in the string
+ */
 
 int countTokens(const char *instring)
 {
