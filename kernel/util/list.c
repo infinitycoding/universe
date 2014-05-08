@@ -228,7 +228,7 @@ void *list_remove(iterator_t *it)
     struct list_node *node = it->current;
     node->prev->next = node->next;
     node->next->prev = node->prev;
-    list->current = node->next;
+    it->current = node->next;
     free(node);
     return element;
 }
