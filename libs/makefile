@@ -1,6 +1,5 @@
 all:
 	@$(MAKE) -C libc
-	@$(MAKE) -C glibc configure
 	@$(MAKE) -C udrcp
 	@$(MAKE) -C crt
 	@$(MAKE) -C cdi
