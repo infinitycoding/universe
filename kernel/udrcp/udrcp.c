@@ -41,10 +41,8 @@ pckmgr *new_pckmgr(vfs_inode_t *in, vfs_inode_t *out, vfs_inode_t *err)
 void reset_conn(pckmgr *mgr)
 {
     mgr->counter = 0;
-    list_set_first(mgr->used_ids);
     while(!list_is_empty(mgr->used_ids))
         list_pop_front(mgr->used_ids);
-    list_set_first(mgr->recieved_pcks);
     while(!list_is_empty(mgr->recieved_pcks))
         list_pop_front(mgr->recieved_pcks);
 }
@@ -52,20 +50,20 @@ void reset_conn(pckmgr *mgr)
 
 pckid_t gen_pckid(pckmgr *mgr)
 {
-    list_set_first(mgr->used_ids);
-    while(!list_is_empty(mgr->used_ids) && !list_is_last(mgr->used_ids))
+    iterator_t used_id_it = iterator_create(mgr->used_ids);
+    while(!list_is_empty(mgr->used_ids) && !list_is_last(&used_id_it))
     {
-        if((pckid_t)list_get_current(mgr->used_ids) == mgr->counter )
+        if((pckid_t)list_get_current(&used_id_it) == mgr->counter )
         {
             if(mgr->counter == MAX_ID)
                 mgr->counter = 0;
             else
                 mgr->counter++;
 
-            list_set_first(mgr->used_ids);
+            list_set_first(&used_id_it);
         }
         else
-            list_next(mgr->used_ids);
+            list_next(&used_id_it);
     }
     list_push_front(mgr->used_ids,(void*)mgr->counter);
     return mgr->counter++;
@@ -74,16 +72,16 @@ pckid_t gen_pckid(pckmgr *mgr)
 
 bool free_pckid(pckmgr *mgr, pckid_t id)
 {
-    list_set_first(mgr->used_ids);
-    while(!list_is_empty(mgr->used_ids) && !list_is_last(mgr->used_ids))
+    iterator_t used_id_it = iterator_create(mgr->used_ids);
+    while(!list_is_empty(mgr->used_ids) && !list_is_last(&used_id_it))
     {
-        if((pckid_t)list_get_current(mgr->used_ids) == id )
+        if((pckid_t)list_get_current(&used_id_it) == id )
         {
-            list_remove(mgr->used_ids);
+            list_remove(&used_id_it);
             return true;
         }
         else
-            list_next(mgr->used_ids);
+            list_next(&used_id_it);
     }
 
     return false;
@@ -142,16 +140,16 @@ void poll_queue(pckmgr *mgr)
 
 pck_t *fetch_queue(pckmgr *mgr,pckid_t id)
 {
-    list_set_first(mgr->recieved_pcks);
-    while(!list_is_last(mgr->recieved_pcks) && !list_is_empty(mgr->recieved_pcks))
+    iterator_t recieved_pck_it = iterator_create(mgr->recieved_pcks);
+    while(!list_is_last(&recieved_pck_it) && !list_is_empty(mgr->recieved_pcks))
     {
-        pck_t *current = list_get_current(mgr->recieved_pcks);
+        pck_t *current = list_get_current(&recieved_pck_it);
         if(current->id == id)
         {
-            list_remove(mgr->recieved_pcks);
+            list_remove(&recieved_pck_it);
             return current;
         }
-        list_next(mgr->recieved_pcks);
+        list_next(&recieved_pck_it);
     }
     return NULL;
 }
