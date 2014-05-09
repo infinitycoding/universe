@@ -166,24 +166,23 @@ char *pci_dev_names[][16]={
  */
 struct pci_dev *pci_search_device(list_t *device_list, uint16_t vendor, uint16_t device, int num)
 {
-    while(device_list->lock){}
-    device_list->lock = true;
-        list_set_first(device_list);
-        while(!list_is_last(device_list))
+    list_lock(device_list);
+    iterator_t device_it = iterator_create(device_list);
+    while(!list_is_empty(device_list) && !list_is_last(&device_it))
+    {
+        struct pci_dev *current_dev = list_get_current(&device_it);
+        if(num == 0 && current_dev->device_ID == device && current_dev->vendor_ID == vendor)
         {
-            struct pci_dev *current_dev = list_get_current(device_list);
-            if(num == 0 && current_dev->device_ID == device && current_dev->vendor_ID == vendor)
-            {
-                device_list->lock = false;
-                return current_dev;
-            }
-            else if(current_dev->device_ID == device && current_dev->vendor_ID == vendor)
-            {
-                num--;
-            }
-            list_next(device_list);
+            list_unlock(device_list);
+            return current_dev;
         }
-    device_list->lock = false;
+        else if(current_dev->device_ID == device && current_dev->vendor_ID == vendor)
+        {
+            num--;
+        }
+            list_next(&device_it);
+        }
+        list_unlock(device_list);
     return NULL;
 }
 
@@ -197,12 +196,12 @@ list_t *pci_irq_handles;
 void pci_install_isr(void (*isr)(struct pci_dev *dev), struct pci_dev *dev)
 {
     while(pci_irq_handles->lock){}
-    pci_irq_handles->lock = true;
+    list_lock(pci_irq_handles);
         struct pci_isr *new_pci_isr = malloc(sizeof(struct pci_isr));
         new_pci_isr->isr = isr;
         new_pci_isr->dev = dev;
         list_push_front(pci_irq_handles,new_pci_isr);
-    pci_irq_handles->lock = false;
+    list_unlock(pci_irq_handles);
 }
 
 
@@ -214,22 +213,22 @@ void pci_install_isr(void (*isr)(struct pci_dev *dev), struct pci_dev *dev)
 int pci_deinstall_isr(void (*isr)(struct pci_dev *dev), struct pci_dev *dev)
 {
     while(pci_irq_handles->lock){}
-    pci_irq_handles->lock = true;
+    list_lock(pci_irq_handles);
+        iterator_t handle_it = iterator_create(pci_irq_handles);
         int num = 0;
-        list_set_first(pci_irq_handles);
-        while(!list_is_last(pci_irq_handles))
+        while(!list_is_last(&handle_it))
         {
-            struct pci_isr *current_isr = list_get_current(pci_irq_handles);
+            struct pci_isr *current_isr = list_get_current(&handle_it);
             if(current_isr->isr == isr && current_isr->dev == dev)
             {
-                list_remove(pci_irq_handles);
-                list_set_first(pci_irq_handles);
+                list_remove(&handle_it);
+                list_set_first(&handle_it);
                 num++;
             }
             else
-                list_next(pci_irq_handles);
+                list_next(&handle_it);
         }
-    pci_irq_handles->lock = false;
+    list_unlock(pci_irq_handles);
     return num;
 }
 
@@ -245,24 +244,24 @@ list_t *pci_dev_list;
 void pci_irq_handler(void)
 {
     struct list_node *backup = pci_dev_list->head;
-    list_set_first(pci_dev_list);
-    while(!list_is_last(pci_dev_list))
+    iterator_t pci_dev_it = iterator_create(pci_dev_list);
+    while(!list_is_last(&pci_dev_it))
     {
-        struct pci_dev * current_dev = list_get_current(pci_dev_list);
+        struct pci_dev * current_dev = list_get_current(&pci_dev_it);
         uint16_t status = pci_readw(current_dev->bus, current_dev->dev, current_dev->func, PCI_STATUS);
         if(status & PCI_STATUS_INT)
         {
-            list_set_first(pci_irq_handles);
-            while(!list_is_last(pci_irq_handles))
+            iterator_t pci_irq_it = iterator_create(pci_irq_handles);
+            while(!list_is_last(&pci_irq_it))
             {
-                struct pci_isr *current_isr = list_get_current(pci_irq_handles);
+                struct pci_isr *current_isr = list_get_current(&pci_irq_it);
                 if(current_isr->dev == current_dev)
                     current_isr->isr(current_dev);
-                list_next(pci_irq_handles);
+                list_next(&pci_irq_it);
             }
             pci_writel(current_dev->bus, current_dev->dev, current_dev->func, PCI_STATUS, status ^ 1);
         }
-        list_next(pci_dev_list);
+        list_next(&pci_dev_it);
     }
     //printf("PCI-IRQ!\n");
     pci_dev_list->head = backup;

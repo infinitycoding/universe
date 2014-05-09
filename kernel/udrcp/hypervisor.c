@@ -49,13 +49,13 @@ list_t *interrupts;
 
 void subsystem_isr(int irq)
 {
-    list_set_first(interrupts);
-    while(!list_is_last(interrupts) && !list_is_empty(interrupts))
+    iterator_t int_it = iterator_create(interrupts);
+    while(!list_is_last(&int_it) && !list_is_empty(interrupts))
     {
-        struct int_relation *rel = list_get_current(interrupts);
+        struct int_relation *rel = list_get_current(&int_it);
         if(rel->intnr == irq)
             send_package(rel->drv, INTSIG, 0, NULL);
-        list_next(interrupts);
+        list_next(&int_it);
     }
 }
 
@@ -90,20 +90,20 @@ void INIT_HYPERVISOR(int argc, void **argv)
         while(1);
     }
 
-    list_set_first(subdrivers);
+    iterator_t subdriver_it = iterator_create(subdrivers);
 
     /** NOTE: current implementation is based on polling. Switch to pipetrigger as fast as possible**/
 
     while(1)
     {
 
-        pman = list_get_current(subdrivers);
+        pman = list_get_current(&subdriver_it);
         pck_t *pck = fetch_pipe(pman);
         if(!pck)
         {
-            list_next(subdrivers);
-            if(list_is_last(subdrivers))
-                list_set_first(subdrivers);
+            list_next(&subdriver_it);
+            if(list_is_last(&subdriver_it))
+                list_set_first(&subdriver_it);
             continue;
         }
 
