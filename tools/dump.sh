@@ -1,2 +1,2 @@
 #!bin/sh
-objdump kernel/src/kernel32.elf -d >>dump.asm
+objdump kernel/kernel32.elf -d >>dump.asm
