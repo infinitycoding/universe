@@ -58,13 +58,14 @@ void suspend_thread(struct thread_state *object)
     if(list_is_empty(running_threads))
         return;
 
-    list_set_first(running_threads);
-    while(list_get_current(running_threads) != object && !list_is_last(running_threads))
-        list_next(running_threads);
+    iterator_t it = iterator_create(running_threads);
+    list_set_first(&it);
+    while(list_get_current(&it) != object && !list_is_last(&it))
+        list_next(&it);
 
-    if(list_get_current(running_threads) == object)
+    if(list_get_current(&it) == object)
     {
-        list_remove(running_threads);
+        list_remove(&it);
         object->ticks  =  0;
         object->flags &= ~THREAD_ACTIV;
     }
@@ -81,14 +82,15 @@ void suspend_process(struct process_state *object)
     if(list_is_empty(object->threads))
         return;
 
-    list_set_first(object->threads);
-    while(!list_is_last(object->threads))
+    iterator_t it = iterator_create(object->threads);
+    list_set_first(&it);
+    while(!list_is_last(&it))
     {
-        struct thread_state *thread = (struct thread_state *)list_get_current(object->threads);
+        struct thread_state *thread = (struct thread_state *)list_get_current(&it);
         if(thread->flags & THREAD_ACTIV)
             suspend_thread(thread);
 
-        list_next(object->threads);
+        list_next(&it);
     }
 
     object->flags &= ~PROCESS_ACTIVE;
@@ -115,13 +117,14 @@ void wakeup_thread(struct thread_state *object)
 void wakeup_process(struct process_state *object)
 {
     struct process_state *process = object;
-    list_set_first(process->threads);
-    while(!list_is_empty(process->threads) && !list_is_last(process->threads))
+    iterator_t it = iterator_create(process->threads);
+    list_set_first(&it);
+    while(!list_is_empty(process->threads) && !list_is_last(&it))
     {
-        struct thread_state *thread = (struct thread_state *)list_get_current(process->threads);
+        struct thread_state *thread = (struct thread_state *)list_get_current(&it);
         if(!(thread->flags & THREAD_ACTIV))
             wakeup_thread(thread);
-        list_next(process->threads);
+        list_next(&it);
     }
     object->flags |= PROCESS_ACTIVE;
 }
@@ -136,39 +139,39 @@ void wakeup_process(struct process_state *object)
 int remove_event_trigger(void *object, uint32_t ID)
 {
     int removed_elements = 0;
+    iterator_t it = iterator_create(trigger_list);
+    list_set_first(&it);
     if(ID == 0)
-    {
-        list_set_first(trigger_list);
-        while(!list_is_last(trigger_list) && !list_is_empty(trigger_list))
+    {    
+        while(!list_is_last(&it) && !list_is_empty(trigger_list))
         {
-            struct trigger_entry *current_entry = list_get_current(trigger_list);
+            struct trigger_entry *current_entry = list_get_current(&it);
             if(current_entry->object == object)
             {
-                list_remove(trigger_list);
+                list_remove(&it);
                 if(current_entry->type == WAIT_EVENT)
                     list_push_front(event_id_list,(void*)current_entry->ID);
                 free(current_entry);
                 removed_elements++;
             }
-            list_next(trigger_list);
+            list_next(&it);
         }
     }
     else
     {
-        list_set_first(trigger_list);
-        while(!list_is_last(trigger_list) && !list_is_empty(trigger_list))
+        while(!list_is_last(&it) && !list_is_empty(trigger_list))
         {
-            struct trigger_entry *current_entry = list_get_current(trigger_list);
+            struct trigger_entry *current_entry = list_get_current(&it);
             if(current_entry->object == object && current_entry->ID == ID)
             {
-                list_remove(trigger_list);
+                list_remove(&it);
                 if(current_entry->type == WAIT_EVENT)
                     list_push_front(event_id_list,(void*)current_entry->ID);
                 free(current_entry);
                 removed_elements++;
                 break;
             }
-            list_next(trigger_list);
+            list_next(&it);
         }
     }
     return removed_elements;
@@ -183,13 +186,14 @@ int remove_event_trigger(void *object, uint32_t ID)
 int remove_event(uint32_t ID)
 {
     int removed_elements = 0;
-    list_set_first(trigger_list);
-    while(!list_is_last(trigger_list) && !list_is_empty(trigger_list))
+    iterator_t it = iterator_create(trigger_list);
+    list_set_first(&it);
+    while(!list_is_last(&it) && !list_is_empty(trigger_list))
     {
-        struct trigger_entry *current_entry = list_get_current(trigger_list);
+        struct trigger_entry *current_entry = list_get_current(&it);
         if(current_entry->ID == ID)
         {
-            list_remove(trigger_list);
+            list_remove(&it);
             if(current_entry->type == WAIT_EVENT)
                 list_push_front(event_id_list,(void*)current_entry->ID);
             free(current_entry);
@@ -197,7 +201,7 @@ int remove_event(uint32_t ID)
             break;
         }
 
-        list_next(trigger_list);
+        list_next(&it);
     }
     return removed_elements;
 }
@@ -211,10 +215,11 @@ int remove_event(uint32_t ID)
 int send_event(uint32_t ID)
 {
     int ret = false;
-    list_set_first(trigger_list);
-    while(!list_is_last(trigger_list) && !list_is_empty(trigger_list))
+    iterator_t it = iterator_create(trigger_list);
+    list_set_first(&it);
+    while(!list_is_last(&it) && !list_is_empty(trigger_list))
     {
-        struct trigger_entry *current_entry = list_get_current(trigger_list);
+        struct trigger_entry *current_entry = list_get_current(&it);
         if(current_entry->ID == ID && current_entry->type == WAIT_EVENT)
         {
             if(current_entry->proc)
@@ -242,7 +247,7 @@ int send_event(uint32_t ID)
             remove_event(ID);
             ret = true;
         }
-        list_next(trigger_list);
+        list_next(&it);
     }
     return ret;
 }
@@ -329,11 +334,12 @@ int add_int_trigger(int irq, struct thread_state *object,void (*callback)(int ir
  **/
 void handle_interupts(struct cpu_state **cpu)
 {
-    list_set_first(trigger_list);
-    while(!list_is_empty(trigger_list) && !list_is_last(trigger_list))
+    iterator_t it = iterator_create(trigger_list);
+    list_set_first(&it);
+    while(!list_is_empty(trigger_list) && !list_is_last(&it))
     {
-        struct trigger_entry *trg = list_get_current(trigger_list);
-        list_next(trigger_list);
+        struct trigger_entry *trg = list_get_current(&it);
+        list_next(&it);
         if(trg->type == WAIT_INT && trg->ID == (*cpu)->intr-IRQ_OFFSET)
         {
             if(trg->callback)
@@ -344,7 +350,7 @@ void handle_interupts(struct cpu_state **cpu)
             if(trg->object && ! (((struct thread_state *)trg->object)->flags & THREAD_ACTIV))
             {
                 ((struct thread_state *)trg->object)->flags |= THREAD_ACTIV;
-                list_insert_after(running_threads,trg->object);
+                list_insert_after(&it,trg->object);
                 ((struct thread_state *)trg->object)->ticks = 10;
                 current_thread->ticks = 0;
                 *cpu = task_schedule(*cpu);
@@ -363,10 +369,11 @@ void handle_interupts(struct cpu_state **cpu)
  **/
 void send_killed_process(struct process_state *proc)
 {
-    list_set_first(trigger_list);
-    while(!list_is_empty(trigger_list) && !list_is_last(trigger_list))
+    iterator_t it = iterator_create(trigger_list);
+    list_set_first(&it);
+    while(!list_is_empty(trigger_list) && !list_is_last(&it))
     {
-        struct trigger_entry *current_entry = list_get_current(trigger_list);
+        struct trigger_entry *current_entry = list_get_current(&it);
 
         if(current_entry->ID == proc->pid && current_entry->type == WAIT_PID) // pid > 0
         {
@@ -381,7 +388,7 @@ void send_killed_process(struct process_state *proc)
                 remove_event_trigger(current_entry->object, current_entry->ID);
             }
 
-            list_remove(trigger_list);
+            list_remove(&it);
             free(current_entry);
             continue;
         }
@@ -404,16 +411,17 @@ void send_killed_process(struct process_state *proc)
             }
             else
             {
-                list_set_first(proc->parent->threads);
-                while(!list_is_empty(proc->parent->threads) && !list_is_last(proc->parent->threads))
+                iterator_t thread_it = iterator_create(proc->parent->threads);
+                list_set_first(&thread_it);
+                while(!list_is_empty(proc->parent->threads) && !list_is_last(&thread_it))
                 {
-                    struct thread_state *thread = list_get_current(proc->parent->threads);
+                    struct thread_state *thread = list_get_current(&thread_it);
                     if(thread == current_entry->object)
                     {
                         wakeup_thread(thread);
                         remove_event_trigger(thread, current_entry->ID);
                     }
-                    list_next(proc->parent->threads);
+                    list_next(&thread_it);
                 }
             }
         }
@@ -425,7 +433,7 @@ void send_killed_process(struct process_state *proc)
                 Please rewrite this case.
             */
         }
-        list_next(trigger_list);
+        list_next(&it);
     }
 
 }
