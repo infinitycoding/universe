@@ -166,7 +166,7 @@ iterator_t iterator_create(list_t *list)
 {
     iterator_t new_iterator;
     new_iterator.list = list;
-    new_iterator.current = list->head;
+    new_iterator.current = list->head->next;
     return new_iterator;
 }
 

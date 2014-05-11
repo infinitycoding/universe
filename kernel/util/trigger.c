@@ -216,7 +216,6 @@ int send_event(uint32_t ID)
 {
     int ret = false;
     iterator_t it = iterator_create(trigger_list);
-    list_set_first(&it);
     while(!list_is_last(&it) && !list_is_empty(trigger_list))
     {
         struct trigger_entry *current_entry = list_get_current(&it);
@@ -224,30 +223,39 @@ int send_event(uint32_t ID)
         {
             if(current_entry->proc)
             {
-		wakeup_process(current_entry->object);
-		remove_event_trigger(current_entry->object, current_entry->ID);
+		        wakeup_process(current_entry->object);
+		        remove_event_trigger(current_entry->object, current_entry->ID);
             }
             else
             {
-		struct thread_state *thread = current_entry->object;
-		remove_event_trigger(current_entry->object, current_entry->ID);
-		wakeup_thread(thread);
+		        struct thread_state *thread = current_entry->object;
+		        remove_event_trigger(current_entry->object, current_entry->ID);
+		        wakeup_thread(thread);
 
-                if(current_entry->callback != NULL) {
-			struct cpu_state **cpu = &thread->state;
-			struct thread_state *tmp = current_thread;
-			current_thread = thread;
-			vmm_switch_context(&current_thread->context);
-                	current_entry->callback(cpu);
-			current_thread = tmp;
-			vmm_switch_context(&current_thread->context);
+                if(current_entry->callback != NULL)
+                {
+        			struct cpu_state **cpu = &thread->state;
+        			struct thread_state *tmp = current_thread;
+        			current_thread = thread;
+        			vmm_switch_context(&current_thread->context);
+                    current_entry->callback(cpu);
+        			current_thread = tmp;
+        			vmm_switch_context(&current_thread->context);
                 }
             }
-
-            remove_event(ID);
+            // that's a temporary workaround. I have to fix it later.
+            // the problems are caused by blitzbasics list ports. 
             ret = true;
+            list_remove(&it);
+            if(current_entry->type == WAIT_EVENT)
+                list_push_front(event_id_list,(void*)current_entry->ID);
+            free(current_entry);
+            if(list_is_last(&it))
+                return ret;
+            list_set_first(&it);
         }
-        list_next(&it);
+        else
+            list_next(&it);
     }
     return ret;
 }
