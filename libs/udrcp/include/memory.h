@@ -25,30 +25,57 @@
 
 #include <udrcp.h>
 
-{
-    pma_mem,
-    shm_mem,
-}mem_type;
 
 
 
 typedef struct
 {
-     mem_type type;
-     void *membase;
-     void *phys_base;
-     unsigned int range;
-}mem_t;
+    pckmgr *mgr;
+    void *mem_base;
+    size_t range;
+}shm_mem_t;
+
+typedef struct
+{
+    pckmgr *mgr;
+    void *mem_base;
+    void *phys_base;
+    size_t range;
+}pma_mem_t;
+
+typedef enum
+{
+    pma_random = 1,
+    pma_specific = 2,
+    pma_lower = 3,
+}pma_t;
+
+struct pma_request
+{
+    pma_t type;
+    size_t size;
+    void *phys_base;
+};
+
+struct pma_response
+{
+    void *mem_base;
+    void *phys_base;
+};
 
 
-mem_t *alloc_shm(pckmgr *conn, size_t size);
-mem_t *alloc_pma(pckmgr *conn, size_t size);
-mem_t *alloc_pma_area(pckmgr *conn, void *phys_base, size_t size);
+shm_mem_t *alloc_shm(pckmgr *mgr, size_t size);
+pma_mem_t *alloc_pma(pckmgr *mgr, size_t size);
+pma_mem_t *alloc_pma_area(pckmgr *mgr, void *phys_base, size_t size);
+pma_mem_t *alloc_pma_lower_area(pckmgr *mgr, void *phys_limit, size_t size);
 
-int share_block(pckmgr *conn, mem_t *mem, size_t range);
-int hand_block(pckmgr *conn, mem_t *mem, size_t range);
+int share_block(pckmgr *mgr, shm_mem_t *mem, size_t range);
+int hand_block(pckmgr *mgr, shm_mem_t *mem, size_t range);
 
-int free_shm(mem_t *mem);
-int free_pma(mem_t *mem);
+
+
+
+int free_shm(shm_mem_t *mem);
+int free_pma(pma_mem_t *mem);
 
  #endif
