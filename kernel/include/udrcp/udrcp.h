@@ -43,14 +43,16 @@ typedef unsigned int pcktype_t;
 #define RESET_CON   0
 #define DISCONNECT  1
 #define PING        2
-#define DMA_ALLOC   3
-#define DMA_FREE    4
+#define PMA_ALLOC   3
+#define PMA_FREE    4
 #define INT_REQ     5
 #define INT_FREE    6
 #define PORT_ALLOC  7
 #define PORT_FREE   8
 #define VPORT_R     9
 #define VPORT_W     10
+#define SHM_ALLOC   11
+#define SHM_FREE    12
 
 
 /// Subsystem Response
