@@ -314,7 +314,7 @@ int skip_until_whitespace(char *pipelines, int *start)
  */
 int skip_until_colon(char *pipelines, int *start)
 {
-    for(; pipelines[(*start)] != ':'; (*start)++);
+    for(; pipelines[(*start)] != ':' && pipelines[(*start)] != '\0'; (*start)++);
 
     return (*start);
 }
