@@ -20,7 +20,7 @@
 /**
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  *  @author Peter Hösch aka. BlitzBasic <peter.hoesch@infinitycoding.de>
- **/
+ */
 
 
 #include <stdint.h>
@@ -31,6 +31,11 @@
 
 
 
+/**
+ * @brief parsers a pipeline file
+ * @param pipelines the pipeline file as a ascii string
+ * @return a list of the sections
+ */
 list_t *pfp(char *pipelines)
 {
     bool valid = validate_pf(pipelines);
@@ -62,6 +67,12 @@ list_t *pfp(char *pipelines)
 }
 
 
+/**
+ * @brief validates a pipeline file
+ * @param pipelines the pipeline file as a ascii string
+ * @return true if the pipeline file is valid
+ * @return false if the pipeline file is invalid
+ */
 bool validate_pf(char *pipelines)
 {
     // TODO
@@ -70,6 +81,11 @@ bool validate_pf(char *pipelines)
 }
 
 
+/**
+ * @brief counts the number of sections in a pipeline file
+ * @param pipelines the pipeline file as a ascii string
+ * @return the number of sections
+ */
 int count_sections(char *pipelines)
 {
     int i = 0;
@@ -89,6 +105,11 @@ int count_sections(char *pipelines)
 }
 
 
+/**
+ * @brief parsers a section of a pipeline file
+ * @param pipelines the pipeline file as a ascii string
+ * @param section_pos the position in the string where the section starts
+ */
 struct section *parser_section(char *pipelines, int *section_pos)
 {
     find_next_section(pipelines, section_pos);
@@ -128,6 +149,12 @@ struct section *parser_section(char *pipelines, int *section_pos)
 }
 
 
+/**
+ * @brief finds the next section in a pipeline file
+ * @param pipelines the pipeline file as a ascii string
+ * @param search_begin the point in the string where i should start searching
+ * @return the position of the next section
+ */
 int find_next_section(char *pipelines, int *search_begin)
 {
     for(; pipelines[(*search_begin) + STRING_SECTION_LEN] != '\0'; (*search_begin)++)
@@ -144,6 +171,12 @@ int find_next_section(char *pipelines, int *search_begin)
 }
 
 
+/**
+ * @brief finds the end of a section in a pipeline file
+ * @param pipelines the pipeline file as a ascii string
+ * @param search_begin the point in the string where i should start searching
+ * @return the point of the end of the current section
+ */
 int find_end_of_section(char *pipelines, int *search_begin)
 {
     int i;
@@ -161,12 +194,23 @@ int find_end_of_section(char *pipelines, int *search_begin)
 }
 
 
+/**
+ * @brief checks if a character is a whitespace
+ * @param character the character
+ * @return true or false
+ */
 bool is_whitespace(char character)
 {
     return ((character == ' ' || character == '\t' || character == '\n') ? true : false);
 }
 
 
+/**
+ * @brief skips whitespaces in a string
+ * @param pipelines the string
+ * @param start the current position in the string
+ * @return the new position in the string
+ */
 int skip_whitespaces(char *pipelines, int *start)
 {
     for(; is_whitespace(pipelines[(*start)]); (*start)++);
@@ -175,6 +219,12 @@ int skip_whitespaces(char *pipelines, int *start)
 }
 
 
+/**
+ * @brief counts the length of the name of a section
+ * @param pipelines the string in which the section name is
+ * @param start the position of the section name
+ * @return the length of the sections name
+ */
 int count_sectionname_length(char *pipelines, int *start)
 {
     int i = (*start);
@@ -187,6 +237,12 @@ int count_sectionname_length(char *pipelines, int *start)
 }
 
 
+/**
+ * @brief looks up the type of a section
+ * @param pipelines the string in which i should look up the section type
+ * @param start the position of the section type definition
+ * @return the type of the section
+ */
 ptype get_section_type(char *pipelines, int *start)
 {
     ptype t = NOTHING;
@@ -217,6 +273,12 @@ ptype get_section_type(char *pipelines, int *start)
 }
 
 
+/**
+ * @brief checks if there is a section type given
+ * @param pipelines the string in which the section type could be
+ * @param start the position where i should look for a section type
+ * @return true or false
+ */
 bool check_section_type_given(char *pipelines, int *start)
 {
     int i = (*start);
@@ -230,6 +292,12 @@ bool check_section_type_given(char *pipelines, int *start)
 }
 
 
+/**
+ * @brief skips all characters in a string until the next whitespace
+ * @param pipelines the string
+ * @param start the current position
+ * @return the position after skipping the characters
+ */
 int skip_until_whitespace(char *pipelines, int *start)
 {
     for(; !is_whitespace(pipelines[(*start)]); (*start)++);
@@ -238,6 +306,12 @@ int skip_until_whitespace(char *pipelines, int *start)
 }
 
 
+/**
+ * @brief skips all characters in a string until the next colon
+ * @param pipelines the string
+ * @param start the current position
+ * @return the position after skipping the characters
+ */
 int skip_until_colon(char *pipelines, int *start)
 {
     for(; pipelines[(*start)] != ':'; (*start)++);
@@ -246,6 +320,13 @@ int skip_until_colon(char *pipelines, int *start)
 }
 
 
+/**
+ * @brief parsers a pnode in a pipeline file
+ * @param pipelines the pipeline file as a ascii string
+ * @param start the position of the pnode
+ * @param other a list of all pnodes until here (for services)
+ * @return a pointer to the pnode struct
+ */
 struct pnode *parser_pnode(char *pipelines, int *start, list_t *other)
 {
     struct pnode *node = (struct pnode *)malloc(sizeof(struct pnode));
@@ -310,6 +391,12 @@ struct pnode *parser_pnode(char *pipelines, int *start, list_t *other)
 }
 
 
+/**
+ * @brief searches the end of a pnode
+ * @param pipelines the string in which the pnode is located
+ * @param start the current position
+ * @return the end of the pnode
+ */
 int find_pnode_end(char *pipelines, int *start)
 {
     int i;
@@ -327,6 +414,13 @@ int find_pnode_end(char *pipelines, int *start)
 }
 
 
+/**
+ * @brief checks if a pnode is a service
+ * @param pipelines the string with the pnod in it
+ * @param start the start of the pnode
+ * @param end the end of the pnode
+ * @return true or false
+ */
 bool is_service(char *pipelines, int start, int end)
 {
     int i;
@@ -339,6 +433,13 @@ bool is_service(char *pipelines, int start, int end)
 }
 
 
+/**
+ * @brief checks if a pnode is kernelroot
+ * @param pipelines the string with the pnod in it
+ * @param start the start of the pnode
+ * @param end the end of the pnode
+ * @return true or false 
+ */
 bool is_kernelroot(char *pipelines, int start, int end)
 {
     int i;
@@ -351,6 +452,13 @@ bool is_kernelroot(char *pipelines, int start, int end)
 }
 
 
+/**
+ * @brief returns the type of a pnode
+ * @param pipelines the string with the pnod in it
+ * @param start the start of the pnode
+ * @param end the end of the pnode
+ * @return the type of a pnode
+ */
 ptype get_ptype(char *pipelines, int start, int end)
 {
     ptype result = NOTHING;
@@ -365,6 +473,13 @@ ptype get_ptype(char *pipelines, int start, int end)
 }
 
 
+/**
+ * @brief returns the name of a pnode
+ * @param pipelines the string with the pnod in it
+ * @param start the start of the pnode
+ * @param end the end of the pnode
+ * @return the name of a pnode
+ */
 char *get_pnode_filename(char *pipelines, int start, int end)
 {
     int i;
@@ -390,10 +505,10 @@ char *get_pnode_filename(char *pipelines, int start, int end)
 
 /**
 * @brief Get module Data Block
-* @param 0 multiboot struct
-* @param 1module name
+* @param mb_info multiboot struct
+* @param name module name
 * @return moduel information
-**/
+*/
 struct mods_add* find_module(struct multiboot_struct *mb_info, char *name)
 {
     int i;
