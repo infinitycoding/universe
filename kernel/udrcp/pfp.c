@@ -1,17 +1,17 @@
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
- 
+
      The Universe Kernel is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
- 
+
      The Universe Kernel is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU General Public License for more details.
- 
+
      You should have received a copy of the GNU General Public License
      along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -23,9 +23,11 @@
  **/
 
 
- #include <string.h>
- #include <mm/heap.h>
- #include <udrcp/pfp.h>
+#include <stdint.h>
+#include <string.h>
+#include <sys/multiboot.h>
+#include <mm/heap.h>
+#include <udrcp/pfp.h>
 
 
 
@@ -64,7 +66,7 @@ bool validate_pf(char *pipelines)
 {
     // TODO
 
-    return FALSE;
+    return true;
 }
 
 
@@ -78,10 +80,10 @@ int count_sections(char *pipelines)
         if(pipelines[i] == '#')
             for(; pipelines[i] != '\n'; i++);
 
-        if(strncmp(&pipelines[i], "section", STRING_SECTION_LEN) == 0)
+        if(!strncmp(&pipelines[i], "section", STRING_SECTION_LEN))
             nr++;
     }
-        
+
 
     return nr;
 }
@@ -114,13 +116,11 @@ struct section *parser_section(char *pipelines, int *section_pos)
             while(pipelines[(*section_pos)] != '\n' || pipelines[(*section_pos)] != '\0' || pipelines[(*section_pos)] >= section_end)
                     (*section_pos)++;
         }
-        else if(is_whitespace(pipelines[(*section_pos)]))
-        {
-            skip_whitespaces(pipelines, section_pos);
-        }
         else if(pipelines[(*section_pos)] == '<')
         {
-            list_push_back(this->subtree, parser_pnode(pipelines, section_pos, this->subtree));
+            struct pnode *node = parser_pnode(pipelines, section_pos, this->subtree);
+
+            list_push_back(this->subtree, node);
         }
     }
 
@@ -138,7 +138,7 @@ int find_next_section(char *pipelines, int *search_begin)
         if(strncmp(&pipelines[(*search_begin)], "section", STRING_SECTION_LEN) == 0)
             break;
     }
-        
+
 
     return (*search_begin);
 }
@@ -191,7 +191,7 @@ ptype get_section_type(char *pipelines, int *start)
 {
     ptype t = NOTHING;
 
-    if(check_section_type_given(pipelines, start) == FALSE)
+    if(check_section_type_given(pipelines, start) == false)
         return UNDEFINED;
 
     skip_whitespaces(pipelines, start);
@@ -223,9 +223,9 @@ bool check_section_type_given(char *pipelines, int *start)
 
     for(; pipelines[i] != ':'; i++)
         if(pipelines[i] == '(')
-            return TRUE;
+            return true;
 
-    return FALSE;
+    return false;
 
 }
 
@@ -253,7 +253,58 @@ struct pnode *parser_pnode(char *pipelines, int *start, list_t *other)
     node->type = get_ptype(pipelines, (*start), pnode_end);
     node->file = get_pnode_filename(pipelines, (*start), pnode_end);
 
-    //TODO
+    (*start) = pnode_end;
+
+    for(; pipelines[(*start)] != ';'; (*start)++)
+    {
+        if(pipelines[(*start)] == '|')
+        {
+            for(; pipelines[(*start)] != '<' && pipelines[(*start)] != '['; (*start)++);
+
+            if(pipelines[(*start)] == '<')
+            {
+                struct pnode *subnode = parser_pnode(pipelines, start, other);
+                list_push_back(node->subtree, subnode);
+            }
+            else
+            {
+                for(; pipelines[(*start)] != ']'; (*start)++)
+                {
+                    if(pipelines[(*start)] == '<')
+                    {
+                        struct pnode *subnode = parser_pnode(pipelines, start, other);
+                        list_push_back(node->subtree, subnode);
+                    }
+                }
+            }
+        }
+        else if(pipelines[(*start)] == '~')
+        {
+            for(; pipelines[(*start)] != '<' && pipelines[(*start)] != '{'; (*start)++);
+
+            if(pipelines[(*start)] == '<')
+            {
+                struct pnode *subnode = parser_pnode(pipelines, start, other);
+                node->fallback = subnode;
+            }
+            else
+            {
+                struct pnode *currentnode = node;
+
+                for(; pipelines[(*start)] != '}'; (*start)++)
+                {
+                    if(pipelines[(*start)] == '<')
+                    {
+                        struct pnode *subnode = parser_pnode(pipelines, start, other);
+                        currentnode->fallback = subnode;
+                        currentnode = subnode;
+                    }
+                }
+            }
+        }
+    }
+
+    (*start)++;
 
     return node;
 }
@@ -268,7 +319,7 @@ int find_pnode_end(char *pipelines, int *start)
         if(pipelines[i] == '#')
             for(; pipelines[i] != '\n'; i++);
 
-        if(pipelines[i] == '>')
+        if(pipelines[i-1] != '-' && pipelines[i] == '>')
             break;
     }
 
@@ -316,5 +367,51 @@ ptype get_ptype(char *pipelines, int start, int end)
 
 char *get_pnode_filename(char *pipelines, int start, int end)
 {
-    // TODO
+    int i;
+
+    for(i = start; pipelines[i] != '>'; i++)
+    {
+        if(!strncmp(&pipelines[i], "->", ARROW_LEN))
+            i += ARROW_LEN;
+        else if(!strncmp(&pipelines[i], "service", STRING_SERVICE_LEN))
+            i += STRING_SERVICE_LEN;
+        else if(!is_whitespace(pipelines[i]) && pipelines[i] != '<')
+        {
+            int len = end - i;
+            char *name = (char *)malloc(sizeof(char) * (len + 1));
+            strncpy(name, &pipelines[i], len);
+            return name;
+        }
+    }
+
+    return NULL;
+}
+
+
+/**
+* @brief Get module Data Block
+* @param 0 multiboot struct
+* @param 1module name
+* @return moduel information
+**/
+struct mods_add* find_module(struct multiboot_struct *mb_info, char *name)
+{
+    int i;
+    while(*name == ' ' || *name == '\t')
+        name++;
+    int n = 0;
+    while(name[n] != ' ' && name[n] != '\0')
+
+        n++;
+
+    struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
+    for(i = 0; i < mb_info->mods_count; i++)
+     {
+        if(! strncmp(name, modules[i].string, n))
+        {
+            return &modules[i];
+        }
+
+    }
+    return NULL;
 }

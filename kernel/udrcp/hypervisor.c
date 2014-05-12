@@ -26,7 +26,7 @@
 #include <printf.h>
 #include <trigger.h>
 
-#include <udrcp/drvlst.h>
+#include <udrcp/pfp.h>
 #include <udrcp/ioport.h>
 #include <udrcp/hypervisor.h>
 
@@ -64,13 +64,13 @@ void INIT_HYPERVISOR(int argc, void **argv)
     subdrivers = list_create();
     interrupts = list_create();
     struct multiboot_struct *mb_info =  argv[1];
-    char **drv_list =  argv[0];
-    int i;
+    struct section *current_section = argv[0];
     pckmgr *pman;
     printf("hypervisor subsystems:\n");
-    for(i = 0; drv_list[i]; i++)
+    iterator_t i = iterator_create(current_section->subtree);
+    while(!list_is_last(&i))
     {
-        struct mods_add *drv_mod = (struct mods_add *)find_module(mb_info, drv_list[i]);
+        struct mods_add *drv_mod = (struct mods_add *)find_module(mb_info, ((struct pnode *)list_get_current(&i))->file);
         if(drv_mod != NULL)
         {
             size_t drv_len = drv_mod->mod_end - drv_mod->mod_start;
@@ -79,8 +79,9 @@ void INIT_HYPERVISOR(int argc, void **argv)
             pman = new_pckmgr(vfs_create_pipe(0, 0), vfs_create_pipe(0, 0), vfs_create_pipe(0, 0));
             load_elf(driver,0,0,&pman->pset);
             list_push_front(subdrivers,pman);
-            printf("%s: %p\n",drv_list[i], drv_mod);
+            printf("%s: %p\n", ((struct pnode *)list_get_current(&i))->file, drv_mod);
         }
+        list_next(&i);
     }
     printf("\n");
     //Poll packages
