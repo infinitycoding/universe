@@ -71,10 +71,10 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
     INIT_HEAP();
     INIT_VFS();
     INIT_TRIGGER();
-    asm volatile("sti");
     INIT_PIT(200);
     INIT_RTC();
     INIT_SCHEDULER();
+    asm volatile("sti");
     //print Logo and loading message
     print_logo(YELLOW);
     puts("Universe wird gestartet...\n");
@@ -124,9 +124,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
         load_elf(shell,0,0,NULL);
     }
 
-    dump_thread_list(running_threads);
 
-    //while(1);
 
     return 0;
 }
