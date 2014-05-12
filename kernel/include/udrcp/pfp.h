@@ -41,11 +41,11 @@
 #define UNDEFINED 32
 #define FAILTURE 64
 
-#define STRING_SECTION_LEN 7
-#define STRING_REPLACE_LEN 7
-#define STRING_APPEND_LEN 6
-#define STRING_SERVICE_LEN 7
-#define ARROW_LEN 2
+#define STRING_SECTION_LEN 6
+#define STRING_REPLACE_LEN 6
+#define STRING_APPEND_LEN 5
+#define STRING_SERVICE_LEN 6
+#define ARROW_LEN 1
 
 
 
@@ -90,6 +90,7 @@ bool is_service(char *pipelines, int start, int end);
 bool is_kernelroot(char *pipelines, int start, int end);
 ptype get_ptype(char *pipelines, int start, int end);
 char *get_pnode_filename(char *pipelines, int start, int end);
+struct mods_add* find_module(struct multiboot_struct *mb_info, char *name);
 
 
 

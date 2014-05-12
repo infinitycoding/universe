@@ -46,7 +46,7 @@
 #include <mutex.h>
 #include "memory_layout.h"
 #include <udrcp/hypervisor.h>
-#include <udrcp/drvlst.h>
+#include <udrcp/pfp.h>
 /**
 * Initalize the Kernel
 *
@@ -100,18 +100,19 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
         modules[i].string = virt + diff;
     }
 
-    struct mods_add *mod = (struct mods_add *)find_module(mb_info, "/boot/drivers.dat");
+    struct mods_add *mod = (struct mods_add *)find_module(mb_info, "/drivers/system.pf");
 
     if(mod != NULL) {
     	size_t len = mod->mod_end - mod->mod_start;
     	size_t pages = NUM_PAGES(len);
-    	char *drv_list = (void*)vmm_automap_kernel_range(current_context,(paddr_t) mod->mod_start, pages, VMM_WRITABLE);
+    	char *pf = (void*)vmm_automap_kernel_range(current_context,(paddr_t) mod->mod_start, pages, VMM_WRITABLE);
      	int argc = 2;
      	void *argv[2];
-     	char ** c = get_table_section("UHOST",drv_list);
+        list_t *pipelines = pfp(pf);
+     	struct section *sec = list_pop_front(pipelines);
 
         argv[1] = mb_info;
-     	argv[0] = c;
+     	argv[0] = sec;
      	kernel_thread_create((uintptr_t)INIT_HYPERVISOR,argc,argv);
     }
 
@@ -125,7 +126,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 
     dump_thread_list(running_threads);
 
-
+    //while(1);
 
     return 0;
 }
