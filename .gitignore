@@ -9,9 +9,10 @@ Thumbs.db
 #Kernel Ausführbare Dateien ignoriere
 *.elf
 
-#glibc nicht mit nehmen
+# portierungen nicht mit nehmen
 bin/
 cc/
+download/
 newlib/
 
 #Andere unerwünschte Daten
@@ -26,6 +27,7 @@ newlib/
 *.h~
 *.gen~
 *~
+*.swp
 makefile~
 Makefile~
 *.ld~
