@@ -14,16 +14,17 @@ download:
 	mkdir -p target
 	mkdir -p build
 
-configure_binutils: download	
-	cd $(BINUTILS); \
-	patch -p1 < ../binutils.patch; \
-	cd ..; \
-	mkdir -p build/$(BINUTILS); \
-	cd build/$(BINUTILS); \
+configure_binutils: download
 	if [ ! -f config.log ]; then \
-		../../$(BINUTILS)/configure --prefix="`pwd`/../../target" --with-sysroot=`pwd` --target=i686-elf -disable-nls  CFLAGS="-w"; \
-	fi;\
-	cd ../..;
+		cd $(BINUTILS); \
+		patch -p1 < ../binutils.patch; \
+		cd ..; \
+		cp -rT binutils_adapted $(BINUTILS); \
+		mkdir -p build/$(BINUTILS); \
+		cd build/$(BINUTILS); \
+		../../$(BINUTILS)/configure --prefix="`pwd`/../../target" --with-sysroot=`pwd` --target=i686-pc-universe -disable-nls CFLAGS="-w"; \
+		cd ../..; \
+	fi
 
 binutils: configure_binutils
 	$(MAKE) -C build/$(BINUTILS)
@@ -34,7 +35,7 @@ configure_gcc: download binutils
 	mkdir -p build/$(GCC); \
 	cd build/$(GCC) ;\
 	if [ ! -f config.log ]; then \
-		../../$(GCC)/configure --prefix="`pwd`/../../target" --target=i686-elf --disable-nls --enable-languages=c --disable-shared --disable-libssp --without-docdir CFLAGS="-I/usr/include/"; \
+		../../$(GCC)/configure --prefix="`pwd`/../../target" --target=i686-universe-elf --disable-nls --enable-languages=c --disable-shared --disable-libssp --without-docdir CFLAGS="-I/usr/include/"; \
 	fi;\
 	cd ../..;
 
