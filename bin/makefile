@@ -4,16 +4,13 @@ all: download configure_binutils binutils configure_gcc gcc
 
 BINUTILS = binutils-2.24
 GCC = gcc-4.7.3
+GNU = ftp://ftp.gnu.org/gnu
 
 download:
-	@ if [ ! -d $(BINUTILS) ]; then \
-		wget ftp.gnu.org/gnu/binutils/$(BINUTILS).tar.bz2; \
-		tar -xjf $(BINUTILS).tar.bz2; \
-	fi
-	@ if [ ! -d $(GCC) ]; then \
-		wget ftp.gnu.org/gnu/gcc/$(GCC)/$(GCC).tar.bz2; \
-		tar -xjf $(GCC).tar.bz2; \
-	fi
+	$(MAKE) -C ../download load unpack NAME=$(BINUTILS) DPATH=$(GNU)/binutils/$(BINUTILS).tar.bz2
+	$(MAKE) -C ../download load unpack NAME=$(GCC)      DPATH=$(GNU)/gcc/$(GCC)/$(GCC).tar.bz2
+	cp -ru ../download/$(BINUTILS) ./$(BINUTILS)
+	cp -ru ../download/$(GCC) ./$(GCC)
 	mkdir -p target
 	mkdir -p build
 
@@ -33,7 +30,7 @@ binutils: configure_binutils
 	$(MAKE) -C build/$(BINUTILS) install
 
 configure_gcc: download binutils
-	export PATH = $PATH:`pwd`/../../target/bin; \
+	PATH = ${PATH}:`pwd`/../../target/bin; \
 	mkdir -p build/$(GCC); \
 	cd build/$(GCC) ;\
 	if [ ! -f config.log ]; then \

@@ -1,80 +1,95 @@
-diff -ru binutils-2.24/bfd/config.bfd binutils_adapted/bfd/config.bfd
---- binutils-2.24/bfd/config.bfd	2013-11-04 16:33:37.000000000 +0100
-+++ binutils_adapted/bfd/config.bfd	2014-05-07 21:54:24.610342269 +0200
-@@ -139,6 +139,12 @@
- #  Keep obsolete entries above the START comment, to keep them out of
- #  targmatch.h.
+diff -ru binutils-2.24/bfd/config.bfd binutils-2.24_o/bfd/config.bfd
+--- binutils-2.24/bfd/config.bfd	2014-05-13 19:53:05.572151610 +0200
++++ binutils-2.24_o/bfd/config.bfd	2013-11-04 16:33:37.000000000 +0100
+@@ -162,7 +162,6 @@
  
-+i[3-7]86-*-universe*)
-+    targ_defvec=bfd_elf32_i386_vec
-+    targ_selvecs=i386coff_vec
-+    ;;
-+
-+
- case "${targ}" in
-   mips*-dec-bsd*)
-     echo "This target is obsolete and has been removed."
-diff -ru binutils-2.24/config.sub binutils_adapted/config.sub
---- binutils-2.24/config.sub	2013-11-26 12:37:33.000000000 +0100
-+++ binutils_adapted/config.sub	2014-05-07 21:54:24.610342269 +0200
-@@ -1406,6 +1406,9 @@
+ # START OF targmatch.h
+ #ifdef BFD64
+-
+   aarch64-*-elf)
+     targ_defvec=bfd_elf64_littleaarch64_vec
+     targ_selvecs="bfd_elf64_bigaarch64_vec bfd_elf32_littleaarch64_vec bfd_elf32_bigaarch64_vec bfd_elf32_littlearm_vec bfd_elf32_bigarm_vec"
+@@ -685,11 +684,6 @@
+     want64=true
+     ;;
+ #endif
+-
+-  i[3-7]86-*-universe*)
+-    targ_defvec=bfd_elf32_i386_vec
+-    targ_selvecs=i386coff_vec
+-    ;;
+   i[3-7]86-*-lynxos*)
+     targ_defvec=bfd_elf32_i386_vec
+     targ_selvecs="i386lynx_coff_vec i386lynx_aout_vec"
+Only in binutils-2.24/bfd: config.bfd.rej
+Only in binutils-2.24/bfd: config.bfd~
+Only in binutils-2.24: binutils-2.24
+diff -ru binutils-2.24/config.sub binutils-2.24_o/config.sub
+--- binutils-2.24/config.sub	2014-05-13 19:40:23.575454759 +0200
++++ binutils-2.24_o/config.sub	2013-11-26 12:37:33.000000000 +0100
+@@ -1406,9 +1406,6 @@
  	-linux*)
  		os=`echo $os | sed -e 's|linux|linux-gnu|'`
  		;;
-+	-universe*)
-+		os=-universe
-+		;;
+-	-universe*)
+-		os=-universe
+-		;;
  	-sunos5*)
  		os=`echo $os | sed -e 's|sunos5|solaris2|'`
  		;;
-diff -ru binutils-2.24/gas/configure.tgt binutils_adapted/gas/configure.tgt
---- binutils-2.24/gas/configure.tgt	2013-11-04 16:33:37.000000000 +0100
-+++ binutils_adapted/gas/configure.tgt	2014-05-07 21:54:24.613675603 +0200
-@@ -116,6 +116,7 @@
+Only in binutils-2.24: config.sub.rej
+diff -ru binutils-2.24/gas/configure.tgt binutils-2.24_o/gas/configure.tgt
+--- binutils-2.24/gas/configure.tgt	2014-05-13 19:40:23.575454759 +0200
++++ binutils-2.24_o/gas/configure.tgt	2013-11-04 16:33:37.000000000 +0100
+@@ -116,7 +116,6 @@
  generic_target=${cpu_type}-$vendor-$os
  # Note: This table is alpha-sorted, please try to keep it that way.
  case ${generic_target} in
-+  i386-*-universe*)			fmt=elf ;;
+-  i386-*-*-universe*)			fmt=elf ;;
    aarch64*-*-elf)			fmt=elf;;
    aarch64*-*-linux*)			fmt=elf em=linux ;;
  
-diff -ru binutils-2.24/ld/Makefile.in binutils_adapted/ld/Makefile.in
---- binutils-2.24/ld/Makefile.in	2013-11-26 12:37:33.000000000 +0100
-+++ binutils_adapted/ld/Makefile.in	2014-05-07 21:54:24.613675603 +0200
-@@ -54,6 +54,7 @@
+Only in binutils-2.24/gas: configure.tgt.orig
+Only in binutils-2.24/gas: configure.tgt.rej
+diff -ru binutils-2.24/ld/Makefile.in binutils-2.24_o/ld/Makefile.in
+--- binutils-2.24/ld/Makefile.in	2014-05-13 19:40:23.578788092 +0200
++++ binutils-2.24_o/ld/Makefile.in	2013-11-26 12:37:33.000000000 +0100
+@@ -54,7 +54,6 @@
  host_triplet = @host@
  target_triplet = @target@
  bin_PROGRAMS = ld-new$(EXEEXT)
-+targ_emul = universe_i386
+-targ_emul = universe_i386
  
  # Automake 1.9 will only build info files in the objdir if they are
  # mentioned in DISTCLEANFILES.  It doesn't have to be unconditional,
-@@ -571,6 +572,7 @@
+@@ -572,7 +571,6 @@
  	eelf32xstormy16.c \
  	eelf32xtensa.c \
  	eelf_i386.c \
-+	universe_i386.c \
+-	universe_i386.c \
  	eelf_i386_be.c \
  	eelf_i386_chaos.c \
  	eelf_i386_fbsd.c \
-@@ -2752,6 +2754,8 @@
+@@ -2754,8 +2752,6 @@
  eelf_i386.c: $(srcdir)/emulparams/elf_i386.sh \
    $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
  	${GENSCRIPTS} elf_i386 "$(tdir_elf_i386)"
-+universe_i386.c: $(srcdir)/emulparams/universe_i386.sh $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
-+	${GENSCRIPTS} myos_i386 "$(tdir_myos_i386)"
+-universe_i386.c: $(srcdir)/emulparams/universe_i386.sh $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
+-	${GENSCRIPTS} universe_i386 "$(tdir_universe_i386)"
  eelf_i386_be.c: $(srcdir)/emulparams/elf_i386_be.sh \
    $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
  	${GENSCRIPTS} elf_i386_be "$(tdir_elf_i386_be)"
-diff -ru binutils-2.24/ld/configure.tgt binutils_adapted/ld/configure.tgt
---- binutils-2.24/ld/configure.tgt	2013-11-26 12:37:33.000000000 +0100
-+++ binutils_adapted/ld/configure.tgt	2014-05-07 21:54:24.613675603 +0200
-@@ -45,6 +45,7 @@
+Only in binutils-2.24/ld: Makefile.in.rej
+diff -ru binutils-2.24/ld/configure.tgt binutils-2.24_o/ld/configure.tgt
+--- binutils-2.24/ld/configure.tgt	2014-05-13 19:40:23.578788092 +0200
++++ binutils-2.24_o/ld/configure.tgt	2013-11-26 12:37:33.000000000 +0100
+@@ -45,7 +45,6 @@
  # architecture variants should be kept together even if their names
  # break the alpha sorting.
  case "${targ}" in
-+i[3-7]86-*-universe*)    targ_emul=myos_i386 ;;
+-i[3-7]86-universe*)    targ_emul=universe_i386 ;;
  aarch64_be-*-elf)	targ_emul=aarch64elfb
  			targ_extra_emuls="aarch64elf aarch64elf32 aarch64elf32b armelfb armelf" ;;
  aarch64-*-elf)		targ_emul=aarch64elf
-Only in binutils_adapted/ld/emulparams: universe_i386.sh
+Only in binutils-2.24/ld: configure.tgt.orig
+Only in binutils-2.24/ld: configure.tgt.rej
