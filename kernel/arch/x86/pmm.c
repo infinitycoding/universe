@@ -38,18 +38,22 @@
 
 unsigned long pmm_mmap[PMM_MMAP_SIZE];
 
+
 /**
- * Returns the number of free pages
- *
+ * @brief Returns the number of free pages.
  * @return number of free pages
  */
-int pmm_count_free_pages(void) {
+int pmm_count_free_pages(void)
+{
 	int free_pages = 0;
 	int i, z;
 
-	for (i = 0; i < PMM_MMAP_SIZE; i++) {
-		for (z = 0; z < 32; z++) {
-			if (pmm_mmap[i] & (1 << z)) {
+	for (i = 0; i < PMM_MMAP_SIZE; i++)
+	{
+		for (z = 0; z < 32; z++)
+		{
+			if (pmm_mmap[i] & (1 << z))
+			{
 				free_pages++;
 			}
 		}
@@ -57,23 +61,35 @@ int pmm_count_free_pages(void) {
 	return free_pages;
 }
 
+
 /**
- * Mark page als free
- *
- * @param page-pointer on the begin of the page which should be marked as free.
+ * @brief Checs if the page is already in use or not.
+ * @param page the pysical base adress of the page
+ * @return 0 = page is already taken; 1 = Page is free
+ */
+int pmm_check_page(paddr_t page)
+{
+	return pmm_mmap[page / PAGE_SIZE / 32] & (1 << ((page / PAGE_SIZE) & 31));
+}
+
+
+/**
+ * @brief Mark page als free.
+ * @param page pointer on the begin of the page which should be marked as free.
  */
 void pmm_mark_page_as_free(paddr_t page)
 { //TODO: should that be possible from the entire kernel?
 	pmm_mmap[page / PAGE_SIZE / 32] |= 1 << ((page / PAGE_SIZE) & 31);
 }
 
+
 /**
- * Mark num pages as free
- *
- * @param page-pointer on the begin of the first page.
- * @param num of the pages which should be marked as free.
+ * @brief Mark num pages as free.
+ * @param page pointer on the begin of the first page.
+ * @param num number of the pages which should be marked as free.
  */
-void pmm_mark_page_range_as_free(paddr_t page, unsigned int num) {
+void pmm_mark_page_range_as_free(paddr_t page, unsigned int num)
+{
 	int i;
 
 	if (!num)
@@ -84,27 +100,30 @@ void pmm_mark_page_range_as_free(paddr_t page, unsigned int num) {
 		"pages as free would cause a buffer overrun");
 
 
-	for (i = 0; i < num; i++) {
+	for (i = 0; i < num; i++)
+	{
 		pmm_mark_page_as_free(page + i * PAGE_SIZE);
 	}
 }
 
+
 /**
- * mark page as used
- *
- * @param page-pointer on the begin of the first page.
+ * @brief Mark page as used.
+ * @param page pointer on the begin of the first page.
  */
-void pmm_mark_page_as_used(paddr_t page) {
+void pmm_mark_page_as_used(paddr_t page)
+{
 	pmm_mmap[page / PAGE_SIZE / 32] &= ~(1 << ((page / PAGE_SIZE) & 31));
 }
 
+
 /**
- * Mark num pages as used
- *
- * @param page-pointer on the begin of the first page.
- * @param num of the pages which should be marked as free.
+ * @brief Mark num pages as used.
+ * @param page pointer on the begin of the first page.
+ * @param num number of the pages which should be marked as free.
  */
-void pmm_mark_page_range_as_used(paddr_t page, unsigned int num) {
+void pmm_mark_page_range_as_used(paddr_t page, unsigned int num)
+{
 	int i;
 
 	if (!num)
@@ -122,26 +141,29 @@ void pmm_mark_page_range_as_used(paddr_t page, unsigned int num) {
 	}
 }
 
+
 /**
- * Search for a free page and returns a pointer on the begin.
- *
+ * @brief Search for a free page and returns a pointer on the begin.
  * @param lower_limit minimus size of the page.
- *
  * @return If the search is succesful this method returns a pointer on the begin on this page.
  */
-paddr_t pmm_find_free_page(unsigned long lower_limit) {
+paddr_t pmm_find_free_page(unsigned long lower_limit)
+{
 	uint32_t i, z;
 	paddr_t page = 0;
 
 	i = lower_limit / PAGE_SIZE / 32;
-	if (pmm_mmap[i] & (0xffffffff << (( lower_limit / PAGE_SIZE) % 32))) {
+	if (pmm_mmap[i] & (0xffffffff << (( lower_limit / PAGE_SIZE) % 32)))
+	{
 		z = bit_scan_forward(pmm_mmap[i] & (0xffffffff << ((lower_limit / PAGE_SIZE) % 32)));
 		page = (i * 32 + z) * PAGE_SIZE;
 		return page;
 	}
 
-	for (i++; i < PMM_MMAP_SIZE; i++) {
-		if (pmm_mmap[i]) {
+	for (i++; i < PMM_MMAP_SIZE; i++)
+	{
+		if (pmm_mmap[i])
+		{
 			z = bit_scan_forward(pmm_mmap[i]);
 			page = (i * 32 + z) * PAGE_SIZE;
 			return page;
@@ -152,16 +174,16 @@ paddr_t pmm_find_free_page(unsigned long lower_limit) {
 	return -1;
 }
 
+
 /**
- * Searchs for num free pages and returns pointer on the begin of the first page.
- *
+ * @brief Searchs for num free pages and returns pointer on the begin of the first page.
  * @param lower_limit minimum address of the first page.
  * @param num Number of pages.
- *
  * @return Pointer on begin of the first page.
- * @return If succesful this method will return a pointer on the begin of the first free page.
+ * If succesful this method will return a pointer on the begin of the first free page.
  */
-paddr_t pmm_find_free_page_range(unsigned long lower_limit, unsigned int num) {
+paddr_t pmm_find_free_page_range(unsigned long lower_limit, unsigned int num)
+{
 	uint32_t i, z;
 	uint32_t found = 0;
 	paddr_t page = 0;
@@ -169,37 +191,51 @@ paddr_t pmm_find_free_page_range(unsigned long lower_limit, unsigned int num) {
 	if (!num)
 		panic("PMM: searching 0 pages (find_free_page_range())");
 
-	for (i = lower_limit / PAGE_SIZE / 32; i < PMM_MMAP_SIZE; i++) {
+	for (i = lower_limit / PAGE_SIZE / 32; i < PMM_MMAP_SIZE; i++)
+	{
 		printf("%i\n", i);
-		if (pmm_mmap[i] == 0) {
+		if (pmm_mmap[i] == 0)
+		{
 			found = 0;
 			continue;
 		}
 
-		if (pmm_mmap[i] == 0xffffffff) {
-			if (found == 0) {
+		if (pmm_mmap[i] == 0xffffffff) 
+		{
+			if (found == 0)
+			{
 				page = (i * 32) * PAGE_SIZE; //
 			}
 			found += 32;
 
-		} else {
+		}
+		else
+		{
 			printf("bar\n");
-			for (z = 0; z < 32; z++) {
-				if (pmm_mmap[i] & (1 << z)) {
-					if (found == 0) {
+			for (z = 0; z < 32; z++)
+			{
+				if (pmm_mmap[i] & (1 << z))
+				{
+					if (found == 0)
+					{
 						page = (i * 32 + z) * PAGE_SIZE;
 					}
 					found++;
-					if (found >= num) {
+
+					if (found >= num)
+					{
 						return page;
 					}
-				} else {
+				}				
+				else
+				{
 					found = 0;
 				}
 			}
 		}
 
-		if (found >= num) {
+		if (found >= num)
+		{
 			return page;
 		}
 	}
@@ -207,15 +243,17 @@ paddr_t pmm_find_free_page_range(unsigned long lower_limit, unsigned int num) {
 	return -1; /* checked in the alloc functions */
 }
 
+
 /**
- * Reserve a page and mark this page as used.
- *
+ * @brief Reserve a page and mark this page as used.
  * @return Pointer on the begin of the page.
  */
-paddr_t pmm_alloc_page(void) {
+paddr_t pmm_alloc_page(void)
+{
 	paddr_t page = pmm_find_free_page(PMM_DMA_LIMIT);
 
-	if (page & (PAGE_SIZE - 1)) {
+	if (page & (PAGE_SIZE - 1))
+	{
 		panic("PMM: pmm_alloc_page(): no pages left");
 	}
 	pmm_mark_page_as_used(page);
@@ -223,13 +261,18 @@ paddr_t pmm_alloc_page(void) {
 	return page;
 }
 
+
 /**
- * Reserve a page not under a entered address
+ * @brief Reserve a page not under a entered address
+ * @param lower_limit the lower limit
+ * @return Pointer on the begin of the allocated page.
  */
-paddr_t pmm_alloc_page_limit(paddr_t lower_limit) {
+paddr_t pmm_alloc_page_limit(paddr_t lower_limit)
+{
 	paddr_t page = pmm_find_free_page(lower_limit);
 
-	if (page & (PAGE_SIZE - 1)) {
+	if (page & (PAGE_SIZE - 1))
+	{
 		panic("PMM: pmm_alloc_page_limit(): no pages left");
 	}
 
@@ -237,41 +280,54 @@ paddr_t pmm_alloc_page_limit(paddr_t lower_limit) {
 	return page;
 }
 
+
 /**
- * Reserve num DMA-Pages.
- *
+ * @brief Reserve num DMA-Pages.
+ * @param num the number of pages to be allocated
  * @return Pointer on the begin of the first page.
  */
-paddr_t pmm_alloc_dma_page_range(unsigned int num) {
+paddr_t pmm_alloc_dma_page_range(unsigned int num)
+{
 	if (!num)
 		panic("PMM: pmm_alloc_dma_page_range(): num zero");
 	paddr_t page = pmm_find_free_page_range(0, num);
-	if (page & (PAGE_SIZE - 1) || page >= PMM_DMA_LIMIT) {
+	if (page & (PAGE_SIZE - 1) || page >= PMM_DMA_LIMIT)
+	{
 		panic("PMM: pmm_alloc_dma_page_range(): no DMA memory left");
 	}
 	pmm_mark_page_range_as_used(page, num);
 	return page;
 }
 
+
 /**
- * Reserve num pages.
- *
+ * @brief Reserve num pages.
  * @return Pointer on the begin of the first page.
  */
-paddr_t pmm_alloc_page_range(unsigned int num) {
+paddr_t pmm_alloc_page_range(unsigned int num)
+{
 	if (!num)
 		panic("PMM: pmm_alloc_page_range(): num zero");
 	paddr_t page = pmm_find_free_page_range(PMM_DMA_LIMIT, num);
-	if (page & (PAGE_SIZE - 1)) {
+	if (page & (PAGE_SIZE - 1))
+	{
 		panic("PMM: pmm_alloc_page_range(): no memory left");
 	}
 	pmm_mark_page_range_as_used(page, num);
 	return page;
 }
 
-void INIT_PMM(struct multiboot_struct *mb_info) {
+
+/**
+ * @brief Initiates the PMM module.
+ * @param mb_info the multiboot info struct for module protection
+ */
+
+void INIT_PMM(struct multiboot_struct *mb_info)
+{
 	int i;
-	for (i = 0; i < PMM_MMAP_SIZE; i++) {
+	for (i = 0; i < PMM_MMAP_SIZE; i++)
+	{
 		pmm_mmap[i] = 0;
 	}
 
@@ -281,7 +337,8 @@ void INIT_PMM(struct multiboot_struct *mb_info) {
 	struct mmap_entry *mmap = (struct mmap_entry *)mb_info->mmap_addr;
 
 	int len = 0;
-	for(i = 0; len < mb_info->mmap_length; i++) {
+	for(i = 0; len < mb_info->mmap_length; i++)
+	{
 		len += mmap[i].size +4;
 		if(mmap[i].Type == 1) {
 			uintptr_t addr = mmap[i].BaseAddr;
@@ -307,14 +364,16 @@ void INIT_PMM(struct multiboot_struct *mb_info) {
 	pmm_mark_page_as_used((paddr_t)mods    - MEMORY_LAYOUT_KERNEL_START);
 
 	//multiboot modules
-	for (i = 0; i < mb_info->mods_count; i++) {
+	for (i = 0; i < mb_info->mods_count; i++)
+	{
 		uint32_t size = mods[i].mod_end - mods[i].mod_start;
 		int pages = NUM_PAGES(size);
 		pmm_mark_page_range_as_used((paddr_t) mods[i].mod_start, pages);
 		pmm_mark_page_as_used((paddr_t) mods[i].string);
 	}
 
-	if (! (mb_info->flags & 0x1)){
+	if (! (mb_info->flags & 0x1))
+	{
 		panic("PMM_INIT: no ram info in multiboot structure");
 	}
 }
