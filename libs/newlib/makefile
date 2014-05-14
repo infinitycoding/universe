@@ -4,26 +4,30 @@ all: download configure build
 
 KERNEL_HEADERS = `pwd`/../../../kernel/include
 
+SOURCEWARE = ftp://sourceware.org
+NEWLIB = newlib-2.1.0
+
+BUILD = build
+TARGET = target
+
 download:
-	@ if [ ! -d newlib-2.1.0 ]; then \
-		wget ftp://sourceware.org/pub/newlib/newlib-2.1.0.tar.gz; \
-		tar -xzvf newlib-2.1.0.tar.gz;\
-		rm newlib-2.1.0.tar.gz;\
-	fi
+	$(MAKE) -C ../../download load unpack NAME=$(NEWLIB) DPATH=$(SOURCEWARE)/pub/newlib/$(NEWLIB).tar.gz TYPE=tar.gz
+	cp -ru ../../download/$(NEWLIB) ./$(NEWLIB)
+	mkdir -p $(BUILD)
+	mkdir -p $(TARGET)
 
 configure: download
-	@ mkdir -p build; \
-	@ mkdir -p target; \
-	cd build; \
-	if [ ! -f config.log ]; then \
+	if [ ! -f $(NEWLIB)/config.log ]; then \
+		PATH="${PATH}":`pwd`/../../cc/target/bin; \
+		cd $(BUILD); \
 		../newlib-2.1.0/configure --prefix="`pwd`/../target" --target=i686-elf;\
 	fi
 
 build: configure
-	$(MAKE) -C build
+	$(MAKE) -C $(BUILD)
 
 clean:
-	rm build/config.log
-	rm -rf target/*
-	$(MAKE) -C build clean
+	rm -rf $(NEWLIB)
+	rm -rf $(BUILD)
+	rm -rf $(TARGET)
 

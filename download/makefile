@@ -1,12 +1,16 @@
 SHELL = /bin/bash
 
 load:
-	if [ ! -e ${NAME}.tar.bz2 ]; then \
+	if [ ! -f ${NAME}.${TYPE} ]; then \
 		wget ${DPATH}; \
 	fi
 
 unpack: load
 	if [ ! -d ${NAME} ]; then \
-		tar -xjf ${NAME}.tar.bz2; \
+		if [ "${TYPE}" == "tar.gz" ]; then \
+			tar -xzf ${NAME}.${TYPE}; \
+		else \
+			tar -xjf ${NAME}.${TYPE}; \
+		fi; \
 	fi
 

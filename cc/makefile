@@ -6,43 +6,46 @@ BINUTILS = binutils-2.24
 GCC = gcc-4.7.3
 GNU = ftp://ftp.gnu.org/gnu
 
+BUILD = build
+TARGET = target
+
 download:
-	$(MAKE) -C ../download load unpack NAME=$(BINUTILS) DPATH=$(GNU)/binutils/$(BINUTILS).tar.bz2
-	$(MAKE) -C ../download load unpack NAME=$(GCC)      DPATH=$(GNU)/gcc/$(GCC)/$(GCC).tar.bz2
+	$(MAKE) -C ../download load unpack NAME=$(BINUTILS) DPATH=$(GNU)/binutils/$(BINUTILS).tar.bz2 TYPE=tar.bz2
+	$(MAKE) -C ../download load unpack NAME=$(GCC)      DPATH=$(GNU)/gcc/$(GCC)/$(GCC).tar.bz2    TYPE=tar.bz2
 	cp -ru ../download/$(BINUTILS) ./$(BINUTILS)
 	cp -ru ../download/$(GCC) ./$(GCC)
-	mkdir -p target
-	mkdir -p build
+	mkdir -p $(BUILD)
+	mkdir -p $(TARGET)
 
 configure_binutils: download	
-	cp -rT binutils_adapt $(BINUTILS); \
-	mkdir -p build/$(BINUTILS); \
-	cd build/$(BINUTILS); \
-	if [ ! -f config.log ]; then \
+	if [ ! -f $(BINUTILS)/config.log ]; then \
+		cp -rT binutils_adapt $(BINUTILS); \
+		mkdir -p $(BUILD)/$(BINUTILS); \
+		cd $(BUILD)/$(BINUTILS); \
 		../../$(BINUTILS)/configure --prefix="`pwd`/../../target" --with-sysroot=`pwd` --target=i686-elf -disable-nls  CFLAGS="-w"; \
+		cd ../..; \
 	fi;\
-	cd ../..;
 
 binutils: configure_binutils
-	$(MAKE) -C build/$(BINUTILS)
-	$(MAKE) -C build/$(BINUTILS) install
+	$(MAKE) -C $(BUILD)/$(BINUTILS)
+	$(MAKE) -C $(BUILD)/$(BINUTILS) install
 
 configure_gcc: download binutils
-	PATH=${PATH}:`pwd`/../../target/bin; \
-	mkdir -p build/$(GCC); \
-	cd build/$(GCC) ;\
-	if [ ! -f config.log ]; then \
+	if [ ! -f $(GCC)/config.log ]; then \
+		PATH=${PATH}:`pwd`/../../$(TARGET)/bin; \
+		mkdir -p $(BUILD)/$(GCC); \
+		cd $(BUILD)/$(GCC) ;\
 		../../$(GCC)/configure --prefix="`pwd`/../../target" --target=i686-elf --disable-nls --enable-languages=c --disable-shared --disable-libssp --without-docdir CFLAGS="-I/usr/include/"; \
+		cd ../..; \
 	fi;\
-	cd ../..;
 
 gcc: configure_gcc
-	$(MAKE) -C build/$(GCC)
-	$(MAKE) -C build/$(GCC) install
+	$(MAKE) -C $(BUILD)/$(GCC)
+	$(MAKE) -C $(BUILD)/$(GCC) install
 
 clean:
-	rm build/$(BINUTILS)/config.log
-	rm build/$(GCC)/config.log
-	$(MAKE) -C build/$(BINUTILS) clean
-	$(MAKE) -C build/$(GCC) clean
+	rm -rf $(BUILD)
+	rm -rf $(TARGET)
+	rm -rf $(BINUTILS)
+	rm -rf $(GCC)
 
