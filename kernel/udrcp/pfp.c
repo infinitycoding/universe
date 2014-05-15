@@ -141,7 +141,7 @@ struct section *parser_section(char *pipelines, int *section_pos)
         {
             struct pnode *node = parser_pnode(pipelines, section_pos, this->subtree);
 
-            list_push_back(this->subtree, node);
+            list_push_front(this->subtree, node);
         }
     }
 
@@ -333,6 +333,7 @@ struct pnode *parser_pnode(char *pipelines, int *start, list_t *other)
     int pnode_end = find_pnode_end(pipelines, start);
     node->type = get_ptype(pipelines, (*start), pnode_end);
     node->file = get_pnode_filename(pipelines, (*start), pnode_end);
+    node->subtree = list_create();
 
     (*start) = pnode_end;
 
@@ -345,7 +346,9 @@ struct pnode *parser_pnode(char *pipelines, int *start, list_t *other)
             if(pipelines[(*start)] == '<')
             {
                 struct pnode *subnode = parser_pnode(pipelines, start, other);
-                list_push_back(node->subtree, subnode);
+                list_push_front(node->subtree, subnode);
+
+                //if(pipelines[(*start)] == ';')
             }
             else
             {
@@ -354,7 +357,7 @@ struct pnode *parser_pnode(char *pipelines, int *start, list_t *other)
                     if(pipelines[(*start)] == '<')
                     {
                         struct pnode *subnode = parser_pnode(pipelines, start, other);
-                        list_push_back(node->subtree, subnode);
+                        list_push_front(node->subtree, subnode);
                     }
                 }
             }
@@ -384,8 +387,6 @@ struct pnode *parser_pnode(char *pipelines, int *start, list_t *other)
             }
         }
     }
-
-    (*start)++;
 
     return node;
 }
@@ -438,7 +439,7 @@ bool is_service(char *pipelines, int start, int end)
  * @param pipelines the string with the pnod in it
  * @param start the start of the pnode
  * @param end the end of the pnode
- * @return true or false 
+ * @return true or false
  */
 bool is_kernelroot(char *pipelines, int start, int end)
 {
