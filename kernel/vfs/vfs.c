@@ -741,8 +741,6 @@ void sys_getcwd(struct cpu_state **cpu)
 	{
 		(*cpu)->CPU_ARG0 = 0;
 		return;
-		/*buffer = (char *)malloc(sizeof(char) * cwdsize);
-		buffersize = cwdsize;*/					// TODO: make this working (some problems with kernel malloc)
 	}
 
 	if(buffersize < cwdsize)
