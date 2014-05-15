@@ -23,11 +23,20 @@
  */
 
 #include <udrcp/udrcp.h>
+#include <sched/process.h>
 
 struct int_relation
 {
     unsigned int intnr;
     pckmgr *drv;
+};
+
+struct driver
+{
+    struct process_state *process;
+    list_t *memory;
+    list_t *ports;
+    pckmgr *pman;
 };
 
 

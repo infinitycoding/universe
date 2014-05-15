@@ -32,6 +32,7 @@
 #include <sched/thread.h>
 
 static inline void paging_flush_tlb(vaddr_t addr);
+extern struct thread_state *current_thread;
 
 #define PT_PADDR(i) (context->entries[i] & ~0xFFF)
 #define PT_VADDR(i) (MEMORY_LAYOUT_PAGING_STRUCTURES_START + PT_LENGTH*sizeof(pte_t)*i)
@@ -351,8 +352,8 @@ void page_fault_handler(struct cpu_state **cpu_p)
 	uint32_t addr;
 	asm ("mov %%cr2, %0" : "=r" (addr));
 
-	sprintf(message, "Page fault in %s space:\nError %s address %#010X: %s.\nEIP: %#010X", ((cpu->error & 4) ? "user" : "kernel"),
-		      ((cpu->error & 2) ? "writing to" : "reading at"), addr, ((cpu->error & 1) ? "Access denied" : "Nonpaged area"), cpu->eip);
+	sprintf(message, "Page fault in %s space:\nError %s address %#010X: %s.\nEIP: %#010X\n Process: %s\n", ((cpu->error & 4) ? "user" : "kernel"),
+		      ((cpu->error & 2) ? "writing to" : "reading at"), addr, ((cpu->error & 1) ? "Access denied" : "Nonpaged area"), cpu->eip,current_thread->process->name);
 
 	panic(message);
 }

@@ -36,7 +36,6 @@ typedef struct
 {
     port_type type;
     unsigned int port;
-    pckmgr *mgr;
 }port_t;
 
 typedef struct
@@ -46,15 +45,8 @@ typedef struct
 }portpck_t;
 
 
-port_t *port_alloc(pckmgr *mgr,unsigned int port);
-int port_free(port_t *p);
+void handle_port_alloc(struct driver *drv, pck_t *req);
+void handle_port_free(struct driver *drv, pck_t *req);
 
-unsigned char inb(port_t *p);
-unsigned short inw(port_t *p);
-unsigned long inl(port_t *p);
-
-void outb(port_t *p, unsigned char v);
-void outw(port_t *p, unsigned short v);
-void outl(port_t *p, unsigned long v);
 
 #endif

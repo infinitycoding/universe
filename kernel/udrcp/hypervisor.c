@@ -28,6 +28,7 @@
 
 #include <udrcp/pfp.h>
 #include <udrcp/ioport.h>
+ #include <udrcp/memory.h>
 #include <udrcp/hypervisor.h>
 
 #include <sched/elf.h>
@@ -37,6 +38,7 @@
 #include <mm/paging.h>
 #include <sys/multiboot.h>
 #include <vfs/vfs.h>
+#include <pmm.h>
 
 
 
@@ -77,8 +79,11 @@ void INIT_HYPERVISOR(int argc, void **argv)
             size_t drv_pages = NUM_PAGES(drv_len);
             void *driver = (void*)vmm_automap_kernel_range(current_context,(paddr_t) drv_mod->mod_start, drv_pages, VMM_WRITABLE);
             pman = new_pckmgr(vfs_create_pipe(0, 0), vfs_create_pipe(0, 0), vfs_create_pipe(0, 0));
-            load_elf(driver,0,0,&pman->pset);
-            list_push_front(subdrivers,pman);
+            
+            struct driver *new_driver = malloc(sizeof(struct driver));
+            new_driver->pman = pman;
+            new_driver->process = load_elf(driver,0,0,&pman->pset);
+            list_push_front(subdrivers,new_driver);
             printf("%s: %p\n", ((struct pnode *)list_get_current(&i))->file, drv_mod);
         }
         list_next(&i);
@@ -97,8 +102,8 @@ void INIT_HYPERVISOR(int argc, void **argv)
 
     while(1)
     {
-
-        pman = list_get_current(&subdriver_it);
+        struct driver *current_driver = list_get_current(&subdriver_it);
+        pman = current_driver->pman;
         pck_t *pck = fetch_pipe(pman);
         if(!pck)
         {
@@ -155,6 +160,20 @@ void INIT_HYPERVISOR(int argc, void **argv)
                     respond(pman,pck->id,ERROR,sizeof(unsigned int),&ret);
                 }
             break;
+
+            case PMA_ALLOC:
+                #ifdef DEBUG
+                printf("PMA-Alloc\n");
+                #endif
+                handle_pma_alloc(current_driver, pck);
+
+            break;
+
+            case PMA_FREE:
+                printf("PMA-Free\n");
+                handle_pma_free(current_driver, pck);
+            break;
+
 
 
             default:

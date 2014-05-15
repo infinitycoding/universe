@@ -43,6 +43,7 @@ extern const void kernel_end;
 void INIT_PMM(struct multiboot_struct* MBS);
 int pmm_count_free_pages(void);
 int pmm_check_page(paddr_t page);
+int pmm_check_page_range(paddr_t page, size_t range);
 void pmm_mark_page_as_free(paddr_t page);
 void pmm_mark_page_as_used(paddr_t page);
 void pmm_mark_page_range_as_used(paddr_t page, unsigned int num);

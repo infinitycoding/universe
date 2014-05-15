@@ -107,8 +107,8 @@ static pma_mem_t *poll_pma_response(pckmgr *mgr, size_t size, pckid_t id)
 
                  struct pma_response *resp = (struct pma_response*)response->data;
                  pma_mem_t *mem = malloc(sizeof(pma_mem_t));
-                 mem->mem_base = resp->mem_base;
-                 mem->phys_base = resp->phys_base;
+                 mem->mem_base = (void *)resp->mem_base;
+                 mem->phys_base = (void *)resp->phys_base;
                  mem->mgr = mgr;
                  mem->range = size;
                  free(response->data);
@@ -136,7 +136,7 @@ static pma_mem_t *poll_pma_response(pckmgr *mgr, size_t size, pckid_t id)
 pma_mem_t *alloc_pma(pckmgr *mgr, size_t size)
 {
     struct pma_request req;
-    req.type = pma_random;
+    req.type = PMA_ALLOC_RANDOM;
     req.size = size;
 
     pckid_t id = send_package(mgr, PMA_ALLOC, sizeof(struct pma_request), &req);
@@ -153,9 +153,9 @@ pma_mem_t *alloc_pma(pckmgr *mgr, size_t size)
 pma_mem_t *alloc_pma_area(pckmgr *mgr, void *phys_base, size_t size)
 {
     struct pma_request req;
-    req.type = pma_specific;
+    req.type = PMA_ALLOC_SPECIFIC;
     req.size = size;
-    req.phys_base = phys_base;
+    req.phys_base = (paddr_t)phys_base;
 
     pckid_t id = send_package(mgr, PMA_ALLOC, sizeof(struct pma_request), &req);
     return poll_pma_response(mgr, size, id);
@@ -171,9 +171,9 @@ pma_mem_t *alloc_pma_area(pckmgr *mgr, void *phys_base, size_t size)
 pma_mem_t *alloc_pma_lower_area(pckmgr *mgr, void *phys_limit, size_t size)
 {
     struct pma_request req;
-    req.type = pma_lower;
+    req.type = PMA_ALLOC_LOWER;
     req.size = size;
-    req.phys_base = phys_limit;
+    req.phys_base = (paddr_t)phys_limit;
 
     pckid_t id = send_package(mgr, PMA_ALLOC, sizeof(struct pma_request), &req);
     return poll_pma_response(mgr, size, id);

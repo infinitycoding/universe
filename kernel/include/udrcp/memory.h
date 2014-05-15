@@ -23,25 +23,9 @@
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  **/
 
-#include <udrcp.h>
+#include <udrcp/udrcp.h>
+#include <udrcp/hypervisor.h>
 
-
-
-
-typedef struct
-{
-    pckmgr *mgr;
-    void *mem_base;
-    size_t range;
-}shm_mem_t;
-
-typedef struct
-{
-    pckmgr *mgr;
-    void *mem_base;
-    void *phys_base;
-    size_t range;
-}pma_mem_t;
 
 typedef enum
 {
@@ -63,19 +47,8 @@ struct pma_response
     paddr_t phys_base;
 };
 
+void handle_pma_alloc(struct driver *drv, pck_t *req);
+void handle_pma_free(struct driver *drv, pck_t *req);
 
-shm_mem_t *alloc_shm(pckmgr *mgr, size_t size);
-pma_mem_t *alloc_pma(pckmgr *mgr, size_t size);
-pma_mem_t *alloc_pma_area(pckmgr *mgr, void *phys_base, size_t size);
-pma_mem_t *alloc_pma_lower_area(pckmgr *mgr, void *phys_limit, size_t size);
-
-int share_block(pckmgr *mgr, shm_mem_t *mem, size_t range);
-int hand_block(pckmgr *mgr, shm_mem_t *mem, size_t range);
-
-
-
-
-int free_shm(shm_mem_t *mem);
-int free_pma(pma_mem_t *mem);
 
  #endif
