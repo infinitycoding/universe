@@ -72,6 +72,24 @@ int pmm_check_page(paddr_t page)
 	return pmm_mmap[page / PAGE_SIZE / 32] & (1 << ((page / PAGE_SIZE) & 31));
 }
 
+/**
+ * @brief Checs if all pages from page to page+PAGE_SIZE*(range-1) are in use or not.
+ * @param page the pysical base adress of the page
+ * @param range number of pages to be checked
+ * @return 0 = page is already taken; 1 = Page is free
+ */
+int pmm_check_page_range(paddr_t page, size_t range)
+{
+	int r = 1;
+	size_t i;
+	for(i=0; i < range; i++)
+	{
+		r &= pmm_check_page(page);
+		page += PAGE_SIZE;
+	}
+	return r;
+}
+
 
 /**
  * @brief Mark page als free.
@@ -358,6 +376,7 @@ void INIT_PMM(struct multiboot_struct *mb_info)
 	pmm_mark_page_as_used((BDA_size[0] / 4) * 1024); //FPS (maybe)
 	pmm_mark_page_range_as_used(0xA0000, 96); //0xA0000 - 0xFFFFF ROM-AREA
 
+
 	//multiboot structures
 	struct mods_add *mods = (void*)mb_info->mods_addr;
 	pmm_mark_page_as_used((paddr_t)mb_info - MEMORY_LAYOUT_KERNEL_START);
@@ -376,5 +395,6 @@ void INIT_PMM(struct multiboot_struct *mb_info)
 	{
 		panic("PMM_INIT: no ram info in multiboot structure");
 	}
+
 }
 
