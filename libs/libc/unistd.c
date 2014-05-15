@@ -66,6 +66,9 @@ int getchar(void)
 }
 
 char *getcwd(char *buf, int buflen){
- return (char *)linux_syscall(SYS_GETCWD,(uint32_t)buf, buflen, 0, 0, 0);
+    if(buf == NULL && buflen != NULL)
+        buf = (char *)malloc(sizeof(char) * buflen);
+    
+    return (char *)linux_syscall(SYS_GETCWD,(uint32_t)buf, buflen, 0, 0, 0);
 }
 
