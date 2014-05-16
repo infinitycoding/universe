@@ -20,7 +20,7 @@
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
-
+#include <printf.h>
 #include <udrcp/hypervisor.h>
 #include <udrcp/ioport.h>
 
@@ -33,9 +33,11 @@
 void handle_port_alloc(struct driver *drv, pck_t *req)
 {
     //validate package
-    if(req->size != sizeof(portpck_t))
+    if(req->size != sizeof(portpck_t)+12)
     {
-        respond(drv->pman, req->id, ERROR, 0, 0);
+        printf("invalid package! %d  %d\n",req->size,sizeof(portpck_t));
+        respond(drv->pman, req->id, INVALID_REQUEST, 0, 0);
+        free(req);
         return;
     }
 

@@ -25,6 +25,7 @@
 #include <list.h>
 #include <printf.h>
 #include <trigger.h>
+#include <printf.h>
 
 #include <udrcp/pfp.h>
 #include <udrcp/ioport.h>
@@ -83,6 +84,8 @@ void INIT_HYPERVISOR(int argc, void **argv)
             struct driver *new_driver = malloc(sizeof(struct driver));
             new_driver->pman = pman;
             new_driver->process = load_elf(driver,0,0,&pman->pset);
+            new_driver->ports = list_create();
+            new_driver->memory = list_create();
             list_push_front(subdrivers,new_driver);
             printf("%s: %p\n", ((struct pnode *)list_get_current(&i))->file, drv_mod);
         }
@@ -114,7 +117,6 @@ void INIT_HYPERVISOR(int argc, void **argv)
         }
 
         //printf("host: recieved package %d    size:%d    type:%x\n",pck->id,pck->size,pck->type);
-        port_type t;
         struct int_relation *r;
         int ret;
         switch(pck->type)
@@ -136,8 +138,7 @@ void INIT_HYPERVISOR(int argc, void **argv)
                 #ifdef DEBUG
                     printf("host: allocationg Port 0x%x\n",*((unsigned int*)pck->data));
                 #endif
-                t = hw_port;
-                respond(pman,pck->id,SUCCESS,sizeof(port_type),&t);
+                handle_port_alloc(current_driver, pck);
             break;
 
             case INT_REQ:

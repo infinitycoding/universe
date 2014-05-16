@@ -56,9 +56,11 @@ typedef unsigned int pcktype_t;
 
 
 /// Subsystem Response
-#define ERROR       0
-#define CONFIRM     1
-#define SUCCESS     2
+#define CONFIRM     0
+#define SUCCESS     1
+#define PONG        2
+#define ERROR       3
+#define INVALID_REQUEST 4
 
 
 /// Host Request
@@ -71,12 +73,6 @@ typedef unsigned int pcktype_t;
 ///Host Signals
 #define INTSIG      5
 
-
-/// Host Response
-#define ERROR       0
-#define CONFIRM     1
-#define SUCCESS     2
-#define PONG        3
 
 
 

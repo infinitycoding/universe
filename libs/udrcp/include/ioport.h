@@ -40,11 +40,18 @@ typedef struct
     pckmgr *mgr;
 }port_t;
 
+
+typedef struct
+{
+    port_type type;
+    unsigned int port;
+}port_resp;
+
+
 typedef struct
 {
     unsigned int port;
-    unsigned int len;
-}portpck_t;
+}port_req;
 
 
 port_t *port_alloc(pckmgr *mgr,unsigned int port);
