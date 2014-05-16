@@ -21,7 +21,7 @@
 /**
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
-
+#include <udrcp/hypervisor.h>
 #include <udrcp/udrcp.h>
 
 typedef enum
@@ -41,7 +41,6 @@ typedef struct
 typedef struct
 {
     unsigned int port;
-    unsigned int len;
 }portpck_t;
 
 

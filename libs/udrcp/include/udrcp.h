@@ -53,11 +53,12 @@ typedef unsigned int pcktype_t;
 #define SHM_FREE    12
 
 
-/// Subsystem Response
-#define ERROR       0
-#define CONFIRM     1
-#define SUCCESS     2
-
+///Response
+#define CONFIRM     0
+#define SUCCESS     1
+#define PONG        2
+#define ERROR       3
+#define INVALID_REQUEST 4
 
 /// Host Request
 #define RESET_CON   0
@@ -70,11 +71,6 @@ typedef unsigned int pcktype_t;
 #define INTSIG      5
 
 
-/// Host Response
-#define ERROR       0
-#define CONFIRM     1
-#define SUCCESS     2
-#define PONG        3
 
 
 typedef struct
