@@ -27,19 +27,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
-
-
-
-/**
- * @brief this isn't the function you are looking for
- */
-
-int dummy(int argc, char **argv)
-{
-	printf("This isn't the function you are looking for.\n");	
-
-	return 0;
-}
+ 
 
 
 /**
@@ -139,26 +127,6 @@ int pwd(int argc, char **argv)
 
 	return 0;	
 }
-
-
-/**
- * @brief creates a new directory
- */
-
-/*int mkdir(int argc, char **argv)
-{
-
-}*/
-
-
-/**
- * @brief removes a empty directory
- */
-
-/*int rmdir(int argc, char **argv)
-{
-
-}*/
 
 
 /**

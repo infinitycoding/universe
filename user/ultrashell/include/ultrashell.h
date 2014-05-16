@@ -50,6 +50,7 @@ int main(int argc, char **argv);
 binary_tree *initBinaryTree();
 int parserLine(struct shell_state *state, const char *line);
 int getTokens(const char *instring, char ***tokens);
+int replaceTokens(int number, char ***tokens, struct shell_state *state);
 int countTokens(const char *instring);
 
 

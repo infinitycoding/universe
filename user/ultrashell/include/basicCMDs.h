@@ -27,15 +27,12 @@
 
 
 
-int dummy(int argc, char **argv);
 int echo(int argc, char **argv);
 int sver(int argc, char **argv);
 int cmdtrue(int argc, char **argv);
 int cmdfalse(int argc, char **argv);
 int cd(int argc, char **argv);
 int pwd(int argc, char **argv);
-//int mkdir(int argc, char **argv);
-//int rmdir(int argc, char **argv);
 int sexit(int argc, char **argv);
 
 
