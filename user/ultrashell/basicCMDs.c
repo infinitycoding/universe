@@ -24,9 +24,8 @@
 
 #include <basicCMDs.h>
 
-#include <universe.h>
 #include <unistd.h>
-#include <atoi.h>
+#include <stdlib.h>
 #include <stdio.h>
 
 
@@ -162,106 +161,15 @@ int pwd(int argc, char **argv)
 }*/
 
 
-
-// from here test only
-
 /**
- * @brief adds two values and prints the result
+ * @brief exits the shell
  */
 
-int add(int argc, char **argv)
+int sexit(int argc, char **argv)
 {
-	int result_i;
-	char result_s[20];
+	printf("Exiting Ultrashell.\n");
 
-	if(argc != 3)
-	{
-		printf("add: incorrect number of arguments\n");
-		return 1;
-	}
+	exit(0);
 
-	result_i = atoi(argv[1]) + atoi(argv[2]);
-
-	printf(itoa(result_i, result_s, 10));
-	printf("\n");
-
-	return result_i;
-}
-
-
-/**
- * @brief substracts two values and prints the result
- */
-
-int sub(int argc, char **argv)
-{
-	int result_i;
-	char result_s[20];
-
-	if(argc != 3)
-	{
-		printf("sub: incorrect number of arguments\n");
-		return 1;
-	}
-
-	result_i = atoi(argv[1]) - atoi(argv[2]);
-
-	printf(itoa(result_i, result_s, 10));
-	printf("\n");
-
-	return result_i;
-}
-
-
-/**
- * @brief multiplies two values and prints the result
- */
-
-int mul(int argc, char **argv)
-{
-	int result_i;
-	char result_s[20];
-
-	if(argc != 3)
-	{
-		printf("mul: incorrect number of arguments\n");
-		return 1;
-	}
-
-	result_i = atoi(argv[1]) * atoi(argv[2]);
-
-	printf(itoa(result_i, result_s, 10));
-	printf("\n");
-
-	return result_i;
-}
-
-
-/**
- * @brief divides two values and prints the result
- */
-
-int div(int argc, char **argv)
-{
-	int result_i;
-	char result_s[20];
-
-	if(argc != 3)
-	{
-		printf("div: incorrect number of arguments\n");
-		return 1;
-	}
-
-	if(atoi(argv[2]) == 0)
-	{
-		printf("div: divide by zero\n");
-		return 2;
-	}
-
-	result_i = atoi(argv[1]) / atoi(argv[2]);
-
-	printf(itoa(result_i, result_s, 10));
-	printf("\n");
-
-	return result_i;
+	return 0;
 }
