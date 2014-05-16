@@ -28,24 +28,6 @@
 #include <string.h>
 
 
-/**
- * @brief creates a new binary tree
- * @param dummy the first function in the tree (trees can't be empty in the moment)
- * @return a pointer to the created tree
- */
-
-binary_tree *create_tree(struct function *dummy)
-{
-	binary_tree *tree = NULL;
-
-	tree = (binary_tree *) malloc(sizeof(binary_tree));
-	tree->type = branchEnd;
-	tree->element = (union branchElement *) malloc(sizeof(union branchElement));
-	tree->element->f = dummy;
-	
-	return tree;
-}
-
 
 /**
  * @brief deletes a binary tree
@@ -97,7 +79,7 @@ void deleteBranch(struct branch *b)
  * @return -3 = allocate error
  */
 
-int loadFunction(binary_tree *tree, char *cmd, int (*fct)(int, char **))
+int loadFunction(binary_tree **tree, char *cmd, int (*fct)(int, char **))
 {
 	struct function *newFunction = NULL;
 	newFunction = (struct function *) malloc(sizeof(struct function));
@@ -121,13 +103,22 @@ int loadFunction(binary_tree *tree, char *cmd, int (*fct)(int, char **))
  * @return -2 = command allready added
  */
 
-int addFunction(binary_tree *tree, struct function *new_function)
+int addFunction(binary_tree **tree, struct function *new_function)
 {
 	int i = 0;
-	struct branch *current_node = tree;
+	struct branch *current_node = (*tree);
 	union branchElement *newElement = NULL;
 	union branchElement *oldElement = NULL;
 
+	if((*tree) == NULL)
+	{
+		(*tree) = (binary_tree *) malloc(sizeof(binary_tree));
+		(*tree)->type = branchEnd;
+		(*tree)->element = (union branchElement *) malloc(sizeof(union branchElement));
+		(*tree)->element->f = new_function;
+
+		return SUCCESS;
+	}
 
 	while(current_node != NULL && current_node->type != branchEnd)
 	{

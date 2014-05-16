@@ -91,20 +91,14 @@ int main(int argc, char **argv)
 binary_tree *initBinaryTree()
 {
 	binary_tree *cmdTree = NULL;
-
-	struct function *newCmd = (struct function *) malloc(sizeof(struct function));
-	newCmd->command = "dummy";
-	newCmd->f = dummy;
-
-	cmdTree = create_tree(newCmd);
 	
-	loadFunction(cmdTree, "echo", echo);
-	loadFunction(cmdTree, "sver", sver);
-	loadFunction(cmdTree, "true", cmdtrue);
-	loadFunction(cmdTree, "false", cmdfalse);
-	loadFunction(cmdTree, "cd", cd);
-	loadFunction(cmdTree, "pwd", pwd);
-	loadFunction(cmdTree, "exit", sexit);
+	loadFunction(&cmdTree, "echo", echo);
+	loadFunction(&cmdTree, "sver", sver);
+	loadFunction(&cmdTree, "true", cmdtrue);
+	loadFunction(&cmdTree, "false", cmdfalse);
+	loadFunction(&cmdTree, "cd", cd);
+	loadFunction(&cmdTree, "pwd", pwd);
+	loadFunction(&cmdTree, "exit", sexit);
 
 	return cmdTree;
 }
@@ -125,10 +119,15 @@ int parserLine(struct shell_state *state, const char *line)
 	struct function *fct = NULL;
 
 	argc = getTokens(line, &argv);
+	argc = replaceTokens(argc, &argv, state);
 
 	if((fct = searchFunction(state->cmds, argv[0])) != NULL)
 	{
 		state->last_ret_value = fct->f(argc, argv);
+
+		for(; argc > 0; argc--)
+			free(argv[argc-1]);
+
 		return 0;
 	}
 	else
@@ -145,6 +144,7 @@ int parserLine(struct shell_state *state, const char *line)
  * @param tokens the space in which the tokens should be placed
  * @return the number of the tokens
  */
+
 int getTokens(const char *instring, char ***tokens)
 {
 	char currentToken[MAX_TOKEN_LENGTH];
@@ -184,6 +184,35 @@ int getTokens(const char *instring, char ***tokens)
 	strncpy(tokens[0][currentTokenNumber], currentToken, MAX_TOKEN_LENGTH);
 
 	return tokenNumber;
+}
+
+
+/**
+ * @brief replaces tokens in a string with other things (vars, ...)
+ * @param number the number of the tokens until now
+ * @param tokens the tokens until now
+ * @param state the state of the shell this function is executed in
+ * @return the number of the token now
+ */
+
+int replaceTokens(int number, char ***tokens, struct shell_state *state)
+{
+	int i;
+
+	for(i = 0; i < number; i++)
+	{
+		if(!strncmp(tokens[0][i], "$?", 2))
+		{
+			free(tokens[0][i]);
+			char tmpstring[20];
+			sprintf(tmpstring, "%d", state->last_ret_value);
+			int length = strlen(tmpstring);
+			tokens[0][i] = (char *)malloc(sizeof(char) * (length + 1));
+			strncpy(tokens[0][i], tmpstring, length);
+		}
+	}
+
+	return number;
 }
 
 
