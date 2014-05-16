@@ -7,6 +7,9 @@ LDFLAGS = -melf_i386 -flto -T ../link.ld
 ultrashell.elf: ../../libs/crt/entry.o $(OBJS) ../../libs/libc/libc.a
 	@$(LD) $(LDFLAGS) -o $@ $^
 
+host: 
+	gcc -Wall -fno-stack-protector -fno-builtin -I include -o ultrashell.elf $(SRCS)
+
 %.o: %.c
 	@$(CC) $(CFLAGS) -c -o $@ $^
 

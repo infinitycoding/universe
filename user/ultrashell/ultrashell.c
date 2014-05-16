@@ -26,7 +26,6 @@
 #include <basicCMDs.h>
 #include <binaryTree.h>
 
-#include <universe.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
@@ -105,10 +104,7 @@ binary_tree *initBinaryTree()
 	loadFunction(cmdTree, "false", cmdfalse);
 	loadFunction(cmdTree, "cd", cd);
 	loadFunction(cmdTree, "pwd", pwd);
-	loadFunction(cmdTree, "add", add);
-	loadFunction(cmdTree, "sub", sub);
-	loadFunction(cmdTree, "mul", mul);
-	loadFunction(cmdTree, "div", div);
+	loadFunction(cmdTree, "exit", sexit);
 
 	return cmdTree;
 }

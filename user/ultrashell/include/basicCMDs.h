@@ -36,10 +36,7 @@ int cd(int argc, char **argv);
 int pwd(int argc, char **argv);
 //int mkdir(int argc, char **argv);
 //int rmdir(int argc, char **argv);
-int add(int argc, char **argv);		// test only
-int sub(int argc, char **argv);		// test only
-int mul(int argc, char **argv);		// test only
-int div(int argc, char **argv);		// test only
+int sexit(int argc, char **argv);
 
 
 

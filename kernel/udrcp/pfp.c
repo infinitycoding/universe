@@ -134,7 +134,7 @@ struct section *parser_section(char *pipelines, int *section_pos)
     {
         if(pipelines[(*section_pos)] == '#')
         {
-            while(pipelines[(*section_pos)] != '\n' || pipelines[(*section_pos)] != '\0' || pipelines[(*section_pos)] >= section_end)
+            while(pipelines[(*section_pos)] != '\n' && pipelines[(*section_pos)] != '\0' && (*section_pos) <= section_end)
                     (*section_pos)++;
         }
         else if(pipelines[(*section_pos)] == '<')
