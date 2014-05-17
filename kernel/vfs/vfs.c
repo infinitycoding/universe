@@ -361,6 +361,54 @@ vfs_inode_t *vfs_lookup_path(char *path) {
 	return parent;
 }
 
+/**
+ * Dissolve a path to an inode and create all missing nodes
+ *
+ * @param path
+ * @param mode
+ * @param uid
+ * @param gid
+ * @return inode
+ */
+vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid)
+{
+	vfs_inode_t *parent = root;
+
+	if(path[0] != '/') {
+		parent = current_thread->process->cwd;
+	} else {
+		path++;
+	}
+
+	int len = strlen(path);
+	if(path[len-1] == '/') {
+		path[len-1] = '\0';
+	}
+
+	char delimiter[] = "/";
+	char *str = (char*) strtok(path, delimiter);
+	while(str != NULL) {
+		int num = parent->length / sizeof(vfs_dentry_t);
+		vfs_dentry_t *entries = parent->base;
+		int found = 0;
+		int i;
+		for(i = 0; i < num; i++) {
+			if(strcmp(str, entries[i].inode->name)) {
+				parent = entries[i].inode;
+				found = 1;
+			}
+		}
+
+		if(!found) {
+			parent = vfs_create_inode(str, mode, parent, uid, gid);
+		} else {
+			str = strtok(NULL, delimiter);
+		}
+	}
+
+	return parent;
+}
+
 // Systemcalls
 
 struct fd *get_fd(int fd) {
@@ -716,6 +764,18 @@ void sys_seek(struct cpu_state **cpu) {
 	}
 	
 	(*cpu)->CPU_ARG0 = file->pos;
+}
+
+void sys_mkdir(struct cpu_state **cpu)
+{
+	char *path = (char *)(*cpu)->CPU_ARG1;
+	int mode = (int)(*cpu)->CPU_ARG2;
+
+	vfs_create_path(path, mode, current_thread->process->uid, current_thread->process->gid);
+
+	(*cpu)->CPU_ARG0 = 0;
+
+	return;
 }
 
 void sys_getcwd(struct cpu_state **cpu)

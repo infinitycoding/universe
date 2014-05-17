@@ -110,6 +110,7 @@ void vfs_read(vfs_inode_t *inode, uintptr_t offset, int len, void *buffer);
 int vfs_stat(vfs_inode_t *inode, struct stat *buffer);
 int vfs_access(vfs_inode_t *inode, mode_t modus, uid_t uid, gid_t gid);
 vfs_inode_t *vfs_lookup_path(char *path);
+vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid);
 
 void sys_open(struct cpu_state **cpu);
 void sys_pipe(struct cpu_state **cpu);
@@ -122,6 +123,7 @@ void sys_unlink(struct cpu_state **cpu);
 void sys_chdir(struct cpu_state **cpu);
 void sys_readdir(struct cpu_state **cpu);
 void sys_seek(struct cpu_state **cpu);
+void sys_mkdir(struct cpu_state **cpu); 
 void sys_getcwd(struct cpu_state **cpu);
 void launch_pipe_handlers(vfs_pipe_info_t *pipe);
 void set_pipe_trigger(struct cpu_state **cpu);
