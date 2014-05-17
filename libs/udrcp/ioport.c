@@ -34,54 +34,69 @@
 
 port_t *port_alloc(pckmgr *mgr,unsigned int port_nr)
 {
-   pckid_t id = send_package(mgr,PORT_ALLOC,sizeof(unsigned int),&port_nr);
-   port_t *port;
-   int retv;
-   while(1)
-   {
-       pck_t *response = pck_poll(mgr,id);
-       switch(response->type)
-       {
-            case ERROR:
-                retv = *((unsigned int*)response->data);
-                free(response->data);
-                free(response);
-                return (port_t*)retv;
-            break;
+    port_req req;
+    req.port = port_nr;
+    pckid_t id = send_package(mgr,PORT_ALLOC,sizeof(unsigned int),&req);
+    port_resp *resp;
+    port_t *port;
+    int retv;
+    while(1)
+    {
+        pck_t *response = pck_poll(mgr,id);
+        switch(response->type)
+        {
+             case ERROR:
+                 retv = *((unsigned int*)response->data);
+                 free(response->data);
+                 free(response);
+                 return (port_t*)retv;
+             break; 
 
-            case CONFIRM:
-                free(response);
-            break;
+             case INVALID_REQUEST:
+                 free(response->data);
+                 free(response);
+                 return NULL;
+             break;
 
-            case SUCCESS:
-                port = (port_t *)malloc(sizeof(port_t));
-                port->type = *((port_type*)response->data);
-                port->mgr = mgr;
-                if(port->type == file_port)
-                {
-                    port->port = open((const char*)(response->data+sizeof(port_type)),3,0);
-                    free(response->data);
-                    free(response);
-                    if(port->port <= 0)
-                    {
-                        free(port);
-                        return NULL;
-                    }
-                    return port;
-                }
-                port->port = port_nr;
-                free(response->data);
-                free(response);
-                return port;
-            break;
+             case CONFIRM:
+                 free(response);
+             break;
 
-            default:
-                write(stderr,"error: unsupported response\n",28);
-                exit(1);
-            break;
-       };
-   }
-   return NULL; // just to keep the compiler happy
+             case SUCCESS:
+                 port = (port_t *)malloc(sizeof(port_t));
+                 resp = (port_resp*)response->data;
+                 
+                 port->type = resp->type;
+                 port->mgr = mgr;
+
+                 if(port->type == file_port)
+                 {
+                     port->port = open((char*)resp->port, 3, 0);
+                 }
+                 else if(port->type == hw_port || port->type == host_port)
+                 {
+                     port->port = port_nr;
+                 }
+                 else
+                 {
+                    udrcp_error(mgr, "error: unsupported port type %d\n",port->type);
+                    free(port);
+                    port = NULL;
+                 }
+
+                 free(response->data);
+                 free(response);
+                 return port;
+
+             break;
+
+             default:
+                udrcp_error(mgr, "error: unsupported response type %d\n",response->type);
+                 exit(1);
+             break;
+        };
+    }
+    return NULL; // just to keep the compiler happy
 }
 
 
@@ -121,10 +136,9 @@ int port_free(port_t *p)
 
 int host_in(port_t *p,void *data,int size)
 {
-    portpck_t req;
+    port_req req;
     req.port = p->port;
-    req.len = size;
-    pckid_t id = send_package(p->mgr,VPORT_R,sizeof(portpck_t),&req);
+    pckid_t id = send_package(p->mgr,VPORT_R,sizeof(port_req),&req);
     pck_t *response;
     int retv;
     while(1)

@@ -23,6 +23,7 @@
 #include <universe.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 int write(int fd,void *buffer, size_t n)
 {
@@ -66,7 +67,7 @@ int getchar(void)
 }
 
 char *getcwd(char *buf, int buflen){
-    if(buf == NULL && buflen != NULL)
+    if(buf == NULL && buflen != 0)
         buf = (char *)malloc(sizeof(char) * buflen);
     
     return (char *)linux_syscall(SYS_GETCWD,(uint32_t)buf, buflen, 0, 0, 0);
