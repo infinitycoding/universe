@@ -55,7 +55,7 @@ struct cga_handle
     unsigned char *video_mem;
 };
 
-void gotoxy(struct crtc_handle *crtc, struct cga_handle *cga, uint8_t _x, uint8_t _y);
+void gotoxy(struct crtc_handle *crtc, struct cga_handle *cga, uint8_t _x, uint8_t _y, int color);
 int putchar(struct crtc_handle *crtc, struct cga_handle *cga, int c, int color);
 
 #endif
