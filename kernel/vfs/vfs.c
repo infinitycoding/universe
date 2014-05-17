@@ -474,11 +474,8 @@ void sys_open(struct cpu_state **cpu) {
 
 		list_push_back(current_thread->process->files, desc);
 
-		printf("kernel fd: %d\n", desc->id);
-
 	        (*cpu)->CPU_ARG0 = desc->id;
 	} else {
-		printf("no permission");
 		(*cpu)->CPU_ARG0 = _NO_PERMISSION;
 	}
 }

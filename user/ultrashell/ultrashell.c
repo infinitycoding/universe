@@ -42,30 +42,7 @@
 int main(int argc, char **argv)
 {
 	printf("Ultrashell started.\n");
-/*FILE *f = fopen("testfile.x","w+");
-    fwrite("Hello",5,1,f);
-    fclose( f );
-
-    f = fopen("testfile.x","r");
-    char buf[10];
-    fread(buf,5,1,f);
-    fclose( f );
-    printf("%s\n",buf);*/
-
-
-	int fd = open("testfile", O_RDWR | O_CREAT, 0x1ff0);
-	printf("fd: %d\n", fd);
-	write(fd, "Hallo", 6);
-	close(fd);
-
-	fd = open("testfile", O_RDONLY, 0x1ff0);
-	printf("fd: %d\n", fd);
-	char buf[16];
-	read(fd, &buf, 6);
-	printf("test: %s\n", buf);
-	close(fd);
-
-/*	struct shell_state shell;	
+	struct shell_state shell;	
 	shell.last_ret_value = 0;
 	shell.cmds = initBinaryTree();
 
