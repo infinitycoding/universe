@@ -26,7 +26,7 @@
 #include <string.h>
 
 
-void gotoxy(struct crtc_handle *crtc, struct cga_handle *cga, uint8_t _x, uint8_t _y)
+void gotoxy(struct crtc_handle *crtc, struct cga_handle *cga, uint8_t _x, uint8_t _y, int color)
 {
      uint16_t offset;
 
@@ -43,7 +43,7 @@ void gotoxy(struct crtc_handle *crtc, struct cga_handle *cga, uint8_t _x, uint8_
 
      if (cga->video_mem[2 * offset] == 0)
      {
-          cga->video_mem[2 * offset + 1] = cga->color;
+          cga->video_mem[2 * offset + 1] = color;
      }
 
      crtc_write(crtc, CRTC_CURSOR_LOCATION_HIGH, (uint8_t)(offset >> 8));
@@ -54,9 +54,9 @@ int putchar(struct crtc_handle *crtc, struct cga_handle *cga, int c, int color)
 {
      if (c == '\b') {
           if (cga->xpos > 0) {
-               gotoxy(crtc, cga, --cga->xpos, cga->ypos);
+               gotoxy(crtc, cga, --cga->xpos, cga->ypos, color);
           } else {
-               gotoxy(crtc, cga, cga->cols - 1, --cga->ypos);
+               gotoxy(crtc, cga, cga->cols - 1, --cga->ypos, color);
           }
 
           cga->video_mem[2 * (cga->ypos * cga->cols + cga->xpos)] = 0;
@@ -65,7 +65,7 @@ int putchar(struct crtc_handle *crtc, struct cga_handle *cga, int c, int color)
      }
 
      if ((cga->xpos > cga->cols - 1) || (c == '\n')) {
-          gotoxy(crtc, cga, 0, ++cga->ypos);
+          gotoxy(crtc, cga, 0, ++cga->ypos, color);
 
           if (c == '\n') {
                return c;
@@ -75,7 +75,7 @@ int putchar(struct crtc_handle *crtc, struct cga_handle *cga, int c, int color)
      cga->video_mem[2 * (cga->ypos * cga->cols + cga->xpos)] = c;
      cga->video_mem[2 * (cga->ypos * cga->cols + cga->xpos) + 1] = color;
 
-     gotoxy(crtc, cga, ++cga->xpos, cga->ypos);
+     gotoxy(crtc, cga, ++cga->xpos, cga->ypos, color);
 
      return c;
 }
