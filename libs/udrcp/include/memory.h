@@ -66,8 +66,8 @@ struct pma_response
 
 shm_mem_t *alloc_shm(pckmgr *mgr, size_t size);
 pma_mem_t *alloc_pma(pckmgr *mgr, size_t size);
-pma_mem_t *alloc_pma_area(pckmgr *mgr, void *phys_base, size_t size);
-pma_mem_t *alloc_pma_lower_area(pckmgr *mgr, void *phys_limit, size_t size);
+pma_mem_t *alloc_pma_area(pckmgr *mgr, unsigned int phys_base, size_t size);
+pma_mem_t *alloc_pma_lower_area(pckmgr *mgr, unsigned int phys_limit, size_t size);
 
 int share_block(pckmgr *mgr, shm_mem_t *mem, size_t range);
 int hand_block(pckmgr *mgr, shm_mem_t *mem, size_t range);

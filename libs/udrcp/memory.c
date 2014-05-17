@@ -150,7 +150,7 @@ pma_mem_t *alloc_pma(pckmgr *mgr, size_t size)
  *  @param size the size of the area
  *  @return pointer to a pma_mem struct or NULL (failure)
  */
-pma_mem_t *alloc_pma_area(pckmgr *mgr, void *phys_base, size_t size)
+pma_mem_t *alloc_pma_area(pckmgr *mgr, unsigned int phys_base, size_t size)
 {
     struct pma_request req;
     req.type = PMA_ALLOC_SPECIFIC;
@@ -168,7 +168,7 @@ pma_mem_t *alloc_pma_area(pckmgr *mgr, void *phys_base, size_t size)
  *  @param size the size of the area
  *  @return pointer to a pma_mem struct or NULL (failure)
  */
-pma_mem_t *alloc_pma_lower_area(pckmgr *mgr, void *phys_limit, size_t size)
+pma_mem_t *alloc_pma_lower_area(pckmgr *mgr, unsigned int phys_limit, size_t size)
 {
     struct pma_request req;
     req.type = PMA_ALLOC_LOWER;
