@@ -455,7 +455,7 @@ void sys_open(struct cpu_state **cpu) {
 		}
 	}
 
-	if(vfs_access(inode, R_OK, current_thread->process->uid, current_thread->process->gid == 0)) {
+	if(vfs_access(inode, R_OK, current_thread->process->uid, current_thread->process->gid) == 0) {
 		if(oflags & O_TRUNC) {
 			if(vfs_access(inode, W_OK, current_thread->process->uid, current_thread->process->gid == 0)) {
 				memset(inode->base, 0, inode->length);
@@ -474,8 +474,11 @@ void sys_open(struct cpu_state **cpu) {
 
 		list_push_back(current_thread->process->files, desc);
 
+		printf("kernel fd: %d\n", desc->id);
+
 	        (*cpu)->CPU_ARG0 = desc->id;
 	} else {
+		printf("no permission");
 		(*cpu)->CPU_ARG0 = _NO_PERMISSION;
 	}
 }
@@ -544,7 +547,7 @@ void sys_read(struct cpu_state **cpu) {
 			vfs_inode_t *inode = desc->inode;
 			vfs_pipe_info_t *pipe = inode->base;
 
-			if(vfs_access(inode, R_OK, current_thread->process->uid, current_thread->process->gid == 0)) {
+			if(vfs_access(inode, R_OK, current_thread->process->uid, current_thread->process->gid) == 0) {
 				if(inode->length >= (desc->pos+len)) {
 					vfs_read(inode, desc->pos, len, buf);
 					desc->pos += len;
@@ -587,7 +590,7 @@ void sys_write(struct cpu_state **cpu) {
 		   desc->flags & O_RDWR)
 		{
 			vfs_inode_t *inode = desc->inode;
-			if(vfs_access(inode, W_OK, current_thread->process->uid, current_thread->process->gid == 0)) {
+			if(vfs_access(inode, W_OK, current_thread->process->uid, current_thread->process->gid) == 0) {
 				if(! (desc->flags & O_APPEND) ) {
 					desc->pos = 0;
 					desc->flags |= O_APPEND;
@@ -616,7 +619,7 @@ void sys_create(struct cpu_state **cpu) {
         // FIXME: only works in root
 	vfs_inode_t *parent = root; // FIXME TODO
 	if(parent != NULL) {
-		if(vfs_access(parent, W_OK, current_thread->process->uid, current_thread->process->gid == 0)) {
+		if(vfs_access(parent, W_OK, current_thread->process->uid, current_thread->process->gid) == 0) {
 			vfs_inode_t *inode = vfs_create_inode(name, mode, parent, current_thread->process->uid, current_thread->process->gid);
 
 			if(inode != NULL) {
@@ -844,7 +847,7 @@ void set_pipe_trigger(struct cpu_state **cpu){
 	int fd = (*cpu)->CPU_ARG1;
 	vfs_inode_t *inode = get_fd(fd)->inode;
 
-	if(vfs_access(inode, R_OK, current_thread->process->uid, current_thread->process->gid == 0)) {
+	if(vfs_access(inode, R_OK, current_thread->process->uid, current_thread->process->gid) == 0) {
 		vfs_pipe_info_t *pipe = inode->base;
 
 		vfs_pipe_trigger_t *trigger = malloc(sizeof(vfs_pipe_trigger_t));
