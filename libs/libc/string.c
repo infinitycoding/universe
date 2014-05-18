@@ -23,7 +23,6 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <stdlib.h>
 
 
 /**
@@ -70,7 +69,7 @@ size_t strlen(const char *string)
  */
 char *strcpy(char *dest, const char *src)
 {
-	uint32_t i = 0;
+	size_t i = 0;
 	while (src[i])
 	{
 		dest[i] = src[i];
@@ -90,7 +89,7 @@ char *strcpy(char *dest, const char *src)
  */
 char *strncpy(char *dest, const char *src,size_t n)
 {
-	uint32_t i;
+	size_t i;
 	bool eos = false;
 	for (i = 0; i < n; i++)
 	{
@@ -102,10 +101,9 @@ char *strncpy(char *dest, const char *src,size_t n)
 			}
 			dest[i] = src[i];
 		}
-
 		else
 		{
-			dest[i] = 0;
+			dest[i] = '\0';
 		}
 
 	}
@@ -152,7 +150,7 @@ char *strncat(char *dest, const char *src, size_t n)
  */
 int strcmp(const char *str0, const char *str1)
 {
-	unsigned int i;
+	size_t i;
 	for (i = 0; str0[i] == str1[i] && str0[i] != 0; i++);
 	int ret = str0[i] - str1[i];
 	return ret;
@@ -234,42 +232,35 @@ char *strrchr(const char *str, int c)
 
 char *strtok(char *string, const char *delimiters)
 {
-	char *s = NULL;
-	int num_del = 0;
-	if(string != NULL)
+	static char *str = NULL;
+
+	if (string != NULL)
 	{
-		s = string;
-		num_del = strlen(delimiters);
-	} else
-	{
-		if(s == NULL)
-		{
-      		return NULL;
-    	}
-		string = s;
+		str = string;
 	}
-	int i, j = 0;
-	while(*s != '\0')
+	if (str == NULL)
 	{
-		for(i = 0; i < num_del; i++)
+		return NULL;
+	}
+
+	size_t i;
+	for (i = 0; str[i] != '\0'; i++)
+	{
+		const char *deli;
+		for(deli = delimiters; *deli != '\0'; deli++)
 		{
-			if(*s == delimiters[i])
+			if(str[i] == *deli)
 			{
-				s++;
-				char *ret = (char*) malloc(j+1);
-				memcpy(ret, string, j);
-				ret[j] = '\0';
+				char *ret = str;
+				str[i] = '\0';
+				str = str + i + 1;
 				return ret;
 			}
 		}
-		s++;
-		j++;
 	}
 
-	char *ret = (char*) malloc(j+1);
-	strcpy(ret, string);
-
-	s = NULL;
+	char *ret = str;
+	str = NULL;
 	return ret;
 }
 
@@ -284,11 +275,10 @@ void *memcpy(void *destination, const void *source, size_t size)
 {
 	uint8_t *dest = destination;
 	const uint8_t *sour = source;
-	uint32_t i = 0;
-	while (i < size)
+	size_t i;
+	for (i = 0; i < size; i++)
 	{
 		dest[i] = sour[i];
-		i++;
 	}
 	return destination;
 }
@@ -296,34 +286,31 @@ void *memcpy(void *destination, const void *source, size_t size)
 
 /**
  * @brief Moves memory from source to destination area.
+ *
+ * Unlike memcpy, the overlapping of source and destination is allowed.
+ *
  * @param destination destination area
  * @param source source area
- * @param n size of source area
+ * @param num number of bytes to copy
  * @return pointer to destination area
  */
-void *memmove(void *destination,const void *source, size_t n)
+void *memmove(void *destination, const void *source, size_t num)
 {
-	char *dest = (char *) destination;
-	char *src = (char *) source;
-	char *c, overlap = 0;
-	for (c = src; c < src + n; c++)
+	uint8_t *dest = destination;
+	const uint8_t *src = source;
+	if (dest > src && src + num > dest && num != 0)
 	{
-		if (c == dest)
+		size_t i = num;
+		do
 		{
-			overlap = 1;
-		}
+			i--;
+			dest[i] = src[i];
+		} while (i != 0);
 	}
-	if (overlap)
-	{
-		for (c = src + n - 1; c >= src; c--)
-		{
-			*(c + (dest - src)) = *c;
-		}
-	}
-
 	else
 	{
-		memcpy(dest, src, n);
+		// because we know that memcpy copy bytes from left to right.
+		memcpy(dest, src, num);
 	}
 	return destination;
 }
@@ -334,69 +321,60 @@ void *memmove(void *destination,const void *source, size_t n)
  * @param mem0 first area
  * @param mem1 second area
  * @param n area size
- * @return 0 = areas are similar
- *  1 = the value of the first different byte of area0 is bigger
- *  -1 = the value of the first different byte of area1 is bigger
+ * @return = 0 areas are similar
+ *  > 0 the value of the first different byte of area0 is bigger
+ *  < 0 the value of the first different byte of area1 is bigger
  */
 int memcmp(const void *mem0, const void *mem1, size_t n)
 {
 	const char *st0 = mem0;
 	const char *st1 = mem1;
-	uint32_t i;
-	int ret = 0;
-	for (i = 0; st0[i] == st1[i] && st0[i] !=0 && i<n; i++);
-	ret = st0[i] - st1[i];
-	if (ret < 0)
-	{
-	    ret =- 1;
-	}
-	else if (ret > 0)
-	{
-	    ret = 1;
-	}
-	return ret;
+	size_t i;
+	for (i = 0; st0[i] == st1[i] && i < n-1; i++);
+	return st0[i] - st1[i];
 }
 
 
 /**
- * @brief Searches value c in mem.
- * @param mem memory
- * @param c serched value
- * @param n size of mem
- * @return pointer to the fist similar value
- *  return 0=no value in mem is similar to c
+ * @brief Searches first occurrence of c in mem.
+ * @param mem Pointer to block of memory where the search is performed.
+ * @param c Serched value. The function will use a unsigned char conversion of this value.
+ * @param n Size of mem.
+ * @return Pointer to the fist similar value
+ *  or NULL if no value in mem is similar to c.
  */
 void *memchr(const void *mem, int c, size_t n)
 {
-	uint32_t i = 0;
+	size_t i;
 	const unsigned char *str = mem;
-	while (str[i] != (unsigned char)c && i < n)
+	const unsigned char value = (unsigned char) c;
+	for (i = 0; str[i] != value && i < n-1; i++);
+
+	if (str[i] == value)
 	{
-	    i++;
+		return (void*) (str+i);
 	}
-	if (str[i])
+	else
 	{
-	    return (void*)(str+i);
+		return NULL;
 	}
-	return NULL;
 }
 
 
 /**
- * @brief Searches value c in mem.
- * @param memory
- * @param serched value
- * @param size of mem
- * @return pointer to the last similar value
- * @return 0=no value in mem is similar to c
+ * @brief Fill <code>mem</code> with value c.
+ * @param mem Block of memory to fill.
+ * @param c Value to be set. The function will use a unsigned char conversion of this value.
+ * @param n size of mem.
+ * @return returns <code>mem</code>.
  */
 void *memset(void *mem, int c, size_t n)
 {
 	unsigned char *str = mem;
-	uint32_t i;
+	size_t i;
 	for (i = 0; i < n; i++)
 	{
-	    str[i]=(unsigned char)c;
+	    str[i] = (unsigned char) c;
 	}
 	return mem;
 }
