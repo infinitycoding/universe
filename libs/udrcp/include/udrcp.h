@@ -53,12 +53,13 @@ typedef unsigned int pcktype_t;
 #define SHM_FREE    12
 
 
-///Response
+/// Subsystem Response
 #define CONFIRM     0
 #define SUCCESS     1
 #define PONG        2
 #define ERROR       3
 #define INVALID_REQUEST 4
+
 
 /// Host Request
 #define RESET_CON   0

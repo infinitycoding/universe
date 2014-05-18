@@ -21,8 +21,8 @@
  */
 
 #include <udrcp.h>
-#include <ioport.h>
-#include <memory.h>
+#include <udrcp/ioport.h>
+#include <udrcp/memory.h>
 #include <cga.h>
 #include <crtc.h>
 #include <stdlib.h>
@@ -31,7 +31,7 @@
 int main(int argc, char *argv[])
 {
     /*! driver internal variables*/
-    color_t color = WHITE | BLACK << 4;
+    //color_t color = WHITE | BLACK << 4;
 
     pckmgr *conn = new_pckmgr(stdin, stdout, stderr);
     if(!subsystem_connect(conn,UHOST_DEFAULT_SYNCHRON))

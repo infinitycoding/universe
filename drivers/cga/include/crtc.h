@@ -23,7 +23,7 @@
  */
 
 #include <stdint.h>
-#include <ioport.h>
+#include <udrcp/ioport.h>
 
 #define CRTC_INDEX_PORT 		0x3D4
 #define CRTC_DATA_PORT 			0x3D5

@@ -25,8 +25,8 @@
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
-#include <ioport.h>
-#include <memory.h>
+#include <udrcp/ioport.h>
+#include <udrcp/memory.h>
 
 #define UDRCP_BLOCK_DEV 0
 #define UDRCP_NE

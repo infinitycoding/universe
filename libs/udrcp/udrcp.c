@@ -123,7 +123,7 @@ int subsystem_connect(pckmgr *mgr, char *protocol_version)
     }
     else
     {
-        write(mgr->err,"invalind ping response from host",32);
+	udrcp_error(mgr,"invalind ping response from host ID:%d TYPE:%d Size:%d\n",pck_header->id,pck_header->type,pck_header->size);
         free(pck_header);
         return false;
     }

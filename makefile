@@ -57,10 +57,14 @@ usb:
 	grub-install --root-directory=/mnt --no-floppy --recheck /dev/sdb
 
 qemu: kernel libs drivers user iso-img
-	$(QEMU) 
+	$(QEMU)
+
+debug: kernel libs drivers user iso-img
+	$(QEMU) -s -S
 
 clean:
 	@$(MAKE) -C kernel clean
+	@$(MAKE) -C drivers clean
 	@$(MAKE) -C user clean
 	@$(MAKE) -C libs clean
 	@rm *.iso -f

@@ -21,12 +21,12 @@
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  **/
 
-
-#include <ioport.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <universe.h>
 #include <string.h>
+
+#include <udrcp/ioport.h>
+
 
 
 // Todo: error handling for hosted ports

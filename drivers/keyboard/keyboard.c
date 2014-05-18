@@ -29,7 +29,7 @@
 
 // udrcp includes
 #include <udrcp.h>
-#include <ioport.h>
+#include <udrcp/ioport.h>
 
 // modules includes
 #include <keymap_de.h>

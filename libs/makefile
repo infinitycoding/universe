@@ -1,4 +1,6 @@
 all:
+	mkdir -p ../build/usr/lib
+	mkdir -p ../build/usr/include
 	@$(MAKE) -C libc
 	@$(MAKE) -C udrcp
 	@$(MAKE) -C crt
