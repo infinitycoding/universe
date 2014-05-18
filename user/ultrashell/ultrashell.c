@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 			inbuffer[counter] = '\0';
 		}
 	}FOREVER;
-*/
+
 	while(1);
 	return 0;
 }

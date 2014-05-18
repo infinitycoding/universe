@@ -22,9 +22,10 @@
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
-
- #include <memory.h>
  #include <stdlib.h>
+
+ #include <udrcp/memory.h>
+
 
 
 /**
