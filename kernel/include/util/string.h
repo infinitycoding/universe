@@ -23,6 +23,7 @@
 
 /**
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
+ *  @author Johannes Spangenberg aka. JojOatXGME <jojo@xgme.de>
  */
 
 extern size_t strnlen(const char *s, size_t maxlen);
@@ -49,10 +50,10 @@ extern int memcmp(const void*,const void*,size_t);
 extern void* memchr(const void*,int,size_t);
 extern void* memset(void*,int,size_t);
 
-extern void strev(char* output,char* input);
-extern void itodez(int zahl,char* output);
-extern void uitodez(uint32_t zahl,char* output);
-extern void itohex(int zahl,char* output);
-extern void uitohex(uint32_t zahl,char* output);
+//extern void strev(char* output,char* input);
+//extern void itodez(int zahl,char* output);
+//extern void uitodez(uint32_t zahl,char* output);
+//extern void itohex(int zahl,char* output);
+//extern void uitohex(uint32_t zahl,char* output);
 
 #endif
