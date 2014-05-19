@@ -14,6 +14,7 @@ bin/
 cc/
 download/
 newlib/
+build/usr
 
 #Andere unerwünschte Daten
 .directory
