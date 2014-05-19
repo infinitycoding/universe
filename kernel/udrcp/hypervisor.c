@@ -44,7 +44,7 @@
 
 
 
-#define DEBUG
+//#define DEBUG
 
 
 list_t *subdrivers;
