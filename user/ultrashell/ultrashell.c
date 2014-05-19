@@ -31,6 +31,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <universe.h>
+
 
 /**
  * @brief the main function of the ultrashell.
@@ -42,6 +44,7 @@
 int main(int argc, char **argv)
 {
 	printf("Ultrashell started.\n");
+
 	struct shell_state shell;	
 	shell.last_ret_value = 0;
 	shell.cmds = initBinaryTree();

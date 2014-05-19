@@ -94,7 +94,7 @@ vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_
 }
 
 vfs_inode_t *vfs_create_pipe(uid_t uid, gid_t gid) {
-	vfs_inode_t *inode = vfs_create_inode("pipe", 0, NULL, uid, gid);
+	vfs_inode_t *inode = vfs_create_inode("pipe", S_IROTH | S_IWOTH, NULL, uid, gid);
 
 	vfs_pipe_info_t *pipe = malloc(sizeof(vfs_pipe_info_t));
 	pipe->num_readers = 1;
@@ -438,7 +438,7 @@ void sys_open(struct cpu_state **cpu) {
 			char *name = malloc(strlen((char*)path));// FIXME TODO
 			strcpy(name, path);// FIXME TODO
 			vfs_inode_t *parent = root; // FIXME TODO
-			if(vfs_access(parent, W_OK, current_thread->process->uid, current_thread->process->gid == 0)) {
+			if(vfs_access(parent, W_OK, current_thread->process->uid, current_thread->process->gid) == 0) {
 				inode = vfs_create_inode(name, mode, parent, current_thread->process->uid, current_thread->process->gid);
 			} else {
 				(*cpu)->CPU_ARG0 = _NO_PERMISSION;
@@ -457,7 +457,7 @@ void sys_open(struct cpu_state **cpu) {
 
 	if(vfs_access(inode, R_OK, current_thread->process->uid, current_thread->process->gid) == 0) {
 		if(oflags & O_TRUNC) {
-			if(vfs_access(inode, W_OK, current_thread->process->uid, current_thread->process->gid == 0)) {
+			if(vfs_access(inode, W_OK, current_thread->process->uid, current_thread->process->gid) == 0) {
 				memset(inode->base, 0, inode->length);
 			} else {
 				(*cpu)->CPU_ARG0 = _NO_PERMISSION;
@@ -483,31 +483,32 @@ void sys_open(struct cpu_state **cpu) {
 void sys_pipe(struct cpu_state **cpu) {
 	int *id = (int *) (*cpu)->CPU_ARG1;
 
-	if(get_fd(id[0]) != NULL &&
-	   get_fd(id[1]) != NULL)
-	{
-		vfs_inode_t *inode = vfs_create_pipe(current_thread->process->uid, current_thread->process->gid);
+	vfs_inode_t *inode = vfs_create_pipe(current_thread->process->uid, current_thread->process->gid);
 
-		// create read channel
-		struct fd *desc0 = malloc(sizeof(struct fd));
-		desc0->id = id[0];
-		desc0->mode = 0x7ff;
-		desc0->flags = O_RDONLY;
-		desc0->pos = 0;
-		desc0->inode = inode;
-		list_push_back(current_thread->process->files, desc0);
+	// create read channel
+	struct fd *desc0 = malloc(sizeof(struct fd));
+	desc0->id = id[0] = list_length(current_thread->process->files);
+	desc0->mode = O_APPEND;
+	desc0->flags = O_RDONLY;
+	desc0->pos = 0;
+	desc0->inode = inode;
+	list_push_back(current_thread->process->files, desc0);
 
-		// create write channel
-		struct fd *desc1 = malloc(sizeof(struct fd));
-		desc1->id = id[1];
-		desc1->mode = 0x7ff;
-		desc1->flags = O_WRONLY;
-		desc1->pos = 0;
-		desc1->inode = inode;
-		list_push_back(current_thread->process->files, desc1);
+	// create write channel
+	struct fd *desc1 = malloc(sizeof(struct fd));
+	desc1->id = id[1] = list_length(current_thread->process->files);
+	desc1->mode = O_APPEND;
+	desc1->flags = O_WRONLY;
+	desc1->pos = 0;
+	desc1->inode = inode;
+	list_push_back(current_thread->process->files, desc1);
 
+	//printf("kernel: piieeepe %d %d\n", desc0->id, desc1->id);
+
+	if(desc0 != NULL && desc1 != NULL && inode != NULL) {
 		(*cpu)->CPU_ARG0 = _SUCCESS;
 	} else {
+	//	printf("feehler\n");
 		(*cpu)->CPU_ARG0 = _FAILURE;
 	}
 }
@@ -545,11 +546,14 @@ void sys_read(struct cpu_state **cpu) {
 			vfs_pipe_info_t *pipe = inode->base;
 
 			if(vfs_access(inode, R_OK, current_thread->process->uid, current_thread->process->gid) == 0) {
+		//		printf("kernel: inode is %d long and desc at %d; reading %d\n", inode->length,desc->pos,len);
 				if(inode->length >= (desc->pos+len)) {
+		//			printf("CALL READ()\n");
 					vfs_read(inode, desc->pos, len, buf);
 					desc->pos += len;
 					(*cpu)->CPU_ARG0 = len;
 				} else if(inode->type == VFS_PIPE) {
+		//			printf("SLEEPING\n");
 					add_trigger(WAIT_EVENT, pipe->event_id, 0, current_thread, sys_read);
 					suspend_thread(current_thread);
 					*cpu = (struct cpu_state *)task_schedule(*cpu);
@@ -593,6 +597,7 @@ void sys_write(struct cpu_state **cpu) {
 					desc->flags |= O_APPEND;
 				}
 
+	//			printf("CALLINGVFS_WRITE()\n");
 				int ret = vfs_write(inode, desc->pos, buf, len);
 				(*cpu)->CPU_ARG0 = ret;
 				if(ret > 0) {

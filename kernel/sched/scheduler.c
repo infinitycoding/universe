@@ -90,7 +90,7 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
 
     if(current_thread->flags & THREAD_ZOMBIE)
     {
-        dump_thread_list(running_threads);
+//        dump_thread_list(running_threads);
         thread_kill_sub(current_thread);
         if(list_is_empty(running_threads))
         {
@@ -103,7 +103,7 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
         current_thread = list_get_current(&thread_iterator);
         vmm_switch_context(&current_thread->context);
         memcpy(cpu, current_thread->state, sizeof(struct cpu_state));
-        dump_thread_list(running_threads);
+ //       dump_thread_list(running_threads);
     }
     else if(current_thread->ticks == 0)
     {
