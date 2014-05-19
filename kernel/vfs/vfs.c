@@ -714,7 +714,7 @@ void sys_chdir(struct cpu_state **cpu) {
 	}
 }
 
-void sys_readdir(struct cpu_state **cpu) {
+void sys_getdents(struct cpu_state **cpu) {
 	static int pos = 0;
 	static int old_fd = -1;
 	int fd = (*cpu)->CPU_ARG1;

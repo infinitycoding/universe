@@ -88,6 +88,7 @@ struct child
     void sys_exit(struct cpu_state **cpu);
     void sys_fork(struct cpu_state **cpu);
     void sys_waitpid(struct cpu_state **cpu);
+    void sys_getpid(struct cpu_state **cpu);
     void dump_thread_list(list_t *threads);
 
 #endif

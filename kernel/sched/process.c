@@ -348,6 +348,11 @@ void sys_waitpid(struct cpu_state **cpu)
     *cpu = task_schedule(*cpu);
 }
 
+void sys_getpid(struct cpu_state **cpu)
+{
+    (*cpu)->CPU_ARG0 = current_thread->process->pid;
+}
+
 
 /**
  * executes a programm
@@ -367,11 +372,13 @@ void sys_execve(struct cpu_state **cpu)
 /**
  * set / get environment variables
  */
-void sys_setenv(struct cpu_state **cpu) {
+void sys_setenv(struct cpu_state **cpu)
+{
   // TODO entry in liste 'env' eintragen
 }
 
-void sys_getenv(struct cpu_state **cpu) {
+void sys_getenv(struct cpu_state **cpu)
+{
   // TODO liste auslesen
 }
 
