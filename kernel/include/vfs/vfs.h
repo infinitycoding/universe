@@ -121,7 +121,7 @@ void sys_create(struct cpu_state **cpu);
 void sys_link(struct cpu_state **cpu);
 void sys_unlink(struct cpu_state **cpu);
 void sys_chdir(struct cpu_state **cpu);
-void sys_readdir(struct cpu_state **cpu);
+void sys_getdents(struct cpu_state **cpu);
 void sys_seek(struct cpu_state **cpu);
 void sys_mkdir(struct cpu_state **cpu); 
 void sys_getcwd(struct cpu_state **cpu);
