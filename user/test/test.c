@@ -1,20 +1,32 @@
-#include <universe.h>
 #include <stdio.h>
-#include <udrcp.h>
+#include <string.h>
+#include <stdlib.h>
+
+int main(int argc, char **argv)
+{
+    printf("file append test: ");
+
+    int f = 0;
+    f = open("test",O_WRONLY,0);
+    write(f, "+++++", 5);
+    close(f);
+
+    f = open("test",O_APPEND|O_WRONLY,0);
+    write(f, "+++++", 5);
+    close(f);
 
 
-int main(int argc, char **argv) {
-    //printf("subsystem\n");
-    //write(STDERR,"connection established",22);
-    pckmgr *mgr = new_pckmgr(STDIN, STDOUT, STDERR);
-    if(!subsystem_connect(mgr, UHOST_DEFAULT_ASYNCHRON))
-        while(1);
+    char c[15] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    f = open("test",O_RDONLY,0);
+    read(f,c,10);
+    close(f);
 
-    write(STDERR,"connection established",22);
+    if(strncmp("++++++++++",c,15) == 0)
+        printf("successful\n");
+    else
+        printf("failed\n");
 
-
-
-    while(1){}
-	return 0;
+    return 0;
 }
+
 
