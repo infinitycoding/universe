@@ -45,55 +45,55 @@ port_t *port_alloc(pckmgr *mgr,unsigned int port_nr)
         pck_t *response = pck_poll(mgr,id);
         switch(response->type)
         {
-             case ERROR:
-                 retv = *((unsigned int*)response->data);
-                 free(response->data);
-                 free(response);
-                 return (port_t*)retv;
-             break; 
+        case ERROR:
+            retv = *((unsigned int*)response->data);
+            free(response->data);
+            free(response);
+            return (port_t*)retv;
+            break;
 
-             case INVALID_REQUEST:
-                 free(response->data);
-                 free(response);
-                 return NULL;
-             break;
+        case INVALID_REQUEST:
+            free(response->data);
+            free(response);
+            return NULL;
+            break;
 
-             case CONFIRM:
-                 free(response);
-             break;
+        case CONFIRM:
+            free(response);
+            break;
 
-             case SUCCESS:
-                 port = (port_t *)malloc(sizeof(port_t));
-                 resp = (port_resp*)response->data;
-                 
-                 port->type = resp->type;
-                 port->mgr = mgr;
+        case SUCCESS:
+            port = (port_t *)malloc(sizeof(port_t));
+            resp = (port_resp*)response->data;
 
-                 if(port->type == file_port)
-                 {
-                     port->port = open((char*)resp->port, 3, 0);
-                 }
-                 else if(port->type == hw_port || port->type == host_port)
-                 {
-                     port->port = port_nr;
-                 }
-                 else
-                 {
-                    udrcp_error(mgr, "error: unsupported port type %d\n",port->type);
-                    free(port);
-                    port = NULL;
-                 }
+            port->type = resp->type;
+            port->mgr = mgr;
 
-                 free(response->data);
-                 free(response);
-                 return port;
+            if(port->type == file_port)
+            {
+                port->port = open((char*)resp->port, 3, 0);
+            }
+            else if(port->type == hw_port || port->type == host_port)
+            {
+                port->port = port_nr;
+            }
+            else
+            {
+                udrcp_error(mgr, "error: unsupported port type %d\n",port->type);
+                free(port);
+                port = NULL;
+            }
 
-             break;
+            free(response->data);
+            free(response);
+            return port;
 
-             default:
-                udrcp_error(mgr, "error: unsupported response type %d\n",response->type);
-                 exit(1);
-             break;
+            break;
+
+        default:
+            udrcp_error(mgr, "error: unsupported response type %d\n",response->type);
+            exit(1);
+            break;
         };
     }
     return NULL; // just to keep the compiler happy
@@ -111,23 +111,23 @@ int port_free(port_t *p)
         pck_t *response = pck_poll(p->mgr,id);
         switch(response->type)
         {
-            case ERROR:
-                free(response);
-                return false;
+        case ERROR:
+            free(response);
+            return false;
             break;
 
-            case CONFIRM:
-                free(response);
+        case CONFIRM:
+            free(response);
             break;
 
-            case SUCCESS:
-                free(response);
-                return true;
+        case SUCCESS:
+            free(response);
+            return true;
             break;
 
-            default:
-                write(stderr,"error: unsupported response\n",28);
-                exit(1);
+        default:
+            write(stderr,"error: unsupported response\n",28);
+            exit(1);
             break;
         };
     }
@@ -146,22 +146,22 @@ int host_in(port_t *p,void *data,int size)
         response = pck_poll(p->mgr,id);
         switch(response->type)
         {
-            case ERROR:
-                retv = *((unsigned int*)response->data);
-                free(response->data);
-                free(response);
-                return retv;
+        case ERROR:
+            retv = *((unsigned int*)response->data);
+            free(response->data);
+            free(response);
+            return retv;
             break;
 
-            case CONFIRM:
-                free(response);
+        case CONFIRM:
+            free(response);
             break;
 
-            case SUCCESS:
-                memcpy(data,response->data,size);
-                free(response->data);
-                free(response);
-                return true;
+        case SUCCESS:
+            memcpy(data,response->data,size);
+            free(response->data);
+            free(response);
+            return true;
             break;
         };
     }
@@ -173,24 +173,24 @@ unsigned char inb(port_t *p)
     unsigned char result;
     switch(p->type)
     {
-        case hw_port:
-            asm volatile("inb %1, %0" : "=a" (result) : "Nd" ((unsigned short)p->port));
-            return result;
+    case hw_port:
+        asm volatile("inb %1, %0" : "=a" (result) : "Nd" ((unsigned short)p->port));
+        return result;
         break;
 
-        case host_port:
-            host_in(p,&result,sizeof(unsigned char));
-            return result;
+    case host_port:
+        host_in(p,&result,sizeof(unsigned char));
+        return result;
         break;
 
-        case file_port:
-            read(p->port,&result,sizeof(unsigned char));
-            return result;
+    case file_port:
+        read(p->port,&result,sizeof(unsigned char));
+        return result;
         break;
 
-        default:
-            write(stderr,"error: a unsupported port-type is used\n",40);
-            exit(1);
+    default:
+        write(stderr,"error: a unsupported port-type is used\n",40);
+        exit(1);
         break;
 
     };
@@ -203,24 +203,24 @@ unsigned short inw(port_t *p)
     unsigned short result;
     switch(p->type)
     {
-        case hw_port:
-            asm volatile("inw %1, %0" : "=a" (result) : "Nd" ((unsigned short)p->port));
-            return result;
+    case hw_port:
+        asm volatile("inw %1, %0" : "=a" (result) : "Nd" ((unsigned short)p->port));
+        return result;
         break;
 
-        case host_port:
-            host_in(p,&result,sizeof(unsigned short));
-            return result;
+    case host_port:
+        host_in(p,&result,sizeof(unsigned short));
+        return result;
         break;
 
-        case file_port:
-            read(p->port,&result,sizeof(unsigned short));
-            return result;
+    case file_port:
+        read(p->port,&result,sizeof(unsigned short));
+        return result;
         break;
 
-        default:
-            write(stderr,"error: a unsupported port-type is used\n",40);
-            exit(1);
+    default:
+        write(stderr,"error: a unsupported port-type is used\n",40);
+        exit(1);
         break;
 
     };
@@ -233,24 +233,24 @@ unsigned long inl(port_t *p)
     unsigned long result;
     switch(p->type)
     {
-        case hw_port:
-            asm volatile("inl %1, %0" : "=a" (result) : "Nd" ((unsigned short)p->port));
-            return result;
+    case hw_port:
+        asm volatile("inl %1, %0" : "=a" (result) : "Nd" ((unsigned short)p->port));
+        return result;
         break;
 
-        case host_port:
-            host_in(p,&result,sizeof(unsigned long));
-            return result;
+    case host_port:
+        host_in(p,&result,sizeof(unsigned long));
+        return result;
         break;
 
-        case file_port:
-            read(p->port,&result,sizeof(unsigned long));
-            return result;
+    case file_port:
+        read(p->port,&result,sizeof(unsigned long));
+        return result;
         break;
 
-        default:
-            write(stderr,"error: a unsupported port-type is used\n",40);
-            exit(1);
+    default:
+        write(stderr,"error: a unsupported port-type is used\n",40);
+        exit(1);
         break;
 
     };
@@ -273,21 +273,21 @@ int host_out(port_t *p, void *value, int size)
         response = pck_poll(p->mgr,id);
         switch(response->type)
         {
-            case ERROR:
-                retv = *((unsigned int*)response->data);
-                free(response->data);
-                free(response);
-                return retv;
+        case ERROR:
+            retv = *((unsigned int*)response->data);
+            free(response->data);
+            free(response);
+            return retv;
             break;
 
-            case CONFIRM:
-                free(response);
+        case CONFIRM:
+            free(response);
             break;
 
-            case SUCCESS:
-                free(response->data);
-                free(response);
-                return true;
+        case SUCCESS:
+            free(response->data);
+            free(response);
+            return true;
             break;
         };
     }
@@ -299,21 +299,21 @@ void outb(port_t *p, unsigned char v)
 {
     switch(p->type)
     {
-        case hw_port:
-            asm volatile("outb %1, %0" : : "Nd" ((uint16_t)p->port), "a" (v));
+    case hw_port:
+        asm volatile("outb %1, %0" : : "Nd" ((uint16_t)p->port), "a" (v));
         break;
 
-        case host_port:
-            host_out(p, &v, sizeof(unsigned char));
+    case host_port:
+        host_out(p, &v, sizeof(unsigned char));
         break;
 
-        case file_port:
-            write(p->port,&v,sizeof(unsigned char));
+    case file_port:
+        write(p->port,&v,sizeof(unsigned char));
         break;
 
-        default:
-            write(stderr,"error: a unsupported port-type is used\n",40);
-            exit(1);
+    default:
+        write(stderr,"error: a unsupported port-type is used\n",40);
+        exit(1);
         break;
     };
 }
@@ -324,21 +324,21 @@ void outw(port_t *p, unsigned short v)
 {
     switch(p->type)
     {
-        case hw_port:
-            asm volatile("outw %1, %0" : : "Nd" ((uint16_t)p->port), "a" (v));
+    case hw_port:
+        asm volatile("outw %1, %0" : : "Nd" ((uint16_t)p->port), "a" (v));
         break;
 
-        case host_port:
-            host_out(p, &v, sizeof(unsigned short));
+    case host_port:
+        host_out(p, &v, sizeof(unsigned short));
         break;
 
-        case file_port:
-            write(p->port,&v,sizeof(unsigned short));
+    case file_port:
+        write(p->port,&v,sizeof(unsigned short));
         break;
 
-        default:
-            write(stderr,"error: a unsupported port-type is used\n",40);
-            exit(1);
+    default:
+        write(stderr,"error: a unsupported port-type is used\n",40);
+        exit(1);
         break;
     };
 }
@@ -349,21 +349,21 @@ void outl(port_t *p, unsigned long v)
 {
     switch(p->type)
     {
-        case hw_port:
-            asm volatile("outl %1, %0" : : "Nd" ((uint16_t)p->port), "a" (v));
+    case hw_port:
+        asm volatile("outl %1, %0" : : "Nd" ((uint16_t)p->port), "a" (v));
         break;
 
-        case host_port:
-            host_out(p, &v, sizeof(unsigned long));
+    case host_port:
+        host_out(p, &v, sizeof(unsigned long));
         break;
 
-        case file_port:
-            write(p->port,&v,sizeof(unsigned long));
+    case file_port:
+        write(p->port,&v,sizeof(unsigned long));
         break;
 
-        default:
-            write(stderr,"error: a unsupported port-type is used\n",40);
-            exit(1);
+    default:
+        write(stderr,"error: a unsupported port-type is used\n",40);
+        exit(1);
         break;
     };
 }

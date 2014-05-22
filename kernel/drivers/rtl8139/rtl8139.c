@@ -1,17 +1,17 @@
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
- 
+
      The Universe Kernel is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
- 
+
      The Universe Kernel is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU General Public License for more details.
- 
+
      You should have received a copy of the GNU General Public License
      along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -82,7 +82,7 @@ void INIT_RTL8139(void)
 void rtl8139_reset(struct rtl_dev * dev)
 {
     rtl_outb(dev,REG_COMMAND, RESET_CARD); // perform reset
-    while(rtl_inb(dev, REG_COMMAND) & RESET_CARD){}
+    while(rtl_inb(dev, REG_COMMAND) & RESET_CARD) {}
     rtl_outb(dev, REG_COMMAND, ENABLE_RECIEVER | ENABLE_TRANSMITTER); // enable reciever and transmitter
     rtl_outl(dev, REG_TRANSMIT_CONFIGURATION, 0x03000700);
     rtl_outl(dev, REG_RECEIVE_CONFIGURATION, 0x0000070a);

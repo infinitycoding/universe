@@ -69,17 +69,17 @@ static inline uint32_t linux_syscall(uint32_t function, uint32_t ebx, uint32_t e
 {
     uint32_t retv = 0;
     asm volatile(
-    "push %ebx;"
-    "push %esi;"
-    "push %edi"
+        "push %ebx;"
+        "push %esi;"
+        "push %edi"
     );
 
     asm volatile(
-    "int $128;"
-    "pop %%edi;"
-    "pop %%esi;"
-    "pop %%ebx;"
-    : "=a" (retv) : "a" (function),  "b" (ebx), "c"(ecx), "d"(edx), "S"(esi), "D"(edi));
+        "int $128;"
+        "pop %%edi;"
+        "pop %%esi;"
+        "pop %%ebx;"
+        : "=a" (retv) : "a" (function),  "b" (ebx), "c"(ecx), "d"(edx), "S"(esi), "D"(edi));
 
     return retv;
 }
@@ -96,17 +96,17 @@ static inline uint32_t universe_syscall(uint32_t function, uint32_t ebx, uint32_
 {
     uint32_t retv = 0;
     asm volatile(
-    "push %ebx;"
-    "push %esi;"
-    "push %edi"
+        "push %ebx;"
+        "push %esi;"
+        "push %edi"
     );
 
     asm volatile(
-    "int $112;"
-    "pop %%edi;"
-    "pop %%esi;"
-    "pop %%ebx;"
-    : "=a" (retv) : "a" (function),  "b" (ebx), "c"(ecx), "d"(edx), "S"(esi), "D"(edi));
+        "int $112;"
+        "pop %%edi;"
+        "pop %%esi;"
+        "pop %%ebx;"
+        : "=a" (retv) : "a" (function),  "b" (ebx), "c"(ecx), "d"(edx), "S"(esi), "D"(edi));
 
     return retv;
 }

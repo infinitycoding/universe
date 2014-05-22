@@ -28,11 +28,13 @@
  * @return true  -> c is an alphanumeric character
  * @return false -> c isn't an alphanumeric character
  **/
-int isalnum(int c) {
-	if ( (c > 0x40 && c < 0x5B) || (c > 0x60 && c < 0x7B) || (c > 0x2F && c < 0x3A) ) {
-		return true;
-	}
-	return false;
+int isalnum(int c)
+{
+    if ( (c > 0x40 && c < 0x5B) || (c > 0x60 && c < 0x7B) || (c > 0x2F && c < 0x3A) )
+    {
+        return true;
+    }
+    return false;
 }
 
 /**
@@ -41,11 +43,13 @@ int isalnum(int c) {
  * @return true  -> c is an alphabetical character
  * @return false -> c isn't an alphabetical character
  **/
-int isalpha(int c) {
-	if ( (c > 0x40 && c < 0x5B) || (c > 0x60 && c < 0x7B) ) {
-		return true;
-	}
-	return false;
+int isalpha(int c)
+{
+    if ( (c > 0x40 && c < 0x5B) || (c > 0x60 && c < 0x7B) )
+    {
+        return true;
+    }
+    return false;
 }
 
 /**
@@ -54,11 +58,13 @@ int isalpha(int c) {
  * @return true  -> c is a control Key value
  * @return false -> c isn't a control key value
  **/
-int iscntrl(int c) {
-	if ( (c >= 0x0 && c > 0x20) || c == 0x7F) {
-		return true;
-	}
-	return false;
+int iscntrl(int c)
+{
+    if ( (c >= 0x0 && c > 0x20) || c == 0x7F)
+    {
+        return true;
+    }
+    return false;
 }
 
 /**
@@ -67,11 +73,13 @@ int iscntrl(int c) {
  * @return true  -> c is a digit
  * @return false -> c isn't an digit
  **/
-int isdigit(int c) {
-	if (c > 0x2F && c < 0x3A) {
-		return true;
-	}
-	return false;
+int isdigit(int c)
+{
+    if (c > 0x2F && c < 0x3A)
+    {
+        return true;
+    }
+    return false;
 }
 
 /**
@@ -80,11 +88,13 @@ int isdigit(int c) {
  * @return true  -> c is a graphical character
  * @return false -> c isn't a graphical character
  **/
-int isgraph(int c) {
-	if (c > 0x20 && c < 0x7F) {
-		return true;
-	}
-	return false;
+int isgraph(int c)
+{
+    if (c > 0x20 && c < 0x7F)
+    {
+        return true;
+    }
+    return false;
 }
 
 /**
@@ -93,11 +103,13 @@ int isgraph(int c) {
  * @return true  -> c is a lower character
  * @return false -> c isn't a lower character
  **/
-int islower(int c) {
-	if (c > 0x60 && c < 0x7B) {
-		return true;
-	}
-	return false;
+int islower(int c)
+{
+    if (c > 0x60 && c < 0x7B)
+    {
+        return true;
+    }
+    return false;
 }
 
 /**
@@ -106,11 +118,13 @@ int islower(int c) {
  * @return true  -> c is an printable character
  * @return false -> c isn't an printable character
  **/
-int isprint(int c) {
-	if (c > 0x1F && c < 0x7F) {
-		return true;
-	}
-	return false;
+int isprint(int c)
+{
+    if (c > 0x1F && c < 0x7F)
+    {
+        return true;
+    }
+    return false;
 }
 
 
@@ -120,11 +134,13 @@ int isprint(int c) {
  * @return true  -> c is a visible character which is not an alphanumerical
  * @return false -> c isn't a visible character which is not an alphanumerical
  **/
-int ispunct(int c) {
-	if ( (c > 0x20 && c < 0x30) || (c > 0x39 && c < 0x41) || (c > 0x5A && c < 0x61) || (c > 0x7A && c < 0x7F) ) {
-		return true;
-	}
-	return false;
+int ispunct(int c)
+{
+    if ( (c > 0x20 && c < 0x30) || (c > 0x39 && c < 0x41) || (c > 0x5A && c < 0x61) || (c > 0x7A && c < 0x7F) )
+    {
+        return true;
+    }
+    return false;
 }
 
 
@@ -134,11 +150,13 @@ int ispunct(int c) {
  * @return true  -> c is a space character
  * @return false -> c isn't a space character
  **/
-int isspace(int c) {
-	if (c == ' ' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\v') {
-		return true;
-	}
-	return false;
+int isspace(int c)
+{
+    if (c == ' ' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\v')
+    {
+        return true;
+    }
+    return false;
 }
 
 
@@ -148,11 +166,13 @@ int isspace(int c) {
  * @return true  -> c is an upper alphabetical character
  * @return false -> c isn't an upper alphabetical character
  **/
-int isupper(int c) {
-	if (c > 0x40 && c < 0x5B) {
-		return true;
-	}
-	return false;
+int isupper(int c)
+{
+    if (c > 0x40 && c < 0x5B)
+    {
+        return true;
+    }
+    return false;
 }
 
 
@@ -162,11 +182,13 @@ int isupper(int c) {
  * @return true  -> c is a hexadecimal digit
  * @return false -> c isn't a hexadecimal digit
  **/
-int isxdigit(int c) {
-	if ( (c > 0x2F && c < 0x3A) || (c > 0x40 && c < 0x47) || (c > 0x60 && c < 0x67) ) {
-		return true;
-	}
-	return false;
+int isxdigit(int c)
+{
+    if ( (c > 0x2F && c < 0x3A) || (c > 0x40 && c < 0x47) || (c > 0x60 && c < 0x67) )
+    {
+        return true;
+    }
+    return false;
 }
 
 
@@ -175,9 +197,10 @@ int isxdigit(int c) {
  * @param upper character c as int
  * @return c as lower character as int
  **/
-int tolower(int c) {
-	c += 0x20;
-	return c;
+int tolower(int c)
+{
+    c += 0x20;
+    return c;
 }
 
 
@@ -186,7 +209,8 @@ int tolower(int c) {
  * @param lower charcter c as int
  * @return c as upper character as int
  **/
-int toupper(int c) {
-	c -= 0x20;
-	return c;
+int toupper(int c)
+{
+    c -= 0x20;
+    return c;
 }

@@ -1,17 +1,17 @@
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
- 
+
      The Universe Kernel is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
- 
+
      The Universe Kernel is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU General Public License for more details.
- 
+
      You should have received a copy of the GNU General Public License
      along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -32,14 +32,14 @@
  */
 list_t *list_create(void)
 {
-	list_t *list = (list_t *) malloc(sizeof(list_t));
-	struct list_node *dummy = (struct list_node *) malloc(sizeof(struct list_node));
+    list_t *list = (list_t *) malloc(sizeof(list_t));
+    struct list_node *dummy = (struct list_node *) malloc(sizeof(struct list_node));
     list->head = dummy;
     dummy->next = dummy;
     dummy->prev = dummy;
     dummy->element = (void *) 0;
     unlock(&list->lock);
-	return list;
+    return list;
 }
 
 
@@ -49,16 +49,16 @@ list_t *list_create(void)
  */
 void list_destroy(list_t *list)
 {
-	struct list_node *node = list->head->next;
-	struct list_node *head = list->head;
+    struct list_node *node = list->head->next;
+    struct list_node *head = list->head;
     while (node != head)
-	{
+    {
         node = node->next;
-		free(node);
+        free(node);
     }
 
-	free(list);
-	return;
+    free(list);
+    return;
 }
 
 
@@ -76,28 +76,28 @@ void list_splice(struct list_node *start, struct list_node *end, struct list_nod
     end->next = target->next;
     target->next->prev = end;
     target->next = start;
-	return;
+    return;
 }
 
 
 list_t *list_push_back(list_t *list, void *element)
 {
-	struct list_node *node = (struct list_node *) malloc(sizeof(struct list_node));
+    struct list_node *node = (struct list_node *) malloc(sizeof(struct list_node));
     node->element = element;
     node->next = node;
     node->prev = node;
     list_splice(node, node, list->head->prev);
-	return list;
+    return list;
 }
 
 list_t *list_push_front(list_t *list, void *element)
 {
-	struct list_node *node = (struct list_node *) malloc(sizeof(struct list_node));
+    struct list_node *node = (struct list_node *) malloc(sizeof(struct list_node));
     node->element = element;
     node->next = node;
     node->prev = node;
     list_splice(node, node, list->head);
-	return list;
+    return list;
 }
 
 void *list_remove_node(struct list_node *node)
@@ -111,7 +111,7 @@ void *list_remove_node(struct list_node *node)
 
 void *list_pop_back(list_t *list)
 {
-	struct list_node *last = list->head->prev;
+    struct list_node *last = list->head->prev;
     void *element = last->element;
     last->prev->next = last->next;
     last->next->prev = last->prev;
@@ -121,7 +121,7 @@ void *list_pop_back(list_t *list)
 
 void *list_pop_front(list_t *list)
 {
-	struct list_node *first = list->head->next;
+    struct list_node *first = list->head->next;
     void *element = first->element;
     first->prev->next = first->next;
     first->next->prev = first->prev;
@@ -132,15 +132,15 @@ void *list_pop_front(list_t *list)
 
 int list_length(list_t *list)
 {
-	struct list_node *node = list->head->next;
-	struct list_node *head = list->head;
-	size_t size = 0;
+    struct list_node *node = list->head->next;
+    struct list_node *head = list->head;
+    size_t size = 0;
     while (node != head)
-	{
+    {
         node = node->next;
         size++;
     }
-	return size;
+    return size;
 }
 
 bool list_is_empty(list_t *list)

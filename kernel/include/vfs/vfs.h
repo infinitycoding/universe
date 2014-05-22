@@ -4,17 +4,17 @@
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
- 
+
      The Universe Kernel is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
- 
+
      The Universe Kernel is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU General Public License for more details.
- 
+
      You should have received a copy of the GNU General Public License
      along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -49,56 +49,63 @@
 #define O_CREAT 0x20 /* create the file */
 #define O_EXCL 0x40 /* forced file creation. if it already exist: fail */
 
-typedef struct vfs_inode {
-	char *name;
-	void *base;
-	uint32_t type;
-	uint32_t length;
-	struct stat stat;
-	struct vfs_inode *parent;
+typedef struct vfs_inode
+{
+    char *name;
+    void *base;
+    uint32_t type;
+    uint32_t length;
+    struct stat stat;
+    struct vfs_inode *parent;
 } vfs_inode_t;
 
-typedef struct vfs_pipe_info {
-	unsigned int num_readers;
-	unsigned int num_writers;
-	
-	uint32_t event_id;
-	list_t *handlers;
+typedef struct vfs_pipe_info
+{
+    unsigned int num_readers;
+    unsigned int num_writers;
 
-	list_t *pipe_buffer;
-	int num_blocks;
+    uint32_t event_id;
+    list_t *handlers;
+
+    list_t *pipe_buffer;
+    int num_blocks;
 } vfs_pipe_info_t;
 
-typedef struct vfs_pipe_buffer_block {
-	uint8_t *base;
-	uint32_t block_id;
-	uint32_t length;
+typedef struct vfs_pipe_buffer_block
+{
+    uint8_t *base;
+    uint32_t block_id;
+    uint32_t length;
 } vfs_pipe_buffer_block_t;
 
-typedef struct vfs_pipe_trigger {
-	uint32_t eip;
-	int argc;
-	void **argv;
-	struct thread_state *thread;
+typedef struct vfs_pipe_trigger
+{
+    uint32_t eip;
+    int argc;
+    void **argv;
+    struct thread_state *thread;
 } vfs_pipe_trigger_t;
 
-typedef struct vfs_dentry {
-	ino_t ino;
-	vfs_inode_t *inode;
+typedef struct vfs_dentry
+{
+    ino_t ino;
+    vfs_inode_t *inode;
 } vfs_dentry_t;
 
-typedef struct dirent {
-  int id;
-  char name[256];
-  struct stat stat;
+typedef struct dirent
+{
+    int id;
+    char name[256];
+    struct stat stat;
 } dirent_t;
 
-struct fd {
-	unsigned int id;
-	vfs_inode_t *inode;
-	mode_t mode;
-	int flags;
-	int pos;
+struct fd
+{
+    unsigned int id;
+    vfs_inode_t *inode;
+    mode_t mode;
+    int flags;
+    int pos;
 };
 
 void INIT_VFS(void);
@@ -123,7 +130,7 @@ void sys_unlink(struct cpu_state **cpu);
 void sys_chdir(struct cpu_state **cpu);
 void sys_getdents(struct cpu_state **cpu);
 void sys_seek(struct cpu_state **cpu);
-void sys_mkdir(struct cpu_state **cpu); 
+void sys_mkdir(struct cpu_state **cpu);
 void sys_getcwd(struct cpu_state **cpu);
 void launch_pipe_handlers(vfs_pipe_info_t *pipe);
 void set_pipe_trigger(struct cpu_state **cpu);

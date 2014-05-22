@@ -37,14 +37,15 @@ int vsprintf(char *buf, const char *fmt, va_list args);
 int getchar(void);
 
 // files
-typedef struct file {
-	char *fpos;
-	void *base;
-	uint8_t handle;
-	int8_t flags;
-	int8_t unget;
-	unsigned long alloc;
-	uint8_t buffincrement;
+typedef struct file
+{
+    char *fpos;
+    void *base;
+    uint8_t handle;
+    int8_t flags;
+    int8_t unget;
+    unsigned long alloc;
+    uint8_t buffincrement;
 } file_t;
 typedef struct file FILE;
 

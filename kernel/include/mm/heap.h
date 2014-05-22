@@ -42,17 +42,19 @@ void *realloc(void *ptr, size_t size);
 #define HEAP_STATUS_USED 0
 #define HEAP_STATUS_FREE 1
 
-typedef struct alloc {
-	size_t size;
-	vaddr_t base;
-	int status;	
+typedef struct alloc
+{
+    size_t size;
+    vaddr_t base;
+    int status;
 
-	struct alloc *next;
+    struct alloc *next;
 } alloc_t;
 
-typedef struct {
-	size_t list_count;
-	alloc_t *alloc_list;
+typedef struct
+{
+    size_t list_count;
+    alloc_t *alloc_list;
 } heap_t;
 
 void INIT_HEAP(void);

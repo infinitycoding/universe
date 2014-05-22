@@ -1,17 +1,17 @@
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
- 
+
      The Universe Kernel is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
- 
+
      The Universe Kernel is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU General Public License for more details.
- 
+
      You should have received a copy of the GNU General Public License
      along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -59,9 +59,11 @@
 */
 extern struct process_state *kernel_state;
 extern list_t *running_threads;
-int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
+int init (struct multiboot_struct *mb_info, uint32_t magic_number)
+{
     clear_screen();
-    if (magic_number != 0x2BADB002) {
+    if (magic_number != 0x2BADB002)
+    {
         panic("Incompatible Bootloader");
     }
     set_color(WHITE | BLACK << 4);
@@ -84,8 +86,8 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
     /*uint32_t pages = pmm_count_free_pages();
     printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);*/
     //print current time
-        struct time t;
-        update_time(&t);
+    struct time t;
+    update_time(&t);
     print_time(&t); //crashes on a real computer and on virtual box
     printf("\n");
     printf("Timestamp:%d\n\n",unix_time(&t));
@@ -97,7 +99,8 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
     int i;
     void *phys = (void*)((int)modules[0].string & (int)~0xfff);
     void *virt = (void*) vmm_automap_kernel(current_context, (paddr_t)phys, VMM_WRITABLE);
-    for(i = 0; i < mb_info->mods_count; i++) {
+    for(i = 0; i < mb_info->mods_count; i++)
+    {
         int diff = (int)modules[i].string - (int)phys;
         modules[i].string = virt + diff;
     }
@@ -106,17 +109,18 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
 
     vfs_inode_t *pfnode = vfs_lookup_path("/drivers/system.pf");
 
-    if(pfnode != NULL) {
-     	int argc = 2;
-     	void *argv[2];
+    if(pfnode != NULL)
+    {
+        int argc = 2;
+        void *argv[2];
         char *pf = (char *)pfnode->base;
         //printf(pf);
         list_t *pipelines = pfp(pf);
-     	struct section *sec = list_pop_front(pipelines);
+        struct section *sec = list_pop_front(pipelines);
 
         argv[1] = mb_info;
-     	argv[0] = sec;
-     	//kernel_thread_create((uintptr_t)INIT_HYPERVISOR,argc,argv);
+        argv[0] = sec;
+        //kernel_thread_create((uintptr_t)INIT_HYPERVISOR,argc,argv);
     }
 
 

@@ -27,86 +27,96 @@
 #define HEAP_STATUS_FREE 0x0
 #define HEAP_STATUS_USED 0x1
 
-typedef struct alloc {
-	size_t size;
-	uint32_t base;
-	int status;
+typedef struct alloc
+{
+    size_t size;
+    uint32_t base;
+    int status;
 
-	struct alloc *next;
+    struct alloc *next;
 } alloc_t;
 
 static alloc_t *first_node = NULL;
 
-alloc_t *heap_expand(int pages) {
-	uint32_t vframe = alloc_memory(pages);
-	alloc_t *new_header = (alloc_t *) vframe;
+alloc_t *heap_expand(int pages)
+{
+    uint32_t vframe = alloc_memory(pages);
+    alloc_t *new_header = (alloc_t *) vframe;
 
-	new_header->size = pages*4096 - sizeof(alloc_t);
-	new_header->base = vframe + sizeof(alloc_t);
-	new_header->status = HEAP_STATUS_FREE;
+    new_header->size = pages*4096 - sizeof(alloc_t);
+    new_header->base = vframe + sizeof(alloc_t);
+    new_header->status = HEAP_STATUS_FREE;
 
-	new_header->next = first_node;
-	first_node = new_header;
+    new_header->next = first_node;
+    first_node = new_header;
 
-	return new_header;
+    return new_header;
 }
 
-void *malloc(size_t size) {
-	alloc_t *header = first_node;
-	//vaddr_t data = 0;
-	int n_size = size + sizeof(alloc_t);
+void *malloc(size_t size)
+{
+    alloc_t *header = first_node;
+    //vaddr_t data = 0;
+    int n_size = size + sizeof(alloc_t);
 
-	while(header != NULL) {
-		if(header->size >= size && header->status == HEAP_STATUS_FREE) {
-			header->status = HEAP_STATUS_USED;
-			if(header->size > n_size) {
-				alloc_t *new_header = (alloc_t *)(header->base + size);
-				new_header->base    = header->base + n_size;
-				new_header->size = header->size - n_size;
-				new_header->status = HEAP_STATUS_FREE;
-				header->size = size;
+    while(header != NULL)
+    {
+        if(header->size >= size && header->status == HEAP_STATUS_FREE)
+        {
+            header->status = HEAP_STATUS_USED;
+            if(header->size > n_size)
+            {
+                alloc_t *new_header = (alloc_t *)(header->base + size);
+                new_header->base    = header->base + n_size;
+                new_header->size = header->size - n_size;
+                new_header->status = HEAP_STATUS_FREE;
+                header->size = size;
 
-				new_header->next = first_node;
-				first_node = new_header;
-			}
+                new_header->next = first_node;
+                first_node = new_header;
+            }
 
-			return (void *)header->base;
-		}
-		header = header->next;
-	}
+            return (void *)header->base;
+        }
+        header = header->next;
+    }
 
-	header = heap_expand(NUM_PAGES(n_size));
-	if(header != NULL) {
-		header->status = HEAP_STATUS_USED;
-		return (void *)header->base;
-	}
+    header = heap_expand(NUM_PAGES(n_size));
+    if(header != NULL)
+    {
+        header->status = HEAP_STATUS_USED;
+        return (void *)header->base;
+    }
 
-	return NULL;
+    return NULL;
 }
 
-void free(void *ptr) {
+void free(void *ptr)
+{
     if(ptr <= 0)
         return;
-	alloc_t *header = (alloc_t*)((uintptr_t)ptr - sizeof(alloc_t));
-	header->status = HEAP_STATUS_FREE;
+    alloc_t *header = (alloc_t*)((uintptr_t)ptr - sizeof(alloc_t));
+    header->status = HEAP_STATUS_FREE;
 }
 
 
-void *calloc(size_t num, size_t size) {
-	void *data = malloc(size);
-	memset(data, 0, size);
+void *calloc(size_t num, size_t size)
+{
+    void *data = malloc(size);
+    memset(data, 0, size);
 
-	return data;
+    return data;
 }
 
-void *realloc(void *ptr, size_t size) {
-	void *dest = malloc(size);
-	alloc_t *source_alloc = ptr - sizeof(alloc_t);
+void *realloc(void *ptr, size_t size)
+{
+    void *dest = malloc(size);
+    alloc_t *source_alloc = ptr - sizeof(alloc_t);
 
-	memmove(dest, ptr, source_alloc->size);
-	free(ptr);
+    memmove(dest, ptr, source_alloc->size);
+    free(ptr);
 
-	return dest;
+    return dest;
 }
 
 

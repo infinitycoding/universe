@@ -25,8 +25,8 @@
 #ifndef __ASSEMBLY__
 struct kernel_symbol
 {
-	unsigned long value;
-	const char *name;
+    unsigned long value;
+    const char *name;
 };
 
 #ifdef MODULE

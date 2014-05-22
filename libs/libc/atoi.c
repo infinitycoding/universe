@@ -41,60 +41,74 @@
 
 char * itoa_ex(unsigned int value, char * str, int base, int flags, int width)
 {
-	char *result = str;
-	unsigned int size;
-	unsigned int len = 0;
-	unsigned int temp = 0;
-	int negative = 0;
+    char *result = str;
+    unsigned int size;
+    unsigned int len = 0;
+    unsigned int temp = 0;
+    int negative = 0;
 
-	const char *digits = "0123456789ABCDEF";
+    const char *digits = "0123456789ABCDEF";
 
-	if (flags & SMALL) {
-		digits = "0123456789abcdef";
-	}
+    if (flags & SMALL)
+    {
+        digits = "0123456789abcdef";
+    }
 
-	if (value < 0) {
-		value = - value;
-		++negative;
-	}
+    if (value < 0)
+    {
+        value = - value;
+        ++negative;
+    }
 
-	temp = value;
-	do {temp /= base; ++len;} while (temp);
-	size = len;
+    temp = value;
+    do
+    {
+        temp /= base;
+        ++len;
+    }
+    while (temp);
+    size = len;
 
-	if (!(flags & LEFT) && !(flags & ZEROPAD))
-		while (size < width--)
-			*str++ = ' ';
+    if (!(flags & LEFT) && !(flags & ZEROPAD))
+        while (size < width--)
+            *str++ = ' ';
 
-	if (negative) {
-		*str++ = '-';
-	} else if (flags & PLUS) {
-		*str++ = '+';
-	}
-	if (flags & SPECIAL) {
-		*str++ = '0'; *str++ = 'x';
-		width -= 2;
-	}
+    if (negative)
+    {
+        *str++ = '-';
+    }
+    else if (flags & PLUS)
+    {
+        *str++ = '+';
+    }
+    if (flags & SPECIAL)
+    {
+        *str++ = '0';
+        *str++ = 'x';
+        width -= 2;
+    }
 
-	if (!(flags & LEFT) && (flags & ZEROPAD))
-		while (size < width--)
-			*str++ = '0';
+    if (!(flags & LEFT) && (flags & ZEROPAD))
+        while (size < width--)
+            *str++ = '0';
 
-	do {
-		int power = powi(base, --len);
-		int digit = value / power;
+    do
+    {
+        int power = powi(base, --len);
+        int digit = value / power;
 
-		*str++ = digits[digit];
+        *str++ = digits[digit];
 
-		value -= digit * power;
-	} while (len > 0);
+        value -= digit * power;
+    }
+    while (len > 0);
 
-	while (size < width--)
-		*str++ = ' ';
+    while (size < width--)
+        *str++ = ' ';
 
-	*str++ = '\0';
+    *str++ = '\0';
 
-	return result;
+    return result;
 }
 
 /**
@@ -107,7 +121,7 @@ char * itoa_ex(unsigned int value, char * str, int base, int flags, int width)
 
 inline char * itoa(unsigned int value, char * str, int base)
 {
-	return itoa_ex(value, str, base, 0, 1);
+    return itoa_ex(value, str, base, 0, 1);
 }
 
 /**
@@ -118,16 +132,16 @@ inline char * itoa(unsigned int value, char * str, int base)
 
 int atoi(const char *str)
 {
-	int result = 0;
-	int length = 0;
+    int result = 0;
+    int length = 0;
 
-	while (isdigit(*str++))
-		++length;
+    while (isdigit(*str++))
+        ++length;
 
-	str -= length + 1;
+    str -= length + 1;
 
-	while (length > 0)
-		result += powi(10, --length) * (*str++ - '0');
+    while (length > 0)
+        result += powi(10, --length) * (*str++ - '0');
 
-	return result;
+    return result;
 }

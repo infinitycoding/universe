@@ -33,7 +33,7 @@ typedef struct
     pckmgr *mgr;
     void *mem_base;
     size_t range;
-}shm_mem_t;
+} shm_mem_t;
 
 typedef struct
 {
@@ -41,14 +41,14 @@ typedef struct
     void *mem_base;
     void *phys_base;
     size_t range;
-}pma_mem_t;
+} pma_mem_t;
 
 typedef enum
 {
     PMA_ALLOC_RANDOM = 1,
     PMA_ALLOC_SPECIFIC = 2,
     PMA_ALLOC_LOWER = 3,
-}pma_t;
+} pma_t;
 
 struct pma_request
 {
@@ -78,4 +78,4 @@ int hand_block(pckmgr *mgr, shm_mem_t *mem, size_t range);
 int free_shm(shm_mem_t *mem);
 int free_pma(pma_mem_t *mem);
 
- #endif
+#endif

@@ -1,17 +1,17 @@
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
- 
+
      The Universe Kernel is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
- 
+
      The Universe Kernel is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU General Public License for more details.
- 
+
      You should have received a copy of the GNU General Public License
      along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -48,7 +48,7 @@ void kernel_thread_exit(void)
 {
     current_thread->flags |= THREAD_ZOMBIE;
     printf("death row\n");
-    while(1){}
+    while(1) {}
     asm("int $32"); ///i don't know why ther's a pagefalut when i call the system scheduler
 }
 
@@ -63,13 +63,13 @@ struct thread_state *kernel_thread_create(uintptr_t eip, int argc, void **argv)
 struct thread_state *thread_create(struct process_state *process, privilege_t prev, uint32_t eip, struct cpu_state *state, int argc, void **argv, void *return_address, vmm_context_t *context)
 {
     struct thread_state *new_thread = malloc(sizeof(struct thread_state));
-	new_thread->flags = THREAD_ACTIV;
+    new_thread->flags = THREAD_ACTIV;
     new_thread->process = process;
 
     if(context == NULL)
-      vmm_create_context(&new_thread->context);
+        vmm_create_context(&new_thread->context);
     else
-      memcpy(&new_thread->context.arch_context, &context->arch_context, sizeof(arch_vmm_context_t));
+        memcpy(&new_thread->context.arch_context, &context->arch_context, sizeof(arch_vmm_context_t));
 
     thread_sync_context(new_thread);
     new_thread->ticks = 10;
@@ -82,7 +82,8 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     if(return_address == NULL)
         return_address = &kernel_thread_exit;
 
-    if(process->main_thread == NULL) {
+    if(process->main_thread == NULL)
+    {
         process->main_thread = new_thread;
     }
 
@@ -122,11 +123,11 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
             *--stack = (uint32_t) argv;
             *--stack = argc;
             *--stack = (uint32_t) return_address;
-	    vmm_unmap(current_context, (vaddr_t) stack);
-	}
+            vmm_unmap(current_context, (vaddr_t) stack);
+        }
 
-	new_state->cs = 0x1b;
-	new_state->ss = 0x23;
+        new_state->cs = 0x1b;
+        new_state->ss = 0x23;
     }
 
     if(list_is_empty(process->zombie_tids))

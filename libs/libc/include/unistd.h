@@ -42,10 +42,11 @@
 #define O_CREAT 0x20 /* create the file */
 #define O_EXCL 0x40 /* forced file creation. if it already exist: fail */
 
-typedef struct dirent {
-  int id;
-  char name[256];
-  struct stat stat;
+typedef struct dirent
+{
+    int id;
+    char name[256];
+    struct stat stat;
 } dirent_t;
 
 int open(const char *path, int file_access, int filemode);

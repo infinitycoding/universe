@@ -4,17 +4,17 @@
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
- 
+
      The Universe Kernel is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
- 
+
      The Universe Kernel is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU General Public License for more details.
- 
+
      You should have received a copy of the GNU General Public License
      along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -30,8 +30,9 @@
 	TODO: Define INTs here
 */
 
-enum INT_NUM {
-	INT_PAGE_FAULT = 0x0E
+enum INT_NUM
+{
+    INT_PAGE_FAULT = 0x0E
 };
 
 #define IRQ_OFFSET 32
@@ -91,16 +92,18 @@ extern void isr_default(void);
 extern void isr_pci(void);
 
 
-struct IDT_Entry {
-	uint16_t Base_low;
-	uint16_t selector;
-	uint16_t flags;
-	uint16_t Base_hi;
-}__attribute__((packed));
+struct IDT_Entry
+{
+    uint16_t Base_low;
+    uint16_t selector;
+    uint16_t flags;
+    uint16_t Base_hi;
+} __attribute__((packed));
 
-struct idtpt {
-	uint16_t limit;
-	void* base;
+struct idtpt
+{
+    uint16_t limit;
+    void* base;
 } __attribute__((packed));
 
 

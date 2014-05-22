@@ -135,7 +135,7 @@ struct section *parser_section(char *pipelines, int *section_pos)
         if(pipelines[(*section_pos)] == '#')
         {
             while(pipelines[(*section_pos)] != '\n' && pipelines[(*section_pos)] != '\0' && (*section_pos) <= section_end)
-                    (*section_pos)++;
+                (*section_pos)++;
         }
         else if(pipelines[(*section_pos)] == '<')
         {
@@ -522,7 +522,7 @@ struct mods_add* find_module(struct multiboot_struct *mb_info, char *name)
 
     struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
     for(i = 0; i < mb_info->mods_count; i++)
-     {
+    {
         if(! strncmp(name, modules[i].string, n))
         {
             return &modules[i];

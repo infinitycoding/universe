@@ -24,10 +24,11 @@
 */
 #include <stdint.h>
 
-typedef struct dirent {
-  int id;
-  char name[256];
-  stat_t stat;
+typedef struct dirent
+{
+    int id;
+    char name[256];
+    stat_t stat;
 } dirent_t;
 
 #endif

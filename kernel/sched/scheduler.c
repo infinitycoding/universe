@@ -1,17 +1,17 @@
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
- 
+
      The Universe Kernel is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
- 
+
      The Universe Kernel is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU General Public License for more details.
- 
+
      You should have received a copy of the GNU General Public License
      along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -54,15 +54,15 @@ extern list_t *zombie_list;
  */
 void INIT_SCHEDULER(void)
 {
-	set_GDT_entry(5, (uint32_t) &tss, sizeof(tss), 0x89, 0x8); //qemu does not support TSS-Desc on position 7... wiered hardware stuff
-	load_gdt(5);
+    set_GDT_entry(5, (uint32_t) &tss, sizeof(tss), 0x89, 0x8); //qemu does not support TSS-Desc on position 7... wiered hardware stuff
+    load_gdt(5);
 
-	asm volatile("ltr %%ax" : : "a" (5 << 3));
+    asm volatile("ltr %%ax" : : "a" (5 << 3));
 
 
 
-	kernelstack = malloc(KERNEL_STACK_SIZE) + KERNEL_STACK_SIZE;
-	tss.esp0 = (uint32_t)kernelstack;
+    kernelstack = malloc(KERNEL_STACK_SIZE) + KERNEL_STACK_SIZE;
+    tss.esp0 = (uint32_t)kernelstack;
 
     running_threads = list_create();
     thread_iterator = iterator_create(running_threads);
@@ -95,7 +95,10 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
         if(list_is_empty(running_threads))
         {
             asm volatile("sti");
-            while(list_is_empty(running_threads)){printf("halted!\n");}
+            while(list_is_empty(running_threads))
+            {
+                printf("halted!\n");
+            }
             asm volatile("cli");
         }
 
@@ -103,7 +106,7 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
         current_thread = list_get_current(&thread_iterator);
         vmm_switch_context(&current_thread->context);
         memcpy(cpu, current_thread->state, sizeof(struct cpu_state));
- //       dump_thread_list(running_threads);
+//       dump_thread_list(running_threads);
     }
     else if(current_thread->ticks == 0)
     {
@@ -128,6 +131,6 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
     {
         current_thread->ticks--;
     }
-	EOI(0);
-	return cpu;
+    EOI(0);
+    return cpu;
 }

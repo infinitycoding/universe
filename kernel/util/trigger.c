@@ -1,17 +1,17 @@
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
- 
+
      The Universe Kernel is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
- 
+
      The Universe Kernel is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU General Public License for more details.
- 
+
      You should have received a copy of the GNU General Public License
      along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -142,7 +142,7 @@ int remove_event_trigger(void *object, uint32_t ID)
     iterator_t it = iterator_create(trigger_list);
     list_set_first(&it);
     if(ID == 0)
-    {    
+    {
         while(!list_is_last(&it) && !list_is_empty(trigger_list))
         {
             struct trigger_entry *current_entry = list_get_current(&it);
@@ -223,28 +223,28 @@ int send_event(uint32_t ID)
         {
             if(current_entry->proc)
             {
-		        wakeup_process(current_entry->object);
-		        remove_event_trigger(current_entry->object, current_entry->ID);
+                wakeup_process(current_entry->object);
+                remove_event_trigger(current_entry->object, current_entry->ID);
             }
             else
             {
-		        struct thread_state *thread = current_entry->object;
-		        remove_event_trigger(current_entry->object, current_entry->ID);
-		        wakeup_thread(thread);
+                struct thread_state *thread = current_entry->object;
+                remove_event_trigger(current_entry->object, current_entry->ID);
+                wakeup_thread(thread);
 
                 if(current_entry->callback != NULL)
                 {
-        			struct cpu_state **cpu = &thread->state;
-        			struct thread_state *tmp = current_thread;
-        			current_thread = thread;
-        			vmm_switch_context(&current_thread->context);
+                    struct cpu_state **cpu = &thread->state;
+                    struct thread_state *tmp = current_thread;
+                    current_thread = thread;
+                    vmm_switch_context(&current_thread->context);
                     current_entry->callback(cpu);
-        			current_thread = tmp;
-        			vmm_switch_context(&current_thread->context);
+                    current_thread = tmp;
+                    vmm_switch_context(&current_thread->context);
                 }
             }
             // that's a temporary workaround. I have to fix it later.
-            // the problems are caused by blitzbasics list ports. 
+            // the problems are caused by blitzbasics list ports.
             ret = true;
             list_remove(&it);
             if(current_entry->type == WAIT_EVENT)

@@ -4,17 +4,17 @@
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
- 
+
      The Universe Kernel is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
- 
+
      The Universe Kernel is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU General Public License for more details.
- 
+
      You should have received a copy of the GNU General Public License
      along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -69,24 +69,25 @@
 #define ELF_MAG2 'L'
 #define ELF_MAG3 'F'
 
-struct elf_header {
-	uint8_t ident[EI_NIDENT];
-	uint16_t type;
-	uint16_t machine;
-	uint32_t version;
-	uint32_t entry;
+struct elf_header
+{
+    uint8_t ident[EI_NIDENT];
+    uint16_t type;
+    uint16_t machine;
+    uint32_t version;
+    uint32_t entry;
 
-	uint32_t ph_offset;
-	uint32_t sh_offset;
+    uint32_t ph_offset;
+    uint32_t sh_offset;
 
-	uint32_t flags;
-	uint16_t header_size;
+    uint32_t flags;
+    uint16_t header_size;
 
-	uint16_t ph_entry_size;
-	uint16_t ph_entry_count;
-	uint16_t sh_entry_size;
-	uint16_t sh_entry_count;
-	uint16_t sh_str_table_index;
+    uint16_t ph_entry_size;
+    uint16_t ph_entry_count;
+    uint16_t sh_entry_size;
+    uint16_t sh_entry_count;
+    uint16_t sh_str_table_index;
 } __attribute__((packed));
 
 // Program types
@@ -103,15 +104,16 @@ struct elf_header {
 #define EP_FLAGS_W 0x2 /* Writable segment */
 #define EP_FLAGS_R 0x3 /* Readable segment */
 
-struct elf_program_header {
-	uint32_t type;
-	uint32_t offset;
-	uint32_t virt_addr;
-	uint32_t phys_addr;
-	uint32_t file_size;
-	uint32_t mem_size;
-	uint32_t flags;
-	uint32_t alignment;
+struct elf_program_header
+{
+    uint32_t type;
+    uint32_t offset;
+    uint32_t virt_addr;
+    uint32_t phys_addr;
+    uint32_t file_size;
+    uint32_t mem_size;
+    uint32_t flags;
+    uint32_t alignment;
 } __attribute__((packed));
 
 struct process_state *load_elf(void *image, char *name, uid_t uid, gid_t gid, struct pipeset *s);

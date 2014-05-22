@@ -4,17 +4,17 @@
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
- 
+
      The Universe Kernel is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
- 
+
      The Universe Kernel is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU General Public License for more details.
- 
+
      You should have received a copy of the GNU General Public License
      along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -70,7 +70,7 @@
 
 
 #ifndef _PCI_C_
-    extern list_t *pci_dev_list;
+extern list_t *pci_dev_list;
 #endif
 
 typedef enum
@@ -79,7 +79,7 @@ typedef enum
     INTB = 2,
     INTC = 3,
     INTD = 4,
-}irq_pin;
+} irq_pin;
 
 
 typedef enum
@@ -87,7 +87,7 @@ typedef enum
     MEMORY = 0,
     PORT = 1,
     UNUSED = 2,
-}pci_base_t;
+} pci_base_t;
 
 
 struct pci_dev_base

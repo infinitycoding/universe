@@ -4,17 +4,17 @@
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
- 
+
      The Universe Kernel is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
- 
+
      The Universe Kernel is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU General Public License for more details.
- 
+
      You should have received a copy of the GNU General Public License
      along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -29,21 +29,21 @@
 
 struct list_node
 {
-	struct list_node *next;
-	struct list_node *prev;
-	void *element;
+    struct list_node *next;
+    struct list_node *prev;
+    void *element;
 };
 
 typedef struct
 {
-     mutex lock;
-     struct list_node *head;
+    mutex lock;
+    struct list_node *head;
 } list_t;
 
 typedef struct
 {
-     list_t *list;
-     struct list_node *current;
+    list_t *list;
+    struct list_node *current;
 } iterator_t;
 
 list_t*	list_create(void);

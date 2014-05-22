@@ -12,7 +12,7 @@ uint32_t fork()
 
 void thread_exit(int retv)
 {
-  asm volatile("int $112;": : "a" (SYS_THREAD_EXIT) , "b"(retv));
+    asm volatile("int $112;": : "a" (SYS_THREAD_EXIT) , "b"(retv));
 }
 
 void thread_launch(void * function, int argc, void *argv)
@@ -22,9 +22,9 @@ void thread_launch(void * function, int argc, void *argv)
 
 uint32_t alloc_memory(int pages)
 {
-	uint32_t addr;
-	asm volatile("int $112;" : "=a" (addr) : "a" (SYS_ALLOC_MEMORY), "b" (pages));
-	return addr;
+    uint32_t addr;
+    asm volatile("int $112;" : "=a" (addr) : "a" (SYS_ALLOC_MEMORY), "b" (pages));
+    return addr;
 }
 
 uint32_t identify_universe(void)

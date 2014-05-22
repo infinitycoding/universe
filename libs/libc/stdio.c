@@ -27,82 +27,109 @@
 #include <string.h>
 #include <sys/stat.h>
 
-FILE *fopen(const char *path, char *modus) {
-	FILE *file = malloc(sizeof(FILE));
+FILE *fopen(const char *path, char *modus)
+{
+    FILE *file = malloc(sizeof(FILE));
 
-	int m = 0;
-	if(strchr(modus, 'r')) { m = O_RDONLY; }
-	if(strchr(modus, 'w')) {
-		if(m == O_RDONLY) {
-			m = O_RDWR;
-		} else {
-			m = O_WRONLY;
-		}
-		m |= O_CREAT;
-	}
-	
-	if(strchr(modus, 'a')) { m |= O_APPEND; }
-	if(strchr(modus, '+')) { m |= O_RDWR; }
-	
-	file->handle = open(path, m, 0x1ff0);
-	if(! (file->handle < 0)) {
-		struct stat stat;
-		fstat(file->handle, &stat);
-		file->alloc = stat.st_size;
+    int m = 0;
+    if(strchr(modus, 'r'))
+    {
+        m = O_RDONLY;
+    }
+    if(strchr(modus, 'w'))
+    {
+        if(m == O_RDONLY)
+        {
+            m = O_RDWR;
+        }
+        else
+        {
+            m = O_WRONLY;
+        }
+        m |= O_CREAT;
+    }
 
-		if(m |= O_APPEND) {
-			file->fpos = (char *)file->alloc;
-		} else {
-			file->fpos = 0;
-		}
+    if(strchr(modus, 'a'))
+    {
+        m |= O_APPEND;
+    }
+    if(strchr(modus, '+'))
+    {
+        m |= O_RDWR;
+    }
 
-		return file;
-	} else {
-		return NULL;
-	}
+    file->handle = open(path, m, 0x1ff0);
+    if(! (file->handle < 0))
+    {
+        struct stat stat;
+        fstat(file->handle, &stat);
+        file->alloc = stat.st_size;
+
+        if(m |= O_APPEND)
+        {
+            file->fpos = (char *)file->alloc;
+        }
+        else
+        {
+            file->fpos = 0;
+        }
+
+        return file;
+    }
+    else
+    {
+        return NULL;
+    }
 }
 
-int fclose(FILE *file) {
-	close(file->handle);
-	free(file);
-	return 0;
+int fclose(FILE *file)
+{
+    close(file->handle);
+    free(file);
+    return 0;
 }
 
-size_t fread(void *buf, size_t size, size_t n, FILE *file) {
-	file->fpos += read(file->handle, buf, size * n);
-	return n;
+size_t fread(void *buf, size_t size, size_t n, FILE *file)
+{
+    file->fpos += read(file->handle, buf, size * n);
+    return n;
 }
 
-size_t fwrite(void *buf, size_t size, size_t n, FILE *file) {
-	size_t bytes = size * n;
-	file->fpos += write(file->handle, buf, bytes);
-	if((unsigned long)(file->fpos + bytes) > file->alloc) { //is that really correct?
-		file->alloc = (unsigned long) (file->fpos + bytes);
-	}
-	
-	return n;
+size_t fwrite(void *buf, size_t size, size_t n, FILE *file)
+{
+    size_t bytes = size * n;
+    file->fpos += write(file->handle, buf, bytes);
+    if((unsigned long)(file->fpos + bytes) > file->alloc)   //is that really correct?
+    {
+        file->alloc = (unsigned long) (file->fpos + bytes);
+    }
+
+    return n;
 }
 
-void fseek(FILE *file, int off, int whence) {
-	switch(whence) {
-		case SEEK_SET: // absolute
-			file->fpos = (char *)off;
-			break;
-		case SEEK_CUR: // relative from current position
-			file->fpos += off;
-			break;
-		case SEEK_END: // relative from end
-			file->fpos = (char*)(file->alloc - off);
-			break;
-	}
-	lseek(file->handle, off, whence);
+void fseek(FILE *file, int off, int whence)
+{
+    switch(whence)
+    {
+    case SEEK_SET: // absolute
+        file->fpos = (char *)off;
+        break;
+    case SEEK_CUR: // relative from current position
+        file->fpos += off;
+        break;
+    case SEEK_END: // relative from end
+        file->fpos = (char*)(file->alloc - off);
+        break;
+    }
+    lseek(file->handle, off, whence);
 }
 
-int ftell(FILE *file) {
-	return (int)file->fpos;
+int ftell(FILE *file)
+{
+    return (int)file->fpos;
 }
 
 int fstat(int fildes, struct stat *buf)
 {
-	return linux_syscall(SYS_FSTAT, fildes, (uint32_t) buf, 0, 0, 0);
+    return linux_syscall(SYS_FSTAT, fildes, (uint32_t) buf, 0, 0, 0);
 }

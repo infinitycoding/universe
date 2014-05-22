@@ -30,7 +30,7 @@ typedef enum
     hw_port,
     host_port,
     file_port,
-}port_type;
+} port_type;
 
 
 typedef struct
@@ -38,20 +38,20 @@ typedef struct
     port_type type;
     unsigned int port;
     pckmgr *mgr;
-}port_t;
+} port_t;
 
 
 typedef struct
 {
     port_type type;
     unsigned int port;
-}port_resp;
+} port_resp;
 
 
 typedef struct
 {
     unsigned int port;
-}port_req;
+} port_req;
 
 
 port_t *port_alloc(pckmgr *mgr,unsigned int port);

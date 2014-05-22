@@ -24,8 +24,9 @@
 #include <string.h>
 #include <universe.h>
 
-char *getenv(const char *name) {
-  return name;
+char *getenv(const char *name)
+{
+    return name;
 }
 
 void exit(int retv)

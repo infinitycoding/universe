@@ -1,17 +1,17 @@
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
- 
+
      The Universe Kernel is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
- 
+
      The Universe Kernel is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU General Public License for more details.
- 
+
      You should have received a copy of the GNU General Public License
      along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -33,14 +33,14 @@
  */
 size_t strnlen(const char *s, size_t maxlen)
 {
-	const char *str = s;
-	while (*str && maxlen)
-	{
-		++str;
-		maxlen--;
-	}
+    const char *str = s;
+    while (*str && maxlen)
+    {
+        ++str;
+        maxlen--;
+    }
 
-	return str - s;
+    return str - s;
 }
 
 
@@ -51,13 +51,13 @@ size_t strnlen(const char *s, size_t maxlen)
  */
 size_t strlen(const char *string)
 {
-	size_t i = 0;
-	while (string[i])
-	{
-		i++;
-	}
+    size_t i = 0;
+    while (string[i])
+    {
+        i++;
+    }
 
-	return i;
+    return i;
 }
 
 
@@ -69,14 +69,14 @@ size_t strlen(const char *string)
  */
 char *strcpy(char *dest, const char *src)
 {
-	size_t i = 0;
-	while (src[i])
-	{
-		dest[i] = src[i];
-		i++;
-	}
-	dest[i] = src[i];
-	return dest;
+    size_t i = 0;
+    while (src[i])
+    {
+        dest[i] = src[i];
+        i++;
+    }
+    dest[i] = src[i];
+    return dest;
 }
 
 
@@ -89,25 +89,25 @@ char *strcpy(char *dest, const char *src)
  */
 char *strncpy(char *dest, const char *src,size_t n)
 {
-	size_t i;
-	bool eos = false;
-	for (i = 0; i < n; i++)
-	{
-		if (!eos)
-		{
-			if (src[i] == '\0')
-			{
-				eos = true;
-			}
-			dest[i] = src[i];
-		}
-		else
-		{
-			dest[i] = '\0';
-		}
+    size_t i;
+    bool eos = false;
+    for (i = 0; i < n; i++)
+    {
+        if (!eos)
+        {
+            if (src[i] == '\0')
+            {
+                eos = true;
+            }
+            dest[i] = src[i];
+        }
+        else
+        {
+            dest[i] = '\0';
+        }
 
-	}
-	return dest;
+    }
+    return dest;
 }
 
 
@@ -119,9 +119,9 @@ char *strncpy(char *dest, const char *src,size_t n)
  */
 char *strcat(char *dest, const char *src)
 {
-	size_t n = strlen(dest);
-	strcpy((char*)(dest+n),src);
-	return dest;
+    size_t n = strlen(dest);
+    strcpy((char*)(dest+n),src);
+    return dest;
 }
 
 
@@ -134,9 +134,9 @@ char *strcat(char *dest, const char *src)
  */
 char *strncat(char *dest, const char *src, size_t n)
 {
-	size_t i = strlen(dest);
-	strncpy((char*)(dest+i),src,n);
-	return dest;
+    size_t i = strlen(dest);
+    strncpy((char*)(dest+i),src,n);
+    return dest;
 }
 
 
@@ -150,10 +150,10 @@ char *strncat(char *dest, const char *src, size_t n)
  */
 int strcmp(const char *str0, const char *str1)
 {
-	size_t i;
-	for (i = 0; str0[i] == str1[i] && str0[i] != 0; i++);
-	int ret = str0[i] - str1[i];
-	return ret;
+    size_t i;
+    for (i = 0; str0[i] == str1[i] && str0[i] != 0; i++);
+    int ret = str0[i] - str1[i];
+    return ret;
 }
 
 
@@ -168,12 +168,12 @@ int strcmp(const char *str0, const char *str1)
  */
 int strncmp(const char *str0, const char *str1, size_t n)
 {
-	uint32_t i;
-	int ret = 0;
+    uint32_t i;
+    int ret = 0;
 
-	for (i = 0; str0[i] == str1[i] && str0[i] != 0 && i < n-1; i++);
-	ret = str0[i] - str1[i];
-	return ret;
+    for (i = 0; str0[i] == str1[i] && str0[i] != 0 && i < n-1; i++);
+    ret = str0[i] - str1[i];
+    return ret;
 }
 
 
@@ -186,16 +186,16 @@ int strncmp(const char *str0, const char *str1, size_t n)
  */
 char *strchr(const char *str, int c)
 {
-	int i = 0;
-	while (str[i] != (char)c && str[i] != 0)
-	{
-	    i++;
-	}
-	if (str[i])
-	{
-	    return (char*)(str+i);
-	}
-	return NULL;
+    int i = 0;
+    while (str[i] != (char)c && str[i] != 0)
+    {
+        i++;
+    }
+    if (str[i])
+    {
+        return (char*)(str+i);
+    }
+    return NULL;
 }
 
 /**
@@ -207,17 +207,17 @@ char *strchr(const char *str, int c)
  */
 char *strrchr(const char *str, int c)
 {
-	int i = 0;
-	char* ret = NULL;
-	while (str[i] != 0)
-	{
-		if (str[i] == (char)c)
-		{
-		    ret = (char*)(str+i);
-		}
-		i++;
-	}
-	return ret;
+    int i = 0;
+    char* ret = NULL;
+    while (str[i] != 0)
+    {
+        if (str[i] == (char)c)
+        {
+            ret = (char*)(str+i);
+        }
+        i++;
+    }
+    return ret;
 }
 
 
@@ -232,36 +232,36 @@ char *strrchr(const char *str, int c)
 
 char *strtok(char *string, const char *delimiters)
 {
-	static char *str = NULL;
+    static char *str = NULL;
 
-	if (string != NULL)
-	{
-		str = string;
-	}
-	if (str == NULL)
-	{
-		return NULL;
-	}
+    if (string != NULL)
+    {
+        str = string;
+    }
+    if (str == NULL)
+    {
+        return NULL;
+    }
 
-	size_t i;
-	for (i = 0; str[i] != '\0'; i++)
-	{
-		const char *deli;
-		for(deli = delimiters; *deli != '\0'; deli++)
-		{
-			if(str[i] == *deli)
-			{
-				char *ret = str;
-				str[i] = '\0';
-				str = str + i + 1;
-				return ret;
-			}
-		}
-	}
+    size_t i;
+    for (i = 0; str[i] != '\0'; i++)
+    {
+        const char *deli;
+        for(deli = delimiters; *deli != '\0'; deli++)
+        {
+            if(str[i] == *deli)
+            {
+                char *ret = str;
+                str[i] = '\0';
+                str = str + i + 1;
+                return ret;
+            }
+        }
+    }
 
-	char *ret = str;
-	str = NULL;
-	return ret;
+    char *ret = str;
+    str = NULL;
+    return ret;
 }
 
 /**
@@ -273,14 +273,14 @@ char *strtok(char *string, const char *delimiters)
  */
 void *memcpy(void *destination, const void *source, size_t size)
 {
-	uint8_t *dest = destination;
-	const uint8_t *sour = source;
-	size_t i;
-	for (i = 0; i < size; i++)
-	{
-		dest[i] = sour[i];
-	}
-	return destination;
+    uint8_t *dest = destination;
+    const uint8_t *sour = source;
+    size_t i;
+    for (i = 0; i < size; i++)
+    {
+        dest[i] = sour[i];
+    }
+    return destination;
 }
 
 
@@ -296,23 +296,24 @@ void *memcpy(void *destination, const void *source, size_t size)
  */
 void *memmove(void *destination, const void *source, size_t num)
 {
-	uint8_t *dest = destination;
-	const uint8_t *src = source;
-	if (dest > src && src + num > dest && num != 0)
-	{
-		size_t i = num;
-		do
-		{
-			i--;
-			dest[i] = src[i];
-		} while (i != 0);
-	}
-	else
-	{
-		// because we know that memcpy copy bytes from left to right.
-		memcpy(dest, src, num);
-	}
-	return destination;
+    uint8_t *dest = destination;
+    const uint8_t *src = source;
+    if (dest > src && src + num > dest && num != 0)
+    {
+        size_t i = num;
+        do
+        {
+            i--;
+            dest[i] = src[i];
+        }
+        while (i != 0);
+    }
+    else
+    {
+        // because we know that memcpy copy bytes from left to right.
+        memcpy(dest, src, num);
+    }
+    return destination;
 }
 
 
@@ -327,11 +328,11 @@ void *memmove(void *destination, const void *source, size_t num)
  */
 int memcmp(const void *mem0, const void *mem1, size_t n)
 {
-	const char *st0 = mem0;
-	const char *st1 = mem1;
-	size_t i;
-	for (i = 0; st0[i] == st1[i] && i < n-1; i++);
-	return st0[i] - st1[i];
+    const char *st0 = mem0;
+    const char *st1 = mem1;
+    size_t i;
+    for (i = 0; st0[i] == st1[i] && i < n-1; i++);
+    return st0[i] - st1[i];
 }
 
 
@@ -345,19 +346,19 @@ int memcmp(const void *mem0, const void *mem1, size_t n)
  */
 void *memchr(const void *mem, int c, size_t n)
 {
-	size_t i;
-	const unsigned char *str = mem;
-	const unsigned char value = (unsigned char) c;
-	for (i = 0; str[i] != value && i < n-1; i++);
+    size_t i;
+    const unsigned char *str = mem;
+    const unsigned char value = (unsigned char) c;
+    for (i = 0; str[i] != value && i < n-1; i++);
 
-	if (str[i] == value)
-	{
-		return (void*) (str+i);
-	}
-	else
-	{
-		return NULL;
-	}
+    if (str[i] == value)
+    {
+        return (void*) (str+i);
+    }
+    else
+    {
+        return NULL;
+    }
 }
 
 
@@ -370,11 +371,11 @@ void *memchr(const void *mem, int c, size_t n)
  */
 void *memset(void *mem, int c, size_t n)
 {
-	unsigned char *str = mem;
-	size_t i;
-	for (i = 0; i < n; i++)
-	{
-	    str[i] = (unsigned char) c;
-	}
-	return mem;
+    unsigned char *str = mem;
+    size_t i;
+    for (i = 0; i < n; i++)
+    {
+        str[i] = (unsigned char) c;
+    }
+    return mem;
 }

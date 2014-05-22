@@ -4,17 +4,17 @@
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
- 
+
      The Universe Kernel is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
- 
+
      The Universe Kernel is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU General Public License for more details.
- 
+
      You should have received a copy of the GNU General Public License
      along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -50,23 +50,24 @@
 #define S_ISBLK(x) (x.st_mode & S_MODE_CHR) ? 0 : 1
 #define S_ISLNK(x) (x.st_mode & S_MODE_LNK) ? 1 : 0
 
-struct stat {
-	mode_t 	st_mode; // access rights
-	ino_t	st_ino;
-	//       dev_t	st_dev; // filesystem
-	//       dev_t	st_rdev;
+struct stat
+{
+    mode_t 	st_mode; // access rights
+    ino_t	st_ino;
+    //       dev_t	st_dev; // filesystem
+    //       dev_t	st_rdev;
 
-	nlink_t	st_nlink;
-	uid_t	st_uid;
-	gid_t	st_gid;
-	off_t	st_size;
+    nlink_t	st_nlink;
+    uid_t	st_uid;
+    gid_t	st_gid;
+    off_t	st_size;
 
-	time_t	st_atime; // access time
-	time_t	st_mtime; // modification time
-	time_t	st_ctime; // create time
+    time_t	st_atime; // access time
+    time_t	st_mtime; // modification time
+    time_t	st_ctime; // create time
 
-	long	st_blksize;
-	long	st_blocks;
+    long	st_blksize;
+    long	st_blocks;
 };
 
 #endif

@@ -1,17 +1,17 @@
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
- 
+
      The Universe Kernel is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
- 
+
      The Universe Kernel is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU General Public License for more details.
- 
+
      You should have received a copy of the GNU General Public License
      along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -29,7 +29,7 @@
 
 #include <udrcp/pfp.h>
 #include <udrcp/ioport.h>
- #include <udrcp/memory.h>
+#include <udrcp/memory.h>
 #include <udrcp/hypervisor.h>
 
 #include <sched/elf.h>
@@ -80,7 +80,7 @@ void INIT_HYPERVISOR(int argc, void **argv)
             size_t drv_pages = NUM_PAGES(drv_len);
             void *driver = (void*)vmm_automap_kernel_range(current_context,(paddr_t) drv_mod->mod_start, drv_pages, VMM_WRITABLE);
             pman = new_pckmgr(vfs_create_pipe(0, 0), vfs_create_pipe(0, 0), vfs_create_pipe(0, 0));
-            
+
             struct driver *new_driver = malloc(sizeof(struct driver));
             new_driver->pman = pman;
             new_driver->process = load_elf(driver,((struct pnode *)list_get_current(&i))->file,0,0,&pman->pset);
@@ -121,64 +121,64 @@ void INIT_HYPERVISOR(int argc, void **argv)
         int ret;
         switch(pck->type)
         {
-            case RESET_CON:
-                #ifdef DEBUG
-                    printf("host: connection reset\n");
-                #endif
+        case RESET_CON:
+#ifdef DEBUG
+            printf("host: connection reset\n");
+#endif
             break;
 
-            case PING:
-                #ifdef DEBUG
-                    printf("host: recieved ping -> sending pong\n");
-                #endif
-                respond(pman,pck->id,PONG,UHOST_DEFAULT_ASYNCHRON_SIZE,UHOST_DEFAULT_ASYNCHRON);
+        case PING:
+#ifdef DEBUG
+            printf("host: recieved ping -> sending pong\n");
+#endif
+            respond(pman,pck->id,PONG,UHOST_DEFAULT_ASYNCHRON_SIZE,UHOST_DEFAULT_ASYNCHRON);
             break;
 
-            case PORT_ALLOC:
-                #ifdef DEBUG
-                    printf("host: allocationg Port 0x%x\n",*((unsigned int*)pck->data));
-                #endif
-                handle_port_alloc(current_driver, pck);
+        case PORT_ALLOC:
+#ifdef DEBUG
+            printf("host: allocationg Port 0x%x\n",*((unsigned int*)pck->data));
+#endif
+            handle_port_alloc(current_driver, pck);
             break;
 
-            case INT_REQ:
-                #ifdef DEBUG
-                    printf("host: setting up interrupt signal 0x%x\n",*((unsigned int*)pck->data));
-                #endif // DEBUG
-                r = malloc(sizeof(struct int_relation));
-                r->intnr = *((unsigned int*)pck->data);
-                r->drv = pman;
-                list_push_front(interrupts,r);
-                if(add_int_trigger(r->intnr, NULL,subsystem_isr))
-                {
-                    printf("sucess!\n");
-                   respond(pman,pck->id,SUCCESS,0,NULL);
-                }
-                else
-                {
-                    printf("could not allocate interrupt\n");
-                    ret = -1;
-                    respond(pman,pck->id,ERROR,sizeof(unsigned int),&ret);
-                }
+        case INT_REQ:
+#ifdef DEBUG
+            printf("host: setting up interrupt signal 0x%x\n",*((unsigned int*)pck->data));
+#endif // DEBUG
+            r = malloc(sizeof(struct int_relation));
+            r->intnr = *((unsigned int*)pck->data);
+            r->drv = pman;
+            list_push_front(interrupts,r);
+            if(add_int_trigger(r->intnr, NULL,subsystem_isr))
+            {
+                printf("sucess!\n");
+                respond(pman,pck->id,SUCCESS,0,NULL);
+            }
+            else
+            {
+                printf("could not allocate interrupt\n");
+                ret = -1;
+                respond(pman,pck->id,ERROR,sizeof(unsigned int),&ret);
+            }
             break;
 
-            case PMA_ALLOC:
-                #ifdef DEBUG
-                printf("PMA-Alloc\n");
-                #endif
-                handle_pma_alloc(current_driver, pck);
+        case PMA_ALLOC:
+#ifdef DEBUG
+            printf("PMA-Alloc\n");
+#endif
+            handle_pma_alloc(current_driver, pck);
 
             break;
 
-            case PMA_FREE:
-                printf("PMA-Free\n");
-                handle_pma_free(current_driver, pck);
+        case PMA_FREE:
+            printf("PMA-Free\n");
+            handle_pma_free(current_driver, pck);
             break;
 
 
 
-            default:
-                printf("host: recieved unknown package %d    size:%d    type:%x\n",pck->id,pck->size,pck->type);
+        default:
+            printf("host: recieved unknown package %d    size:%d    type:%x\n",pck->id,pck->size,pck->type);
             break;
 
         };

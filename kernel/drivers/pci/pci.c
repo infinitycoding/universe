@@ -1,17 +1,17 @@
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
- 
+
      The Universe Kernel is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
- 
+
      The Universe Kernel is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU General Public License for more details.
- 
+
      You should have received a copy of the GNU General Public License
      along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -138,7 +138,8 @@ bool pci_dev_exist(uint8_t bus, uint8_t dev, uint8_t func)
 /**
  * Collection of pci device classes
  **/
-char *pci_classes[] = {
+char *pci_classes[] =
+{
     "storage", "network", "display", "multimedia", "memory",
     "bridge", "bus/port", "perephiery", "input", "docking station",
     "processor", "serial bus", "wireless", "intelegent", "Satelite",
@@ -149,7 +150,8 @@ char *pci_classes[] = {
 /**
  * Collection of pci device names orderd by class and subclass pci_dev_names[class][subclass]
  **/
-char *pci_dev_names[][16]={
+char *pci_dev_names[][16]=
+{
     {"non vga device", "vga device"}, {"SCSI", "IDE", "Floppy", "IPI", "RAID", "ATA-controler", "SATA-controler","SAS"},
     {"Ethernet", "Token Ring", "FDDI", "ATM", "ISDN", "FIP", "PICMG 2.14"}, {"VGA", "XGA", "3D"}, {"Video", "Audio", "Phone", "HD-Audio"},
     {"RAM", "Flash"},{"Host", "ISA", "EISA-Bridge", "MicroChannel", "PCI-Bridge", "PCMCIA-Bridge", "NuBus-Bridge", "CardBus-Bridge", "Raceway", "Semitransparente PCI/PCI-Bridge","InfinityBand"}
@@ -180,9 +182,9 @@ struct pci_dev *pci_search_device(list_t *device_list, uint16_t vendor, uint16_t
         {
             num--;
         }
-            list_next(&device_it);
-        }
-        list_unlock(device_list);
+        list_next(&device_it);
+    }
+    list_unlock(device_list);
     return NULL;
 }
 
@@ -195,12 +197,12 @@ list_t *pci_irq_handles;
  */
 void pci_install_isr(void (*isr)(struct pci_dev *dev), struct pci_dev *dev)
 {
-    while(pci_irq_handles->lock){}
+    while(pci_irq_handles->lock) {}
     list_lock(pci_irq_handles);
-        struct pci_isr *new_pci_isr = malloc(sizeof(struct pci_isr));
-        new_pci_isr->isr = isr;
-        new_pci_isr->dev = dev;
-        list_push_front(pci_irq_handles,new_pci_isr);
+    struct pci_isr *new_pci_isr = malloc(sizeof(struct pci_isr));
+    new_pci_isr->isr = isr;
+    new_pci_isr->dev = dev;
+    list_push_front(pci_irq_handles,new_pci_isr);
     list_unlock(pci_irq_handles);
 }
 
@@ -212,22 +214,22 @@ void pci_install_isr(void (*isr)(struct pci_dev *dev), struct pci_dev *dev)
  */
 int pci_deinstall_isr(void (*isr)(struct pci_dev *dev), struct pci_dev *dev)
 {
-    while(pci_irq_handles->lock){}
+    while(pci_irq_handles->lock) {}
     list_lock(pci_irq_handles);
-        iterator_t handle_it = iterator_create(pci_irq_handles);
-        int num = 0;
-        while(!list_is_last(&handle_it))
+    iterator_t handle_it = iterator_create(pci_irq_handles);
+    int num = 0;
+    while(!list_is_last(&handle_it))
+    {
+        struct pci_isr *current_isr = list_get_current(&handle_it);
+        if(current_isr->isr == isr && current_isr->dev == dev)
         {
-            struct pci_isr *current_isr = list_get_current(&handle_it);
-            if(current_isr->isr == isr && current_isr->dev == dev)
-            {
-                list_remove(&handle_it);
-                list_set_first(&handle_it);
-                num++;
-            }
-            else
-                list_next(&handle_it);
+            list_remove(&handle_it);
+            list_set_first(&handle_it);
+            num++;
         }
+        else
+            list_next(&handle_it);
+    }
     list_unlock(pci_irq_handles);
     return num;
 }
@@ -273,9 +275,9 @@ void pci_irq_handler(void)
 
 void INIT_PCI()
 {
-    #ifdef PRINT_DEV_LIST
-        printf("PCI-devices:\n");
-    #endif
+#ifdef PRINT_DEV_LIST
+    printf("PCI-devices:\n");
+#endif
     if(!pci_dev_list)
         pci_dev_list = list_create();
     if(!pci_irq_handles)
@@ -324,9 +326,9 @@ void INIT_PCI()
                     current_dev->locked = false;
 
 
-                    #ifdef PRINT_DEV_LIST
-                        printf("device ID: %04X  vendor ID: %04X  bus: %d  port: %d  function: %d interrupt:%d\n",current_dev->device_ID, current_dev->vendor_ID, current_dev->bus, current_dev->dev, current_dev->func, current_dev->irq_num);
-                    #endif
+#ifdef PRINT_DEV_LIST
+                    printf("device ID: %04X  vendor ID: %04X  bus: %d  port: %d  function: %d interrupt:%d\n",current_dev->device_ID, current_dev->vendor_ID, current_dev->bus, current_dev->dev, current_dev->func, current_dev->irq_num);
+#endif
 
                     if(current_dev->irq_num < 16 && current_dev->irq_pin && current_dev->irq_num)
                     {
@@ -381,7 +383,7 @@ void INIT_PCI()
                             }
 
                             //reset old state
-                             pci_writel(bus, dev, func, PCI_BASE + (base * 4), current_base);
+                            pci_writel(bus, dev, func, PCI_BASE + (base * 4), current_base);
                         }
 
 
@@ -399,7 +401,7 @@ void INIT_PCI()
     }
     pci_dev_list->lock = false;
 
-    #ifdef PRINT_DEV_LIST
-        printf("\n");
-    #endif
+#ifdef PRINT_DEV_LIST
+    printf("\n");
+#endif
 }

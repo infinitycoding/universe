@@ -47,29 +47,31 @@ int close(int fd)
 
 dirent_t *readdir(int fd)
 {
-  return (dirent_t *)linux_syscall(SYS_READDIR, fd, 0, 0, 0, 0);
+    return (dirent_t *)linux_syscall(SYS_READDIR, fd, 0, 0, 0, 0);
 }
 
 int chdir(const char *path)
 {
-  return linux_syscall(SYS_CHDIR,(uint32_t)path, 0, 0, 0, 0);
+    return linux_syscall(SYS_CHDIR,(uint32_t)path, 0, 0, 0, 0);
 }
 
-int lseek(int fd, int off, int whence) {
-  return linux_syscall(SYS_LSEEK, fd, off, whence, 0, 0);
+int lseek(int fd, int off, int whence)
+{
+    return linux_syscall(SYS_LSEEK, fd, off, whence, 0, 0);
 }
 
 int getchar(void)
 {
-	char c;
-        read(stdin, &c, 1);
-    	return (int)c;
+    char c;
+    read(stdin, &c, 1);
+    return (int)c;
 }
 
-char *getcwd(char *buf, int buflen){
+char *getcwd(char *buf, int buflen)
+{
     if(buf == NULL && buflen != 0)
         buf = (char *)malloc(sizeof(char) * buflen);
-    
+
     return (char *)linux_syscall(SYS_GETCWD,(uint32_t)buf, buflen, 0, 0, 0);
 }
 

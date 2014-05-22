@@ -3,16 +3,16 @@
 
 struct list_node
 {
-	struct list_node *next;
-	struct list_node *prev;
-	void *element;
+    struct list_node *next;
+    struct list_node *prev;
+    void *element;
 };
 
 typedef struct
 {
-	struct list_node *head;
-	struct list_node *current;
-	bool lock;
+    struct list_node *head;
+    struct list_node *current;
+    bool lock;
 } list_t;
 
 list_t*	list_create(void);

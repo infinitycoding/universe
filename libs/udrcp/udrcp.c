@@ -1,17 +1,17 @@
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the UDRCP-library.
- 
+
      The UDRCP-library is free software: you can redistribute it and/or modify
      it under the terms of the GNU Lesser General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
- 
+
      The UDRCP-library is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU Lesser General Public License for more details.
- 
+
      You should have received a copy of the GNU Lesser General Public License
      along with the UDRCP-library.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -123,7 +123,7 @@ int subsystem_connect(pckmgr *mgr, char *protocol_version)
     }
     else
     {
-	udrcp_error(mgr,"invalind ping response from host ID:%d TYPE:%d Size:%d\n",pck_header->id,pck_header->type,pck_header->size);
+        udrcp_error(mgr,"invalind ping response from host ID:%d TYPE:%d Size:%d\n",pck_header->id,pck_header->type,pck_header->size);
         free(pck_header);
         return false;
     }
@@ -207,24 +207,24 @@ int req_intsig(pckmgr *mgr, unsigned int num)
         pck_t *resp = pck_poll(mgr,id);
         switch(resp->type)
         {
-            case ERROR:
-                if(resp->size >= 4)
-                    errorcode = *((unsigned int*)resp->data);
-                else
-                    errorcode = -1;
+        case ERROR:
+            if(resp->size >= 4)
+                errorcode = *((unsigned int*)resp->data);
+            else
+                errorcode = -1;
             break;
 
-            case CONFIRM:
+        case CONFIRM:
             break;
 
-            case SUCCESS:
-                free_pck(resp);
-                return true;
+        case SUCCESS:
+            free_pck(resp);
+            return true;
             break;
 
-            default:
-                udrcp_error(mgr,"unknown response type. [ID: %d, size: %d, type: %d]\n",resp->id,resp->size,resp->type);
-                errorcode = -2;
+        default:
+            udrcp_error(mgr,"unknown response type. [ID: %d, size: %d, type: %d]\n",resp->id,resp->size,resp->type);
+            errorcode = -2;
             break;
 
         }
@@ -242,24 +242,24 @@ int free_intsig(pckmgr *mgr, unsigned int num)
         pck_t *resp = pck_poll(mgr,id);
         switch(resp->type)
         {
-            case ERROR:
-                if(resp->size >= 4)
-                    errorcode = *((unsigned int*)resp->data);
-                else
-                    errorcode = -1;
+        case ERROR:
+            if(resp->size >= 4)
+                errorcode = *((unsigned int*)resp->data);
+            else
+                errorcode = -1;
             break;
 
-            case CONFIRM:
+        case CONFIRM:
             break;
 
-            case SUCCESS:
-                free_pck(resp);
-                return true;
+        case SUCCESS:
+            free_pck(resp);
+            return true;
             break;
 
-            default:
-                udrcp_error(mgr,"unknown response type. [ID: %d, size: %d, type: %d]\n",resp->id,resp->size,resp->type);
-                errorcode = -2;
+        default:
+            udrcp_error(mgr,"unknown response type. [ID: %d, size: %d, type: %d]\n",resp->id,resp->size,resp->type);
+            errorcode = -2;
             break;
 
         }
@@ -271,12 +271,12 @@ int free_intsig(pckmgr *mgr, unsigned int num)
 
 int udrcp_error(pckmgr *mgr,const char *format,...)
 {
-  char buffer[512]; //todo: should be dynamic
-  va_list args;
-  va_start (args, format);
-  vsprintf (buffer,format, args);
-  va_end (args);
-  return write(mgr->err,buffer,strlen(buffer));
+    char buffer[512]; //todo: should be dynamic
+    va_list args;
+    va_start (args, format);
+    vsprintf (buffer,format, args);
+    va_end (args);
+    return write(mgr->err,buffer,strlen(buffer));
 }
 
 

@@ -4,17 +4,17 @@
 /*
      Copyright 2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
- 
+
      Universe Kernel is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
- 
+
      Universe Kernel is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU General Public License for more details.
- 
+
      You should have received a copy of the GNU General Public License
      along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -67,52 +67,54 @@ typedef unsigned int suseconds_t;
 
 struct tm
 {
-	int tm_sec;		// seconds (0 - 59)
-	int tm_min;		// minutes (0 - 59)
-	int tm_hour;		// hours (0 - 23)
-	int tm_mday;		// day of the month (1 - 31)
-	int tm_mon;		// month (0 - 11)
-	int tm_year;		// years since 1900
-	int tm_wday;		// days since sunday (0 - 6)
-	int tm_yday;		// day since the first january (0 - 365)
-	int tm_isdst;		// summer or winter time
+    int tm_sec;		// seconds (0 - 59)
+    int tm_min;		// minutes (0 - 59)
+    int tm_hour;		// hours (0 - 23)
+    int tm_mday;		// day of the month (1 - 31)
+    int tm_mon;		// month (0 - 11)
+    int tm_year;		// years since 1900
+    int tm_wday;		// days since sunday (0 - 6)
+    int tm_yday;		// day since the first january (0 - 365)
+    int tm_isdst;		// summer or winter time
 };
 
 
 
 enum month	// not part of the standart implementation, only for intern use and universe-only programs
 {
-	january = 0,
-	february = 1,
-	march = 2,
-	april = 3,
-	may = 4,
-	june = 5,
-	july = 6,
-	august = 7,
-	september = 8,
-	october = 9,
-	november = 10,
-	december = 11
+    january = 0,
+    february = 1,
+    march = 2,
+    april = 3,
+    may = 4,
+    june = 5,
+    july = 6,
+    august = 7,
+    september = 8,
+    october = 9,
+    november = 10,
+    december = 11
 };
 
 enum weekday	// not part of the standart implementation, only for intern use and universe-only programs
 {
-	sunday = 0,
-	monday = 1,
-	tuesday = 2,
-	wednesday = 3,
-	thursday = 4,
-	friday = 5,
-	saturday = 6
+    sunday = 0,
+    monday = 1,
+    tuesday = 2,
+    wednesday = 3,
+    thursday = 4,
+    friday = 5,
+    saturday = 6
 };
 
-struct timeval {
+struct timeval
+{
     time_t      tv_sec;
     suseconds_t tv_usec;
 };
 
-struct timezone {
+struct timezone
+{
     int tz_minuteswest;
     int tz_dsttime;
 };

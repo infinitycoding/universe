@@ -49,23 +49,24 @@
 #define S_ISBLK(x) (x.st_mode & S_MODE_CHR) ? 0 : 1
 #define S_ISLNK(x) (x.st_mode & S_MODE_LNK) ? 1 : 0
 
-struct stat {
-	mode_t 	st_mode; // access rights
-	ino_t	st_ino;
-	//       dev_t	st_dev; // filesystem
-	//       dev_t	st_rdev;
+struct stat
+{
+    mode_t 	st_mode; // access rights
+    ino_t	st_ino;
+    //       dev_t	st_dev; // filesystem
+    //       dev_t	st_rdev;
 
-	nlink_t	st_nlink;
-	uid_t	st_uid;
-	gid_t	st_gid;
-	off_t	st_size;
+    nlink_t	st_nlink;
+    uid_t	st_uid;
+    gid_t	st_gid;
+    off_t	st_size;
 
-	time_t	st_atime; // access time
-	time_t	st_mtime; // modification time
-	time_t	st_ctime; // create time
+    time_t	st_atime; // access time
+    time_t	st_mtime; // modification time
+    time_t	st_ctime; // create time
 
-	long	st_blksize;
-	long	st_blocks;
+    long	st_blksize;
+    long	st_blocks;
 };
 
 #endif

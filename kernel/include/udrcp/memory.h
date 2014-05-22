@@ -32,7 +32,7 @@ typedef enum
     PMA_ALLOC_RANDOM = 1,
     PMA_ALLOC_SPECIFIC = 2,
     PMA_ALLOC_LOWER = 3,
-}pma_t;
+} pma_t;
 
 struct pma_request
 {
@@ -51,4 +51,4 @@ void handle_pma_alloc(struct driver *drv, pck_t *req);
 void handle_pma_free(struct driver *drv, pck_t *req);
 
 
- #endif
+#endif

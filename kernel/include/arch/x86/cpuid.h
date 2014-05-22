@@ -4,17 +4,17 @@
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
- 
+
      The Universe Kernel is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
- 
+
      The Universe Kernel is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU General Public License for more details.
- 
+
      You should have received a copy of the GNU General Public License
      along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -24,25 +24,28 @@
  */
 
 
-typedef enum {
-	callgate = 0,
-	sysenter = 1,
-	syscall = 2,
+typedef enum
+{
+    callgate = 0,
+    sysenter = 1,
+    syscall = 2,
 } dynamic_syscall;
 
-typedef enum {
-	I386 = 0,
-	AMD64 = 1,
-	IA32 = 2,
-	IA64 = 3,
+typedef enum
+{
+    I386 = 0,
+    AMD64 = 1,
+    IA32 = 2,
+    IA64 = 3,
 } arch;
 
-typedef enum{
+typedef enum
+{
     primary = 0,
     override = 1,
     secondary = 2,
     reserved = 3,
-}processor_type;
+} processor_type;
 
 //Flagblock0
 
@@ -104,43 +107,45 @@ typedef enum{
 
 
 //128 bytes
-struct cpu_properties {
-	bool cpuid_support;
-	uint32_t manufactory;
-	uint32_t max_std_func;
-	uint32_t max_spec_func;
+struct cpu_properties
+{
+    bool cpuid_support;
+    uint32_t manufactory;
+    uint32_t max_std_func;
+    uint32_t max_spec_func;
 
-	char vendor_id[13];
-	uint8_t family;
-	uint8_t model;
-	uint8_t stepping;
-	uint8_t type;
-	uint8_t brandID;
-	uint8_t clflush;
-	uint8_t logic_cores;
-	bool LM;
-
-
-	dynamic_syscall dsysc;
-	uint16_t ext_brandID;
-
-	uint8_t APIC_ID;
-
-	arch architecture;
+    char vendor_id[13];
+    uint8_t family;
+    uint8_t model;
+    uint8_t stepping;
+    uint8_t type;
+    uint8_t brandID;
+    uint8_t clflush;
+    uint8_t logic_cores;
+    bool LM;
 
 
-	char cpu_type[49];
-	//cpuid 1 infos
-	uint32_t flagblock0;
-	uint32_t flagblock1;
-	//empty space for futur
+    dynamic_syscall dsysc;
+    uint16_t ext_brandID;
+
+    uint8_t APIC_ID;
+
+    arch architecture;
+
+
+    char cpu_type[49];
+    //cpuid 1 infos
+    uint32_t flagblock0;
+    uint32_t flagblock1;
+    //empty space for futur
 };
 
-struct cpuid_regs {
-	uint32_t eax;
-	uint32_t ebx;
-	uint32_t ecx;
-	uint32_t edx;
+struct cpuid_regs
+{
+    uint32_t eax;
+    uint32_t ebx;
+    uint32_t ecx;
+    uint32_t edx;
 };
 
 

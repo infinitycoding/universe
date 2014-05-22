@@ -33,11 +33,11 @@
 **/
 double sin(double x)
 {
-	double sigma = 0;
-	int i;
-	for (i = 0; i < MATH_PRECISION; i++)
-		sigma += ((powi(-1, i) * powi(x, 2 * i + 1)) / factorial(2 * i + 1));
-	return sigma;
+    double sigma = 0;
+    int i;
+    for (i = 0; i < MATH_PRECISION; i++)
+        sigma += ((powi(-1, i) * powi(x, 2 * i + 1)) / factorial(2 * i + 1));
+    return sigma;
 }
 
 /**
@@ -108,18 +108,22 @@ double sqrt(double x)
 **/
 int powi(int base, int exponent)
 {
-  int result = base;
-  int i;
+    int result = base;
+    int i;
 
-  if (exponent == 0) {
-    result = 1;
-  } else {
-    for (i = 0; i < exponent - 1; ++i) {
-      result *= base;
+    if (exponent == 0)
+    {
+        result = 1;
     }
-  }
+    else
+    {
+        for (i = 0; i < exponent - 1; ++i)
+        {
+            result *= base;
+        }
+    }
 
-  return result;
+    return result;
 }
 
 /**
@@ -127,24 +131,26 @@ int powi(int base, int exponent)
 **/
 double inline factorial(long n)
 {
-	double res = 1;
-	int i;
-	for (i = 1; i <= n; i++)
-		res *= i;
-	return res;
+    double res = 1;
+    int i;
+    for (i = 1; i <= n; i++)
+        res *= i;
+    return res;
 }
 
 
 unsigned int bit_scan_forward(unsigned int i)
 {
-	unsigned int j;
+    unsigned int j;
 
-	for (j = 0; j < 32; j++) {
-		if (i & (1 << j)) {
-			return j;
-		}
-	}
-	return -1;
+    for (j = 0; j < 32; j++)
+    {
+        if (i & (1 << j))
+        {
+            return j;
+        }
+    }
+    return -1;
 }
 
 double floor(double x)

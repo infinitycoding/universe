@@ -1,17 +1,17 @@
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
- 
+
      The Universe Kernel is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
- 
+
      The Universe Kernel is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU General Public License for more details.
- 
+
      You should have received a copy of the GNU General Public License
      along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -115,15 +115,15 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
 
 
     list_lock(process_list);
-        if(state->pid != 1)
-        {
-            struct child *new_child = malloc(sizeof(struct child));
-            new_child->process = state;
-            new_child->status = 0;
-            list_push_front(state->parent->children, new_child);
-        }
+    if(state->pid != 1)
+    {
+        struct child *new_child = malloc(sizeof(struct child));
+        new_child->process = state;
+        new_child->status = 0;
+        list_push_front(state->parent->children, new_child);
+    }
 
-        list_push_front(process_list, state);
+    list_push_front(process_list, state);
     list_unlock(process_list);
 
 
@@ -146,8 +146,8 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
 
 
 
-	/*extern vfs_inode_t *kbd_inode;
-	kbd_inode = stdin;*/
+    /*extern vfs_inode_t *kbd_inode;
+    kbd_inode = stdin;*/
 
     struct fd *desc0 = malloc(sizeof(struct fd));
     desc0->id = 0;
@@ -311,16 +311,17 @@ void sys_fork(struct cpu_state **cpu)
     void *stack = (void *)vmm_automap_kernel(current_context, pframe, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
     memcpy(stack, stack_src, THREAD_STACK_SIZE);
 
-	struct list_node *node = current_thread->process->files->head->next;
-	struct list_node *head = current_thread->process->files->head;
-	while(node != head) {
-		struct fd *dest = malloc(sizeof(struct fd));
-		struct fd *src  = (struct fd*) node->element;
-		memcpy(dest, src, sizeof(struct fd));
-		list_push_back(new_process->files, dest);
+    struct list_node *node = current_thread->process->files->head->next;
+    struct list_node *head = current_thread->process->files->head;
+    while(node != head)
+    {
+        struct fd *dest = malloc(sizeof(struct fd));
+        struct fd *src  = (struct fd*) node->element;
+        memcpy(dest, src, sizeof(struct fd));
+        list_push_back(new_process->files, dest);
 
-		node = node->next;
-	}
+        node = node->next;
+    }
 
     new_thread->state->CPU_ARG0 = 0;
     current_thread->state->CPU_ARG0 = new_process->pid;
@@ -373,12 +374,12 @@ void sys_execve(struct cpu_state **cpu)
  */
 void sys_setenv(struct cpu_state **cpu)
 {
-  // TODO entry in liste 'env' eintragen
+    // TODO entry in liste 'env' eintragen
 }
 
 void sys_getenv(struct cpu_state **cpu)
 {
-  // TODO liste auslesen
+    // TODO liste auslesen
 }
 
 
