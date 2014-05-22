@@ -47,6 +47,8 @@
 #include "memory_layout.h"
 #include <udrcp/hypervisor.h>
 #include <udrcp/pfp.h>
+#include <vfs/module.h>
+
 /**
 * Initalize the Kernel
 *
@@ -71,7 +73,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
     INIT_HEAP();
     INIT_VFS();
     INIT_TRIGGER();
-    INIT_PIT(200);
+    INIT_PIT(600);
     INIT_RTC();
     INIT_SCHEDULER();
     asm volatile("sti");
@@ -100,31 +102,35 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number) {
         modules[i].string = virt + diff;
     }
 
-    struct mods_add *mod = (struct mods_add *)find_module(mb_info, "/drivers/system.pf");
+    printf("%d modules loaded\n",map_all(mb_info));
 
-    if(mod != NULL) {
-    	size_t len = mod->mod_end - mod->mod_start;
-    	size_t pages = NUM_PAGES(len);
-    	char *pf = (void*)vmm_automap_kernel_range(current_context,(paddr_t) mod->mod_start, pages, VMM_WRITABLE);
+    vfs_inode_t *pfnode = vfs_lookup_path("/drivers/system.pf");
+
+    if(pfnode != NULL) {
      	int argc = 2;
      	void *argv[2];
+        char *pf = (char *)pfnode->base;
+        //printf(pf);
         list_t *pipelines = pfp(pf);
      	struct section *sec = list_pop_front(pipelines);
 
         argv[1] = mb_info;
      	argv[0] = sec;
-     	kernel_thread_create((uintptr_t)INIT_HYPERVISOR,argc,argv);
-    }
-
-    struct mods_add *shell_mod = find_module(mb_info, "/ultrashell.elf");
-    if(shell_mod != NULL) {
-	size_t sh_len = shell_mod->mod_end - shell_mod->mod_start;
-        size_t sh_pages = NUM_PAGES(sh_len);
-        void *shell = (void*)vmm_automap_kernel_range(current_context,(paddr_t) shell_mod->mod_start, sh_pages, VMM_WRITABLE);
-        load_elf(shell,0,0,NULL);
+     	//kernel_thread_create((uintptr_t)INIT_HYPERVISOR,argc,argv);
     }
 
 
+    vfs_inode_t *testnode = vfs_lookup_path("/ultrashell.elf");
+
+    if(testnode == NULL || testnode->base == NULL)
+    {
+        printf("test.elf not in vfs\n");
+        return 1;
+    }
+
+    printf("%p\n", testnode->base);
+
+    load_elf(testnode->base, "test.elf", 0, 0, 0);
 
     return 0;
 }
