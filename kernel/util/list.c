@@ -194,7 +194,11 @@ void list_insert_before(iterator_t *it, void *element)
 
 void *list_get_current(iterator_t *it)
 {
-    return it->current->element;
+    if(it)
+        if(it->current)
+            return it->current->element;
+
+    return NULL;
 }
 
 void list_next(iterator_t *it)

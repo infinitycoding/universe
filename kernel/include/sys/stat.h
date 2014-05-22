@@ -34,15 +34,15 @@
 
 #define S_MAO 0x4 // st_mode: access offset
 
-#define S_IRUSR (0x001 + S_MAO) //user-read
-#define S_IWUSR (0x002 + S_MAO) // -write
-#define S_IXUSR (0x004 + S_MAO) // -execute
-#define S_IRGRP (0x008 + S_MAO) //group-read
-#define S_IWGRP (0x010 + S_MAO) // -write
-#define S_IXGRP (0x020 + S_MAO) // -execute
-#define S_IROTH (0x040 + S_MAO) //other-read
-#define S_IWOTH (0x080 + S_MAO) // -write
-#define S_IXOTH (0x100 + S_MAO) // -execute
+#define S_IRUSR (0x001 << S_MAO) //user-read
+#define S_IWUSR (0x002 << S_MAO) // -write
+#define S_IXUSR (0x004 << S_MAO) // -execute
+#define S_IRGRP (0x008 << S_MAO) //group-read
+#define S_IWGRP (0x010 << S_MAO) // -write
+#define S_IXGRP (0x020 << S_MAO) // -execute
+#define S_IROTH (0x040 << S_MAO) //other-read
+#define S_IWOTH (0x080 << S_MAO) // -write
+#define S_IXOTH (0x100 << S_MAO) // -execute
 
 #define S_ISREG(x) (x.st_mode & S_MODE_DIR) ? 0 : 1
 #define S_ISDIR(x) (x.st_mode & S_MODE_DIR) ? 1 : 0

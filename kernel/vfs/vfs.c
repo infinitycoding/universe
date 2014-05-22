@@ -332,6 +332,9 @@ vfs_inode_t *vfs_lookup_path(char *path) {
 		path++;
 	}
 
+	if(path[0] == '\0')
+		return parent;
+
 	int len = strlen(path);
 	if(path[len-1] == '/') {
 		path[len-1] = '\0';
@@ -345,9 +348,10 @@ vfs_inode_t *vfs_lookup_path(char *path) {
 		int found = 0;
 		int i;
 		for(i = 0; i < num; i++) {
-			if(strcmp(str, entries[i].inode->name)) {
+			if(strcmp(str, entries[i].inode->name) == 0) {
 				parent = entries[i].inode;
 				found = 1;
+				break;
 			}
 		}
 
@@ -380,6 +384,9 @@ vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid)
 		path++;
 	}
 
+	if(path[0] == '\0')
+		return parent;
+
 	int len = strlen(path);
 	if(path[len-1] == '/') {
 		path[len-1] = '\0';
@@ -393,17 +400,17 @@ vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid)
 		int found = 0;
 		int i;
 		for(i = 0; i < num; i++) {
-			if(strcmp(str, entries[i].inode->name)) {
+			if(strcmp(str, entries[i].inode->name) == 0) {
 				parent = entries[i].inode;
 				found = 1;
+				break;
 			}
 		}
 
 		if(!found) {
 			parent = vfs_create_inode(str, mode, parent, uid, gid);
-		} else {
-			str = strtok(NULL, delimiter);
 		}
+		str = strtok(NULL, delimiter);
 	}
 
 	return parent;

@@ -83,7 +83,7 @@ void INIT_HYPERVISOR(int argc, void **argv)
             
             struct driver *new_driver = malloc(sizeof(struct driver));
             new_driver->pman = pman;
-            new_driver->process = load_elf(driver,0,0,&pman->pset);
+            new_driver->process = load_elf(driver,((struct pnode *)list_get_current(&i))->file,0,0,&pman->pset);
             new_driver->ports = list_create();
             new_driver->memory = list_create();
             list_push_front(subdrivers,new_driver);
