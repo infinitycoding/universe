@@ -52,14 +52,14 @@ void INIT_VFS(void)
 {
     root = malloc(sizeof(vfs_inode_t));
     root->stat.st_ino = 0;
-    root->stat.st_mode = 0x1ff;
+    root->stat.st_mode = S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH | S_MODE_DIR;
     nodes = 1;
     root->name = "root";
     root->length = 0;
     root->parent = NULL;
     root->type = VFS_REGULAR;
 
-    vfs_inode_t *foo = vfs_create_inode("foo.txt", 0x1ff, root, 0, 0);
+    vfs_inode_t *foo = vfs_create_inode("foo.txt", S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH, root, 0, 0);
     vfs_write(foo, 0, "Hallo Welt!\n", 13);
 }
 
@@ -468,6 +468,41 @@ vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid)
 
     return parent;
 }
+
+#ifdef VFS_DEBUG
+void vfs_debug_output_all()
+{
+    vfs_debug_output(root);
+}
+
+void vfs_debug_output(vfs_inode_t *start)
+{
+    vfs_inode_t *current;
+
+    int num = start->length / sizeof(vfs_dentry_t);
+    vfs_dentry_t *entries = start->base;
+    int i;
+    for(i = 0; i < num; i++)
+    {
+        if(S_ISDIR(entries[i].inode->stat))
+        {
+            vfs_debug_output(entries[i].inode);
+        }
+        else
+        {
+            current = entries[i].inode;
+
+            while(current != root)
+            {
+                printf("%s in ", current->name);
+                current = current->parent;
+            }
+
+            printf("root\n");
+        }
+    }
+}
+#endif
 
 // Systemcalls
 

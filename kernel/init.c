@@ -124,17 +124,20 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     }
 
 
-    vfs_inode_t *testnode = vfs_lookup_path("/ultrashell.elf");
+    vfs_inode_t *testnode = vfs_lookup_path("/test.elf");
 
     if(testnode == NULL || testnode->base == NULL)
     {
         printf("test.elf not in vfs\n");
-        return 1;
+    }
+    else
+    {
+        printf("%p\n", testnode->base);
+
+        //load_elf(testnode->base, "test.elf", 0, 0, 0);
     }
 
-    printf("%p\n", testnode->base);
-
-    load_elf(testnode->base, "test.elf", 0, 0, 0);
+    vfs_debug_output_all();
 
     return 0;
 }

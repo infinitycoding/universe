@@ -32,6 +32,8 @@
 #include <list.h>
 
 
+#define VFS_DEBUG
+
 #define SEEK_SET 0x1
 #define SEEK_CUR 0x2
 #define SEEK_END 0x3
@@ -118,6 +120,10 @@ int vfs_stat(vfs_inode_t *inode, struct stat *buffer);
 int vfs_access(vfs_inode_t *inode, mode_t modus, uid_t uid, gid_t gid);
 vfs_inode_t *vfs_lookup_path(char *path);
 vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid);
+#ifdef VFS_DEBUG
+void vfs_debug_output(vfs_inode_t *start);
+void vfs_debug_output_all();
+#endif
 
 void sys_open(struct cpu_state **cpu);
 void sys_pipe(struct cpu_state **cpu);
