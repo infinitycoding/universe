@@ -105,7 +105,8 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
         modules[i].string = virt + diff;
     }
 
-    printf("%d modules loaded\n",map_all(mb_info));
+    struct mapping_statistics stats = map_all(mb_info);
+    printf("%d modules total, %d successfully loaded, %d failed\n", stats.total, stats.load_success, stats.load_failed);
 
     vfs_inode_t *pfnode = vfs_lookup_path("/drivers/system.pf");
 

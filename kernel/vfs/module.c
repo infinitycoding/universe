@@ -26,58 +26,113 @@
 
 
 
-int map_all(struct multiboot_struct *mb_info)
+/**
+ * @brief maps all multiboot modules into the vfs
+ * @param mb_info the multiboot struct with the modules in it
+ * @return how many modules got mapped and how many failed
+ */
+struct mapping_statistics map_all(struct multiboot_struct *mb_info)
 {
-    int i;
+    struct mapping_statistics s;
+    memset(&s, 0, sizeof(struct mapping_statistics));
     struct mods_add *modules = (struct mods_add*) mb_info->mods_addr;
 
-    for(i = 0; i < mb_info->mods_count; i++)
-        map_module(&modules[i]);
+    for(s.total = 0; s.total < mb_info->mods_count; s.total++)
+    {
+        if(map_module(&modules[s.total]) == success)
+            s.load_success++;
+        else
+            s.load_failed++;
+    }
 
-    return i;
+    return s;
 }
 
 
-void map_module(struct mods_add *module)
+/**
+ * @brief maps one module into the vfs
+ * @param module the information i need to map this module
+ * @return success or failture
+ */
+success_t map_module(struct mods_add *module)
 {
-    char *path;
-    char *name;
+    if(module == NULL)  // i don't think this will ever happen, but you have what you have
+        return failed;
 
-    split_module_string(module->string, &path, &name);
+    char *path = NULL;  // later i will need path and name
+    char *name = NULL;
 
-    vfs_inode_t *node = vfs_create_path(path, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH | S_MODE_DIR, 0, 0);
+    if(split_module_string(module->string, &path, &name) == failed)     // if i can't split the module string there is no reason for executing further
+        return failed;
 
-    int size = module->mod_end - module->mod_start;
+    vfs_inode_t *node = vfs_create_path(path, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH | S_MODE_DIR, 0, 0);  // i need a node to place the module in
+
+    int size = module->mod_end - module->mod_start;     // basic stuff
+
+    if(size < 0)        // should never happen, but you never know
+    {
+        free(path);     // i have to free the allocated memory (to avoid memory leaks)
+        free(name);
+        return failed;
+    }
+
     int pages = NUM_PAGES(size);
 
-    vaddr_t virtaddr = vmm_automap_kernel_range(current_context, module->mod_start, pages, VMM_WRITABLE);
+    vaddr_t virtaddr = vmm_automap_kernel_range(current_context, module->mod_start, pages, VMM_WRITABLE);   // something about physical and virtual memory and kernel and user space... ask someone else
 
-    vfs_inode_t *file = vfs_create_inode(name,  S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH, node, 0, 0);
+    vfs_inode_t *file = vfs_create_inode(name,  S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH, node, 0, 0);   // create the module in the vfs
 
-    file->base = (void *) virtaddr;
-    file->length = size;
-    file->stat.st_size = file->length;
+    file->base = (void *) virtaddr;     // the content of the module
+    file->length = size;                // the size of the module
+    file->stat.st_size = file->length;  // redundant
 
-    free(path);
+    free(path);     // "we don't waste memory" (tdotu)
     free(name);
+
+    return success; // be happy
 }
 
 
-void split_module_string(char *string, char **path_buffer, char **name_buffer)
+/**
+ * @brief splits a module string (containing path and name) in path and name.
+ * @param string the module string
+ * @param path_buffer the adress of the char pointer in which the path should be placed
+ * @param name_buffer the adress of the char pointer in which the name should be placed
+ * @return success or failture
+ */
+success_t split_module_string(char *string, char **path_buffer, char **name_buffer)
 {
+    if(string == NULL || path_buffer == NULL || name_buffer == NULL)    // i don't think this will ever happen, but you have what you have
+        return failed;
+
     int i, j;
 
-    for(i = 0, j = 0; string[i] != '\0'; i++)
+    for(i = 0, j = 0; string[i] != '\0'; i++)       // in this loop i count the number of slashes in a string
         if(string[i] == '/')
             j++;
 
-    for(i = 0; j > 0; i++)
+    if(j == 0)  // illegal path
+        return failed;
+
+    for(i = 0; j > 0; i++)                          // in this loop i count the number of characters from the beginning to the final slash
         if(string[i] == '/')
             j--;
 
-    (*path_buffer) = (char *)malloc(sizeof(char) * (i + 1));
-    (*name_buffer) = (char *)malloc(sizeof(char) * ((strlen(string) - i) + 1));
+    (*path_buffer) = (char *)malloc(sizeof(char) * (i + 1));    // the length of the path is the number of characters to the final slash plus one for zero-termination
 
-    strncpy((*path_buffer), string, i);
+    if((*path_buffer) == NULL)  // if malloc fails (virtually impossible)
+        return failed;
+
+    (*name_buffer) = (char *)malloc(sizeof(char) * ((strlen(string) - i) + 1));     // the length of the name is the number of characters after the final slash plus one for zero-termination
+
+    if((*name_buffer) == NULL)  // if malloc fails (virtually impossible)
+    {
+        free(*path_buffer);     // i have to free the successfully allocated memory (to avoid memory leaks)
+        return failed;
+    }
+
+    strncpy((*path_buffer), string, i);                         // copy the two parts of the string in the two other strings
     strncpy((*name_buffer), &string[i], strlen(string) - i);
+
+    return success;
 }
