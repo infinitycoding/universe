@@ -17,8 +17,7 @@
  */
 
 /**
- * @author Tom Slawik <tom.slawik@gmail.com>
- * @author Michael Sippel (Universe Team) <micha.linuxfreak@gmail.com>
+ * @author Michael Sippel (Universe Team) <micha@infinitycoding.com>
  */
 
 #include <stdint.h>
@@ -28,76 +27,37 @@
 #include <mm/paging.h>
 #include <string.h>
 
-heap_t kernel_heap;
+static alloc_t *first_node = NULL;
 
 void INIT_HEAP(void)
 {
-    heap_init(&kernel_heap);
-}
-
-/* c standard interface. do some preparation here! */
-
-void *malloc(size_t size)
-{
-    return heap_alloc(&kernel_heap, size);
-}
-
-void free(void * ptr)
-{
-    heap_free(&kernel_heap, ptr);
-}
-
-void *calloc(size_t num, size_t size)
-{
-    void *data = heap_alloc(&kernel_heap, size);
-    memset(data, 0, size);
-
-    return data;
-}
-
-void *realloc(void *ptr, size_t size)
-{
-    void *dest = heap_alloc(&kernel_heap, size);
-    alloc_t *source_alloc = ptr - sizeof(alloc_t);
-
-    memmove(dest, ptr, source_alloc->size);
-    free(ptr);
-
-    return dest;
-}
-
-/* implementation */
-
-/**
- * Initalize a heap
- *
- * @param heap heap to initalise
- * @return void
- */
-void heap_init(heap_t *heap)
-{
-    vaddr_t vframe = vmm_automap_kernel(current_context, pmm_alloc_page(), VMM_WRITABLE);
-    alloc_t *header = (alloc_t *)vframe;
-
-    header->size = PAGE_SIZE - sizeof(alloc_t);
-    header->base = vframe + sizeof(alloc_t);
-    header->status = HEAP_STATUS_FREE;
-    header->next = NULL;
-
-    heap->list_count = 1;
-    heap->alloc_list = header;
+	// nothing to do here :)
 }
 
 /**
- * Add a page to the heap
+ * add an inode to the list
  *
- * @param heap heap
- * @return void
+ * @param inode node to add
  */
-alloc_t *heap_expand(heap_t *heap, int pages)
+void heap_add(alloc_t *inode)
 {
-    /* TODO : Range Allocation */
-    heap->list_count++;
+	inode->next = first_node;
+	first_node = inode;
+}
+
+/**
+ * create an allocation inode with a specific size
+ *
+ * @param pages number of pages to allocate
+ * @return allocation inode
+ */
+alloc_t *heap_expand(int pages)
+{
+#ifdef HEAP_DEBUG
+	printf("heap_expand(): add %d pages...\n", pages);
+#endif
+
+	// allocate memory
     paddr_t pframe = 0;
     vaddr_t vframe = arch_vaddr_find(&current_context->arch_context, pages,
                                      MEMORY_LAYOUT_KERNEL_HEAP_START,
@@ -112,103 +72,133 @@ alloc_t *heap_expand(heap_t *heap, int pages)
         vframe_cur += PAGE_SIZE;
     }
 
+	// create inode
     alloc_t *new_header = (alloc_t *) vframe;
 
     new_header->size = pages*PAGE_SIZE - sizeof(alloc_t);
     new_header->base = vframe + sizeof(alloc_t);
     new_header->status = HEAP_STATUS_FREE;
 
-    new_header->next = heap->alloc_list;
-    heap->alloc_list = new_header;
-    heap->list_count ++;
+    heap_add(new_header);
+
     return new_header;
 }
 
 /**
- * Destroy a heap
+ * Search for a free allocation inode and mark it as used.
+ * If nothing found, add a new inode.
  *
- * @param heap heap
- * @return void
- */
-void heap_destroy(heap_t *heap)
-{
-    while (heap->list_count != 0)
-    {
-        vmm_unmap(current_context,
-                  heap->alloc_list[--heap->list_count].base & ~0xFFF);
-    }
-}
-
-/**
- * Find a free range of bytes in the heap and reserve this
- *
- * @param heap heap
  * @param size number of bytes
- *
  * @return pointer to reserved bytes
  */
-void *heap_alloc(heap_t *heap, size_t size)
+void *malloc(size_t bytes)
 {
-    alloc_t *header = heap->alloc_list;
+    alloc_t *header = first_node;
     vaddr_t data = 0;
-    int n_size = size + sizeof(alloc_t);
+    int n_size = bytes + sizeof(alloc_t);
 
-    if(size <= PAGE_SIZE && size > PAGE_SIZE - sizeof(alloc_t))
-    {
-        data = vmm_automap_kernel(current_context, pmm_alloc_page(), VMM_WRITABLE);
-        return (void *)data;
-    }
-
+	// go through all inodes...
     while(header != NULL)
     {
-        if(header->size >= size && header->status == HEAP_STATUS_FREE)
+		// fits the size?
+        if(header->size >= bytes && header->status == HEAP_STATUS_FREE)
         {
+			// mark as used
             header->status = HEAP_STATUS_USED;
+
+			// if something is left, split it down
             if(header->size > n_size)
             {
-                alloc_t *new_header = (alloc_t *)(header->base + size);
+                alloc_t *new_header = (alloc_t *)(header->base + bytes);
                 new_header->base    = header->base + n_size;
                 new_header->size = header->size - n_size;
                 new_header->status = HEAP_STATUS_FREE;
-                header->size = size;
+                header->size = bytes;
 
-                new_header->next = heap->alloc_list;
-                heap->alloc_list = new_header;
+				heap_add(new_header);
             }
 
-            return (void *)header->base;
+            return (void*) header->base;
         }
+
         header = header->next;
     }
 
-    header = heap_expand(heap, NUM_PAGES(n_size));
-    if(header != NULL)
+	// if nothing found, create new stuff...
+    header = heap_expand(NUM_PAGES(n_size));
+	if(header != NULL)
     {
         header->status = HEAP_STATUS_USED;
         return (void *)header->base;
     }
 
 #ifdef HEAP_DEBUG
-    printf("heap_alloc(): reserving %d bytes of memory: %p - %p\n", header->size, data, data + header->size);
+    printf("malloc(): reserving %d bytes of memory: %p - %p\n", header->size, data, data + header->size);
 #endif
 
+	// no more memory :'(
     return NULL;
 }
 
 /**
  * Free a range of bytes in th heap
  *
- * @param heap heap
  * @param ptr pointer
- *
- * @return void
  */
-void heap_free(heap_t *heap, void *ptr)
+void free(void *ptr)
 {
+	// calculate inode adress
     alloc_t *header = (alloc_t*)((uintptr_t)ptr - sizeof(alloc_t));
+	// mark as free
     header->status = HEAP_STATUS_FREE;
 
 #ifdef HEAP_DEBUG
-    printf("heap_free(): freeing %d bytes of memory: %p - %p\n", header->size, ptr, ptr + header->size);
+    printf("free(): freeing %d bytes of memory: %p - %p\n", header->size, ptr, ptr + header->size);
 #endif
 }
+
+/**
+ * allocate num*blocks and clear memory
+ *
+ * @param num number of blocks
+ * @param size size of one block
+ *
+ * @return pointer to allocated memory
+ */
+void *calloc(size_t num, size_t size)
+{
+	size_t bytes = num * size;
+
+    void *data = malloc(bytes);
+    memset(data, 0, bytes);
+
+    return data;
+}
+
+/**
+ * resize an allocated object
+ *
+ * @param ptr pointer to old location
+ * @param size new size
+ *
+ * @return new pointer
+ */
+void *realloc(void *ptr, size_t size)
+{
+    void *dest = malloc(size);
+    alloc_t *source_alloc = (alloc_t*)((uintptr_t)ptr - sizeof(alloc_t));
+
+#ifdef HEAP_DEBUG
+	printf("realloc(): copying %d bytes from 0x%x to 0x%x\n", source_alloc->size, ptr, dest);
+#endif
+
+	if(source_alloc->size < size)
+	{
+		memcpy(dest, ptr, source_alloc->size);
+    }
+
+	free(ptr);
+
+    return dest;
+}
+

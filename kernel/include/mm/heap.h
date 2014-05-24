@@ -2,7 +2,7 @@
 #define _HEAP_H_
 
 /*
-	Copyright 2012 universe coding group (UCG) all rights reserved
+	Copyright 2012-2014 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
 
 	Universe Kernel is free software: you can redistribute it and/or modify
@@ -20,14 +20,13 @@
 */
 
 /**
- *  @author Tom Slawik <tom.slawik@gmail.com>
- *  @author Michael Sippel (Universe Team) <micha.linuxfreak@gmail.com>
+ *  @author Michael Sippel (Universe Team) <micha@infinitycoding.com>
  */
 
 #include <stdint.h>
 
 /*
-	cstdlib interface
+	std interface
 */
 
 void *malloc(size_t size);
@@ -51,17 +50,10 @@ typedef struct alloc
     struct alloc *next;
 } alloc_t;
 
-typedef struct
-{
-    size_t list_count;
-    alloc_t *alloc_list;
-} heap_t;
-
 void INIT_HEAP(void);
-void heap_init(heap_t *heap);
-alloc_t *heap_expand(heap_t *heap, int pages);
-void heap_destroy(heap_t *heap);
-void *heap_alloc(heap_t *heap, size_t size);
-void heap_free(heap_t *heap, void *ptr);
+alloc_t *heap_expand(int pages);
+void *heap_alloc(size_t size);
+void heap_free(void *ptr);
 
 #endif
+

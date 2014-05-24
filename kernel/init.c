@@ -95,8 +95,38 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     printf("\n");
     INIT_PCI();
 
+	int i;
+
+#if 0
+	// testing heap...
+	printf("allocating array a with 5000 integers...\n");
+	int *a = malloc(sizeof(int) * 5000);
+	printf("a is at 0x%x\nwriting to a...", a);
+
+	for(i = 0; i < 5000; i++) a[i] = i;
+
+	printf("allocating array b with 25000 integers...\n");
+	int *b = malloc(sizeof(int) * 25000);
+	printf("b is at 0x%x\nwriting to b...\n", b);
+	for(i = 0; i < 25000; i++) b[i] = 25000-i;
+
+	printf("reallocating array a with 25000...\n");
+	a = realloc(a, sizeof(int) * 25000);
+
+	printf("copying array b to array a...\n");
+	for(i = 0; i < 25000; i++) a[i] = b[i];
+
+	printf("freeing b\n");
+	free(b);
+
+	for(i = 0; i < 2500; i++) ;//printf("test : %d, %d\n", i, a[i]); 
+
+	printf("freeing a\n");
+	free(a);
+#endif
+
     struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
-    int i;
+  //  int i;
     void *phys = (void*)((int)modules[0].string & (int)~0xfff);
     void *virt = (void*) vmm_automap_kernel(current_context, (paddr_t)phys, VMM_WRITABLE);
     for(i = 0; i < mb_info->mods_count; i++)
@@ -135,7 +165,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     {
         printf("%p\n", testnode->base);
 
-        //load_elf(testnode->base, "test.elf", 0, 0, 0);
+        load_elf(testnode->base, "test.elf", 0, 0, 0);
     }
 
     vfs_debug_output_all();
