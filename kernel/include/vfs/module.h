@@ -25,9 +25,21 @@
 #include <vfs/vfs.h>
 
 
+typedef enum successful       // optical reasons
+{
+     success, failed
+}success_t;
 
-int map_all(struct multiboot_struct *mb_info);
-void map_module(struct mods_add *module);
-void split_module_string(char *string, char **path_buffer, char **name_buffer);
+struct mapping_statistics     // how many modules were loaded and how many failed
+{
+     int total;
+     int load_success;
+     int load_failed;
+};
+
+
+struct mapping_statistics map_all(struct multiboot_struct *mb_info);
+success_t map_module(struct mods_add *module);
+success_t split_module_string(char *string, char **path_buffer, char **name_buffer);
 
 #endif
