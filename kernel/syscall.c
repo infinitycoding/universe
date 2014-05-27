@@ -51,7 +51,7 @@ void (*linux_functions[])(struct cpu_state **cpu) =
 {
     NULL, sys_exit, sys_fork, sys_read, sys_write,
     sys_open, sys_close, sys_waitpid, sys_create, sys_link,
-    sys_unlink, NULL /*sys_execve*/, sys_chdir, sys_time, NULL/*sys_mknod*/ ,
+    sys_unlink, sys_execve, sys_chdir, sys_time, NULL/*sys_mknod*/ ,
     NULL /*sys_chmod*/, NULL /*sys_lchowm*/, NULL /*sys_break*/, sys_stat, sys_seek,
     sys_getpid, NULL /*sys_mount*/, NULL /*sys_unmount*/, sys_setuid, sys_getuid,
     NULL /*sys_stime*/, NULL /*sys_ptrace*/, NULL /*sys_alarm*/, sys_fstat, NULL /*sys_pause*/,
