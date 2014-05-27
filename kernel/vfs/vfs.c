@@ -76,7 +76,8 @@ void INIT_VFS(void)
 vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_t uid, gid_t gid)
 {
     vfs_inode_t *node = malloc(sizeof(vfs_inode_t));
-    node->name = name;
+    node->name = (char *)malloc(sizeof(char) * (strlen(name) + 1));
+    strcpy(node->name, name);
     node->length = 0;
     node->type = VFS_REGULAR;
     node->base = NULL;

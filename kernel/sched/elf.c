@@ -48,11 +48,8 @@ struct process_state *load_elf(void *image, char *name, uid_t uid, gid_t gid, st
     int i,j;
     ph = (struct elf_program_header*) (image + header->ph_offset);
 
-    printf("first\n");
     struct process_state *proc = process_create(name, "", PROCESS_ACTIVE, NULL, uid, gid, s);
-    printf("second\n");
     struct thread_state *new_thread = thread_create(proc, 3, header->entry, NULL, 0, NULL, NULL, NULL);
-    printf("third\n");
 
     for(i = 0; i < header->ph_entry_count; i++, ph++)
     {

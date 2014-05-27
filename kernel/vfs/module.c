@@ -65,7 +65,9 @@ success_t map_module(struct mods_add *module)
     if(split_module_string(module->string, &path, &name) == failed)     // if i can't split the module string there is no reason for executing further
         return failed;
 
-    vfs_inode_t *node = vfs_create_path(path, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH | S_MODE_DIR, 0, 0);  // i need a node to place the module in
+    //printf("%s\n%s\n", path, name);
+
+    vfs_inode_t *node = vfs_create_path(path, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH | S_MODE_DIR, 0, 0);  // i need a node to place the module in
 
     int size = module->mod_end - module->mod_start;     // basic stuff
 
@@ -123,6 +125,8 @@ success_t split_module_string(char *string, char **path_buffer, char **name_buff
     if((*path_buffer) == NULL)  // if malloc fails (virtually impossible)
         return failed;
 
+    memset((*path_buffer), '\0', sizeof(char) * (i + 1));
+
     (*name_buffer) = (char *)malloc(sizeof(char) * ((strlen(string) - i) + 1));     // the length of the name is the number of characters after the final slash plus one for zero-termination
 
     if((*name_buffer) == NULL)  // if malloc fails (virtually impossible)
@@ -130,6 +134,8 @@ success_t split_module_string(char *string, char **path_buffer, char **name_buff
         free(*path_buffer);     // i have to free the successfully allocated memory (to avoid memory leaks)
         return failed;
     }
+
+    memset((*name_buffer), '\0', sizeof(char) * ((strlen(string) - i) + 1));
 
     strncpy((*path_buffer), string, i);                         // copy the two parts of the string in the two other strings
     strncpy((*name_buffer), &string[i], strlen(string) - i);
