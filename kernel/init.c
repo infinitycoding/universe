@@ -124,7 +124,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	printf("freeing a\n");
 	free(a);
 #endif
-
+/*
     struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
   //  int i;
     void *phys = (void*)((int)modules[0].string & (int)~0xfff);
@@ -169,7 +169,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     }
 
     vfs_debug_output_all();
-
+*/
     return 0;
 }
 

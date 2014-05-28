@@ -40,7 +40,7 @@ vfs_inode_t *root = NULL;
 uint32_t nodes = 0;
 
 // solve a link
-#define GET_INODE(i) if(i->type == VFS_LINK) i = (vfs_inode_t*) i->base;
+#define GET_INODE(i) if(i->type == VFS_LINK) i = (vfs_inode_t*) i->buffer;
 
 /**
  * Initalizing the Virtual File System
@@ -50,14 +50,7 @@ uint32_t nodes = 0;
  */
 void INIT_VFS(void)
 {
-    root = malloc(sizeof(vfs_inode_t));
-    root->stat.st_ino = 0;
-    root->stat.st_mode = S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH | S_MODE_DIR;
-    nodes = 1;
-    root->name = "root";
-    root->length = 0;
-    root->parent = NULL;
-    root->type = VFS_REGULAR;
+    root = vfs_create_inode(NULL, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH, NULL, 0, 0);
 
     vfs_inode_t *foo = vfs_create_inode("foo.txt", S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH, root, 0, 0);
     vfs_write(foo, 0, "Hallo Welt!\n", 13);
@@ -80,7 +73,7 @@ vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_
     strcpy(node->name, name);
     node->length = 0;
     node->type = VFS_REGULAR;
-    node->base = NULL;
+    
     if (parent != NULL)
     {
         node->parent = parent;
@@ -94,6 +87,12 @@ vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_
     node->stat.st_gid = gid;
     update_time((struct time*)&node->stat.st_atime);
     update_time((struct time*)&node->stat.st_mtime);
+ 
+	node->buffer = (vfs_buffer_info_t*) malloc(sizeof(vfs_buffer_info_t));
+    node->buffer->num_readers = 1;
+	node->buffer->num_writers = 1;
+	node->buffer->blocks = list_create();
+   
     return node;
 }
 
@@ -101,16 +100,10 @@ vfs_inode_t *vfs_create_pipe(uid_t uid, gid_t gid)
 {
     vfs_inode_t *inode = vfs_create_inode("pipe", S_IROTH | S_IWOTH, NULL, uid, gid);
 
-    vfs_pipe_info_t *pipe = malloc(sizeof(vfs_pipe_info_t));
-    pipe->num_readers = 1;
-    pipe->num_writers = 1;
-    pipe->pipe_buffer = list_create();
-    pipe->event_id = get_new_event_ID();
-    pipe->handlers = list_create();
+    inode->buffer->event_id = get_new_event_ID();
+    inode->buffer->handlers = list_create();
 
     inode->type = VFS_PIPE;
-    inode->base = pipe;
-    inode->length = 0;
 
     return inode;
 }
@@ -132,102 +125,93 @@ vfs_dentry_t* vfs_create_dir_entry(vfs_inode_t *entry_inode)
 }
 
 /**
- * write into a vfs-node
+ * write into a vfs-inode
  *
- * @param node the node, in that will be written
+ * @param inode the inode, in that will be written
+ * @param off offset in the inode
  * @param base pointer to the data
+ * @param bytes number of bytes to write
  *
  * @return number of written bytes
  */
-int vfs_write(vfs_inode_t *node, int off, void *base, int bytes)
+int vfs_write(vfs_inode_t *inode, int off, void *base, int bytes)
 {
-    GET_INODE(node);
+    GET_INODE(inode);
 
-    int old_len = node->length;
-    if( (off + bytes) > node->length)
+	// change length
+    if( (off + bytes) > inode->length)
     {
-        node->length = off + bytes;
-        node->stat.st_size = node->length;
+        inode->length = off + bytes;
+        inode->stat.st_size = inode->length;
     }
 
-    if(node->type == VFS_PIPE)
+	// calculate block indices
+    int block_id = off / PAGE_SIZE;
+    int block_off= off % PAGE_SIZE;
+
+	// search first block
+    vfs_buffer_info_t *info = (vfs_buffer_info_t*) &inode->buffer;
+    vfs_buffer_block_t *block = NULL;
+    struct list_node *bn = info->blocks->head->next;
+
+    int i,found = 0;
+    for(i = 0; i < info->num_blocks; i++)
     {
-        int block_id = off / PAGE_SIZE;
-        int block_off= off % PAGE_SIZE;
-
-        vfs_pipe_info_t *info = (vfs_pipe_info_t*) node->base;
-
-        vfs_pipe_buffer_block_t *block = NULL;
-        struct list_node *bn = info->pipe_buffer->head->next;
-        int i,found = 0;
-        for(i = 0; i < info->num_blocks; i++)
+        block = (vfs_buffer_block_t*) bn->element;
+        if(block->block_id == block_id)
         {
-            block = (vfs_pipe_buffer_block_t*) bn->element;
-            if(block->block_id == block_id)
-            {
-                found = 1;
-                break;
-            }
-            bn = bn->next;
+            found = 1;
+            break;
         }
-
-        uint8_t *data = (uint8_t*) base;
-        int index = block_off;
-        for(i = 0; i < bytes; i++)
-        {
-            if(index >= PAGE_SIZE)
-            {
-                block_id++;
-                if(block_id >= info->num_blocks)
-                {
-                    found = 0;
-                }
-                else
-                {
-                    bn = bn->next;
-                    block = (vfs_pipe_buffer_block_t*) bn->element;
-                }
-            }
-
-            if(! found)   // create a new block
-            {
-                block = malloc(sizeof(vfs_pipe_buffer_block_t*));
-                block->base = malloc(PAGE_SIZE);
-                block->length = 0;
-                block->block_id = block_id =  info->num_blocks++;
-                list_push_back(info->pipe_buffer, block);
-                found = 1;
-                block_off = 0;
-                index = 0;
-            }
-
-            block->base[index++] = data[i];
-        }
-
-        send_event(info->event_id);
-        info->event_id = get_new_event_ID();
-        launch_pipe_handlers(info);
-    }
-    else
-    {
-        if (node->base == NULL)
-        {
-            node->base = malloc(node->length);
-        }
-        else
-        {
-            int pages_new = NUM_PAGES(node->length);
-            int pages_old = NUM_PAGES(old_len);
-            if(pages_new > pages_old)
-                node->base = realloc(node->base, node->length);
-        }
-
-        uint8_t *nbase = (uint8_t*) node->base + off;
-        uint8_t *wbase = (uint8_t*) base;
-        memcpy(nbase, wbase, bytes);
+        bn = bn->next;
     }
 
-    return bytes;
+    uint8_t *data = (uint8_t*) base;
+    int index = block_off;
+
+	// go through all bytes...
+    for(i = 0; i < bytes; i++)
+    {
+        if(index >= PAGE_SIZE)
+        {
+            block_id++;
+            if(block_id >= info->num_blocks)
+            {
+                found = 0;
+            }
+            else
+            {
+                bn = bn->next;
+                block = (vfs_buffer_block_t*) bn->element;
+            }
+        }
+
+		// if nothing found, create a new block
+        if(! found)
+        {
+            block = malloc(sizeof(vfs_buffer_block_t*));
+            block->base = malloc(PAGE_SIZE);
+            block->length = 0;
+            block->block_id = block_id =  info->num_blocks++;
+            list_push_back(info->blocks, block);
+            found = 1;
+            block_off = 0;
+            index = 0;
+		}
+
+		// copy data
+		block->base[index++] = data[i];
+    }
+
+	// pipes send an event signal
+	if(inode->type == VFS_PIPE)
+	{
+	    send_event(info->event_id);
+	    info->event_id = get_new_event_ID();
+	    launch_pipe_handlers(info);
+	}
+
+	return bytes;
 }
 
 /**
@@ -238,46 +222,40 @@ int vfs_write(vfs_inode_t *node, int off, void *base, int bytes)
  *
  * @return readed data
  */
-void vfs_read(vfs_inode_t *node, uintptr_t offset, int len, void *buffer)
+void vfs_read(vfs_inode_t *inode, uintptr_t offset, int len, void *buffer)
 {
-    GET_INODE(node);
-    if(node->length >= (offset+len))
+    GET_INODE(inode);
+
+    if(inode->length >= (offset+len))
     {
-        if(node->type == VFS_PIPE)
+        int block_id = offset / PAGE_SIZE;
+        int block_off= offset % PAGE_SIZE;
+        int end_block_id = (offset + len) / PAGE_SIZE;
+        int end_block_off= (offset + len) % PAGE_SIZE;
+
+        vfs_buffer_info_t *info = (vfs_buffer_info_t*) inode->buffer;
+        vfs_buffer_block_t *block = NULL;
+        struct list_node *bn = info->blocks->head->next;
+
+        int i;
+        for(i = 0; i < info->num_blocks; i++)
         {
-            int block_id = offset / PAGE_SIZE;
-            int block_off= offset % PAGE_SIZE;
-            int end_block_id = (offset + len) / PAGE_SIZE;
-            int end_block_off= (offset + len) % PAGE_SIZE;
-
-            vfs_pipe_info_t *info = (vfs_pipe_info_t*) node->base;
-            vfs_pipe_buffer_block_t *block = NULL;
-            struct list_node *bn = info->pipe_buffer->head->next;
-
-            int i;
-            for(i = 0; i < info->num_blocks; i++)
+            block = (vfs_buffer_block_t*) bn->element;
+            if(block->block_id == block_id)
             {
-                block = (vfs_pipe_buffer_block_t*) bn->element;
-                if(block->block_id == block_id)
+                if(block_id == end_block_id)
                 {
-                    if(block_id == end_block_id)
-                    {
-                        memcpy(buffer, block->base + block_off, end_block_off - block_off);
-                    }
-                    else
-                    {
-                        memcpy(buffer, block->base + block_off, PAGE_SIZE - block_off);
-                        block_off = 0;
-                        block_id ++;
-                    }
+                    memcpy(buffer, block->base + block_off, end_block_off - block_off);
                 }
-                bn = bn->next;
+                else
+                {
+                    memcpy(buffer, block->base + block_off, PAGE_SIZE - block_off);
+                    block_off = 0;
+                    block_id ++;
+                }
             }
-        }
-        else
-        {
-            memcpy(buffer, node->base + offset, len);
-        }
+            bn = bn->next;
+		}
     }
 }
 
@@ -385,7 +363,8 @@ vfs_inode_t *vfs_lookup_path(char *path)
     while(str != NULL)
     {
         int num = parent->length / sizeof(vfs_dentry_t);
-        vfs_dentry_t *entries = parent->base;
+        vfs_dentry_t *entries = malloc(parent->length);
+		vfs_read(parent, 0, parent->length, entries);
         int found = 0;
         int i;
         for(i = 0; i < num; i++)
@@ -447,7 +426,9 @@ vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid)
     while(str != NULL)
     {
         int num = parent->length / sizeof(vfs_dentry_t);
-        vfs_dentry_t *entries = parent->base;
+        vfs_dentry_t *entries = malloc(parent->length);
+		vfs_read(parent, 0, parent->length, entries);
+
         int found = 0;
         int i;
         for(i = 0; i < num; i++)
@@ -481,7 +462,9 @@ void vfs_debug_output(vfs_inode_t *start)
     vfs_inode_t *current;
 
     int num = start->length / sizeof(vfs_dentry_t);
-    vfs_dentry_t *entries = start->base;
+    vfs_dentry_t *entries = malloc(start->length);
+	vfs_read(start, 0, start->length, entries);
+
     int i;
     for(i = 0; i < num; i++)
     {
@@ -573,7 +556,7 @@ void sys_open(struct cpu_state **cpu)
         {
             if(vfs_access(inode, W_OK, current_thread->process->uid, current_thread->process->gid) == 0)
             {
-                memset(inode->base, 0, inode->length);
+                // TODO: clear file
             }
             else
             {
@@ -673,7 +656,7 @@ void sys_read(struct cpu_state **cpu)
                 desc->flags & O_RDWR)
         {
             vfs_inode_t *inode = desc->inode;
-            vfs_pipe_info_t *pipe = inode->base;
+            vfs_buffer_info_t *info = inode->buffer;
 
             if(vfs_access(inode, R_OK, current_thread->process->uid, current_thread->process->gid) == 0)
             {
@@ -688,7 +671,7 @@ void sys_read(struct cpu_state **cpu)
                 else if(inode->type == VFS_PIPE)
                 {
                     //			printf("SLEEPING\n");
-                    add_trigger(WAIT_EVENT, pipe->event_id, 0, current_thread, sys_read);
+                    add_trigger(WAIT_EVENT, info->event_id, 0, current_thread, sys_read);
                     suspend_thread(current_thread);
                     *cpu = (struct cpu_state *)task_schedule(*cpu);
                 }
@@ -831,7 +814,7 @@ void sys_link(struct cpu_state **cpu)
             if(dest_inode != NULL)
             {
                 dest_inode->type = VFS_LINK;
-                dest_inode->base = dest_inode;
+                dest_inode->buffer = dest_inode;
 
                 (*cpu)->CPU_ARG0 = _SUCCESS;
             }
@@ -860,7 +843,7 @@ void sys_unlink(struct cpu_state **cpu)
     {
         if(vfs_access(link, W_OK, current_thread->process->uid, current_thread->process->gid == 0))
         {
-            link->base = NULL;
+            link->buffer = NULL;
             link->type = VFS_REGULAR;
             free(link);
             (*cpu)->CPU_ARG0 = _SUCCESS;
@@ -918,7 +901,8 @@ void sys_getdents(struct cpu_state **cpu)
     {
         dirent_t *dentry = (dirent_t *)(*cpu)->CPU_ARG2;
 
-        vfs_dentry_t *entries = parent->base;
+        vfs_dentry_t *entries = malloc(parent->length);
+		vfs_read(parent, 0, parent->length, entries);
         int num = parent->length / sizeof(vfs_dentry_t);
 
         if(pos < num && (fd == old_fd || old_fd == -1))
@@ -1034,7 +1018,7 @@ void sys_getcwd(struct cpu_state **cpu)
     return;
 }
 
-void launch_pipe_handlers(vfs_pipe_info_t *pipe)
+void launch_pipe_handlers(vfs_buffer_info_t *pipe)
 {
     struct list_node *node = pipe->handlers->head->next;
     struct list_node *head = pipe->handlers->head;
@@ -1055,7 +1039,7 @@ void set_pipe_trigger(struct cpu_state **cpu)
 
     if(vfs_access(inode, R_OK, current_thread->process->uid, current_thread->process->gid) == 0)
     {
-        vfs_pipe_info_t *pipe = inode->base;
+        vfs_buffer_info_t *pipe = inode->buffer;
 
         vfs_pipe_trigger_t *trigger = malloc(sizeof(vfs_pipe_trigger_t));
         trigger->eip = (*cpu)->CPU_ARG2;

@@ -83,10 +83,7 @@ success_t map_module(struct mods_add *module)
     vaddr_t virtaddr = vmm_automap_kernel_range(current_context, module->mod_start, pages, VMM_WRITABLE);   // something about physical and virtual memory and kernel and user space... ask someone else
 
     vfs_inode_t *file = vfs_create_inode(name,  S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH, node, 0, 0);   // create the module in the vfs
-
-    file->base = (void *) virtaddr;     // the content of the module
-    file->length = size;                // the size of the module
-    file->stat.st_size = file->length;  // redundant
+	vfs_write(file, 0, size, virtaddr);
 
     free(path);     // "we don't waste memory" (tdotu)
     free(name);

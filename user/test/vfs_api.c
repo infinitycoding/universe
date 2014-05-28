@@ -75,12 +75,17 @@ bool test_vfs_api(void)
 bool test_create_file(const char *name)
 {
     int f = 0;
-    f = open(name,O_WRONLY,0);
-    close(f);
-
-    if(f)
-        return true;
-    return false;
+    f = open(name, O_CREAT, 0x7ff);
+    
+    if(f<0)
+	{
+        return false;
+	}	
+	else
+	{
+		close(f);
+		return true;
+	}
 }
 
 
@@ -94,11 +99,12 @@ bool test_read_write_file(const char *name)
 
     int f = 0;
     f = open(name, O_WRONLY, 0);
-    if(!f)
+    if(f < 0)
     {
         printf("failed to open test file for writing! return code: %d",f);
         return false;
     }
+
     int n = write(f, "+++++", 5);
     if(n != 5)
     {
@@ -110,11 +116,12 @@ bool test_read_write_file(const char *name)
     
 
     f = open("test",O_RDONLY,0);
-    if(!f)
+    if(f < 0)
     {
         printf("failed to open test file for reading! return code: %d",f);
         return false;
     }
+
     n = read(f,c,5);
     if(n != 5)
     {
@@ -124,8 +131,10 @@ bool test_read_write_file(const char *name)
     }
     close(f);
 
-    if(strncmp("+++++",c,5) == 0)
+    if(strncmp("+++++",c,5) == 0) {
         return true;
+	}
+
     return false;
 }
 

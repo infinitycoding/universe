@@ -372,12 +372,12 @@ void sys_execve(struct cpu_state **cpu)
     {
         return;
     }
-        if(filenode->base == NULL)
+        /*if(filenode->base == NULL)
         {
             (*cpu)->CPU_ARG0 = _FAILURE;
             return;
         }
-    
+    */
     struct process_state *process = current_thread->process;
 
     while(!list_is_empty(process->threads))
@@ -397,7 +397,7 @@ void sys_execve(struct cpu_state **cpu)
     process->zombie_tids = list_create();
     
     // run the new process
-    load_elf_thread(filenode->base, process, 0, argv);
+//    load_elf_thread(filenode->base, process, 0, argv);
 }
 
 /**

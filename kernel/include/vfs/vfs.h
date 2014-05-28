@@ -51,17 +51,8 @@
 #define O_CREAT 0x20 /* create the file */
 #define O_EXCL 0x40 /* forced file creation. if it already exist: fail */
 
-typedef struct vfs_inode
-{
-    char *name;
-    void *base;
-    uint32_t type;
-    uint32_t length;
-    struct stat stat;
-    struct vfs_inode *parent;
-} vfs_inode_t;
 
-typedef struct vfs_pipe_info
+typedef struct vfs_buffer_info
 {
     unsigned int num_readers;
     unsigned int num_writers;
@@ -69,16 +60,27 @@ typedef struct vfs_pipe_info
     uint32_t event_id;
     list_t *handlers;
 
-    list_t *pipe_buffer;
+    list_t *blocks;
     int num_blocks;
-} vfs_pipe_info_t;
+} vfs_buffer_info_t;
 
-typedef struct vfs_pipe_buffer_block
+typedef struct vfs_buffer_block
 {
     uint8_t *base;
     uint32_t block_id;
     uint32_t length;
-} vfs_pipe_buffer_block_t;
+} vfs_buffer_block_t;
+
+typedef struct vfs_inode
+{
+    char *name;
+    uint32_t type;
+    uint32_t length;
+    struct stat stat;
+	struct vfs_buffer_info *buffer;
+
+    struct vfs_inode *parent;
+} vfs_inode_t;
 
 typedef struct vfs_pipe_trigger
 {
@@ -138,7 +140,7 @@ void sys_getdents(struct cpu_state **cpu);
 void sys_seek(struct cpu_state **cpu);
 void sys_mkdir(struct cpu_state **cpu);
 void sys_getcwd(struct cpu_state **cpu);
-void launch_pipe_handlers(vfs_pipe_info_t *pipe);
+void launch_pipe_handlers(vfs_buffer_info_t *pipe);
 void set_pipe_trigger(struct cpu_state **cpu);
 void sys_stat(struct cpu_state **cpu);
 void sys_fstat(struct cpu_state **cpu);
