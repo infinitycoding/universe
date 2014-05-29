@@ -81,6 +81,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     asm volatile("sti");
     
 	//print Logo and loading message
+	clear_screen();
     print_logo(YELLOW);
     puts("Universe wird gestartet...\n");
     // count free memory and display it
@@ -96,7 +97,80 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     printf("\n");
     INIT_PCI();
 
-	int i;
+	int i,j;
+
+#if 1
+	char name[256];
+#define COUNT 500
+#define STEP 50
+	vfs_inode_t **inodes = malloc(sizeof(vfs_inode_t*) * COUNT);
+
+	printf("creating %d inodes...\n", COUNT);
+	for(i = 0; i < COUNT; i++)
+	{
+		sprintf(name, "test_inode%d", i);
+		inodes[i] = vfs_create_inode(name, S_IRUSR | S_IWUSR, NULL, 0, 0);
+
+		if((i % STEP) == 0)
+		{
+			printf("=");
+		}
+	}
+	printf("\n");	
+
+	printf("writing a lot in them...\n");
+	for(i = 0; i < COUNT; i++)
+	{
+		char *buffer = malloc(10000);
+		for(j = 0; j < 10000; j++)
+		{
+			buffer[j] = 'a' + j%25;
+		}
+
+		vfs_write(inodes[i], 0, buffer, 10000);
+
+		free(buffer);
+
+		if((i % STEP) == 0)
+		{
+			printf("=");
+		}
+	}
+	printf("\n");
+
+	printf("read them out and check!\n");
+	int fails=0;
+	for(i = 0; i < COUNT; i++)
+	{
+		char *buffer = malloc(10000);
+		vfs_read(inodes[i], 0, buffer, 10000);
+
+		for(j = 0; j < 10000; j++)
+		{
+			char testchar = 'a' + j%25;
+			if(buffer[j] != testchar)
+			{
+				printf("failed at %d\n", j);
+				fails ++;
+				break;
+			}
+		}
+
+		free(buffer);
+
+		if((i % STEP) == 0)
+		{
+			printf("=");
+		}
+	}
+	printf("\n");
+
+	printf("%d of %d inodes failed", fails, COUNT);
+
+	free(inodes);
+
+	return 0;
+#endif
 
 #if 0
 	// testing heap...
@@ -138,7 +212,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 
     struct mapping_statistics stats = map_all(mb_info);
     printf("%d modules total, %d successfully loaded, %d failed\n", stats.total, stats.load_success, stats.load_failed);
-/*
+
     vfs_inode_t *pfnode = vfs_lookup_path("/drivers/system.pf");
 
     if(pfnode != NULL)
@@ -155,7 +229,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
         argv[0] = sec;
         //kernel_thread_create((uintptr_t)INIT_HYPERVISOR,argc,argv);
     }
-*/
+
     vfs_inode_t *testnode = vfs_lookup_path("/test.elf");
 
 	if(testnode == NULL)
@@ -167,12 +241,12 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 		printf("test.elf is %d bytes long\n", testnode->length);
 		void *buffer = malloc(testnode->length);
 		vfs_read(testnode, 0, buffer, testnode->length);
-        printf("%s\n", buffer);
+        printf("%p\n", buffer);
 
         load_elf(buffer, "test.elf", 0, 0, 0);
     }
 
-    vfs_debug_output_all();
+//    vfs_debug_output_all();
 
     return 0;
 }

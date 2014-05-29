@@ -66,7 +66,7 @@ success_t map_module(struct mods_add *module)
     if(split_module_string(module->string, &path, &name) == failed)     // if i can't split the module string there is no reason for executing further
         return failed;
 
-    printf("%s%s\n", path, name);
+//    printf("%s%s\n", path, name);
 
     vfs_inode_t *node = NULL;//vfs_create_path(path, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH | S_MODE_DIR, 0, 0);  // i need a node to place the module in
 

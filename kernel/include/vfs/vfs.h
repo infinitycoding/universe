@@ -70,7 +70,6 @@ typedef struct vfs_buffer_block
 {
     uint8_t *base;
     uint32_t block_id;
-    uint32_t length;
 } vfs_buffer_block_t;
 
 typedef struct vfs_inode

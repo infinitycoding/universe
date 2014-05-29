@@ -103,7 +103,7 @@ void clear_screen(void)
     for (i = 0; i < lines * columns; i++)
     {
         video_mem[2 * i] = 0;
-        video_mem[2 * i + 1] = color;
+        video_mem[2 * i + 1] = 0;
     }
 
     gotoxy(0, 0);

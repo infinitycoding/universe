@@ -152,18 +152,19 @@ int vfs_write(vfs_inode_t *inode, int off, void *buffer, int bytes)
 	// search first block
     vfs_buffer_info_t *info = inode->buffer;
     vfs_buffer_block_t *block = NULL;
-    struct list_node *bn = info->blocks->head->next;
+    iterator_t it = iterator_create(info->blocks);
 
     int i,found = 0;
     for(i = 0; i < info->num_blocks; i++)
     {
-        block = (vfs_buffer_block_t*) bn->element;
+        block = (vfs_buffer_block_t*) it.current->element;
         if(block->block_id == block_id)
         {
             found = 1;
             break;
         }
-        bn = bn->next;
+
+        list_next(&it);
     }
 
     uint8_t *data = (uint8_t*) buffer;
@@ -182,8 +183,11 @@ int vfs_write(vfs_inode_t *inode, int off, void *buffer, int bytes)
             }
             else
             {
-                bn = bn->next;
-                block = (vfs_buffer_block_t*) bn->element;
+                list_next(&it);
+                block = (vfs_buffer_block_t*) it.current->element;
+
+				found = 1;
+				index = 0;
             }
         }
 
@@ -198,9 +202,7 @@ int vfs_write(vfs_inode_t *inode, int off, void *buffer, int bytes)
 			block_id = block->block_id;
 
             found = 1;
-            block_off = 0;
             index = 0;
-			printf("created new block\n");
 		}
 
 		// copy data
@@ -233,43 +235,61 @@ int vfs_write(vfs_inode_t *inode, int off, void *buffer, int bytes)
  *
  * @return number of bytes
  */
-int vfs_read(vfs_inode_t *inode, int offset, void *buffer, int len)
+int vfs_read(vfs_inode_t *inode, int offset, void *buffer, int bytes)
 {
     GET_INODE(inode);
 
-    if(inode->length >= (offset+len))
+    if(inode->length >= (offset+bytes))
     {
         int block_id = offset / PAGE_SIZE;
         int block_off= offset % PAGE_SIZE;
-        int end_block_id = (offset + len) / PAGE_SIZE;
-        int end_block_off= (offset + len) % PAGE_SIZE;
+        
+		// search first block
+		vfs_buffer_info_t *info = inode->buffer;
+		vfs_buffer_block_t *block = NULL;
+		iterator_t it = iterator_create(info->blocks);
 
-        vfs_buffer_info_t *info = inode->buffer;
-        vfs_buffer_block_t *block = NULL;
-        struct list_node *bn = info->blocks->head->next;
+		int i;
+		for(i = 0; i < info->num_blocks; i++)
+		{
+			block = (vfs_buffer_block_t*) it.current->element;
+			if(block->block_id == block_id)
+			{
+				break;
+			}
 
-        int i;
-        for(i = 0; i < info->num_blocks; i++)
-        {
-            block = (vfs_buffer_block_t*) bn->element;
-            if(block->block_id == block_id)
-            {
-                if(block_id == end_block_id)
-                {
-                    memcpy(buffer, block->base + block_off, end_block_off - block_off);
-                }
-                else
-                {
-                    memcpy(buffer, block->base + block_off, VFS_BLOCK_SIZE - block_off);
-                    block_off = 0;
-                    block_id ++;
-					buffer += VFS_BLOCK_SIZE - block_off;
-                }
-            }
-            bn = bn->next;
+			list_next(&it);
 		}
-		return len;
-    }
+
+		uint8_t *data = (uint8_t*) buffer;
+		int index = block_off;
+
+		// go through all bytes...
+		for(i = 0; i < bytes; i++)
+		{
+			// if the block ends, go to the next
+			if(index >= VFS_BLOCK_SIZE)
+			{
+				block_id++;
+				if(block_id >= info->num_blocks)
+				{
+					break;
+				}
+				else
+				{
+					list_next(&it);
+					block = (vfs_buffer_block_t*) it.current->element;
+			
+					index = 0;
+				}
+			}
+
+			// copy data
+			data[i] = block->base[index++];
+	    }
+
+		return i;
+	}
 
 	return -1;
 }
