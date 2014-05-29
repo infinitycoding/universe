@@ -17,7 +17,7 @@
 */
 
 /**
-	@author Michael Sippel <michamimosa@gmail.com>
+	@author Michael Sippel <micha@infinitycoding.com>
 */
 
 #include <stdint.h>
@@ -141,7 +141,7 @@ vfs_dentry_t* vfs_create_dir_entry(vfs_inode_t *entry_inode)
  *
  * @return number of written bytes
  */
-int vfs_write(vfs_inode_t *inode, int off, void *base, int bytes)
+int vfs_write(vfs_inode_t *inode, int off, void *buffer, int bytes)
 {
     GET_INODE(inode);
 
@@ -166,14 +166,14 @@ int vfs_write(vfs_inode_t *inode, int off, void *base, int bytes)
         bn = bn->next;
     }
 
-    uint8_t *data = (uint8_t*) base;
+    uint8_t *data = (uint8_t*) buffer;
     int index = block_off;
 
 	// go through all bytes...
     for(i = 0; i < bytes; i++)
     {
 		// if the block ends, go to the next
-        if(index >= PAGE_SIZE)
+        if(index >= VFS_BLOCK_SIZE)
         {
             block_id++;
             if(block_id >= info->num_blocks)
@@ -190,15 +190,17 @@ int vfs_write(vfs_inode_t *inode, int off, void *base, int bytes)
 		// if nothing found, create a new block
         if(! found)
         {
-            block = malloc(sizeof(vfs_buffer_block_t*));
-            block->base = malloc(PAGE_SIZE);
-            block->length = 0;
-            block->block_id = block_id =  info->num_blocks++;
+            block = malloc(sizeof(vfs_buffer_block_t));
+            block->base = malloc(VFS_BLOCK_SIZE);
+            block->block_id = info->num_blocks++;
             list_push_back(info->blocks, block);
+
+			block_id = block->block_id;
 
             found = 1;
             block_off = 0;
             index = 0;
+			printf("created new block\n");
 		}
 
 		// copy data
@@ -229,9 +231,9 @@ int vfs_write(vfs_inode_t *inode, int off, void *base, int bytes)
  * @param node the node, that will be readed
  * @param offset the offset from the node
  *
- * @return readed data
+ * @return number of bytes
  */
-void vfs_read(vfs_inode_t *inode, uintptr_t offset, int len, void *buffer)
+int vfs_read(vfs_inode_t *inode, int offset, void *buffer, int len)
 {
     GET_INODE(inode);
 
@@ -258,14 +260,18 @@ void vfs_read(vfs_inode_t *inode, uintptr_t offset, int len, void *buffer)
                 }
                 else
                 {
-                    memcpy(buffer, block->base + block_off, PAGE_SIZE - block_off);
+                    memcpy(buffer, block->base + block_off, VFS_BLOCK_SIZE - block_off);
                     block_off = 0;
                     block_id ++;
+					buffer += VFS_BLOCK_SIZE - block_off;
                 }
             }
             bn = bn->next;
 		}
+		return len;
     }
+
+	return -1;
 }
 
 /**
@@ -373,7 +379,7 @@ vfs_inode_t *vfs_lookup_path(char *path)
     {
         int num = parent->length / sizeof(vfs_dentry_t);
         vfs_dentry_t *entries = malloc(parent->length);
-		vfs_read(parent, 0, parent->length, entries);
+		vfs_read(parent, 0, entries, parent->length);
         int found = 0;
         int i;
         for(i = 0; i < num; i++)
@@ -438,7 +444,7 @@ vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid)
     {
         int num = parent->length / sizeof(vfs_dentry_t);
         vfs_dentry_t *entries = malloc(parent->length);
-		vfs_read(parent, 0, parent->length, entries);
+		vfs_read(parent, 0, entries, parent->length);
 
         int found = 0;
         int i;
@@ -476,7 +482,7 @@ void vfs_debug_output(vfs_inode_t *start)
 
     int num = start->length / sizeof(vfs_dentry_t);
     vfs_dentry_t *entries = malloc(start->length);
-	vfs_read(start, 0, start->length, entries);
+	vfs_read(start, 0, entries, start->length);
 
     int i;
     for(i = 0; i < num; i++)
@@ -679,7 +685,7 @@ void sys_read(struct cpu_state **cpu)
                 if(inode->length >= (desc->pos+len))
                 {
                     //			printf("CALL READ()\n");
-                    vfs_read(inode, desc->pos, len, buf);
+                    vfs_read(inode, desc->pos, buf, len);
                     desc->pos += len;
                     (*cpu)->CPU_ARG0 = len;
                 }
@@ -912,12 +918,12 @@ void sys_getdents(struct cpu_state **cpu)
     //int count = (*cpu)->CPU_ARG2;		// count is currently unused, so i commented it out
 
     vfs_inode_t *parent = get_fd(fd)->inode;
-    if(vfs_access(parent, R_OK, current_thread->process->uid, current_thread->process->gid == 0))
+    if(vfs_access(parent, R_OK, current_thread->process->uid, current_thread->process->gid) == 0)
     {
         dirent_t *dentry = (dirent_t *)(*cpu)->CPU_ARG2;
 
         vfs_dentry_t *entries = malloc(parent->length);
-		vfs_read(parent, 0, parent->length, entries);
+		vfs_read(parent, 0, entries, parent->length);
         int num = parent->length / sizeof(vfs_dentry_t);
 
         if(pos < num && (fd == old_fd || old_fd == -1))

@@ -147,7 +147,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
         void *argv[2];
         char *pf = (char *)malloc(pfnode->length);
 		vfs_read(pfnode, 0, pfnode->length, pf);
-        printf(pf);
+        printf("%s", pf);
         list_t *pipelines = pfp(pf);
         struct section *sec = list_pop_front(pipelines);
 
@@ -166,8 +166,8 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     {
 		printf("test.elf is %d bytes long\n", testnode->length);
 		void *buffer = malloc(testnode->length);
-		vfs_read(testnode, 0, testnode->length, buffer);
-        printf("%p\n", buffer);
+		vfs_read(testnode, 0, buffer, testnode->length);
+        printf("%s\n", buffer);
 
         load_elf(buffer, "test.elf", 0, 0, 0);
     }

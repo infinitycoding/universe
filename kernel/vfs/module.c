@@ -68,7 +68,7 @@ success_t map_module(struct mods_add *module)
 
     printf("%s%s\n", path, name);
 
-    vfs_inode_t *node = vfs_create_path(path, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH | S_MODE_DIR, 0, 0);  // i need a node to place the module in
+    vfs_inode_t *node = NULL;//vfs_create_path(path, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH | S_MODE_DIR, 0, 0);  // i need a node to place the module in
 
     int size = module->mod_end - module->mod_start;     // basic stuff
 

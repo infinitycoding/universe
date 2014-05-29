@@ -52,6 +52,8 @@
 #define O_EXCL 0x40 /* forced file creation. if it already exist: fail */
 
 
+#define VFS_BLOCK_SIZE 4096
+
 typedef struct vfs_buffer_info
 {
     unsigned int num_readers;
@@ -116,8 +118,8 @@ void INIT_VFS(void);
 vfs_inode_t *vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_t uid, gid_t gid);
 vfs_inode_t *vfs_create_pipe(uid_t uid, gid_t gid);
 vfs_dentry_t *vfs_create_dir_entry(vfs_inode_t *entry_inode);
-int vfs_write(vfs_inode_t *inode, int off, void *base, int bytes);
-void vfs_read(vfs_inode_t *inode, uintptr_t offset, int len, void *buffer);
+int vfs_write(vfs_inode_t *inode, int offset, void *buffer, int bytes);
+int vfs_read (vfs_inode_t *inode, int offset, void *buffer, int bytes);
 int vfs_stat(vfs_inode_t *inode, struct stat *buffer);
 int vfs_access(vfs_inode_t *inode, mode_t modus, uid_t uid, gid_t gid);
 vfs_inode_t *vfs_lookup_path(char *path);
