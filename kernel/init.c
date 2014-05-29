@@ -74,11 +74,11 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     INIT_PAGING(mb_info);
     INIT_HEAP();
     INIT_VFS();
-    INIT_TRIGGER();
-    INIT_PIT(600);
-    INIT_RTC();
-    INIT_SCHEDULER();
-    asm volatile("sti");
+    //INIT_TRIGGER();
+    //INIT_PIT(600);
+    //INIT_RTC();
+    //INIT_SCHEDULER();
+    //asm volatile("sti");
     //print Logo and loading message
     print_logo(YELLOW);
     puts("Universe wird gestartet...\n");

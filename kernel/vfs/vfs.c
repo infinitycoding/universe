@@ -50,8 +50,8 @@ uint32_t nodes = 0;
  */
 void INIT_VFS(void)
 {
-    root = vfs_create_inode(NULL, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH, NULL, 0, 0);
-
+    root = vfs_create_inode(NULL, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH, NULL, 0, 0);	
+	
     vfs_inode_t *foo = vfs_create_inode("foo.txt", S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH, root, 0, 0);
     vfs_write(foo, 0, "Hallo Welt!\n", 13);
 }
@@ -68,32 +68,39 @@ void INIT_VFS(void)
  */
 vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_t uid, gid_t gid)
 {
-    vfs_inode_t *node = malloc(sizeof(vfs_inode_t));
-    node->name = (char *)malloc(sizeof(char) * (strlen(name) + 1));
-    strcpy(node->name, name);
-    node->length = 0;
-    node->type = VFS_REGULAR;
+	vfs_inode_t *inode = malloc(sizeof(vfs_inode_t));
+
+	if(name != NULL)
+	{
+		inode->name = (char *)malloc(sizeof(char) * (strlen(name) + 1));
+		strcpy(inode->name, name);
+	}    
+
+	inode->length = 0;
+    inode->type = VFS_REGULAR;
     
-    if (parent != NULL)
+	if(parent == NULL) parent = root;
+    if(parent != NULL)
     {
-        node->parent = parent;
-        vfs_dentry_t *entry = vfs_create_dir_entry(node);
+        inode->parent = parent;
+        vfs_dentry_t *entry = vfs_create_dir_entry(inode);
         vfs_write(parent, parent->length, entry, sizeof(vfs_dentry_t));
     }
 
-    node->stat.st_mode = mode;
-    node->stat.st_ino = nodes++;
-    node->stat.st_uid = uid;
-    node->stat.st_gid = gid;
-    update_time((struct time*)&node->stat.st_atime);
-    update_time((struct time*)&node->stat.st_mtime);
+    inode->stat.st_mode = mode;
+    inode->stat.st_ino = nodes++;
+    inode->stat.st_uid = uid;
+    inode->stat.st_gid = gid;
+	update_time((struct time*)&inode->stat.st_atime);
+    update_time((struct time*)&inode->stat.st_mtime);
  
-	node->buffer = (vfs_buffer_info_t*) malloc(sizeof(vfs_buffer_info_t));
-    node->buffer->num_readers = 1;
-	node->buffer->num_writers = 1;
-	node->buffer->blocks = list_create();
+	inode->buffer = (vfs_buffer_info_t*) malloc(sizeof(vfs_buffer_info_t));
+    inode->buffer->num_readers = 1;
+	inode->buffer->num_writers = 1;
+	inode->buffer->num_blocks = 0;
+	inode->buffer->blocks = list_create();
    
-    return node;
+    return inode;
 }
 
 vfs_inode_t *vfs_create_pipe(uid_t uid, gid_t gid)
@@ -150,7 +157,7 @@ int vfs_write(vfs_inode_t *inode, int off, void *base, int bytes)
     int block_off= off % PAGE_SIZE;
 
 	// search first block
-    vfs_buffer_info_t *info = (vfs_buffer_info_t*) &inode->buffer;
+    vfs_buffer_info_t *info = inode->buffer;
     vfs_buffer_block_t *block = NULL;
     struct list_node *bn = info->blocks->head->next;
 
@@ -172,6 +179,7 @@ int vfs_write(vfs_inode_t *inode, int off, void *base, int bytes)
 	// go through all bytes...
     for(i = 0; i < bytes; i++)
     {
+		// if the block ends, go to the next
         if(index >= PAGE_SIZE)
         {
             block_id++;
@@ -194,6 +202,7 @@ int vfs_write(vfs_inode_t *inode, int off, void *base, int bytes)
             block->length = 0;
             block->block_id = block_id =  info->num_blocks++;
             list_push_back(info->blocks, block);
+
             found = 1;
             block_off = 0;
             index = 0;
