@@ -74,12 +74,13 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     INIT_PAGING(mb_info);
     INIT_HEAP();
     INIT_VFS();
-    //INIT_TRIGGER();
-    //INIT_PIT(600);
-    //INIT_RTC();
-    //INIT_SCHEDULER();
-    //asm volatile("sti");
-    //print Logo and loading message
+    INIT_TRIGGER();
+    INIT_PIT(600);
+    INIT_RTC();
+    INIT_SCHEDULER();
+    asm volatile("sti");
+    
+	//print Logo and loading message
     print_logo(YELLOW);
     puts("Universe wird gestartet...\n");
     // count free memory and display it
@@ -124,9 +125,9 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	printf("freeing a\n");
 	free(a);
 #endif
-/*
+
     struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
-  //  int i;
+
     void *phys = (void*)((int)modules[0].string & (int)~0xfff);
     void *virt = (void*) vmm_automap_kernel(current_context, (paddr_t)phys, VMM_WRITABLE);
     for(i = 0; i < mb_info->mods_count; i++)
@@ -137,15 +138,16 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 
     struct mapping_statistics stats = map_all(mb_info);
     printf("%d modules total, %d successfully loaded, %d failed\n", stats.total, stats.load_success, stats.load_failed);
-
+/*
     vfs_inode_t *pfnode = vfs_lookup_path("/drivers/system.pf");
 
     if(pfnode != NULL)
     {
         int argc = 2;
         void *argv[2];
-        char *pf = (char *)pfnode->base;
-        //printf(pf);
+        char *pf = (char *)malloc(pfnode->length);
+		vfs_read(pfnode, 0, pfnode->length, pf);
+        printf(pf);
         list_t *pipelines = pfp(pf);
         struct section *sec = list_pop_front(pipelines);
 
@@ -153,23 +155,25 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
         argv[0] = sec;
         //kernel_thread_create((uintptr_t)INIT_HYPERVISOR,argc,argv);
     }
-
-
+*/
     vfs_inode_t *testnode = vfs_lookup_path("/test.elf");
 
-    if(testnode == NULL || testnode->base == NULL)
+	if(testnode == NULL)
     {
         printf("test.elf not in vfs\n");
     }
     else
     {
-        printf("%p\n", testnode->base);
+		printf("test.elf is %d bytes long\n", testnode->length);
+		void *buffer = malloc(testnode->length);
+		vfs_read(testnode, 0, testnode->length, buffer);
+        printf("%p\n", buffer);
 
-        load_elf(testnode->base, "test.elf", 0, 0, 0);
+        load_elf(buffer, "test.elf", 0, 0, 0);
     }
 
     vfs_debug_output_all();
-*/
+
     return 0;
 }
 

@@ -19,6 +19,7 @@
 
 
 #include <vfs/module.h>
+#include <vfs/vfs.h>
 #include <pmm.h>
 #include <mm/paging.h>
 #include <string.h>
@@ -65,7 +66,7 @@ success_t map_module(struct mods_add *module)
     if(split_module_string(module->string, &path, &name) == failed)     // if i can't split the module string there is no reason for executing further
         return failed;
 
-    //printf("%s\n%s\n", path, name);
+    printf("%s%s\n", path, name);
 
     vfs_inode_t *node = vfs_create_path(path, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH | S_MODE_DIR, 0, 0);  // i need a node to place the module in
 
@@ -83,7 +84,7 @@ success_t map_module(struct mods_add *module)
     vaddr_t virtaddr = vmm_automap_kernel_range(current_context, module->mod_start, pages, VMM_WRITABLE);   // something about physical and virtual memory and kernel and user space... ask someone else
 
     vfs_inode_t *file = vfs_create_inode(name,  S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH, node, 0, 0);   // create the module in the vfs
-	vfs_write(file, 0, size, virtaddr);
+	vfs_write(file, 0, virtaddr, size);
 
     free(path);     // "we don't waste memory" (tdotu)
     free(name);

@@ -145,13 +145,6 @@ int vfs_write(vfs_inode_t *inode, int off, void *base, int bytes)
 {
     GET_INODE(inode);
 
-	// change length
-    if( (off + bytes) > inode->length)
-    {
-        inode->length = off + bytes;
-        inode->stat.st_size = inode->length;
-    }
-
 	// calculate block indices
     int block_id = off / PAGE_SIZE;
     int block_off= off % PAGE_SIZE;
@@ -212,6 +205,13 @@ int vfs_write(vfs_inode_t *inode, int off, void *base, int bytes)
 		block->base[index++] = data[i];
     }
 
+	// increase length
+	if( (off + bytes) >  inode->length)
+	{
+		inode->length = off + bytes;
+		inode->stat.st_size = inode->length;
+	}
+
 	// pipes send an event signal
 	if(inode->type == VFS_PIPE)
 	{
@@ -242,7 +242,7 @@ void vfs_read(vfs_inode_t *inode, uintptr_t offset, int len, void *buffer)
         int end_block_id = (offset + len) / PAGE_SIZE;
         int end_block_off= (offset + len) % PAGE_SIZE;
 
-        vfs_buffer_info_t *info = (vfs_buffer_info_t*) inode->buffer;
+        vfs_buffer_info_t *info = inode->buffer;
         vfs_buffer_block_t *block = NULL;
         struct list_node *bn = info->blocks->head->next;
 
@@ -386,6 +386,8 @@ vfs_inode_t *vfs_lookup_path(char *path)
             }
         }
 
+		free(entries);
+
         if(!found)
         {
             return NULL;
@@ -450,6 +452,8 @@ vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid)
             }
         }
 
+		free(entries);
+
         if(!found)
         {
             parent = vfs_create_inode(str, mode, parent, uid, gid);
@@ -494,6 +498,8 @@ void vfs_debug_output(vfs_inode_t *start)
             printf("root\n");
         }
     }
+
+	free(entries);
 }
 #endif
 
