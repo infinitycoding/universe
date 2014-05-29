@@ -26,12 +26,15 @@
 #include <cga.h>
 #include <crtc.h>
 #include <stdlib.h>
-
+#include <stdio.h>
+#include <unistd.h>
 
 int main(int argc, char *argv[])
 {
     /*! driver internal variables*/
     //color_t color = WHITE | BLACK << 4;
+
+
 
     pckmgr *conn = new_pckmgr(stdin, stdout, stderr);
     if(!subsystem_connect(conn,UHOST_DEFAULT_SYNCHRON))
@@ -55,6 +58,8 @@ int main(int argc, char *argv[])
     crtc->data = port_alloc(conn, CRTC_DATA_PORT);
     if(!crtc->index || !crtc->data)
         udrcp_error(conn,"Warning: no CRTC available\n");
+    
+
 
     //todo: read input from file
     // cause of not implementation: vfs has some weird bugs. I'll wait untill micha fixed that
