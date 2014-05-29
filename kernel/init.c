@@ -213,22 +213,22 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     struct mapping_statistics stats = map_all(mb_info);
     printf("%d modules total, %d successfully loaded, %d failed\n", stats.total, stats.load_success, stats.load_failed);
 
-    vfs_inode_t *pfnode = vfs_lookup_path("/drivers/system.pf");
+    /*vfs_inode_t *pfnode = vfs_lookup_path("/drivers/system.pf");
 
     if(pfnode != NULL)
     {
         int argc = 2;
         void *argv[2];
         char *pf = (char *)malloc(pfnode->length);
-		vfs_read(pfnode, 0, pfnode->length, pf);
+		vfs_read(pfnode, 0, pf, pfnode->length);
         printf("%s", pf);
         list_t *pipelines = pfp(pf);
         struct section *sec = list_pop_front(pipelines);
 
         argv[1] = mb_info;
         argv[0] = sec;
-        //kernel_thread_create((uintptr_t)INIT_HYPERVISOR,argc,argv);
-    }
+        kernel_thread_create((uintptr_t)INIT_HYPERVISOR,argc,argv);
+    }*/
 
     vfs_inode_t *testnode = vfs_lookup_path("/test.elf");
 

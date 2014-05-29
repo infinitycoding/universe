@@ -118,14 +118,14 @@ pck_t *poll_next(pckmgr *mgr)
 {
     pck_t *pck = malloc(sizeof(pck_t));
     while((mgr->pset.stdout->length - mgr->stdout_seeker) < sizeof(pckhead_t));
-    vfs_read(mgr->pset.stdout,mgr->stdout_seeker,sizeof(pckhead_t),pck);
+    vfs_read(mgr->pset.stdout,mgr->stdout_seeker,pck, sizeof(pckhead_t));
     mgr->stdout_seeker += sizeof(pckhead_t);
     if(pck->size > 12)
     {
         int data_size = pck->size-12;
         pck->data = malloc(data_size);
         while((mgr->pset.stdout->length - mgr->stdout_seeker) < data_size);
-        vfs_read(mgr->pset.stdout,mgr->stdout_seeker,data_size,pck->data);
+        vfs_read(mgr->pset.stdout,mgr->stdout_seeker, pck->data,data_size);
         mgr->stdout_seeker += data_size;
     }
     else
