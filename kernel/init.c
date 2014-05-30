@@ -238,12 +238,7 @@ extern vfs_inode_t *root;
     }
     else
     {
-//		printf("test.elf is %d bytes long\n", testnode->length);
-		void *buffer = malloc(testnode->length);
-		vfs_read(testnode, 0, buffer, testnode->length);
-//        printf("%p\n", buffer);
-
-        load_elf(buffer, "test.elf", 0, 0, 0);
+        load_elf_from_file(testnode, 0, 0, 0);
     }
 
 //    vfs_debug_output_all();
