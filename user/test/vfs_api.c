@@ -34,7 +34,7 @@
 bool test_vfs_api(void)
 {
     bool success = true;
-    char testfile[] = "testfile";
+    char testfile[] = "/testfile";
     printf("VFS-Runtime-API-Test:\n");
 
     printf("create file:\n");

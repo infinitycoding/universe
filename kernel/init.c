@@ -101,15 +101,15 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 
 #if 0
 	char name[256];
-#define COUNT 1000
-#define STEP 100
+#define COUNT 10
+#define STEP (int)((float)COUNT/(float)10)
 	vfs_inode_t **inodes = malloc(sizeof(vfs_inode_t*) * COUNT);
-
+extern vfs_inode_t *root;
 	printf("creating %d inodes...\n", COUNT);
 	for(i = 0; i < COUNT; i++)
 	{
 		sprintf(name, "test_inode%d", i);
-		inodes[i] = vfs_create_inode(name, S_IRUSR | S_IWUSR, NULL, 0, 0);
+		inodes[i] = vfs_create_inode(name, S_IRUSR | S_IWUSR, root, 0, 0);
 
 		if((i % STEP) == 0)
 		{
@@ -165,11 +165,10 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 	}
 	printf("\n");
 
-	printf("%d of %d inodes failed", fails, COUNT);
+	printf("%d of %d inodes failed\n", fails, COUNT);
 
 	free(inodes);
 
-	return 0;
 #endif
 
 #if 0
