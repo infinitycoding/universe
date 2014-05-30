@@ -1,5 +1,5 @@
 /*
-	Copyright 2012 universe coding group (UCG) all rights reserved
+	Copyright 2012-2014 universe coding group (UCG) all rights reserved
 	This file is part of the Universe Kernel.
 
 	Universe Kernel is free software: you can redistribute it and/or modify

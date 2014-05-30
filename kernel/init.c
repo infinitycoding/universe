@@ -101,7 +101,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 
 #if 0
 	char name[256];
-#define COUNT 10
+#define COUNT 10001
 #define STEP (int)((float)COUNT/(float)10)
 	vfs_inode_t **inodes = malloc(sizeof(vfs_inode_t*) * COUNT);
 extern vfs_inode_t *root;
@@ -218,9 +218,10 @@ extern vfs_inode_t *root;
     {
         int argc = 2;
         void *argv[2];
-        char *pf = (char *)malloc(pfnode->length);
+        char *pf = (char *)malloc(pfnode->length+1);
 		vfs_read(pfnode, 0, pf, pfnode->length);
-//        printf("%s", pf);
+		pf[pfnode->length+1] = '\0';
+ //       printf("%s", pf);
         list_t *pipelines = pfp(pf);
         struct section *sec = list_pop_front(pipelines);
 
