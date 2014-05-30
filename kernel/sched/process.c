@@ -91,8 +91,16 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
     state->desc[string_len + 1] = 0;
     state->flags = flags;
     state->files = list_create();
-    state->cwd = root;
-    state->children = list_create();    // he crashes here...
+	if(parent != NULL)
+	{
+		state->cwd = parent->cwd;
+	}
+	else
+	{
+		state->cwd = root;
+    }
+
+	state->children = list_create();    // he crashes here...
     state->zombie_tids = list_create();
     state->threads = list_create();
     state->ports = list_create();

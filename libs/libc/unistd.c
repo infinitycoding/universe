@@ -27,22 +27,26 @@
 
 int write(int fd,void *buffer, size_t n)
 {
-    return linux_syscall(SYS_WRITE, fd, (uint32_t)buffer, n, 0, 0);
+    int ret = (int)linux_syscall(SYS_WRITE, fd, (uint32_t)buffer, n, 0, 0);
+    return ret;
 }
 
 int read(int fd, void *buffer,size_t n)
 {
-    return linux_syscall(SYS_READ, fd, (uint32_t)buffer, n, 0, 0);
+    int ret = (int)linux_syscall(SYS_READ, fd, (uint32_t)buffer, n, 0, 0);
+    return ret;
 }
 
 int open(const char *path, int file_access, int filemode)
 {
-    return linux_syscall(SYS_OPEN, (uint32_t)path, file_access, filemode, 0, 0);
+    int ret = (int)linux_syscall(SYS_OPEN, (uint32_t)path, file_access, filemode, 0, 0);
+    return ret;
 }
 
 int close(int fd)
 {
-    return linux_syscall(SYS_CLOSE, fd, 0, 0, 0, 0);
+    int ret = (int)linux_syscall(SYS_CLOSE, fd, 0, 0, 0, 0);
+    return ret;
 }
 
 dirent_t *readdir(int fd)
@@ -52,12 +56,14 @@ dirent_t *readdir(int fd)
 
 int chdir(const char *path)
 {
-    return linux_syscall(SYS_CHDIR,(uint32_t)path, 0, 0, 0, 0);
+    int ret = (int)linux_syscall(SYS_CHDIR,(uint32_t)path, 0, 0, 0, 0);
+    return ret;
 }
 
 int lseek(int fd, int off, int whence)
 {
-    return linux_syscall(SYS_LSEEK, fd, off, whence, 0, 0);
+    int ret = (int)linux_syscall(SYS_LSEEK, fd, off, whence, 0, 0);
+    return ret;
 }
 
 int getchar(void)

@@ -72,14 +72,13 @@ vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_
 
 	if(name != NULL)
 	{
-		inode->name = (char *)malloc(sizeof(char) * (strlen(name) + 1));
+		inode->name = (char*) malloc(strlen(name)+1);
 		strcpy(inode->name, name);
 	}    
 
 	inode->length = 0;
     inode->type = VFS_REGULAR;
     
-	if(parent == NULL) parent = root;
     if(parent != NULL)
     {
         inode->parent = parent;
@@ -398,24 +397,26 @@ vfs_inode_t *vfs_lookup_path(char *path)
     while(str != NULL)
     {
         int num = parent->length / sizeof(vfs_dentry_t);
-        vfs_dentry_t *entries = malloc(parent->length);
-		vfs_read(parent, 0, entries, parent->length);
-        int found = 0;
+		int found = 0;
         int i;
+//		printf("[VFS/path solve] go through %d, search for %s\n", parent->stat.st_ino, str);
         for(i = 0; i < num; i++)
         {
-            if(strcmp(str, entries[i].inode->name) == 0)
+			vfs_dentry_t entry;
+			vfs_read(parent, i*sizeof(vfs_dentry_t), &entry, sizeof(vfs_dentry_t));
+//			printf("have: %s\n", entry.inode->name);
+			if(strcmp(str, entry.inode->name) == 0)
             {
-                parent = entries[i].inode;
+//				printf("[VFS/path solve] eqaualls %s,%s\n", str, entry.inode->name);
+                parent = entry.inode;
                 found = 1;
                 break;
             }
         }
 
-		free(entries);
-
         if(!found)
         {
+//			printf("[VFS/path solve] nothing found\n");
             return NULL;
         }
         else
@@ -463,22 +464,19 @@ vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid)
     while(str != NULL)
     {
         int num = parent->length / sizeof(vfs_dentry_t);
-        vfs_dentry_t *entries = malloc(parent->length);
-		vfs_read(parent, 0, entries, parent->length);
-
         int found = 0;
         int i;
         for(i = 0; i < num; i++)
         {
-            if(strcmp(str, entries[i].inode->name) == 0)
+			vfs_dentry_t entry;
+			vfs_read(parent, i*sizeof(vfs_dentry_t), &entry, sizeof(vfs_dentry_t));
+            if(strcmp(str, entry.inode->name) == 0)
             {
-                parent = entries[i].inode;
+                parent = entry.inode;
                 found = 1;
                 break;
             }
         }
-
-		free(entries);
 
         if(!found)
         {
@@ -556,22 +554,25 @@ void sys_open(struct cpu_state **cpu)
     char *path = (char *) (*cpu)->CPU_ARG1;
     int oflags = (*cpu)->CPU_ARG2;
     mode_t mode = (*cpu)->CPU_ARG3;
-
+//	printf("[VFS] opening %s\n", path);
     vfs_inode_t *inode = vfs_lookup_path(path);
 
     if(inode == NULL)
     {
+//		printf("[VFS] inode not found!\n");
         if(oflags & O_CREAT)   // create inode
         {
-            char *name = malloc(strlen((char*)path));// FIXME TODO
+            char *name = malloc(strlen((char*)path)+1);// FIXME TODO
             strcpy(name, path);// FIXME TODO
-            vfs_inode_t *parent = root; // FIXME TODO
+            vfs_inode_t *parent = root;//vfs_create_path(NULL, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH | S_MODE_DIR, current_thread->process->uid, current_thread->process->gid);
             if(vfs_access(parent, W_OK, current_thread->process->uid, current_thread->process->gid) == 0)
             {
+//				printf("[VFS] creating inode..\n");
                 inode = vfs_create_inode(name, mode, parent, current_thread->process->uid, current_thread->process->gid);
             }
             else
             {
+//		printf("[VFS] no permission!\n");
                 (*cpu)->CPU_ARG0 = _NO_PERMISSION;
                 return;
             }
@@ -584,6 +585,7 @@ void sys_open(struct cpu_state **cpu)
     }
     else
     {
+//		printf("[VFS] inode found...\n");
         if(oflags & O_EXCL)
         {
             (*cpu)->CPU_ARG0 = _FAILURE;
@@ -601,6 +603,7 @@ void sys_open(struct cpu_state **cpu)
             }
             else
             {
+//		printf("[VFS] no permission!\n");
                 (*cpu)->CPU_ARG0 = _NO_PERMISSION;
                 return;
             }
@@ -613,12 +616,19 @@ void sys_open(struct cpu_state **cpu)
         desc->pos = 0;
         desc->inode = inode;
 
+		if(oflags & O_APPEND)
+		{
+			desc->pos = inode->length;
+		}
+
         list_push_back(current_thread->process->files, desc);
 
+//		printf("[VFS] opened  descriptor %d\n", desc->id);
         (*cpu)->CPU_ARG0 = desc->id;
     }
     else
     {
+//		printf("[VFS] no permission!\n");
         (*cpu)->CPU_ARG0 = _NO_PERMISSION;
     }
 }
@@ -763,13 +773,7 @@ void sys_write(struct cpu_state **cpu)
             vfs_inode_t *inode = desc->inode;
             if(vfs_access(inode, W_OK, current_thread->process->uid, current_thread->process->gid) == 0)
             {
-                if(! (desc->flags & O_APPEND) )
-                {
-                    desc->pos = 0;
-                    desc->flags |= O_APPEND;
-                }
-
-                //			printf("CALLINGVFS_WRITE()\n");
+ //               		printf("CALLINGVFS_WRITE()\n");
                 int ret = vfs_write(inode, desc->pos, buf, len);
                 (*cpu)->CPU_ARG0 = ret;
                 if(ret > 0)

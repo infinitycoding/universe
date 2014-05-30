@@ -37,31 +37,30 @@ bool test_vfs_api(void)
     char testfile[] = "testfile";
     printf("VFS-Runtime-API-Test:\n");
 
-    printf("create file: ");
+    printf("create file:\n");
     bool res = test_create_file(testfile);
     success &= res;
     if(res)
-        printf("success\n");
+        printf("success\n\n");
     else
-        printf("failed\n");
+        printf("failed\n\n");
     
 
-    printf("read/write file: ");
+    printf("read/write file:\n");
     res = test_read_write_file(testfile);
     success &= res;
     if(res)
-        printf("success\n");
+        printf("success\n\n");
     else
-        printf("failed\n");
+        printf("failed\n\n");
 
-
-    printf("append file: ");
+    printf("append file:\n");
     res = test_apped_file(testfile);
     success &= res;
     if(res)
-        printf("success\n");
+        printf("success\n\n");
     else
-        printf("failed\n");
+        printf("failed\n\n");
 
 
     return success;
@@ -98,27 +97,27 @@ bool test_read_write_file(const char *name)
     char c[5] = {0,0,0,0,0};
 
     int f = 0;
-    f = open(name, O_WRONLY, 0);
+    f = (int)open(name, O_WRONLY, 0);
     if(f < 0)
     {
-        printf("failed to open test file for writing! return code: %d",f);
+        printf("failed to open test file for writing!\nreturn code: %d\n",f);
         return false;
     }
 
     int n = write(f, "+++++", 5);
     if(n != 5)
     {
-        printf("could not write all charaters. 5 expected, %d written", n);
+        printf("could not write all charaters. 5 expected, %d written\n", n);
         close(f);
         return false;
     }
     close(f);
     
 
-    f = open("test",O_RDONLY,0);
+    f = open(name, O_RDONLY, 0);
     if(f < 0)
     {
-        printf("failed to open test file for reading! return code: %d",f);
+        printf("failed to open test file for reading!\nreturn code: %d\n",f);
         return false;
     }
 
@@ -148,39 +147,38 @@ bool test_apped_file(const char *name)
     char c[10] = {0,0,0,0,0,0,0,0,0,0};
 
     int f = 0;
-    f = open("test",O_APPEND|O_WRONLY,0);
+    f = open(name, O_APPEND|O_WRONLY, 0);
     if(!f)
     {
-        printf("failed to open test file for appending! return code: %d",f);
+        printf("failed to open test file for appending!\nreturn code: %d\n",f);
         return false;
     }
     int n = write(f, "+++++", 5);
     if(n != 5)
     {
-        printf("could not append all charaters. 5 expected, %d written", n);
+        printf("could not append all charaters. 5 expected, %d written\n", n);
         close(f);
         return false;
     }
     close(f);
 
-
-    f = open("test",O_RDONLY,0);
-    if(!f)
+    f = open(name, O_RDONLY, 0);
+	if(f < 0)
     {
-        printf("failed to open test file for reading! return code: %d",f);
+        printf("failed to open test file for reading!\nreturn code: %d\n",f);
         return false;
     }
-    n = read(f,c,10);
+
+    n = read(f, &c, 10);
     if(n != 10)
     {
-        printf("could not read all charaters. 10 expected, %d got", n);
-        close(f);
-        return false;
+        printf("could not read all charaters. 10 expected, %d got\n", n);
     }
     close(f);
 
-    if(strncmp("++++++++++",c,15) == 0)
+    if(strncmp("++++++++++",c,10) == 0)
         return true;
+
     return false;
 }
 
