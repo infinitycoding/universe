@@ -104,7 +104,7 @@ vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_
 
 vfs_inode_t *vfs_create_pipe(uid_t uid, gid_t gid)
 {
-    vfs_inode_t *inode = vfs_create_inode("pipe", S_IROTH | S_IWOTH, NULL, uid, gid);
+    vfs_inode_t *inode = vfs_create_inode("pipe", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH, NULL, uid, gid);
 
     inode->buffer->event_id = get_new_event_ID();
     inode->buffer->handlers = list_create();
