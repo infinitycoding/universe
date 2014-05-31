@@ -2,3 +2,4 @@ section default (append):
 
 <->/drivers/keyboard.elf>;  # the keyboard driver
 # put other drivers here
+

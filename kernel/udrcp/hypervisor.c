@@ -73,21 +73,20 @@ void INIT_HYPERVISOR(int argc, void **argv)
     iterator_t i = iterator_create(current_section->subtree);
     while(!list_is_last(&i))
     {
-        struct mods_add *drv_mod = (struct mods_add *)find_module(mb_info, ((struct pnode *)list_get_current(&i))->file);
-        if(drv_mod != NULL)
+		char *path = ((struct pnode *)list_get_current(&i))->file;
+		vfs_inode_t *driver_inode = vfs_lookup_path(path);
+
+        if(driver_inode != NULL)
         {
-            size_t drv_len = drv_mod->mod_end - drv_mod->mod_start;
-            size_t drv_pages = NUM_PAGES(drv_len);
-            void *driver = (void*)vmm_automap_kernel_range(current_context,(paddr_t) drv_mod->mod_start, drv_pages, VMM_WRITABLE);
+			printf("load %s\n", path);
             pman = new_pckmgr(vfs_create_pipe(0, 0), vfs_create_pipe(0, 0), vfs_create_pipe(0, 0));
 
             struct driver *new_driver = malloc(sizeof(struct driver));
             new_driver->pman = pman;
-            new_driver->process = load_elf(driver,((struct pnode *)list_get_current(&i))->file,0,0,&pman->pset);
+            new_driver->process = load_elf_from_file(driver_inode, 0, 0, &pman->pset);
             new_driver->ports = list_create();
             new_driver->memory = list_create();
-            list_push_front(subdrivers,new_driver);
-            printf("%s: %p\n", ((struct pnode *)list_get_current(&i))->file, drv_mod);
+            list_push_front(subdrivers,new_driver); 
         }
         list_next(&i);
     }

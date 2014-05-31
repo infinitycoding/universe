@@ -227,9 +227,9 @@ extern vfs_inode_t *root;
 
         argv[1] = mb_info;
         argv[0] = sec;
-//        kernel_thread_create((uintptr_t)INIT_HYPERVISOR,argc,argv);
+        kernel_thread_create((uintptr_t)INIT_HYPERVISOR,argc,argv);
     }
-
+/*
     vfs_inode_t *testnode = vfs_lookup_path("/test.elf");
 
 	if(testnode == NULL)
@@ -242,7 +242,7 @@ extern vfs_inode_t *root;
     }
 
 //    vfs_debug_output_all();
-
+*/
     return 0;
 }
 
