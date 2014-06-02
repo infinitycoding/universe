@@ -66,7 +66,7 @@ void INIT_HYPERVISOR(int argc, void **argv)
 {
     subdrivers = list_create();
     interrupts = list_create();
-    struct multiboot_struct *mb_info =  argv[1];
+    //struct multiboot_struct *mb_info =  argv[1];      // currently unused
     struct section *current_section = argv[0];
     pckmgr *pman;
     printf("hypervisor subsystems:\n");

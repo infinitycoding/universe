@@ -852,7 +852,7 @@ void sys_link(struct cpu_state **cpu)
             if(dest_inode != NULL)
             {
                 dest_inode->type = VFS_LINK;
-                dest_inode->buffer = dest_inode;
+                dest_inode->buffer = (void *)dest_inode;
 
                 (*cpu)->CPU_ARG0 = _SUCCESS;
             }

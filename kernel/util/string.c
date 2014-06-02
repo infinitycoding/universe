@@ -23,6 +23,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <mm/heap.h>
 
 
 /**

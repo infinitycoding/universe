@@ -22,6 +22,7 @@
 
 #include <sched/elf.h>
 #include <mm/paging.h>
+#include <mm/heap.h>
 #include <pmm.h>
 #include <memory_layout.h>
 #include <sched/thread.h>

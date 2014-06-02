@@ -18,7 +18,7 @@ int main(int argc, char **argv)
         printf("failed\n");
 
 	int fd[2];
-	linux_syscall(SYS_PIPE, &fd, 0, 0, 0, 0);
+	linux_syscall(SYS_PIPE, (int)&fd, 0, 0, 0, 0);
 
 	write(fd[1], "Test", 5);
 

@@ -94,7 +94,7 @@ alloc_t *heap_expand(int pages)
 void *malloc(size_t bytes)
 {
     alloc_t *header = first_node;
-    vaddr_t data = 0;
+    //vaddr_t data = 0;         // currently unused, maybe useless (someone check this please)
     int n_size = bytes + sizeof(alloc_t);
 
 	// go through all inodes...
