@@ -243,6 +243,8 @@ extern vfs_inode_t *root;
 
 //    vfs_debug_output_all();
 */
+    //test_list();
+
     return 0;
 }
 
