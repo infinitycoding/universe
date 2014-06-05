@@ -145,6 +145,7 @@ void launch_pipe_handlers(vfs_buffer_info_t *pipe);
 void set_pipe_trigger(struct cpu_state **cpu);
 void sys_stat(struct cpu_state **cpu);
 void sys_fstat(struct cpu_state **cpu);
+void sys_chmod(struct cpu_state **cpu);
 
 #endif
 

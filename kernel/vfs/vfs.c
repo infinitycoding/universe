@@ -1096,28 +1096,28 @@ void set_pipe_trigger(struct cpu_state **cpu)
 
 void sys_stat(struct cpu_state **cpu)
 {
-    if((*cpu)->CPU_ARG2 == 0 || (*cpu)->CPU_ARG3 == 0)
+    if((*cpu)->CPU_ARG1 == 0 || (*cpu)->CPU_ARG2 == 0)
     {
-        (*cpu)->CPU_ARG0 = -1;
+        (*cpu)->CPU_ARG0 = 0;
         return;
     }
 
-    vfs_inode_t *node = vfs_lookup_path((char*)(*cpu)->CPU_ARG2);
+    vfs_inode_t *node = vfs_lookup_path((char*)(*cpu)->CPU_ARG1);
     if(node == NULL)
     {
-        (*cpu)->CPU_ARG0 = -1;
+        (*cpu)->CPU_ARG0 = 0;
         return;
     }
 
-    (*cpu)->CPU_ARG0 = vfs_stat(node,(struct stat *)(*cpu)->CPU_ARG3);
+    (*cpu)->CPU_ARG0 = vfs_stat(node,(struct stat *)(*cpu)->CPU_ARG2);
 }
 
 
 void sys_fstat(struct cpu_state **cpu)
 {
-    if((*cpu)->CPU_ARG2 == 0)
+    if((*cpu)->CPU_ARG1 == 0)
     {
-        (*cpu)->CPU_ARG0 = -1;
+        (*cpu)->CPU_ARG0 = 0;
         return;
     }
 
@@ -1133,6 +1133,32 @@ void sys_fstat(struct cpu_state **cpu)
         list_next(&file_it);
     }
 
-    (*cpu)->CPU_ARG0 = -1;
+    (*cpu)->CPU_ARG0 = 0;
 }
 
+void sys_chmod(struct cpu_state **cpu)
+{
+    // Check if path is not NULL
+    char *file = (char *)(*cpu)->CPU_ARG1;
+    if(file == NULL)
+    {
+        (*cpu)->CPU_ARG0 = 0;
+        return;
+    }
+    // Lookup path
+    vfs_inode_t *node = vfs_lookup_path(file);
+    if(node == NULL)
+    {
+        (*cpu)->CPU_ARG0 = 0;
+        return;
+    }
+    // Check permissions
+    if(node->stat.st_uid != current_thread->process->uid)
+    {
+        (*cpu)->CPU_ARG0 = _NO_PERMISSION;
+        return;
+    }
+    // change mode
+    node->stat.st_mode = (*cpu)->CPU_ARG2;
+    (*cpu)->CPU_ARG0 = _SUCCESS;
+}
