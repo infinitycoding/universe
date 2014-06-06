@@ -1,6 +1,5 @@
-#ifndef _TYPES_H_
-#define _TYPES_H_
-
+#ifndef _TIME_H_
+#define _TIME_H_
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
@@ -20,19 +19,35 @@
  */
 
 /**
- *  @author Michael Sippel <micha.linuxfreak@gmail.com>
+ *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
+ *  @author Michael Sippel <micha@infinitycoding.com>
  */
 
+#include <sys/types.h>
 #include <stdint.h>
+#include <cpu.h>
 
-typedef unsigned int ino_t;
-typedef unsigned int id_t;
-typedef unsigned int uid_t;
-typedef unsigned int gid_t;
-typedef unsigned int mode_t;
-typedef unsigned int nlink_t;
-typedef signed int blkcnt_t;
-typedef signed int off_t;
-typedef unsigned int time_t;
+struct time
+{
+    uint8_t second;
+    uint8_t alarm_sec;
+    uint8_t minute;
+    uint8_t alarm_min;
+    uint8_t hour;
+    uint8_t alarm_hour;
+    uint8_t week_day;
+    uint8_t day_in_month;
+    uint8_t month;
+    uint8_t year;
+    uint8_t century;
+};
+
+
+void update_time(struct time *time);
+void change_time(struct time *time);
+void print_time(struct time *time);
+time_t unix_time(struct time *time);
+
+void sys_time(struct cpu_state **cpu);
 
 #endif

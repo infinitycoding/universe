@@ -29,6 +29,7 @@
 #include <syscall.h>
 #include <sched/scheduler.h>
 #include <drivers/pci.h>
+#include <drivers/clock.h>
 
 static struct IDT_Entry IDT[256];
 static struct idtpt idtp;
@@ -222,6 +223,7 @@ struct cpu_state* irq_handler(struct cpu_state* cpu)
     //Taskscheduler
     else if(cpu->intr == 32)
     {
+        sync_sys_clock();
         cpu = task_schedule(cpu);
     }
     //IRQs

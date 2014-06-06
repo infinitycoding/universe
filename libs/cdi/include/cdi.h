@@ -44,6 +44,13 @@ typedef enum {
 
 struct cdi_driver;
 
+struct cdi_device
+{
+    cdi_device_type_t type;
+    const char        *name;
+    struct cdi_driver *driver;
+};
+
 struct cdi_driver
 {
     cdi_device_type_t type;
@@ -58,11 +65,7 @@ struct cdi_bus_data {
     cdi_device_type_t   bus_type;
 };
 
-struct cdi_device{
-    cdi_device_type_t type;
-    const char        *name;
-    struct cdi_driver *driver;
-};
+
 
 
 void cdi_init(void);

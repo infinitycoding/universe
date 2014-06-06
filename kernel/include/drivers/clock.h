@@ -1,5 +1,5 @@
-#ifndef _TYPES_H_
-#define _TYPES_H_
+#ifndef _CLOCK_H_
+#define _CLOCK_H_
 
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
@@ -19,20 +19,20 @@
      along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 /**
- *  @author Michael Sippel <micha.linuxfreak@gmail.com>
- */
+	@author Michael Sippel <micha.linuxfreak@gmail.com>
+*/
 
-#include <stdint.h>
+#include <event/time.h>
 
-typedef unsigned int ino_t;
-typedef unsigned int id_t;
-typedef unsigned int uid_t;
-typedef unsigned int gid_t;
-typedef unsigned int mode_t;
-typedef unsigned int nlink_t;
-typedef signed int blkcnt_t;
-typedef signed int off_t;
-typedef unsigned int time_t;
+
+void INIT_CLOCK(int freq);
+void INIT_PIT(int freq);
+void INIT_RTC(void);
+void set_pit_freq(int freq);
+void sync_sys_clock();
+
 
 #endif
+

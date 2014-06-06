@@ -1,6 +1,5 @@
-#ifndef _TYPES_H_
-#define _TYPES_H_
-
+#ifndef _TEST_HEAP_H_
+#define _TEST_HEAP_H_
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
@@ -20,19 +19,9 @@
  */
 
 /**
- *  @author Michael Sippel <micha.linuxfreak@gmail.com>
+ *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
-#include <stdint.h>
-
-typedef unsigned int ino_t;
-typedef unsigned int id_t;
-typedef unsigned int uid_t;
-typedef unsigned int gid_t;
-typedef unsigned int mode_t;
-typedef unsigned int nlink_t;
-typedef signed int blkcnt_t;
-typedef signed int off_t;
-typedef unsigned int time_t;
+int test_heap();
 
 #endif

@@ -24,8 +24,7 @@
  */
 
 
-#include <stdint.h>
-#include <drivers/timer.h>
+#include <sys/types.h>
 
 struct cmos_register
 {

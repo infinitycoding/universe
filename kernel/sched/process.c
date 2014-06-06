@@ -28,7 +28,7 @@
 #include <sched/scheduler.h>
 #include <mm/paging.h>
 #include <memory_layout.h>
-#include <trigger.h>
+#include <event/trigger.h>
 #include <printf.h>
 
 extern struct process_state *kernel_state;
@@ -406,6 +406,7 @@ void sys_execve(struct cpu_state **cpu)
     
     // run the new process
     load_elf_thread(filenode->base, process, 0,(void**) argv);*/
+
 }
 
 /**

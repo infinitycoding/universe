@@ -37,8 +37,8 @@
 #include <sched/scheduler.h>
 #include <mm/heap.h>
 #include <vfs/vfs.h>
-#include <trigger.h>
-#include <drivers/timer.h>
+#include <event/trigger.h>
+#include <drivers/clock.h>
 #include <drivers/cmos.h>
 #include <drivers/video.h>
 #include <drivers/pci.h>
@@ -75,8 +75,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     INIT_HEAP();
     INIT_VFS();
     INIT_TRIGGER();
-    INIT_PIT(600);
-    INIT_RTC();
+    INIT_CLOCK(600);
     INIT_SCHEDULER();
     asm volatile("sti");
     
@@ -97,108 +96,8 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     printf("\n");
     INIT_PCI();
 
-	int i,j;
 
-#if 0
-	char name[256];
-#define COUNT 10001
-#define STEP (int)((float)COUNT/(float)10)
-	vfs_inode_t **inodes = malloc(sizeof(vfs_inode_t*) * COUNT);
-extern vfs_inode_t *root;
-	printf("creating %d inodes...\n", COUNT);
-	for(i = 0; i < COUNT; i++)
-	{
-		sprintf(name, "test_inode%d", i);
-		inodes[i] = vfs_create_inode(name, S_IRUSR | S_IWUSR, root, 0, 0);
-
-		if((i % STEP) == 0)
-		{
-			printf("=");
-		}
-	}
-	printf("\n");	
-
-	printf("writing a lot in them...\n");
-	for(i = 0; i < COUNT; i++)
-	{
-		char *buffer = malloc(10000);
-		for(j = 0; j < 10000; j++)
-		{
-			buffer[j] = 'a' + j%25;
-		}
-
-		vfs_write(inodes[i], 0, buffer, 10000);
-
-		free(buffer);
-
-		if((i % STEP) == 0)
-		{
-			printf("=");
-		}
-	}
-	printf("\n");
-
-	printf("read them out and check!\n");
-	int fails=0;
-	for(i = 0; i < COUNT; i++)
-	{
-		char *buffer = malloc(10000);
-		vfs_read(inodes[i], 0, buffer, 10000);
-
-		for(j = 0; j < 10000; j++)
-		{
-			char testchar = 'a' + j%25;
-			if(buffer[j] != testchar)
-			{
-				printf("failed at %d\n", j);
-				fails ++;
-				break;
-			}
-		}
-
-		free(buffer);
-
-		if((i % STEP) == 0)
-		{
-			printf("=");
-		}
-	}
-	printf("\n");
-
-	printf("%d of %d inodes failed\n", fails, COUNT);
-
-	free(inodes);
-
-#endif
-
-#if 0
-	// testing heap...
-	printf("allocating array a with 5000 integers...\n");
-	int *a = malloc(sizeof(int) * 5000);
-	printf("a is at 0x%x\nwriting to a...", a);
-
-	for(i = 0; i < 5000; i++) a[i] = i;
-
-	printf("allocating array b with 25000 integers...\n");
-	int *b = malloc(sizeof(int) * 25000);
-	printf("b is at 0x%x\nwriting to b...\n", b);
-	for(i = 0; i < 25000; i++) b[i] = 25000-i;
-
-	printf("reallocating array a with 25000...\n");
-	a = realloc(a, sizeof(int) * 25000);
-
-	printf("copying array b to array a...\n");
-	for(i = 0; i < 25000; i++) a[i] = b[i];
-
-	printf("freeing b\n");
-	free(b);
-
-	for(i = 0; i < 2500; i++) ;//printf("test : %d, %d\n", i, a[i]); 
-
-	printf("freeing a\n");
-	free(a);
-#endif
-
+    int i;
     struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
 
     void *phys = (void*)((int)modules[0].string & (int)~0xfff);
@@ -221,7 +120,6 @@ extern vfs_inode_t *root;
         char *pf = (char *)malloc(pfnode->length+1);
 		vfs_read(pfnode, 0, pf, pfnode->length);
 		pf[pfnode->length+1] = '\0';
- //       printf("%s", pf);
         list_t *pipelines = pfp(pf);
         struct section *sec = list_pop_front(pipelines);
 
@@ -241,10 +139,7 @@ extern vfs_inode_t *root;
         load_elf_from_file(testnode, 0, 0, 0);
     }
 
-//    vfs_debug_output_all();
 */
-    //test_list();
-
     return 0;
 }
 

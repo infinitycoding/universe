@@ -21,7 +21,7 @@
  */
 
 
-#include <trigger.h>
+#include <event/trigger.h>
 #include <list.h>
 #include <mm/heap.h>
 #include <sched/scheduler.h>

@@ -17,58 +17,14 @@
  */
 
 /**
- *  @author Michael Sippel <michamimosa@gmail.com>
+ *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
+ *  @author Michael Sippel <micha@infinitycoding.com>
  */
 
+#include <event/time.h>
 #include <drivers/cmos.h>
-#include <drivers/timer.h>
-#include <mm/heap.h>
 #include <printf.h>
 #include <bcd.h>
-#include <io.h>
-#include <idt.h>
-
-struct time *current_time;
-struct cmos_data *cmos;
-
-/**
- * set PIT Fequency
- *
- * @param freqency
- * @return void
- */
-void set_pit_freq(int freq)
-{
-    int counter = 1193182 / freq;
-    outb(0x40,counter & 0xFF);
-    outb(0x40,counter >> 8);
-}
-
-/**
- * Initalize the Programmable Intervall Timer
- *
- * @param frequency
- * @return void
- */
-void INIT_PIT(int freq)
-{
-    outb(0x43, 0x34);
-    set_pit_freq(freq);
-}
-
-/**
- * Initalize the Real Time Clock
- *
- * @param void
- * @return void
- */
-void INIT_RTC(void)
-{
-    cmos = malloc(sizeof(struct cmos_data));
-    current_time = malloc(sizeof(struct time));
-    get_cmos_data(cmos);
-    update_time(current_time);
-}
 
 /**
  * Updates the time from CMOS-RTC
@@ -129,16 +85,6 @@ time_t unix_time(struct time *time)
     return unix_time;
 }
 
-int sys_time(struct cpu_state **cpu)
-{
-    update_time(current_time);
-    int stamp = unix_time(current_time);
-    if((*cpu)->CPU_ARG1)
-        *((int*)(*cpu)->CPU_ARG1) = stamp;
-    return stamp;
-}
-
-
 /**
  * Print datetime
  */
@@ -174,3 +120,17 @@ void print_time(struct time *time)
     printf("System Time: %02d:%02d:%02d\n", time->hour, time->minute, time->second);
 }
 
+
+/**
+ * @brief unix sys_time syscall. Returns the current unix-timestamp to the user
+ * @param current user cpu state
+ */
+void sys_time(struct cpu_state **cpu)
+{
+    struct time current_time;
+    update_time(&current_time);
+    int stamp = unix_time(&current_time);
+    (*cpu)->CPU_ARG0 = stamp;
+    if((*cpu)->CPU_ARG1)
+        *((int*)(*cpu)->CPU_ARG1) = stamp;
+}

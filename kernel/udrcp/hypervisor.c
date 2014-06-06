@@ -24,8 +24,8 @@
 #include <stdint.h>
 #include <list.h>
 #include <printf.h>
-#include <trigger.h>
 #include <printf.h>
+#include <event/trigger.h>
 
 #include <udrcp/pfp.h>
 #include <udrcp/ioport.h>

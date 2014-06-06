@@ -25,7 +25,6 @@
 
 #include <stdint.h>
 #include <sys/unistd.h>
-#include <drivers/timer.h>
 #include <sys/types.h>
 
 #define S_MODE_DIR 0x1

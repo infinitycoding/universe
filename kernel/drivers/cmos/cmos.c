@@ -20,9 +20,7 @@
  *  @author Michael Sippel <michamimosa@gmail.com>
  */
 
-#include <stdint.h>
 #include <io.h>
-#include <drivers/timer.h>
 #include <drivers/cmos.h>
 
 /**

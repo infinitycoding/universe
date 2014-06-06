@@ -23,7 +23,7 @@
 #include <sched/thread.h>
 #include <sched/scheduler.h>
 #include <sched/process.h>
-#include <drivers/timer.h>
+#include <event/time.h>
 #include <syscall.h>
 #include <vfs/vfs.h>
 #include <vfs/user.h>

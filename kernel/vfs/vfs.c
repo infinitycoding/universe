@@ -32,7 +32,8 @@
 #include <memory_layout.h>
 #include <mm/paging.h>
 #include <sched/thread.h>
-#include <trigger.h>
+#include <event/trigger.h>
+#include <event/time.h>
 
 extern struct thread_state *current_thread;
 
