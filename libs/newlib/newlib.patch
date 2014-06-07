@@ -1,0 +1,40 @@
+diff -ru ./config.sub ../newlib-2.1.0_adapted/config.sub
+--- ./config.sub	2014-06-07 14:21:45.281503795 +0200
++++ ../newlib-2.1.0_adapted/config.sub	2014-06-07 13:58:55.928116217 +0200
+@@ -1404,6 +1404,9 @@
+ 	-linux*)
+ 		os=`echo $os | sed -e 's|linux|linux-gnu|'`
+ 		;;
++	-universe*)
++		os=-universe
++		;;
+ 	-sunos5*)
+ 		os=`echo $os | sed -e 's|sunos5|solaris2|'`
+ 		;;
+diff -ru ./newlib/configure.host ../newlib-2.1.0_adapted/newlib/configure.host
+--- ./newlib/configure.host	2014-06-07 14:21:45.721503812 +0200
++++ ../newlib-2.1.0_adapted/newlib/configure.host	2014-06-07 14:00:54.741454256 +0200
+@@ -92,6 +92,9 @@
+ # THIS TABLE IS ALPHA SORTED.  KEEP IT THAT WAY.
+ 
+ case "${host_cpu}" in
++  i[3-7]86-*-universe*)
++	sys_dir=universe
++	;;
+   a29k)
+ 	machine_dir=a29k
+ 	;;
+Only in ../newlib-2.1.0_adapted/newlib: configure.host~
+diff -ru ./newlib/libc/sys/configure.in ../newlib-2.1.0_adapted/newlib/libc/sys/configure.in
+--- ./newlib/libc/sys/configure.in	2014-06-07 14:21:45.668170476 +0200
++++ ../newlib-2.1.0_adapted/newlib/libc/sys/configure.in	2014-06-07 14:01:49.728123101 +0200
+@@ -22,6 +22,7 @@
+ 
+ if test -n "${sys_dir}"; then
+   case ${sys_dir} in
++	universe) AC_CONFIG_SUBDIRS(universe) ;;
+ 	a29khif) AC_CONFIG_SUBDIRS(a29khif) ;;
+ 	arc) AC_CONFIG_SUBDIRS(arc) ;;
+ 	arm) AC_CONFIG_SUBDIRS(arm) ;;
+Only in ../newlib-2.1.0_adapted/newlib/libc/sys: configure.in~
+Only in .: newlib-2.1.0

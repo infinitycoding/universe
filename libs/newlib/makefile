@@ -18,9 +18,19 @@ download:
 
 configure: download
 	if [ ! -f $(NEWLIB)/config.log ]; then \
-		PATH="${PATH}":`pwd`/../../cc/target/bin; \
+		cd $(NEWLIB); \
+		patch -p1 < ../newlib.patch; \
+		mkdir -p newlib/libc/sys/universe; \
+		cp -r ../system/* newlib/libc/sys/universe; \
+		cd newlib/libc/sys/; \
+		autoconf; \
+		cd universe; \
+		autoreconf; \
+		cd ../../../../..; \
 		cd $(BUILD); \
-		../newlib-2.1.0/configure --prefix="`pwd`/../target" --target=i686-elf;\
+		PATH="${PATH}":`pwd`/../../cc/target/bin; \
+		../$(NEWLIB)/configure --prefix="`pwd`/../target" --target=i686-elf; \
+		cd ..; \
 	fi
 
 build: configure

@@ -18,8 +18,7 @@ download:
 	mkdir -p $(TARGET)
 
 configure_binutils: download	
-	if [ ! -f $(BINUTILS)/config.log ]; then \
-		cp -rT binutils_adapt $(BINUTILS); \
+	if [ ! -f $(BUILD)/$(BINUTILS)/config.log ]; then \
 		mkdir -p $(BUILD)/$(BINUTILS); \
 		cd $(BUILD)/$(BINUTILS); \
 		../../$(BINUTILS)/configure --prefix="`pwd`/../../target" --with-sysroot=`pwd` --target=i686-elf -disable-nls  CFLAGS="-w"; \
@@ -31,7 +30,7 @@ binutils: configure_binutils
 	$(MAKE) -C $(BUILD)/$(BINUTILS) install
 
 configure_gcc: download binutils
-	if [ ! -f $(GCC)/config.log ]; then \
+	if [ ! -f $(BUILD)/$(GCC)/config.log ]; then \
 		PATH=${PATH}:`pwd`/../../$(TARGET)/bin; \
 		mkdir -p $(BUILD)/$(GCC); \
 		cd $(BUILD)/$(GCC) ;\
@@ -40,8 +39,8 @@ configure_gcc: download binutils
 	fi;\
 
 gcc: configure_gcc
-	$(MAKE) -C $(BUILD)/$(GCC)
-	$(MAKE) -C $(BUILD)/$(GCC) install
+	$(MAKE) -C $(BUILD)/$(GCC) all-gcc
+	$(MAKE) -C $(BUILD)/$(GCC) install-gcc
 
 clean:
 	rm -rf $(BUILD)
