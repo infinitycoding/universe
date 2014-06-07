@@ -47,9 +47,9 @@ configure_gcc: download binutils
 gcc: configure_gcc
 	$(MAKE) -C $(BUILD)/$(GCC) all-gcc
 	$(MAKE) -C $(BUILD)/$(GCC) all-target-libgcc
-	$(MAKE) -C $(BUILD)/$(GCC) install-gcc
-	$(MAKE) -C $(BUILD)/$(GCC) install-target-libgcc
-	ln -s ./$(TARGET)/bin/i686-universe-gcc ./$(TARGET)/bin/i686-universe-cc
+	sudo $(MAKE) -C $(BUILD)/$(GCC) install-gcc
+	sudo $(MAKE) -C $(BUILD)/$(GCC) install-target-libgcc
+	sudo ln -s /usr/bin/i686-universe-gcc /usr/bin/i686-universe-cc
 
 clean:
 	rm -rf $(BUILD)
