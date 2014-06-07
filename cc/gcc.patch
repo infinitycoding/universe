@@ -1,0 +1,59 @@
+diff -ru ./config.sub ../gcc-4.7.3_a/config.sub
+--- ./config.sub	2014-06-07 17:07:33.711897000 +0200
++++ ../gcc-4.7.3_a/config.sub	2014-06-07 17:04:06.858556356 +0200
+@@ -1383,6 +1383,9 @@
+ 	-linux*)
+ 		os=`echo $os | sed -e 's|linux|linux-gnu|'`
+ 		;;
++	-universe*)
++		os=-universe
++		;;
+ 	-sunos5*)
+ 		os=`echo $os | sed -e 's|sunos5|solaris2|'`
+ 		;;
+Only in ../gcc-4.7.3_a: config.sub~
+diff -ru ./gcc/config.gcc ../gcc-4.7.3_a/gcc/config.gcc
+--- ./gcc/config.gcc	2014-06-07 17:06:36.641895000 +0200
++++ ../gcc-4.7.3_a/gcc/config.gcc	2014-06-07 17:03:55.655222578 +0200
+@@ -526,6 +526,12 @@
+ 
+ # Common parts for widely ported systems.
+ case ${target} in
++*-*-universe*)
++   extra_parts="crtbegin.o crtend.o"
++   gas=yes
++   gnu_ld=yes
++   default_use_cxa_atexit=yes
++   ;;
+ *-*-darwin*)
+   tmake_file="t-darwin ${cpu_type}/t-darwin"
+   tm_file="${tm_file} darwin.h"
+@@ -1245,6 +1251,11 @@
+ 	gas=yes
+ 	gnu_ld=yes
+ 	;;
++i[3-7]86-*-universe*)
++	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/i386elf.h universe.h"
++	tmake_file="i386/t-i386elf t-svr4"
++	use_fixproto=yes
++	;;
+ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i[34567]86-*-gnu* | i[34567]86-*-kopensolaris*-gnu)
+ 			# Intel 80386's running GNU/*
+ 			# with ELF format using glibc 2
+Only in ../gcc-4.7.3_a/gcc: config.gcc~
+Only in ../gcc-4.7.3_a: gcc-4.7.3
+diff -ru ./libgcc/config.host ../gcc-4.7.3_a/libgcc/config.host
+--- ./libgcc/config.host	2014-06-07 17:07:34.578564000 +0200
++++ ../gcc-4.7.3_a/libgcc/config.host	2014-06-07 18:19:31.995402279 +0200
+@@ -1138,6 +1138,10 @@
+ m32c-*-elf*|m32c-*-rtems*)
+ 	tmake_file="$tmake_file m32c/t-m32c"
+  	;;
++i[3-7]86-*-universe*)
++	extra_parts="crtbegin.o crtend.o"
++	tmake_file="$tmake_file i386/t-crtstuff"
++	;;
+ mep*-*-*)
+ 	tmake_file="mep/t-mep t-fdpbit"
+ 	extra_parts="crtbegin.o crtend.o"
+Only in ../gcc-4.7.3_a/libgcc: config.host~
