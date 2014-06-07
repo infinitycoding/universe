@@ -6,6 +6,7 @@ LDFLAGS = -melf_i386 -flto -T../link.ld
 
 test.elf:  ../../libs/crt/entry.o $(OBJS) ../../libs/udrcp/udrcp.a ../../libs/libc/libc.a
 	@$(LD) $(LDFLAGS) -o $@ $^
+	cp test.elf $(PREFIX)/test.elf
 
 %.o: %.c
 	@$(CC) $(CFLAGS) -c -o $@ $^

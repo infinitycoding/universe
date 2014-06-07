@@ -10,7 +10,8 @@ crt: $(OBJS)
 	@nasm -f elf32 -o crt0.o crt0.asm 
 	@nasm -f elf32 -o crt1.o crt1.asm 
 	@nasm -f elf32 -o crti.o crti.asm 
-	@nasm -f elf32 -o crtn.o crtn.asm 
+	@nasm -f elf32 -o crtn.o crtn.asm
+	cp *.o $(PREFIX)/usr/lib/
 
 %.o: %.c @$(CC) $(CFLAGS) -c -o $@ $^
 

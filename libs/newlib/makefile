@@ -28,7 +28,7 @@ configure: download
 		autoreconf; \
 		cd ../../../../..; \
 		cd $(BUILD); \
-		../$(NEWLIB)/configure --prefix="`pwd`/../target" --target=i686-universe; \
+		../$(NEWLIB)/configure --prefix="$(PREFIX)/usr/" --target=i686-universe; \
 		cd ..; \
 	fi
 

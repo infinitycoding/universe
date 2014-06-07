@@ -19,6 +19,7 @@ endif
 
 kernel32.elf: $(OBJS) linkerscript.x
 	@$(LD) $(LDFLAGS) -o $@ $^
+	@cp kernel/kernel32.elf $(PREFIX)/kernel32.elf
 
 %.o: %.c
 	@$(CC) $(CFLAGS) -c -o $@ $^

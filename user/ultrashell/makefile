@@ -9,6 +9,7 @@ ultrashell.elf: ../../libs/crt/entry.o $(OBJS) ../../libs/libc/libc.a
 
 host: 
 	gcc -Wall -fno-stack-protector -fno-builtin -I include -o ultrashell.elf $(SRCS)
+	cp ultrashell.elf $(prefix)/ultrashell.elf
 
 %.o: %.c
 	@$(CC) $(CFLAGS) -c -o $@ $^

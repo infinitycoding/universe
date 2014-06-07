@@ -8,6 +8,8 @@ CFLAGS = -Wall -g -nostdinc -fno-stack-protector -fno-builtin-log -Wimplicit-fun
 ASFLAGS =  -f elf32
 LDFLAGS = -melf_i386
 
+PREFIX = $(PWD)/build
+#USBDEV = /dev/sdb
 
 ifeq ($(ARCH),PPC)
 QEMU = qemu-system-ppc
@@ -32,10 +34,11 @@ export LD
 export CFLAGS
 export ASFLAGS
 export LDFLAGS
+export PREFIX
+
 
 kernel:
-	@$(MAKE) -C kernel ARCH=$(ARCH) 
-	@cp kernel/kernel32.elf build/kernel32.elf
+	@$(MAKE) -C kernel ARCH=$(ARCH)
 
 libs:
 	@$(MAKE) -C libs ARCH=$(ARCH)
@@ -45,16 +48,14 @@ drivers:libs
 
 user: libs
 	@$(MAKE) -C user ARCH=$(ARCH)
-	@cp user/ultrashell/ultrashell.elf build/ultrashell.elf
-	@cp user/test/test.elf build/test.elf
 
 iso-img:
 	@genisoimage -R -b boot/grub/stage2_eltorito -input-charset utf-8 -no-emul-boot -boot-load-size 4 -boot-info-table -o cdrom.iso build
 
 usb:
-	mount /dev/sdb /mnt
+	mount $(USBDEV) /mnt
 	cp -R ./build /mnt
-	grub-install --root-directory=/mnt --no-floppy --recheck /dev/sdb
+	grub-install --root-directory=/mnt --no-floppy --recheck $(USBDEV)
 
 qemu: kernel libs drivers user iso-img
 	$(QEMU)

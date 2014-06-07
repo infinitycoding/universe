@@ -4,8 +4,8 @@ OBJS = $(addsuffix .o,$(basename $(SRCS)))
 CFLAGS = -m32 -Wall -fno-stack-protector -fno-builtin -fno-builtin-log -Wimplicit-function-declaration -nostdinc -I ../libc/include -I include
 
 all: udrcp.a
-	cp -R ./include/* ../../build/usr/include
-	cp udrcp.a ../../build/usr/lib/
+	cp -R ./include/* $(PREFIX)/usr/include
+	cp udrcp.a $(PREFIX)/usr/lib/
 
 udrcp.a: $(OBJS)
 	@ar -rcs $@ $^
