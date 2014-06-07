@@ -51,6 +51,7 @@ gcc: configure_gcc
 	$(MAKE) -C $(BUILD)/$(GCC) all-target-libgcc
 	$(MAKE) -C $(BUILD)/$(GCC) install-gcc
 	$(MAKE) -C $(BUILD)/$(GCC) install-target-libgcc
+	ln -s ./$(TARGET)/bin/i686-universe-gcc ./$(TARGET)/bin/i686-universe-cc
 
 clean:
 	rm -rf $(BUILD)
