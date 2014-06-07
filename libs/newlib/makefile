@@ -27,9 +27,8 @@ configure: download
 		cd universe; \
 		autoreconf; \
 		cd ../../../../..; \
-		PATH="${PATH}":`pwd`/../../cc/target/bin; \
 		cd $(BUILD); \
-		../$(NEWLIB)/configure --prefix="`pwd`/../target" --target=i686-universe;\
+		../$(NEWLIB)/configure --prefix="`pwd`/../target" --target=i686-universe; \
 		cd ..; \
 	fi
 

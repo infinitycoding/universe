@@ -7,7 +7,6 @@ GCC = gcc-4.7.3
 GNU = ftp://ftp.gnu.org/gnu
 
 BUILD = build
-TARGET = target
 
 download:
 	$(MAKE) -C ../download load unpack NAME=$(BINUTILS) DPATH=$(GNU)/binutils/$(BINUTILS).tar.bz2 TYPE=tar.bz2
@@ -15,7 +14,6 @@ download:
 	cp -ru ../download/$(BINUTILS) ./$(BINUTILS)
 	cp -ru ../download/$(GCC) ./$(GCC)
 	mkdir -p $(BUILD)
-	mkdir -p $(TARGET)
 
 configure_binutils: download	
 	if [ ! -f $(BUILD)/$(BINUTILS)/config.log ]; then \
@@ -25,7 +23,7 @@ configure_binutils: download
 		cp -rT binutils_adapted $(BINUTILS); \
 		mkdir -p $(BUILD)/$(BINUTILS); \
 		cd $(BUILD)/$(BINUTILS); \
-		../../$(BINUTILS)/configure --prefix="`pwd`/../../target" --target=i686-universe -disable-nls  CFLAGS="-w"; \
+		../../$(BINUTILS)/configure --prefix="/usr/bin" --target=i686-universe -disable-nls  CFLAGS="-w"; \
 		cd ../..; \
 	fi;\
 
@@ -42,7 +40,7 @@ configure_gcc: download binutils
 		PATH=${PATH}:`pwd`/../../$(TARGET)/bin; \
 		mkdir -p $(BUILD)/$(GCC); \
 		cd $(BUILD)/$(GCC) ;\
-		../../$(GCC)/configure --prefix="`pwd`/../../target" --target=i686-universe --disable-nls --enable-languages=c --disable-shared --disable-libssp --without-docdir CFLAGS="-I/usr/include/"; \
+		../../$(GCC)/configure --prefix="/usr/bin" --target=i686-universe --disable-nls --enable-languages=c --disable-shared --disable-libssp --without-docdir CFLAGS="-I/usr/include/"; \
 		cd ../..; \
 	fi;\
 
@@ -55,7 +53,6 @@ gcc: configure_gcc
 
 clean:
 	rm -rf $(BUILD)
-	rm -rf $(TARGET)
 	rm -rf $(BINUTILS)
 	rm -rf $(GCC)
 
