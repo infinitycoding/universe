@@ -4,9 +4,9 @@ all: kernel libs drivers user iso-img
 # I386
 # arm
 ARCH=I386
-CFLAGS = -Wall -g -nostdinc -fno-stack-protector -fno-builtin-log -Wimplicit-function-declaration
+CFLAGS = -Wall -g -nostdinc -fno-stack-protector -fno-builtin-log
 ASFLAGS =  -f elf32
-LDFLAGS = -melf_i386
+LDFLAGS = -muniverse_i386
 
 PREFIX = $(PWD)/build
 #USBDEV = /dev/sdb
@@ -16,9 +16,9 @@ QEMU = qemu-system-ppc
 
 else ifeq ($(ARCH),I386)
 QEMU = qemu-system-i386 -cdrom cdrom.iso -net nic,model=rtl8139 -net user
-CC = gcc -m32
+CC = i686-universe-gcc
 ASM = nasm
-LD = ld 
+LD = i686-universe-ld 
 
 else ifeq ($(ARCH),arm)
 CC = arm-linux-gnueabi-gcc

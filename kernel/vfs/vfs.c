@@ -667,6 +667,11 @@ void sys_pipe(struct cpu_state **cpu)
     }
 }
 
+void sys_mkfifo(struct cpu_state **cpu)
+{
+	
+}
+
 void sys_close(struct cpu_state **cpu)
 {
     int fd = (*cpu)->CPU_ARG1;

@@ -46,12 +46,12 @@ configure_gcc: download binutils
 
 gcc: configure_gcc
 	$(MAKE) -C $(BUILD)/$(GCC) all-gcc
-	$(MAKE) -C $(BUILD)/$(GCC) all-target-libgcc
+#	$(MAKE) -C $(BUILD)/$(GCC) all-target-libgcc
 
 install:
 	$(MAKE) -C $(BUILD)/$(BINUTILS) install
 	$(MAKE) -C $(BUILD)/$(GCC) install-gcc
-	$(MAKE) -C $(BUILD)/$(GCC) install-target-libgcc
+#	$(MAKE) -C $(BUILD)/$(GCC) install-target-libgcc
 	ln -s /usr/bin/i686-universe-gcc /usr/bin/i686-universe-cc
 
 clean:
