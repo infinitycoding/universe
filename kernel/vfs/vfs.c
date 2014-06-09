@@ -481,7 +481,7 @@ vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid)
 			int n_mode = mode;
 			if(new_str != NULL)
 			{
-				mode |= S_MODE_DIR;
+				mode |= S_IFDIR;
 			}
 
 			if(vfs_access(parent, W_OK, uid, gid) == 0)
@@ -667,9 +667,29 @@ void sys_pipe(struct cpu_state **cpu)
     }
 }
 
-void sys_mkfifo(struct cpu_state **cpu)
+void sys_mknod(struct cpu_state **cpu)
 {
-	
+	char *path = (*cpu)->CPU_ARG1;
+	int mode = (*cpu)->CPU_ARG2;
+	int dev = (*cpu)->CPU_ARG3; // unused
+
+	vfs_inode_t *inode = vfs_create_path(path, mode, current_thread->process->uid, current_thread->process->gid);
+
+	if(inode != NULL)
+	{
+		if(S_ISFIFO(inode->stat))
+		{
+    		inode->buffer->event_id = get_new_event_ID();
+    		inode->buffer->handlers = list_create();
+    		inode->type = VFS_PIPE;
+		}
+
+		(*cpu)->CPU_ARG0 = _SUCCESS;
+	}
+	else
+	{
+		(*cpu)->CPU_ARG0 = _FAILURE;
+	}
 }
 
 void sys_close(struct cpu_state **cpu)

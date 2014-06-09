@@ -130,6 +130,7 @@ void vfs_debug_output_all();
 
 void sys_open(struct cpu_state **cpu);
 void sys_pipe(struct cpu_state **cpu);
+void sys_mknod(struct cpu_state **cpu);
 void sys_close(struct cpu_state **cpu);
 void sys_read(struct cpu_state **cpu);
 void sys_write(struct cpu_state **cpu);

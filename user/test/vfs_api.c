@@ -63,6 +63,14 @@ bool test_vfs_api(void)
         printf("failed\n\n");
 
 
+	printf("fifo:\n");
+	res = test_fifo("/dev/testfifo");
+	success &= res;
+	if(res)
+		printf("success\n\n");
+	else
+		printf("failes\n\n");
+
     return success;
 }
 
@@ -182,5 +190,9 @@ bool test_apped_file(const char *name)
     return false;
 }
 
+bool test_fifo(char *name)
+{
+	return false;
+}
 
 
