@@ -84,21 +84,21 @@ loop:
         ++fmt;
         switch (*fmt)
         {
-        case '0':
-            flags |= ZEROPAD;
-            goto loop;
-        case '+':
-            flags |= PLUS;
-            goto loop;
-        case ' ':
-            flags |= SPACE;
-            goto loop;
-        case '-':
-            flags |= LEFT;
-            goto loop;
-        case '#':
-            flags |= SPECIAL;
-            goto loop;
+            case '0':
+                flags |= ZEROPAD;
+                goto loop;
+            case '+':
+                flags |= PLUS;
+                goto loop;
+            case ' ':
+                flags |= SPACE;
+                goto loop;
+            case '-':
+                flags |= LEFT;
+                goto loop;
+            case '#':
+                flags |= SPECIAL;
+                goto loop;
         }
 
         /* width */
@@ -154,87 +154,87 @@ loop:
         /* specifier */
         switch (*fmt)
         {
-        case 'c':
-            len = 1;
+            case 'c':
+                len = 1;
 
-            if (!(flags & LEFT))
+                if (!(flags & LEFT))
+                    while (len < width--)
+                        *buf++ = ' ';
+
+                *buf++ = (unsigned char)va_arg(args, int);
+
                 while (len < width--)
                     *buf++ = ' ';
+                continue;
 
-            *buf++ = (unsigned char)va_arg(args, int);
+            case 's':
+                s = va_arg(args, char *);
+                len = strnlen(s, precision);
 
-            while (len < width--)
-                *buf++ = ' ';
-            continue;
+                if (!(flags & LEFT))
+                    while (len < width--)
+                        *buf++ = ' ';
 
-        case 's':
-            s = va_arg(args, char *);
-            len = strnlen(s, precision);
+                for (i = 0; i < len; ++i)
+                    *buf++ = *s++;
 
-            if (!(flags & LEFT))
                 while (len < width--)
                     *buf++ = ' ';
+                continue;
 
-            for (i = 0; i < len; ++i)
-                *buf++ = *s++;
+            case 'p':
+                width = 2 * sizeof(void *);
+                flags |= ZEROPAD;
+                flags |= SPECIAL;
+                itoa_ex((unsigned long)va_arg(args, void *), buf, 16, flags, width);
+                while (*++buf);
+                continue;
 
-            while (len < width--)
-                *buf++ = ' ';
-            continue;
+            case 'n':
+                if (qualifier == 'l')
+                {
+                    long *dest = va_arg(args, long *);
+                    *dest = (buf - str);
+                }
+                else
+                {
+                    int *dest = va_arg(args, int *);
+                    *dest = (buf - str);
+                }
+                continue;
 
-        case 'p':
-            width = 2 * sizeof(void *);
-            flags |= ZEROPAD;
-            flags |= SPECIAL;
-            itoa_ex((unsigned long)va_arg(args, void *), buf, 16, flags, width);
-            while (*++buf);
-            continue;
+            case '%':
+                *buf++ = '%';
 
-        case 'n':
-            if (qualifier == 'l')
-            {
-                long *dest = va_arg(args, long *);
-                *dest = (buf - str);
-            }
-            else
-            {
-                int *dest = va_arg(args, int *);
-                *dest = (buf - str);
-            }
-            continue;
+            /* integers */
 
-        case '%':
-            *buf++ = '%';
+            case 'o':
+                base = 8;
+                break;
 
-        /* integers */
+            case 'd':
+            case 'i':
+                flags |= SIGN;
+            case 'u':
+                break;
 
-        case 'o':
-            base = 8;
-            break;
+            case 'x':
+                flags |= SMALL;
+            case 'X':
+                base = 16;
+                break;
 
-        case 'd':
-        case 'i':
-            flags |= SIGN;
-        case 'u':
-            break;
-
-        case 'x':
-            flags |= SMALL;
-        case 'X':
-            base = 16;
-            break;
-
-        default:
-            *str++ = '%';
-            if (*fmt)
-            {
-                *str++ = *fmt;
-            }
-            else
-            {
-                --fmt;
-            }
-            continue;
+            default:
+                *str++ = '%';
+                if (*fmt)
+                {
+                    *str++ = *fmt;
+                }
+                else
+                {
+                    --fmt;
+                }
+                continue;
         }
 
         if (qualifier == 'l')

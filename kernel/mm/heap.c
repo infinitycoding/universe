@@ -31,7 +31,7 @@ static alloc_t *first_node = NULL;
 
 void INIT_HEAP(void)
 {
-	// nothing to do here :)
+    // nothing to do here :)
 }
 
 /**
@@ -41,8 +41,8 @@ void INIT_HEAP(void)
  */
 void heap_add(alloc_t *inode)
 {
-	inode->next = first_node;
-	first_node = inode;
+    inode->next = first_node;
+    first_node = inode;
 }
 
 /**
@@ -54,10 +54,10 @@ void heap_add(alloc_t *inode)
 alloc_t *heap_expand(int pages)
 {
 #ifdef HEAP_DEBUG
-	printf("heap_expand(): add %d pages...\n", pages);
+    printf("heap_expand(): add %d pages...\n", pages);
 #endif
 
-	// allocate memory
+    // allocate memory
     paddr_t pframe = 0;
     vaddr_t vframe = arch_vaddr_find(&current_context->arch_context, pages,
                                      MEMORY_LAYOUT_KERNEL_HEAP_START,
@@ -72,7 +72,7 @@ alloc_t *heap_expand(int pages)
         vframe_cur += PAGE_SIZE;
     }
 
-	// create inode
+    // create inode
     alloc_t *new_header = (alloc_t *) vframe;
 
     new_header->size = pages*PAGE_SIZE - sizeof(alloc_t);
@@ -97,16 +97,16 @@ void *malloc(size_t bytes)
     //vaddr_t data = 0;         // currently unused, maybe useless (someone check this please)
     int n_size = bytes + sizeof(alloc_t);
 
-	// go through all inodes...
+    // go through all inodes...
     while(header != NULL)
     {
-		// fits the size?
+        // fits the size?
         if(header->size >= bytes && header->status == HEAP_STATUS_FREE)
         {
-			// mark as used
+            // mark as used
             header->status = HEAP_STATUS_USED;
 
-			// if something is left, split it down
+            // if something is left, split it down
             if(header->size > n_size)
             {
                 alloc_t *new_header = (alloc_t *)(header->base + bytes);
@@ -115,7 +115,7 @@ void *malloc(size_t bytes)
                 new_header->status = HEAP_STATUS_FREE;
                 header->size = bytes;
 
-				heap_add(new_header);
+                heap_add(new_header);
             }
 
             return (void*) header->base;
@@ -124,9 +124,9 @@ void *malloc(size_t bytes)
         header = header->next;
     }
 
-	// if nothing found, create new stuff...
+    // if nothing found, create new stuff...
     header = heap_expand(NUM_PAGES(n_size));
-	if(header != NULL)
+    if(header != NULL)
     {
         header->status = HEAP_STATUS_USED;
         return (void *)header->base;
@@ -136,7 +136,7 @@ void *malloc(size_t bytes)
     printf("malloc(): reserving %d bytes of memory: %p - %p\n", header->size, data, data + header->size);
 #endif
 
-	// no more memory :'(
+    // no more memory :'(
     return NULL;
 }
 
@@ -147,9 +147,9 @@ void *malloc(size_t bytes)
  */
 void free(void *ptr)
 {
-	// calculate inode adress
+    // calculate inode adress
     alloc_t *header = (alloc_t*)((uintptr_t)ptr - sizeof(alloc_t));
-	// mark as free
+    // mark as free
     header->status = HEAP_STATUS_FREE;
 
 #ifdef HEAP_DEBUG
@@ -167,7 +167,7 @@ void free(void *ptr)
  */
 void *calloc(size_t num, size_t size)
 {
-	size_t bytes = num * size;
+    size_t bytes = num * size;
 
     void *data = malloc(bytes);
     memset(data, 0, bytes);
@@ -189,15 +189,15 @@ void *realloc(void *ptr, size_t size)
     alloc_t *source_alloc = (alloc_t*)((uintptr_t)ptr - sizeof(alloc_t));
 
 #ifdef HEAP_DEBUG
-	printf("realloc(): copying %d bytes from 0x%x to 0x%x\n", source_alloc->size, ptr, dest);
+    printf("realloc(): copying %d bytes from 0x%x to 0x%x\n", source_alloc->size, ptr, dest);
 #endif
 
-	if(source_alloc->size < size)
-	{
-		memcpy(dest, ptr, source_alloc->size);
+    if(source_alloc->size < size)
+    {
+        memcpy(dest, ptr, source_alloc->size);
     }
 
-	free(ptr);
+    free(ptr);
 
     return dest;
 }

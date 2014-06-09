@@ -33,6 +33,9 @@ kernel32.elf: $(OBJS) linkerscript.x
 %.x: %.gen
 	@$(CC) $(CFLAGS) -x assembler-with-cpp -P -E -o $@ $^
 
+style:  $(SRCS)
+	astyle --style=allman --indent-switches $^
+
 clean:
 	@rm -f $(OBJS)
 	@rm -f kernel32.elf

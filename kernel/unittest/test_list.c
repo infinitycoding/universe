@@ -66,7 +66,7 @@ int test_list_create_destroy()
     for(i = 0; i < CREATE_TEST_NUMBER; i++)
         list_destroy(nextLists[i]);
 
-    return 0;    
+    return 0;
 }
 
 
@@ -113,7 +113,7 @@ int test_list_push_pop()
  * @return 1 if failture
  */
 int test_list_is_empty()
- {
+{
     list_t *testList = list_create();
 
     if(!list_is_empty(testList))
@@ -137,18 +137,18 @@ int test_list_is_empty()
     }
 
     list_destroy(testList);
- 
+
     return 0;
- }
+}
 
 
- /**
- * @brief tests the length function of the list module
- * @return 0 if success
- * @return 1 if failture
- */
+/**
+* @brief tests the length function of the list module
+* @return 0 if success
+* @return 1 if failture
+*/
 int test_list_length()
- {
+{
     list_t *testList = list_create();
 
     int i;
@@ -165,7 +165,7 @@ int test_list_length()
     list_destroy(testList);
 
     return 0;
- }
+}
 
 
 /**

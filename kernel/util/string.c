@@ -230,38 +230,46 @@ char *strrchr(const char *str, int c)
 	char* strstr(const char* st0, const char* st1) {}
 	char* strerror(size_t n) {}
 */
-char *strtok(char *string, const char *delimiters) {
-  static char *s = NULL;
-  static int num_del = 0;
-  if(string != NULL) {
-    s = string;
-    num_del = strlen(delimiters);
-  } else {
-    if(s == NULL) {
-      return NULL;
+char *strtok(char *string, const char *delimiters)
+{
+    static char *s = NULL;
+    static int num_del = 0;
+    if(string != NULL)
+    {
+        s = string;
+        num_del = strlen(delimiters);
     }
-    string = s;
-  }
-  int i, j = 0;
-  while(*s != '\0') {
-    for(i = 0; i < num_del; i++) {
-      if(*s == delimiters[i]) {
+    else
+    {
+        if(s == NULL)
+        {
+            return NULL;
+        }
+        string = s;
+    }
+    int i, j = 0;
+    while(*s != '\0')
+    {
+        for(i = 0; i < num_del; i++)
+        {
+            if(*s == delimiters[i])
+            {
+                s++;
+                char *ret = (char*) malloc(j+1);
+                memcpy(ret, string, j);
+                ret[j] = '\0';
+                return ret;
+            }
+        }
         s++;
-        char *ret = (char*) malloc(j+1);
-        memcpy(ret, string, j);
-        ret[j] = '\0';
-        return ret;
-      }
+        j++;
     }
-    s++;
-    j++;
-  }
-  
-  char *ret = (char*) malloc(j+1);
-  strcpy(ret, string);
-  
-  s = NULL;
-  return ret;
+
+    char *ret = (char*) malloc(j+1);
+    strcpy(ret, string);
+
+    s = NULL;
+    return ret;
 }
 /**
  * @brief Copies memory from source to destination.

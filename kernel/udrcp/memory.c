@@ -41,32 +41,32 @@ void handle_pma_alloc(struct driver *drv, pck_t *req)
 
     switch(pma_req->type)
     {
-    case PMA_ALLOC_RANDOM:
-        phys_base = pmm_alloc_page_range(pma_req->size/PAGE_SIZE);
-        break;
+        case PMA_ALLOC_RANDOM:
+            phys_base = pmm_alloc_page_range(pma_req->size/PAGE_SIZE);
+            break;
 
 
-    case PMA_ALLOC_SPECIFIC:
-        /*
-        TODO: Implement HW resource check or allocate free PMM memory
-         if(!pmm_check_page_range(pma_req->phys_base, pma_req->range))
-         {
-             respond(drv->pman, req->id, ERROR, 0, NULL);
-             return;
-         }*/
+        case PMA_ALLOC_SPECIFIC:
+            /*
+            TODO: Implement HW resource check or allocate free PMM memory
+             if(!pmm_check_page_range(pma_req->phys_base, pma_req->range))
+             {
+                 respond(drv->pman, req->id, ERROR, 0, NULL);
+                 return;
+             }*/
 
-        phys_base = pma_req->phys_base;
-        //pmm_mark_page_range_as_used(phys_base, pma_req->size/PAGE_SIZE);
-        break;
+            phys_base = pma_req->phys_base;
+            //pmm_mark_page_range_as_used(phys_base, pma_req->size/PAGE_SIZE);
+            break;
 
-    case PMA_ALLOC_LOWER:
-        phys_base = pmm_alloc_page_limit(pma_req->phys_base);
-        break;
+        case PMA_ALLOC_LOWER:
+            phys_base = pmm_alloc_page_limit(pma_req->phys_base);
+            break;
 
-    default:
-        respond(drv->pman, req->id, ERROR, 0, NULL);
-        return;
-        break;
+        default:
+            respond(drv->pman, req->id, ERROR, 0, NULL);
+            return;
+            break;
     }
 
 

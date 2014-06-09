@@ -46,7 +46,7 @@ bool test_vfs()
             printf("=");
         }
     }
-    printf("\n");   
+    printf("\n");
 
     printf("writing a lot in them...\n");
     for(i = 0; i < COUNT; i++)

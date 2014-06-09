@@ -91,16 +91,16 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
     state->desc[string_len + 1] = 0;
     state->flags = flags;
     state->files = list_create();
-	if(parent != NULL)
-	{
-		state->cwd = parent->cwd;
-	}
-	else
-	{
-		state->cwd = root;
+    if(parent != NULL)
+    {
+        state->cwd = parent->cwd;
+    }
+    else
+    {
+        state->cwd = root;
     }
 
-	state->children = list_create();    // he crashes here...
+    state->children = list_create();    // he crashes here...
     state->zombie_tids = list_create();
     state->threads = list_create();
     state->ports = list_create();
@@ -373,42 +373,42 @@ void sys_getpid(struct cpu_state **cpu)
  */
 void sys_execve(struct cpu_state **cpu)
 {
-   /*char *filename = (char*) (*cpu)->CPU_ARG1;
-    char **argv = (char**) (*cpu)->CPU_ARG2;
-    //char **envp = (char**) (*cpu)->CPU_ARG3;
+    /*char *filename = (char*) (*cpu)->CPU_ARG1;
+     char **argv = (char**) (*cpu)->CPU_ARG2;
+     //char **envp = (char**) (*cpu)->CPU_ARG3;
 
-    vfs_inode_t *filenode = vfs_lookup_path(filename);
-    printf(filename);
-    if(filenode == NULL)
-    {
-        return;
-    }
-    if(filenode->base == NULL)
-    {
-        (*cpu)->CPU_ARG0 = _FAILURE;
-        return;
-    }
+     vfs_inode_t *filenode = vfs_lookup_path(filename);
+     printf(filename);
+     if(filenode == NULL)
+     {
+         return;
+     }
+     if(filenode->base == NULL)
+     {
+         (*cpu)->CPU_ARG0 = _FAILURE;
+         return;
+     }
 
-    struct process_state *process = current_thread->process;
+     struct process_state *process = current_thread->process;
 
-    while(!list_is_empty(process->threads))
-    {
-        struct thread_state *thread = list_pop_front(process->threads);
-        if(thread == current_thread)
-        {
-            current_thread->flags |= THREAD_ZOMBIE;
-            process->flags |= PROCESS_ZOMBIE;
-        }
-        else
-            thread_kill_sub(thread);
-    }
+     while(!list_is_empty(process->threads))
+     {
+         struct thread_state *thread = list_pop_front(process->threads);
+         if(thread == current_thread)
+         {
+             current_thread->flags |= THREAD_ZOMBIE;
+             process->flags |= PROCESS_ZOMBIE;
+         }
+         else
+             thread_kill_sub(thread);
+     }
 
-    list_destroy(process->ports);
-    list_destroy(process->zombie_tids);
-    process->zombie_tids = list_create();
-    
-    // run the new process
-    load_elf_thread(filenode->base, process, 0,(void**) argv);*/
+     list_destroy(process->ports);
+     list_destroy(process->zombie_tids);
+     process->zombie_tids = list_create();
+
+     // run the new process
+     load_elf_thread(filenode->base, process, 0,(void**) argv);*/
 
 }
 

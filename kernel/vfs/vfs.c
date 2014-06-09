@@ -51,8 +51,8 @@ uint32_t nodes = 0;
  */
 void INIT_VFS(void)
 {
-    root = vfs_create_inode(NULL, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH, NULL, 0, 0);	
-	
+    root = vfs_create_inode(NULL, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH, NULL, 0, 0);
+
     vfs_inode_t *foo = vfs_create_inode("foo.txt", S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH, root, 0, 0);
     vfs_write(foo, 0, "Hallo Welt!\n", 13);
 }
@@ -69,17 +69,17 @@ void INIT_VFS(void)
  */
 vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_t uid, gid_t gid)
 {
-	vfs_inode_t *inode = malloc(sizeof(vfs_inode_t));
+    vfs_inode_t *inode = malloc(sizeof(vfs_inode_t));
 
-	if(name != NULL)
-	{
-		inode->name = (char*) malloc(strlen(name)+1);
-		strcpy(inode->name, name);
-	}    
+    if(name != NULL)
+    {
+        inode->name = (char*) malloc(strlen(name)+1);
+        strcpy(inode->name, name);
+    }
 
-	inode->length = 0;
+    inode->length = 0;
     inode->type = VFS_REGULAR;
-    
+
     if(parent != NULL)
     {
         inode->parent = parent;
@@ -91,15 +91,15 @@ vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_
     inode->stat.st_ino = nodes++;
     inode->stat.st_uid = uid;
     inode->stat.st_gid = gid;
-	update_time((struct time*)&inode->stat.st_atime);
+    update_time((struct time*)&inode->stat.st_atime);
     update_time((struct time*)&inode->stat.st_mtime);
- 
-	inode->buffer = (vfs_buffer_info_t*) malloc(sizeof(vfs_buffer_info_t));
+
+    inode->buffer = (vfs_buffer_info_t*) malloc(sizeof(vfs_buffer_info_t));
     inode->buffer->num_readers = 1;
-	inode->buffer->num_writers = 1;
-	inode->buffer->num_blocks = 0;
-	inode->buffer->blocks = list_create();
-   
+    inode->buffer->num_writers = 1;
+    inode->buffer->num_blocks = 0;
+    inode->buffer->blocks = list_create();
+
     return inode;
 }
 
@@ -145,11 +145,11 @@ int vfs_write(vfs_inode_t *inode, int off, void *buffer, int bytes)
 {
     GET_INODE(inode);
 
-	// calculate block indices
+    // calculate block indices
     int block_id = off / PAGE_SIZE;
     int block_off= off % PAGE_SIZE;
 
-	// search first block
+    // search first block
     vfs_buffer_info_t *info = inode->buffer;
     vfs_buffer_block_t *block = NULL;
     iterator_t it = iterator_create(info->blocks);
@@ -170,10 +170,10 @@ int vfs_write(vfs_inode_t *inode, int off, void *buffer, int bytes)
     uint8_t *data = (uint8_t*) buffer;
     int index = block_off;
 
-	// go through all bytes...
+    // go through all bytes...
     for(i = 0; i < bytes; i++)
     {
-		// if the block ends, go to the next
+        // if the block ends, go to the next
         if(index >= VFS_BLOCK_SIZE)
         {
             block_id++;
@@ -186,12 +186,12 @@ int vfs_write(vfs_inode_t *inode, int off, void *buffer, int bytes)
                 list_next(&it);
                 block = (vfs_buffer_block_t*) it.current->element;
 
-				found = 1;
-				index = 0;
+                found = 1;
+                index = 0;
             }
         }
 
-		// if nothing found, create a new block
+        // if nothing found, create a new block
         if(! found)
         {
             block = malloc(sizeof(vfs_buffer_block_t));
@@ -199,32 +199,32 @@ int vfs_write(vfs_inode_t *inode, int off, void *buffer, int bytes)
             block->block_id = info->num_blocks++;
             list_push_back(info->blocks, block);
 
-			block_id = block->block_id;
+            block_id = block->block_id;
 
             found = 1;
             index = 0;
-		}
+        }
 
-		// copy data
-		block->base[index++] = data[i];
+        // copy data
+        block->base[index++] = data[i];
     }
 
-	// increase length
-	if( (off + bytes) >  inode->length)
-	{
-		inode->length = off + bytes;
-		inode->stat.st_size = inode->length;
-	}
+    // increase length
+    if( (off + bytes) >  inode->length)
+    {
+        inode->length = off + bytes;
+        inode->stat.st_size = inode->length;
+    }
 
-	// pipes send an event signal
-	if(inode->type == VFS_PIPE)
-	{
-	    send_event(info->event_id);
-	    info->event_id = get_new_event_ID();
-	    launch_pipe_handlers(info);
-	}
+    // pipes send an event signal
+    if(inode->type == VFS_PIPE)
+    {
+        send_event(info->event_id);
+        info->event_id = get_new_event_ID();
+        launch_pipe_handlers(info);
+    }
 
-	return bytes;
+    return bytes;
 }
 
 /**
@@ -243,55 +243,55 @@ int vfs_read(vfs_inode_t *inode, int offset, void *buffer, int bytes)
     {
         int block_id = offset / PAGE_SIZE;
         int block_off= offset % PAGE_SIZE;
-        
-		// search first block
-		vfs_buffer_info_t *info = inode->buffer;
-		vfs_buffer_block_t *block = NULL;
-		iterator_t it = iterator_create(info->blocks);
 
-		int i;
-		for(i = 0; i < info->num_blocks; i++)
-		{
-			block = (vfs_buffer_block_t*) it.current->element;
-			if(block->block_id == block_id)
-			{
-				break;
-			}
+        // search first block
+        vfs_buffer_info_t *info = inode->buffer;
+        vfs_buffer_block_t *block = NULL;
+        iterator_t it = iterator_create(info->blocks);
 
-			list_next(&it);
-		}
+        int i;
+        for(i = 0; i < info->num_blocks; i++)
+        {
+            block = (vfs_buffer_block_t*) it.current->element;
+            if(block->block_id == block_id)
+            {
+                break;
+            }
 
-		uint8_t *data = (uint8_t*) buffer;
-		int index = block_off;
+            list_next(&it);
+        }
 
-		// go through all bytes...
-		for(i = 0; i < bytes; i++)
-		{
-			// if the block ends, go to the next
-			if(index >= VFS_BLOCK_SIZE)
-			{
-				block_id++;
-				if(block_id >= info->num_blocks)
-				{
-					break;
-				}
-				else
-				{
-					list_next(&it);
-					block = (vfs_buffer_block_t*) it.current->element;
-			
-					index = 0;
-				}
-			}
+        uint8_t *data = (uint8_t*) buffer;
+        int index = block_off;
 
-			// copy data
-			data[i] = block->base[index++];
-	    }
+        // go through all bytes...
+        for(i = 0; i < bytes; i++)
+        {
+            // if the block ends, go to the next
+            if(index >= VFS_BLOCK_SIZE)
+            {
+                block_id++;
+                if(block_id >= info->num_blocks)
+                {
+                    break;
+                }
+                else
+                {
+                    list_next(&it);
+                    block = (vfs_buffer_block_t*) it.current->element;
 
-		return i;
-	}
+                    index = 0;
+                }
+            }
 
-	return -1;
+            // copy data
+            data[i] = block->base[index++];
+        }
+
+        return i;
+    }
+
+    return -1;
 }
 
 /**
@@ -398,13 +398,13 @@ vfs_inode_t *vfs_lookup_path(char *path)
     while(str != NULL)
     {
         int num = parent->length / sizeof(vfs_dentry_t);
-		int found = 0;
+        int found = 0;
         int i;
         for(i = 0; i < num; i++)
         {
-			vfs_dentry_t entry;
-			vfs_read(parent, i*sizeof(vfs_dentry_t), &entry, sizeof(vfs_dentry_t));
-			if(strcmp(str, entry.inode->name) == 0)
+            vfs_dentry_t entry;
+            vfs_read(parent, i*sizeof(vfs_dentry_t), &entry, sizeof(vfs_dentry_t));
+            if(strcmp(str, entry.inode->name) == 0)
             {
                 parent = entry.inode;
                 found = 1;
@@ -465,8 +465,8 @@ vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid)
         int i;
         for(i = 0; i < num; i++)
         {
-			vfs_dentry_t entry;
-			vfs_read(parent, i*sizeof(vfs_dentry_t), &entry, sizeof(vfs_dentry_t));
+            vfs_dentry_t entry;
+            vfs_read(parent, i*sizeof(vfs_dentry_t), &entry, sizeof(vfs_dentry_t));
             if(strcmp(str, entry.inode->name) == 0)
             {
                 parent = entry.inode;
@@ -475,23 +475,23 @@ vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid)
             }
         }
 
-		char *new_str = strtok(NULL, delimiter);
+        char *new_str = strtok(NULL, delimiter);
         if(!found)
         {
-			int n_mode = mode;
-			if(new_str != NULL)
-			{
-				mode |= S_IFDIR;
-			}
+            int n_mode = mode;
+            if(new_str != NULL)
+            {
+                mode |= S_IFDIR;
+            }
 
-			if(vfs_access(parent, W_OK, uid, gid) == 0)
-			{
-				parent = vfs_create_inode(str, n_mode, parent, uid, gid);
-			}
-			else
-			{
-				return NULL;
-			}
+            if(vfs_access(parent, W_OK, uid, gid) == 0)
+            {
+                parent = vfs_create_inode(str, n_mode, parent, uid, gid);
+            }
+            else
+            {
+                return NULL;
+            }
         }
         str = new_str;
     }
@@ -511,7 +511,7 @@ void vfs_debug_output(vfs_inode_t *start)
 
     int num = start->length / sizeof(vfs_dentry_t);
     vfs_dentry_t *entries = malloc(start->length);
-	vfs_read(start, 0, entries, start->length);
+    vfs_read(start, 0, entries, start->length);
 
     int i;
     for(i = 0; i < num; i++)
@@ -534,7 +534,7 @@ void vfs_debug_output(vfs_inode_t *start)
         }
     }
 
-	free(entries);
+    free(entries);
 }
 #endif
 
@@ -616,11 +616,11 @@ void sys_open(struct cpu_state **cpu)
         desc->write_pos = 0;
         desc->inode = inode;
 
-		if(oflags & O_APPEND)
-		{
-			desc->read_pos = inode->length;
-			desc->write_pos = inode->length;
-		}
+        if(oflags & O_APPEND)
+        {
+            desc->read_pos = inode->length;
+            desc->write_pos = inode->length;
+        }
 
         list_push_back(current_thread->process->files, desc);
 
@@ -673,27 +673,27 @@ void sys_pipe(struct cpu_state **cpu)
 
 void sys_mknod(struct cpu_state **cpu)
 {
-	char *path = (*cpu)->CPU_ARG1;
-	int mode = (*cpu)->CPU_ARG2;
-	int dev = (*cpu)->CPU_ARG3; // unused
+    char *path = (*cpu)->CPU_ARG1;
+    int mode = (*cpu)->CPU_ARG2;
+    int dev = (*cpu)->CPU_ARG3; // unused
 
-	vfs_inode_t *inode = vfs_create_path(path, mode, current_thread->process->uid, current_thread->process->gid);
+    vfs_inode_t *inode = vfs_create_path(path, mode, current_thread->process->uid, current_thread->process->gid);
 
-	if(inode != NULL)
-	{
-		if(S_ISFIFO(inode->stat))
-		{
-    		inode->buffer->event_id = get_new_event_ID();
-    		inode->buffer->handlers = list_create();
-    		inode->type = VFS_PIPE;
-		}
+    if(inode != NULL)
+    {
+        if(S_ISFIFO(inode->stat))
+        {
+            inode->buffer->event_id = get_new_event_ID();
+            inode->buffer->handlers = list_create();
+            inode->type = VFS_PIPE;
+        }
 
-		(*cpu)->CPU_ARG0 = _SUCCESS;
-	}
-	else
-	{
-		(*cpu)->CPU_ARG0 = _FAILURE;
-	}
+        (*cpu)->CPU_ARG0 = _SUCCESS;
+    }
+    else
+    {
+        (*cpu)->CPU_ARG0 = _FAILURE;
+    }
 }
 
 void sys_close(struct cpu_state **cpu)
@@ -737,14 +737,14 @@ void sys_read(struct cpu_state **cpu)
 
             if(vfs_access(inode, R_OK, current_thread->process->uid, current_thread->process->gid) == 0)
             {
-				int ret = vfs_read(inode, desc->read_pos, buf, len);
+                int ret = vfs_read(inode, desc->read_pos, buf, len);
                 if(ret == len)
                 {
                     desc->read_pos += len;
-					if(inode->type != VFS_PIPE)
-					{
-						desc->write_pos += len;
-					}
+                    if(inode->type != VFS_PIPE)
+                    {
+                        desc->write_pos += len;
+                    }
 
                     (*cpu)->CPU_ARG0 = len;
                 }
@@ -801,16 +801,16 @@ void sys_write(struct cpu_state **cpu)
             vfs_inode_t *inode = desc->inode;
             if(vfs_access(inode, W_OK, current_thread->process->uid, current_thread->process->gid) == 0)
             {
- //               		printf("CALLINGVFS_WRITE()\n");
+//               		printf("CALLINGVFS_WRITE()\n");
                 int ret = vfs_write(inode, desc->write_pos, buf, len);
                 (*cpu)->CPU_ARG0 = ret;
                 if(ret > 0)
                 {
                     desc->write_pos += len;
-					if(inode->type != VFS_PIPE)
-					{
-						desc->read_pos += len;
-					}
+                    if(inode->type != VFS_PIPE)
+                    {
+                        desc->read_pos += len;
+                    }
                 }
             }
             else
@@ -980,7 +980,7 @@ void sys_getdents(struct cpu_state **cpu)
         dirent_t *dentry = (dirent_t *)(*cpu)->CPU_ARG2;
 
         vfs_dentry_t *entries = malloc(parent->length);
-		vfs_read(parent, 0, entries, parent->length);
+        vfs_read(parent, 0, entries, parent->length);
         int num = parent->length / sizeof(vfs_dentry_t);
 
         if(pos < num && (fd == old_fd || old_fd == -1))
@@ -1017,21 +1017,21 @@ void sys_seek(struct cpu_state **cpu)
     file->flags |= O_APPEND;
     switch(whence)
     {
-    case SEEK_SET: // absolute
-        file->read_pos = off;
-        file->write_pos = off;
-        break;
-    case SEEK_CUR: // relative from current position
-        file->read_pos += off;
-        file->write_pos += off;
-        break;
-    case SEEK_END: // relative from end
-        file->read_pos = file->inode->length - off;
-        file->write_pos = file->inode->length - off;
-        break;
-    default: // ???
-        (*cpu)->CPU_ARG0 = _FAILURE;
-        return;
+        case SEEK_SET: // absolute
+            file->read_pos = off;
+            file->write_pos = off;
+            break;
+        case SEEK_CUR: // relative from current position
+            file->read_pos += off;
+            file->write_pos += off;
+            break;
+        case SEEK_END: // relative from end
+            file->read_pos = file->inode->length - off;
+            file->write_pos = file->inode->length - off;
+            break;
+        default: // ???
+            (*cpu)->CPU_ARG0 = _FAILURE;
+            return;
     }
 
     (*cpu)->CPU_ARG0 = file->read_pos;

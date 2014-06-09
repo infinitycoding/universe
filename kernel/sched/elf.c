@@ -31,20 +31,20 @@
 
 struct process_state *load_elf_from_file(vfs_inode_t *inode, uid_t uid, gid_t gid, struct pipeset *s)
 {
-	void *image = malloc(inode->length);
-	vfs_read(inode, 0, image, inode->length);
-	struct process_state *state = load_elf(image, inode->name, uid, gid, s);
-	free(image);
+    void *image = malloc(inode->length);
+    vfs_read(inode, 0, image, inode->length);
+    struct process_state *state = load_elf(image, inode->name, uid, gid, s);
+    free(image);
 
-	return state;
+    return state;
 }
 
 struct process_state *load_elf(void *image, char *name, uid_t uid, gid_t gid, struct pipeset *s)
 {
-	struct process_state *proc = process_create(name, "Hallo", PROCESS_ACTIVE, NULL, uid, gid, s);
-	load_elf_thread(image, proc, 0, 0);
+    struct process_state *proc = process_create(name, "Hallo", PROCESS_ACTIVE, NULL, uid, gid, s);
+    load_elf_thread(image, proc, 0, 0);
 
-	return proc;
+    return proc;
 }
 
 struct process_state *load_elf_thread(void *image, struct process_state *proc, int argc, void **argv)

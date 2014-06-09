@@ -29,6 +29,7 @@ build/usr
 *.gen~
 *~
 *.swp
+*.orig
 makefile~
 Makefile~
 *.ld~

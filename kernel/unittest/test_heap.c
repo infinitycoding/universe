@@ -46,7 +46,7 @@ bool test_heap()
     printf("freeing b\n");
     free(b);
 
-    for(i = 0; i < 2500; i++) ;//printf("test : %d, %d\n", i, a[i]); 
+    for(i = 0; i < 2500; i++) ;//printf("test : %d, %d\n", i, a[i]);
 
     printf("freeing a\n");
     free(a);
