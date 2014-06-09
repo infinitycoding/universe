@@ -110,7 +110,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 
     struct mapping_statistics stats = map_all(mb_info);
     printf("%d modules total, %d successfully loaded, %d failed\n", stats.total, stats.load_success, stats.load_failed);
-
+/*
     vfs_inode_t *pfnode = vfs_lookup_path("/drivers/system.pf");
 
     if(pfnode != NULL)
@@ -127,7 +127,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
         argv[0] = sec;
         kernel_thread_create((uintptr_t)INIT_HYPERVISOR,argc,argv);
     }
-/*
+*/
     vfs_inode_t *testnode = vfs_lookup_path("/test.elf");
 
 	if(testnode == NULL)
@@ -139,7 +139,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
         load_elf_from_file(testnode, 0, 0, 0);
     }
 
-*/
+
     return 0;
 }
 

@@ -110,7 +110,9 @@ struct fd
     vfs_inode_t *inode;
     mode_t mode;
     int flags;
-    int pos;
+
+    int read_pos;
+	int write_pos;
 };
 
 void INIT_VFS(void);

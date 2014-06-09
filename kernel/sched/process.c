@@ -162,7 +162,8 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
     desc0->id = 0;
     desc0->mode = 0x7ff;
     desc0->flags = O_RDONLY;
-    desc0->pos = 0;
+    desc0->read_pos = 0;
+    desc0->write_pos = 0;
     desc0->inode = stdin;
     list_push_back(state->files, desc0);
 
@@ -170,7 +171,8 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
     desc1->id = 1;
     desc1->mode = 0x7ff;
     desc1->flags = O_WRONLY;
-    desc1->pos = 0;
+    desc1->read_pos = 0;
+    desc1->write_pos = 0;
     desc1->inode = stdout;
     list_push_back(state->files, desc1);
 
@@ -178,7 +180,8 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
     desc2->id = 2;
     desc2->mode = 0x7ff;
     desc2->flags = O_WRONLY;
-    desc2->pos = 0;
+    desc2->read_pos = 0;
+    desc2->write_pos = 0;
     desc2->inode = stderr;
     list_push_back(state->files, desc2);
 

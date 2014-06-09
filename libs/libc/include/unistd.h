@@ -58,5 +58,8 @@ dirent_t *readdir(int fd);
 int chdir(const char *path);
 char *getcwd(char *buf, int buflen);
 
+int mknod(char *path, int mode, int dev);
+int mkfifo(char *path, int mode);
+
 #endif
 

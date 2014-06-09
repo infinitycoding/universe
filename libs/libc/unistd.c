@@ -81,3 +81,14 @@ char *getcwd(char *buf, int buflen)
     return (char *)linux_syscall(SYS_GETCWD,(uint32_t)buf, buflen, 0, 0, 0);
 }
 
+int mknod(char *path, int mode, int dev)
+{
+	int ret = (int)linux_syscall(SYS_MKNOD, path, mode, dev, 0, 0);
+	return ret;
+}
+
+int mkfifo(char *path, int mode)
+{
+	return mknod(path, S_IFIFO | S_IRUSR | S_IWUSR, 0);
+}
+

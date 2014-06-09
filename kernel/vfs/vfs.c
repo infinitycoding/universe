@@ -612,12 +612,14 @@ void sys_open(struct cpu_state **cpu)
         desc->id = list_length(current_thread->process->files);
         desc->mode = mode;
         desc->flags = oflags;
-        desc->pos = 0;
+        desc->read_pos = 0;
+        desc->write_pos = 0;
         desc->inode = inode;
 
 		if(oflags & O_APPEND)
 		{
-			desc->pos = inode->length;
+			desc->read_pos = inode->length;
+			desc->write_pos = inode->length;
 		}
 
         list_push_back(current_thread->process->files, desc);
@@ -641,7 +643,8 @@ void sys_pipe(struct cpu_state **cpu)
     desc0->id = id[0] = list_length(current_thread->process->files);
     desc0->mode = O_APPEND;
     desc0->flags = O_RDONLY;
-    desc0->pos = 0;
+    desc0->read_pos = 0;
+    desc0->write_pos = 0;
     desc0->inode = inode;
     list_push_back(current_thread->process->files, desc0);
 
@@ -650,7 +653,8 @@ void sys_pipe(struct cpu_state **cpu)
     desc1->id = id[1] = list_length(current_thread->process->files);
     desc1->mode = O_APPEND;
     desc1->flags = O_WRONLY;
-    desc1->pos = 0;
+    desc1->read_pos = 0;
+    desc1->write_pos = 0;
     desc1->inode = inode;
     list_push_back(current_thread->process->files, desc1);
 
@@ -733,10 +737,15 @@ void sys_read(struct cpu_state **cpu)
 
             if(vfs_access(inode, R_OK, current_thread->process->uid, current_thread->process->gid) == 0)
             {
-				int ret = vfs_read(inode, desc->pos, buf, len);
+				int ret = vfs_read(inode, desc->read_pos, buf, len);
                 if(ret == len)
                 {
-                    desc->pos += len;
+                    desc->read_pos += len;
+					if(inode->type != VFS_PIPE)
+					{
+						desc->write_pos += len;
+					}
+
                     (*cpu)->CPU_ARG0 = len;
                 }
                 else if(inode->type == VFS_PIPE)
@@ -793,11 +802,15 @@ void sys_write(struct cpu_state **cpu)
             if(vfs_access(inode, W_OK, current_thread->process->uid, current_thread->process->gid) == 0)
             {
  //               		printf("CALLINGVFS_WRITE()\n");
-                int ret = vfs_write(inode, desc->pos, buf, len);
+                int ret = vfs_write(inode, desc->write_pos, buf, len);
                 (*cpu)->CPU_ARG0 = ret;
                 if(ret > 0)
                 {
-                    desc->pos += len;
+                    desc->write_pos += len;
+					if(inode->type != VFS_PIPE)
+					{
+						desc->read_pos += len;
+					}
                 }
             }
             else
@@ -835,7 +848,8 @@ void sys_create(struct cpu_state **cpu)
                 desc->id = list_length(current_thread->process->files);
                 desc->mode = mode;
                 desc->flags = O_RDWR;
-                desc->pos = 0;
+                desc->read_pos = 0;
+                desc->write_pos = 0;
                 desc->inode = inode;
 
                 list_push_back(current_thread->process->files, desc);
@@ -1004,20 +1018,23 @@ void sys_seek(struct cpu_state **cpu)
     switch(whence)
     {
     case SEEK_SET: // absolute
-        file->pos = off;
+        file->read_pos = off;
+        file->write_pos = off;
         break;
     case SEEK_CUR: // relative from current position
-        file->pos += off;
+        file->read_pos += off;
+        file->write_pos += off;
         break;
     case SEEK_END: // relative from end
-        file->pos = file->inode->length - off;
+        file->read_pos = file->inode->length - off;
+        file->write_pos = file->inode->length - off;
         break;
     default: // ???
         (*cpu)->CPU_ARG0 = _FAILURE;
         return;
     }
 
-    (*cpu)->CPU_ARG0 = file->pos;
+    (*cpu)->CPU_ARG0 = file->read_pos;
 }
 
 void sys_mkdir(struct cpu_state **cpu)

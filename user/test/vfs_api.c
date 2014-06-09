@@ -192,6 +192,29 @@ bool test_apped_file(const char *name)
 
 bool test_fifo(char *name)
 {
+	if(mkfifo(name, 0) < 0)
+	{
+		printf("could not create fifo.\n");
+		return false;
+	}
+
+	int fd = open(name, O_RDWR, 0);
+	if(fd < 0)
+	{
+		printf("could not open fifo.\n");
+		return false;
+	}
+
+	write(fd, "TEST", 5);
+
+	char buf[5];
+	read(fd, &buf, 5);
+
+	if(strncmp("TEST", buf, 5) == 0)
+		return true;
+
+	close(fd);
+
 	return false;
 }
 
