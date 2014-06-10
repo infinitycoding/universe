@@ -78,7 +78,7 @@ typedef struct vfs_inode
     uint32_t type;
     uint32_t length;
     struct stat stat;
-	struct vfs_buffer_info *buffer;
+    struct vfs_buffer_info *buffer;
 
     struct vfs_inode *parent;
 } vfs_inode_t;
@@ -112,7 +112,7 @@ struct fd
     int flags;
 
     int read_pos;
-	int write_pos;
+    int write_pos;
 };
 
 void INIT_VFS(void);

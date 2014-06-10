@@ -63,6 +63,9 @@ qemu: kernel libs drivers user iso-img
 debug: kernel libs drivers user iso-img
 	$(QEMU) -s -S
 
+style:
+	$(MAKE) -C kernel style
+
 clean:
 	@$(MAKE) -C kernel clean
 	@$(MAKE) -C drivers clean

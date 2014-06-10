@@ -2,6 +2,9 @@ SRCS = $(shell find -name '*.c')
 SRCS += $(shell find -name '*.asm')
 OBJS = $(addsuffix .o,$(basename $(SRCS)))
 
+C_SRCS = $(shell find `pwd` -name '*.c')
+C_HDRS = $(shell find `pwd` -name '*.h')
+STYLEFLAGS = --style=allman --indent-switches
 
 CFLAGS += -Iinclude -Iinclude/util
 LDFLAGS += -Tlinkerscript.x
@@ -13,9 +16,6 @@ CFLAGS +=  -Iinclude/arch/x86
 else ifeq ($(ARCH),arm)
 CFLAGS +=  -Iinclude/arch/arm
 endif
-
-
-
 
 kernel32.elf: $(OBJS) linkerscript.x
 	@$(LD) $(LDFLAGS) -o $@ $^
@@ -33,8 +33,8 @@ kernel32.elf: $(OBJS) linkerscript.x
 %.x: %.gen
 	@$(CC) $(CFLAGS) -x assembler-with-cpp -P -E -o $@ $^
 
-style:  $(SRCS)
-	astyle --style=allman --indent-switches $^
+style: $(C_SRCS) $(C_HDRS)
+	astyle $(STYLEFLAGS) $^
 
 clean:
 	@rm -f $(OBJS)
@@ -42,3 +42,4 @@ clean:
 	@rm -f linkerscript.x
 
 .PHONY: clean
+

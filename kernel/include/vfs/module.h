@@ -27,14 +27,14 @@
 
 typedef enum successful       // optical reasons
 {
-     success, failed
-}success_t;
+    success, failed
+} success_t;
 
 struct mapping_statistics     // how many modules were loaded and how many failed
 {
-     int total;
-     int load_success;
-     int load_failed;
+    int total;
+    int load_success;
+    int load_failed;
 };
 
 
