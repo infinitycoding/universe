@@ -35,7 +35,7 @@ void handle_port_alloc(struct driver *drv, pck_t *req)
     //validate package
     if(req->size != sizeof(portpck_t)+12)
     {
-        printf("invalid package! %d  %d\n",req->size,sizeof(portpck_t));
+        printf("invalid package! %d  %d\n",req->size,(int)sizeof(portpck_t));
         respond(drv->pman, req->id, INVALID_REQUEST, 0, 0);
         free(req);
         return;

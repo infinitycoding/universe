@@ -35,106 +35,73 @@ push dword %1
 jmp isr_save
 %endmacro
 
-;
-Divide by Zero
+;Divide by Zero
 ISR 0
-;
-Debug Exception
+;Debug Exception
 ISR 1
-;
-Non Maskable Interrupt
+;Non Maskable Interrupt
 ISR 2
-;
-Breakpoint Exception
+;Breakpoint Exception
 ISR 3
-;
-Overflow Exception
+;Overflow Exception
 ISR 4
-;
-Bound Range Exception
+;Bound Range Exception
 ISR 5
-;
-Invalid Opcode
+;Invalid Opcode
 ISR 6
-;
-Device Not Available
+;Device Not Available
 ISR 7
-;
-Double Fault
+;Double Fault
 ISR_ERROR_CODE 8
-;
-Coprocessor Segment Overrun Exception
+;Coprocessor Segment Overrun Exception
 ISR 9
-;
-Invalid TSS
+;Invalid TSS
 ISR_ERROR_CODE 10
-;
-Segment not Present
+;Segment not Present
 ISR_ERROR_CODE 11
-;
-Stack Fault
+;Stack Fault
 ISR_ERROR_CODE 12
-;
-General Protection Fault
+;General Protection Fault
 ISR_ERROR_CODE 13
-;
-Page Fault
+;Page Fault
 ISR_ERROR_CODE 14
-;
-Reserved
+;Reserved
 ISR 15
-;
-x87 Floating Point Exception
+;x87 Floating Point Exception
 ISR 16
-;
-Alignment Check
+;Alignment Check
 ISR_ERROR_CODE 17
-;
-Machine Check
+;Machine Check
 ISR 18
-;
-SIMD Floating Point
+;SIMD Floating Point
 ISR 19
-;
-Reserved
+;Reserved
 ISR 20
-;
-Reserved
+;Reserved
 ISR 21
-;
-Reserved
+;Reserved
 ISR 22
-;
-Reserved
+;Reserved
 ISR 23
-;
-Reserved
+;Reserved
 ISR 24
-;
-Reserved
+;Reserved
 ISR 25
-;
-Reserved
+;Reserved
 ISR 26
-;
-Reserved
+;Reserved
 ISR 27
-;
-Reserved
+;Reserved
 ISR 28
-;
-Reserved
+;Reserved
 ISR 29
-;
-Reserved
+;Reserved
 ISR 30
-;
-Reserved
+;Reserved
 ISR 31
 
 
-;
-Default
+;Default
 Global isr_default
 isr_default:
 push dword 0xFFFFFFFF
@@ -142,8 +109,7 @@ push dword 0xFFFFFFFF
 jmp isr_save
 
 
-;
-Timer Interrupt / Task Scheduler
+;Timer Interrupt / Task Scheduler
 ISR 32
 ISR 33
 ISR 34
@@ -160,12 +126,11 @@ ISR 44
 ISR 45
 ISR 46
 ISR 47
-;
-Universe Syscall Handler
+
+;Universe Syscall Handler
 ISR 112
 
-;
-Linux Syscall Handler
+;Linux Syscall Handler
 ISR 128
 
 
