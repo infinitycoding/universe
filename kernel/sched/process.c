@@ -91,6 +91,7 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
     state->desc[string_len + 1] = 0;
     state->flags = flags;
     state->files = list_create();
+    state->env = list_create();
     if(parent != NULL)
     {
         state->cwd = parent->cwd;
@@ -373,7 +374,7 @@ void sys_getpid(struct cpu_state **cpu)
  */
 void sys_execve(struct cpu_state **cpu)
 {
-    /*char *filename = (char*) (*cpu)->CPU_ARG1;
+    char *filename = (char*) (*cpu)->CPU_ARG1;
      char **argv = (char**) (*cpu)->CPU_ARG2;
      //char **envp = (char**) (*cpu)->CPU_ARG3;
 
@@ -381,11 +382,7 @@ void sys_execve(struct cpu_state **cpu)
      printf(filename);
      if(filenode == NULL)
      {
-         return;
-     }
-     if(filenode->base == NULL)
-     {
-         (*cpu)->CPU_ARG0 = _FAILURE;
+        (*cpu)->CPU_ARG0 = _FAILURE;
          return;
      }
 
@@ -408,21 +405,5 @@ void sys_execve(struct cpu_state **cpu)
      process->zombie_tids = list_create();
 
      // run the new process
-     load_elf_thread(filenode->base, process, 0,(void**) argv);*/
-
+     load_elf_thread_from_file(filenode, process, 0,(void**) argv);
 }
-
-/**
- * set / get environment variables
- */
-void sys_setenv(struct cpu_state **cpu)
-{
-    // TODO entry in liste 'env' eintragen
-}
-
-void sys_getenv(struct cpu_state **cpu)
-{
-    // TODO liste auslesen
-}
-
-

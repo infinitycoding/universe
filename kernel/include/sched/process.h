@@ -56,6 +56,12 @@ typedef enum
     USERMODE = 3
 } privilege_t;
 
+struct env_var
+{
+    char *name;
+    char *var;
+};
+
 struct process_state
 {
     pid_t pid;
