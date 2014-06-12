@@ -62,13 +62,10 @@ struct process_state *load_elf_thread(void *image, struct process_state *proc, i
     struct elf_header *header = image;
     struct elf_program_header *ph;
 
-    if(header->ident[EI_MAG0] == ELF_MAG0 &&
+    if(!(header->ident[EI_MAG0] == ELF_MAG0 &&
             header->ident[EI_MAG1] == ELF_MAG1 &&
             header->ident[EI_MAG2] == ELF_MAG2 &&
-            header->ident[EI_MAG3] == ELF_MAG3)
-    {
-    }
-    else
+            header->ident[EI_MAG3] == ELF_MAG3))
     {
         printf("Invalid ELF-Magic!\n");
         return NULL;
@@ -104,5 +101,6 @@ struct process_state *load_elf_thread(void *image, struct process_state *proc, i
         }
     }
 
+    thread_start(new_thread);
     return proc;
 }

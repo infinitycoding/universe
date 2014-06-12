@@ -39,6 +39,7 @@ static bool numlock = false;
 static bool caps = false;
 port_t *kbc_stat;
 port_t *kbc_io;
+int f;
 void kbd_irq_handler(void);
 
 /**
@@ -82,6 +83,13 @@ int main(void)
         udrcp_error(conn,"could not get interrupt signal for IRQ 0x1\n");
     }
 
+    mkfifo("/dev/kb", S_IWUSR | S_IRUSR | S_IRGRP);
+    f = open("/dev/kb", O_WRONLY, 0);
+
+    if(!f)
+    {
+        udrcp_error(conn,"could not create fifo buffer /dev/kb\n");
+    }
 
     while(1)
     {
@@ -166,8 +174,9 @@ void kbd_irq_handler(void)
 	}
 
 	if (ASCII)
-    {
+  {
         printf("%c",ASCII);
-	}
+        write(f, &ASCII, sizeof(char));
+  }
 
 }

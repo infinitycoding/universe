@@ -56,5 +56,6 @@ void thread_exit(struct cpu_state **cpu);
 void launch_thread(struct cpu_state **cpu);
 struct thread_state *kernel_thread_create(uintptr_t eip, int argc, void **argv);
 void kernel_thread_exit(void);
+void thread_start(struct thread_state *thread);
 
 #endif

@@ -51,11 +51,16 @@ int main(int argc, char **argv)
 
 	int counter = 0;
 	char inchar;
-	char inbuffer[MAX_LINE_LENGTH] = "";	
+	char inbuffer[MAX_LINE_LENGTH] = "";
+
+	int input = 0;
+
+	while(input <= 0)
+		input = open("/dev/kb", O_RDONLY, 0);
 	
 	do
 	{
-		inchar = getchar();
+		read(input, &inchar, sizeof(char));
 		printf("%c", inchar);
 
 		switch(inchar)

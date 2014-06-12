@@ -56,7 +56,9 @@ void kernel_thread_exit(void)
 
 struct thread_state *kernel_thread_create(uintptr_t eip, int argc, void **argv)
 {
-    return thread_create(kernel_state, KERNELMODE, (uint32_t) eip, NULL, argc, argv, NULL, NULL);
+    struct thread_state *new_thread = thread_create(kernel_state, KERNELMODE, (uint32_t) eip, NULL, argc, argv, NULL, NULL);
+    thread_start(new_thread);
+    return new_thread;
 }
 
 
@@ -66,9 +68,10 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     new_thread->flags = THREAD_ACTIV;
     new_thread->process = process;
 
-    if(context == NULL)
-        vmm_create_context(&new_thread->context);
-    else
+    
+    vmm_create_context(&new_thread->context);
+    
+    if(context != NULL)
         memcpy(&new_thread->context.arch_context, &context->arch_context, sizeof(arch_vmm_context_t));
 
     thread_sync_context(new_thread);
@@ -135,9 +138,7 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     else
         new_thread->tid = (tid_t) list_pop_back(process->zombie_tids);
 
-
     list_push_front(process->threads,new_thread);
-    list_push_front(running_threads, new_thread);
     return new_thread;
 }
 
@@ -195,6 +196,11 @@ void thread_kill_sub(struct thread_state *thread)
         }
         free(thread);
     }
+}
+
+void thread_start(struct thread_state *thread)
+{
+    list_push_front(running_threads, thread);
 }
 
 void thread_exit(struct cpu_state **cpu)
