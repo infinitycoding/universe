@@ -6,10 +6,10 @@ LDFLAGS = -muniverse_i386 -flto -T ../link.ld
 
 ultrashell.elf: ../../libs/crt/entry.o $(OBJS) ../../libs/libc/libc.a
 	@$(LD) $(LDFLAGS) -o $@ $^
+	cp ultrashell.elf $(PREFIX)/ultrashell.elf
 
 host: 
 	gcc -Wall -fno-stack-protector -fno-builtin -I include -o ultrashell.elf $(SRCS)
-	cp ultrashell.elf $(prefix)/ultrashell.elf
 
 %.o: %.c
 	@$(CC) $(CFLAGS) -c -o $@ $^
