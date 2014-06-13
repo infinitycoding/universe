@@ -21,7 +21,7 @@
 
 /**
  *  @author Tom Slawik <tom.slawik@gmail.com>
- *  @author Michael Sippel (Universe Team) <micha.linuxfreak@gmail.com>
+ *  @author Michael Sippel (Universe Team) <micha@infinitycoding.de>
  */
 
 #include <stdint.h>
@@ -59,7 +59,7 @@ typedef struct
 void ARCH_INIT_PAGING(struct multiboot_struct *mb_info);
 void arch_vmm_create_context(arch_vmm_context_t *context);
 void arch_vmm_destroy_context(arch_vmm_context_t *context);
-void arch_sync_pts(arch_vmm_context_t *src, arch_vmm_context_t *dest, int index_low, int index_high);
+void arch_sync_pts(arch_vmm_context_t *dest, arch_vmm_context_t *src, int index_low, int index_high);
 
 pt_t pt_get(arch_vmm_context_t *context, int index, uint8_t flags);
 pt_t pt_create(arch_vmm_context_t *context, int index, uint8_t flags);

@@ -40,7 +40,8 @@ void thread_sync_context(struct thread_state *thread)
     if(thread != main_thread && main_thread != NULL && thread != NULL)
     {
         int end = PDE_INDEX(0xB0000000);
-        arch_sync_pts(&main_thread->context.arch_context, &thread->context.arch_context, 0, end);
+		//printf("call sync... 0x%x, 0x%x, %d, %d\n", &thread->context.arch_context, &main_thread->context.arch_context, 0, end);
+        arch_sync_pts(&thread->context.arch_context, &main_thread->context.arch_context, 0, end);
     }
 }
 
@@ -68,6 +69,13 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     new_thread->flags = THREAD_ACTIV;
     new_thread->process = process;
 
+    if(return_address == NULL)
+        return_address = &kernel_thread_exit;
+
+    if(process->main_thread == NULL)
+    {
+        process->main_thread = new_thread;
+    }
     
     vmm_create_context(&new_thread->context);
     
@@ -81,14 +89,6 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     void *kernel_stack = malloc(0x1000);
     struct cpu_state *new_state = kernel_stack + (0x1000 - sizeof(struct cpu_state))-12;
     new_thread->state = new_state;
-
-    if(return_address == NULL)
-        return_address = &kernel_thread_exit;
-
-    if(process->main_thread == NULL)
-    {
-        process->main_thread = new_thread;
-    }
 
     if(state != NULL)
     {

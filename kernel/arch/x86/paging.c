@@ -120,18 +120,18 @@ void arch_vmm_destroy_context(arch_vmm_context_t *context)
 }
 
 /**
- * Update the kernelspace area of a pagedir
+ * Copy pagetables
  *
- * @param pagedir
+ * @param src source
  * @return void
  */
-void arch_sync_pts(arch_vmm_context_t *src, arch_vmm_context_t *dest, int index_low, int index_high)
+void arch_sync_pts(arch_vmm_context_t *dest, arch_vmm_context_t *src, int index_low, int index_high)
 {
     int i;
     for(i = index_low; i < index_high; i++)
-    {
-        dest->entries[i] = src->entries[i];
-    }
+   	{
+		dest->entries[i] = src->entries[i];
+	}
 }
 
 void arch_fork_context(arch_vmm_context_t *src, arch_vmm_context_t *dest)
@@ -152,7 +152,7 @@ void arch_update_context(arch_vmm_context_t *context)
 {
 #define START PDE_INDEX(MEMORY_LAYOUT_KERNEL_START)
 #define END   PDE_INDEX(MEMORY_LAYOUT_KERNEL_END)
-    arch_sync_pts(&current_context->arch_context, context, START, END);
+    arch_sync_pts(context, &current_context->arch_context, START, END);
     context->entries[PDE_INDEX(MEMORY_LAYOUT_PAGING_STRUCTURES_START)] = (uint32_t) context->phys_addr | VMM_PRESENT | VMM_WRITABLE;
 }
 

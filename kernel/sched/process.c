@@ -81,6 +81,7 @@ void dump_thread_list(list_t *threads)
 struct process_state *process_create(const char *name, const char *desc, uint16_t flags,struct process_state *parent, uid_t uid, gid_t gid,struct pipeset *set)
 {
     struct process_state *state = malloc(sizeof(struct process_state));
+
     int string_len = min(strlen(name), 255);
     state->name = (char *) malloc(string_len + 1);
     strncpy(state->name, name, string_len);
@@ -95,6 +96,9 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
     state->heap_top = 0;
     state->heap_lower_limit = 0;
     state->heap_upper_limit = 0;
+
+	state->main_thread = NULL;
+
     if(parent != NULL)
     {
         state->cwd = parent->cwd;
