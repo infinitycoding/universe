@@ -97,7 +97,7 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
     state->heap_lower_limit = 0;
     state->heap_upper_limit = 0;
 
-	state->main_thread = NULL;
+    state->main_thread = NULL;
 
     if(parent != NULL)
     {
@@ -382,35 +382,35 @@ void sys_getpid(struct cpu_state **cpu)
 void sys_execve(struct cpu_state **cpu)
 {
     char *filename = (char*) (*cpu)->CPU_ARG1;
-     char **argv = (char**) (*cpu)->CPU_ARG2;
-     //char **envp = (char**) (*cpu)->CPU_ARG3;
+    char **argv = (char**) (*cpu)->CPU_ARG2;
+    //char **envp = (char**) (*cpu)->CPU_ARG3;
 
-     vfs_inode_t *filenode = vfs_lookup_path(filename);
-     printf(filename);
-     if(filenode == NULL)
-     {
+    vfs_inode_t *filenode = vfs_lookup_path(filename);
+    printf(filename);
+    if(filenode == NULL)
+    {
         (*cpu)->CPU_ARG0 = _FAILURE;
-         return;
-     }
+        return;
+    }
 
-     struct process_state *process = current_thread->process;
+    struct process_state *process = current_thread->process;
 
-     while(!list_is_empty(process->threads))
-     {
-         struct thread_state *thread = list_pop_front(process->threads);
-         if(thread == current_thread)
-         {
-             current_thread->flags |= THREAD_ZOMBIE;
-             process->flags |= PROCESS_ZOMBIE;
-         }
-         else
-             thread_kill_sub(thread);
-     }
+    while(!list_is_empty(process->threads))
+    {
+        struct thread_state *thread = list_pop_front(process->threads);
+        if(thread == current_thread)
+        {
+            current_thread->flags |= THREAD_ZOMBIE;
+            process->flags |= PROCESS_ZOMBIE;
+        }
+        else
+            thread_kill_sub(thread);
+    }
 
-     list_destroy(process->ports);
-     list_destroy(process->zombie_tids);
-     process->zombie_tids = list_create();
+    list_destroy(process->ports);
+    list_destroy(process->zombie_tids);
+    process->zombie_tids = list_create();
 
-     // run the new process
-     load_elf_thread_from_file(filenode, process, 0,(void**) argv);
+    // run the new process
+    load_elf_thread_from_file(filenode, process, 0,(void**) argv);
 }

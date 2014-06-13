@@ -40,7 +40,7 @@ void thread_sync_context(struct thread_state *thread)
     if(thread != main_thread && main_thread != NULL && thread != NULL)
     {
         int end = PDE_INDEX(0xB0000000);
-		//printf("call sync... 0x%x, 0x%x, %d, %d\n", &thread->context.arch_context, &main_thread->context.arch_context, 0, end);
+        //printf("call sync... 0x%x, 0x%x, %d, %d\n", &thread->context.arch_context, &main_thread->context.arch_context, 0, end);
         arch_sync_pts(&thread->context.arch_context, &main_thread->context.arch_context, 0, end);
     }
 }
@@ -76,9 +76,9 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     {
         process->main_thread = new_thread;
     }
-    
+
     vmm_create_context(&new_thread->context);
-    
+
     if(context != NULL)
         memcpy(&new_thread->context.arch_context, &context->arch_context, sizeof(arch_vmm_context_t));
 

@@ -176,11 +176,11 @@ void sys_brk(struct cpu_state **cpu)
     uint32_t heap_top = current_thread->process->heap_top;
     if(new_bss_top == 0)
     {
-        (*cpu)->CPU_ARG0 = heap_top; 
+        (*cpu)->CPU_ARG0 = heap_top;
     }
     else if(new_bss_top > current_thread->process->heap_upper_limit || new_bss_top < current_thread->process->heap_lower_limit)
     {
-        (*cpu)->CPU_ARG0 = 0; 
+        (*cpu)->CPU_ARG0 = 0;
     }
     else if(new_bss_top > (heap_top|0x00000FFF))
     {
@@ -209,5 +209,5 @@ void sys_brk(struct cpu_state **cpu)
 
 
     current_thread->process->heap_top = heap_top;
-    (*cpu)->CPU_ARG0 = heap_top; 
+    (*cpu)->CPU_ARG0 = heap_top;
 }

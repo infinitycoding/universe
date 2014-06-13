@@ -73,9 +73,9 @@ struct process_state *load_elf_thread(void *image, struct process_state *proc, i
 
     int i,j;
     ph = (struct elf_program_header*) (image + header->ph_offset);
-    
-	vmm_context_t context;
-	vmm_create_context(&context);
+
+    vmm_context_t context;
+    vmm_create_context(&context);
 
     for(i = 0; i < header->ph_entry_count; i++, ph++)
     {
@@ -85,7 +85,7 @@ struct process_state *load_elf_thread(void *image, struct process_state *proc, i
             uintptr_t dest_start = (uintptr_t) arch_vaddr_find((arch_vmm_context_t*)current_context, pages,
                                    MEMORY_LAYOUT_KERNEL_START, MEMORY_LAYOUT_KERNEL_END, VMM_WRITABLE);
 
-			// map pages
+            // map pages
             for(j = 0; j < pages; j++)
             {
                 paddr_t paddr = (uintptr_t) pmm_alloc_page();
@@ -96,17 +96,17 @@ struct process_state *load_elf_thread(void *image, struct process_state *proc, i
                 vmm_map(current_context, paddr, dest, VMM_WRITABLE);
             }
 
-			// copy data
-			memcpy((void*) dest_start, image + ph->offset, ph->file_size);
+            // copy data
+            memcpy((void*) dest_start, image + ph->offset, ph->file_size);
 
-			// clear rest
+            // clear rest
             memset((void*)dest_start + ph->file_size, 0, ph->mem_size - ph->file_size);
 
             vmm_unmap_range(current_context, dest_start, pages);
         }
     }
 
-	thread_create(proc, 3, header->entry, NULL, argc,(void **) argv, NULL, &context);
+    thread_create(proc, 3, header->entry, NULL, argc,(void **) argv, NULL, &context);
 
     return proc;
 }

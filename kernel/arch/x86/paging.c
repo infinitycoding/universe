@@ -129,9 +129,9 @@ void arch_sync_pts(arch_vmm_context_t *dest, arch_vmm_context_t *src, int index_
 {
     int i;
     for(i = index_low; i < index_high; i++)
-   	{
-		dest->entries[i] = src->entries[i];
-	}
+    {
+        dest->entries[i] = src->entries[i];
+    }
 }
 
 void arch_fork_context(arch_vmm_context_t *src, arch_vmm_context_t *dest)
