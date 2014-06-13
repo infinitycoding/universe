@@ -7,7 +7,8 @@
 
 int main(int argc, char **argv)
 {
-    bool success = true;
+	printf("TEST!\n");
+/*    bool success = true;
     success &= test_vfs_api();
 
 
@@ -25,7 +26,7 @@ int main(int argc, char **argv)
 	char buf[5];
 	read(fd[0], &buf, 5);
 	printf("%s\n", buf);
-
+*/
     return 0;
 }
 

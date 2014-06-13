@@ -73,14 +73,17 @@ struct process_state *load_elf_thread(void *image, struct process_state *proc, i
 
     int i,j;
     ph = (struct elf_program_header*) (image + header->ph_offset);
-    struct thread_state *new_thread = thread_create(proc, 3, header->entry, NULL, argc,(void **) argv, NULL, NULL);
+    
+	vmm_context_t context;
+	vmm_create_context(&context);
 
     for(i = 0; i < header->ph_entry_count; i++, ph++)
     {
         if(ph->type == EPT_LOAD)
         {
             int pages = NUM_PAGES(ph->mem_size);
-            uintptr_t dest_start = (uintptr_t) arch_vaddr_find((arch_vmm_context_t *)current_context, pages,
+			int file_pages = NUM_PAGES(ph->file_size);
+            uintptr_t dest_start = (uintptr_t) arch_vaddr_find((arch_vmm_context_t*)current_context, pages,
                                    MEMORY_LAYOUT_KERNEL_START, MEMORY_LAYOUT_KERNEL_END, VMM_WRITABLE);
 
             for(j = 0; j < pages; j++)
@@ -90,17 +93,28 @@ struct process_state *load_elf_thread(void *image, struct process_state *proc, i
                 uintptr_t src = (uintptr_t) image + ph->offset + j*PAGE_SIZE;
                 uintptr_t dest = (uintptr_t) dest_start + j*PAGE_SIZE;
 
-                vmm_map(&new_thread->context, paddr, vaddr, VMM_WRITABLE | VMM_USER);
+                vmm_map(&context, paddr, vaddr, VMM_WRITABLE | VMM_USER);
                 vmm_map(current_context, paddr, dest, VMM_WRITABLE);
 
-                memcpy((void*) dest, (void*) src, PAGE_SIZE);
+				if(j < file_pages-1)
+				{
+                	memcpy((void*) dest, (void*) src, PAGE_SIZE);
+				}
+				else
+				{
+					memcpy((void*) dest, (void*) src, 0/*ph->file_size % PAGE_SIZE*/);//FIXME
+				}
             }
+
+			// clear rest
             memset((void*)dest_start + ph->file_size, 0, ph->mem_size - ph->file_size);
 
             vmm_unmap_range(current_context, dest_start, pages);
         }
     }
 
-    thread_start(new_thread);
+	thread_create(proc, 3, header->entry, NULL, argc,(void **) argv, NULL, &context);
+
     return proc;
 }
+

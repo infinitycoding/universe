@@ -35,6 +35,9 @@ configure: download
 build: configure
 	$(MAKE) -C $(BUILD)
 
+install: build
+	$(MAKE) -C $(BUILD) install
+
 clean:
 	rm -rf $(NEWLIB)
 	rm -rf $(BUILD)

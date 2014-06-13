@@ -57,7 +57,7 @@ void kernel_thread_exit(void)
 struct thread_state *kernel_thread_create(uintptr_t eip, int argc, void **argv)
 {
     struct thread_state *new_thread = thread_create(kernel_state, KERNELMODE, (uint32_t) eip, NULL, argc, argv, NULL, NULL);
-    thread_start(new_thread);
+
     return new_thread;
 }
 
@@ -149,6 +149,10 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
         new_thread->tid = (tid_t) list_pop_back(process->zombie_tids);
 
     list_push_front(process->threads,new_thread);
+
+    list_push_front(running_threads, new_thread);
+
+
     return new_thread;
 }
 
@@ -206,11 +210,6 @@ void thread_kill_sub(struct thread_state *thread)
         }
         free(thread);
     }
-}
-
-void thread_start(struct thread_state *thread)
-{
-    list_push_front(running_threads, thread);
 }
 
 void thread_exit(struct cpu_state **cpu)
