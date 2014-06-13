@@ -24,6 +24,7 @@
 #include <drivers/clock.h>
 #include <mm/heap.h>
 #include <io.h>
+#include <bcd.h>
 
 struct cmos_data *cmos;
 
@@ -81,4 +82,45 @@ void INIT_RTC(void)
 void sync_sys_clock()
 {
     up_time += 1000/timer_freq;
+}
+
+/**
+ * Updates the time from CMOS-RTC
+ *
+ * @param void
+ */
+void update_time(struct time *time)
+{
+    time->second =       BCD_DECODE(cmos_read_byte(0x00));
+    time->alarm_sec =    BCD_DECODE(cmos_read_byte(0x01));
+    time->minute =       BCD_DECODE(cmos_read_byte(0x02));
+    time->alarm_min =    BCD_DECODE(cmos_read_byte(0x03));
+    time->hour =         BCD_DECODE(cmos_read_byte(0x04));
+    time->alarm_hour =   BCD_DECODE(cmos_read_byte(0x05));
+    time->week_day =     BCD_DECODE(cmos_read_byte(0x06)) - 1;
+    time->day_in_month = BCD_DECODE(cmos_read_byte(0x07));
+    time->month =        BCD_DECODE(cmos_read_byte(0x08));
+    time->year =         BCD_DECODE(cmos_read_byte(0x09));
+    time->century =      BCD_DECODE(cmos_read_byte(0x32));
+}
+
+/**
+ * Changes the Time from CMOS
+ *
+ * @param time New time
+ */
+void change_time(struct time *time)
+{
+    char bcd_str[2];
+    cmos_write_byte(0x00, BCD_ENCODE(bcd_str, time->second));
+    cmos_write_byte(0x01, BCD_ENCODE(bcd_str, time->alarm_sec));
+    cmos_write_byte(0x02, BCD_ENCODE(bcd_str, time->minute));
+    cmos_write_byte(0x03, BCD_ENCODE(bcd_str, time->alarm_min));
+    cmos_write_byte(0x04, BCD_ENCODE(bcd_str, time->hour));
+    cmos_write_byte(0x05, BCD_ENCODE(bcd_str, time->alarm_hour));
+    cmos_write_byte(0x06, BCD_ENCODE(bcd_str, time->week_day));
+    cmos_write_byte(0x07, BCD_ENCODE(bcd_str, time->day_in_month));
+    cmos_write_byte(0x08, BCD_ENCODE(bcd_str, time->month));
+    cmos_write_byte(0x09, BCD_ENCODE(bcd_str, time->year));
+    cmos_write_byte(0x32, BCD_ENCODE(bcd_str, time->century));
 }

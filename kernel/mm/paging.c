@@ -174,7 +174,6 @@ void sys_brk(struct cpu_state **cpu)
 {
     uint32_t new_bss_top = (*cpu)->CPU_ARG1;
     uint32_t heap_top = current_thread->process->heap_top;
-    printf("heap top: %x\n", heap_top);
     if(new_bss_top == 0)
     {
         (*cpu)->CPU_ARG0 = heap_top; 
@@ -185,7 +184,6 @@ void sys_brk(struct cpu_state **cpu)
     }
     else if(new_bss_top > (heap_top|0x00000FFF))
     {
-        printf("adding new block\n");
         int req_memory = new_bss_top-((heap_top|0x00000FFF));
         int pages = 1+(req_memory/PAGE_SIZE);
         if(req_memory%PAGE_SIZE)

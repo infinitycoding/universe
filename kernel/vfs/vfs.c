@@ -33,7 +33,7 @@
 #include <mm/paging.h>
 #include <sched/thread.h>
 #include <event/trigger.h>
-#include <event/time.h>
+#include <drivers/clock.h>
 
 extern struct thread_state *current_thread;
 
@@ -1141,14 +1141,14 @@ void sys_stat(struct cpu_state **cpu)
 {
     if((*cpu)->CPU_ARG1 == 0 || (*cpu)->CPU_ARG2 == 0)
     {
-        (*cpu)->CPU_ARG0 = 0;
+        (*cpu)->CPU_ARG0 = _FAILURE;
         return;
     }
 
     vfs_inode_t *node = vfs_lookup_path((char*)(*cpu)->CPU_ARG1);
     if(node == NULL)
     {
-        (*cpu)->CPU_ARG0 = 0;
+        (*cpu)->CPU_ARG0 = _FAILURE;
         return;
     }
 
@@ -1160,7 +1160,7 @@ void sys_fstat(struct cpu_state **cpu)
 {
     if((*cpu)->CPU_ARG1 == 0)
     {
-        (*cpu)->CPU_ARG0 = 0;
+        (*cpu)->CPU_ARG0 = _FAILURE;
         return;
     }
 
@@ -1176,7 +1176,7 @@ void sys_fstat(struct cpu_state **cpu)
         list_next(&file_it);
     }
 
-    (*cpu)->CPU_ARG0 = 0;
+    (*cpu)->CPU_ARG0 = _FAILURE;
 }
 
 void sys_chmod(struct cpu_state **cpu)
@@ -1185,14 +1185,14 @@ void sys_chmod(struct cpu_state **cpu)
     char *file = (char *)(*cpu)->CPU_ARG1;
     if(file == NULL)
     {
-        (*cpu)->CPU_ARG0 = 0;
+        (*cpu)->CPU_ARG0 = _FAILURE;
         return;
     }
     // Lookup path
     vfs_inode_t *node = vfs_lookup_path(file);
     if(node == NULL)
     {
-        (*cpu)->CPU_ARG0 = 0;
+        (*cpu)->CPU_ARG0 = _FAILURE;
         return;
     }
     // Check permissions
@@ -1203,5 +1203,40 @@ void sys_chmod(struct cpu_state **cpu)
     }
     // change mode
     node->stat.st_mode = (*cpu)->CPU_ARG2;
+    (*cpu)->CPU_ARG0 = _SUCCESS;
+}
+
+
+void sys_lchown(struct cpu_state **cpu)
+{
+    char *file = (char *)(*cpu)->CPU_ARG1;
+    if(file == NULL)
+    {
+        (*cpu)->CPU_ARG0 = _FAILURE;
+        return;
+    }
+    // Lookup path
+    vfs_inode_t *node = vfs_lookup_path(file);
+    if(node == NULL)
+    {
+        (*cpu)->CPU_ARG0 = _FAILURE;
+        return;
+    }
+    // Check permissions
+    if(node->stat.st_uid != current_thread->process->uid)
+    {
+        (*cpu)->CPU_ARG0 = _NO_PERMISSION;
+        return;
+    }
+
+    // do to follow link
+    if(node->type == VFS_LINK)
+    {
+        (*cpu)->CPU_ARG0 = _FAILURE;
+        return;
+    }
+
+    node->stat.st_uid = (uid_t) (*cpu)->CPU_ARG2;
+    node->stat.st_gid = (gid_t) (*cpu)->CPU_ARG3;
     (*cpu)->CPU_ARG0 = _SUCCESS;
 }

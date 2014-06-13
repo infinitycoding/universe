@@ -25,6 +25,7 @@
 */
 
 #include <event/time.h>
+#include <drivers/cmos.h>
 
 
 void INIT_CLOCK(int freq);
@@ -32,7 +33,8 @@ void INIT_PIT(int freq);
 void INIT_RTC(void);
 void set_pit_freq(int freq);
 void sync_sys_clock();
-
+void update_time(struct time *time);
+void change_time(struct time *time);
 
 #endif
 

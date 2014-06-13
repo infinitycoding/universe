@@ -22,7 +22,6 @@
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  *  @author Michael Sippel <micha@infinitycoding.com>
  */
-
 #include <sys/types.h>
 #include <stdint.h>
 #include <cpu.h>
@@ -43,8 +42,6 @@ struct time
 };
 
 
-void update_time(struct time *time);
-void change_time(struct time *time);
 void print_time(struct time *time);
 time_t unix_time(struct time *time);
 
