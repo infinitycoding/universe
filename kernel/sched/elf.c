@@ -82,29 +82,22 @@ struct process_state *load_elf_thread(void *image, struct process_state *proc, i
         if(ph->type == EPT_LOAD)
         {
             int pages = NUM_PAGES(ph->mem_size);
-			int file_pages = NUM_PAGES(ph->file_size);
             uintptr_t dest_start = (uintptr_t) arch_vaddr_find((arch_vmm_context_t*)current_context, pages,
                                    MEMORY_LAYOUT_KERNEL_START, MEMORY_LAYOUT_KERNEL_END, VMM_WRITABLE);
 
+			// map pages
             for(j = 0; j < pages; j++)
             {
                 paddr_t paddr = (uintptr_t) pmm_alloc_page();
                 vaddr_t vaddr = (uintptr_t) ph->virt_addr + j*PAGE_SIZE;
-                uintptr_t src = (uintptr_t) image + ph->offset + j*PAGE_SIZE;
                 uintptr_t dest = (uintptr_t) dest_start + j*PAGE_SIZE;
 
                 vmm_map(&context, paddr, vaddr, VMM_WRITABLE | VMM_USER);
                 vmm_map(current_context, paddr, dest, VMM_WRITABLE);
-
-				if(j < file_pages-1)
-				{
-                	memcpy((void*) dest, (void*) src, PAGE_SIZE);
-				}
-				else
-				{
-					memcpy((void*) dest, (void*) src, 0/*ph->file_size % PAGE_SIZE*/);//FIXME
-				}
             }
+
+			// copy data
+			memcpy((void*) dest_start, image + ph->offset, ph->file_size);
 
 			// clear rest
             memset((void*)dest_start + ph->file_size, 0, ph->mem_size - ph->file_size);
