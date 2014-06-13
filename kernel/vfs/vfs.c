@@ -675,7 +675,7 @@ void sys_mknod(struct cpu_state **cpu)
 {
     char *path = (char *) (*cpu)->CPU_ARG1;
     int mode =(int) (*cpu)->CPU_ARG2;
-    int dev = (int)(*cpu)->CPU_ARG3; // unused
+    //int dev = (int)(*cpu)->CPU_ARG3; // unused
 
     vfs_inode_t *inode = vfs_create_path(path, mode, current_thread->process->uid, current_thread->process->gid);
 

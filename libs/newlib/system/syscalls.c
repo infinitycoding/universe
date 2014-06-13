@@ -100,7 +100,14 @@ int read(int file, char *ptr, int len)
 
 caddr_t sbrk(int incr)
 {
-    // todo... 
+    void *heap_end = (void *) linux_syscall(SYS_BRK, 0, 0, 0, 0, 0);
+    caddr_t r = (caddr_t) linux_syscall(SYS_BRK,(uint32_t) heap_end+incr, 0, 0, 0, 0);
+    if(!r)
+    {
+        write (2, "Heap/stack collision or freeing of unallocated blocks\n", 54);
+        abort ();
+    }
+    return t;
 }
 
 int stat(const char *file, struct stat *st)

@@ -80,6 +80,9 @@ struct process_state
     list_t *zombie_tids;
     list_t *children;
     uint16_t flags;
+    uint32_t heap_top;
+    uint32_t heap_lower_limit;
+    uint32_t heap_upper_limit;
 };
 
 struct child

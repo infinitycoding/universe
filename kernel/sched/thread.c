@@ -101,6 +101,7 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
         new_state->eflags = 0x202;
     }
 
+    uint32_t *stack;
     if(prev == KERNELMODE)
     {
         new_thread->flags |= THREAD_KERNELMODE;
@@ -109,7 +110,7 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
         new_state->es = 0x10;
         new_state->fs = 0x10;
         new_state->gs = 0x10;
-        uint32_t *stack = kernel_stack + 0x1000-8;
+        stack = kernel_stack + 0x1000-8;
         *--stack = (uint32_t) argv;
         *--stack = argc;
         *--stack = (uint32_t) return_address;
@@ -122,7 +123,7 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
             vmm_map(&new_thread->context, pframe, MEMORY_LAYOUT_STACK_TOP-0x1000, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
             new_state->esp = (uint32_t) MEMORY_LAYOUT_STACK_TOP - 12;
 
-            uint32_t *stack = (uint32_t *) (vmm_automap_kernel(current_context, pframe, VMM_PRESENT | VMM_WRITABLE | VMM_USER) + 0x1000);
+            stack = (uint32_t *) (vmm_automap_kernel(current_context, pframe, VMM_PRESENT | VMM_WRITABLE | VMM_USER) + 0x1000);
             *--stack = (uint32_t) argv;
             *--stack = argc;
             *--stack = (uint32_t) return_address;
@@ -131,6 +132,15 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
 
         new_state->cs = 0x1b;
         new_state->ss = 0x23;
+    }
+
+    if(process->heap_top == 0)
+    {
+        process->heap_top = arch_vaddr_find(&new_thread->context.arch_context, 1, MEMORY_LAYOUT_USER_HEAP_START, MEMORY_LAYOUT_USER_HEAP_END, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
+        vmm_map(&new_thread->context, pmm_alloc_page(), process->heap_top, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
+        process->heap_lower_limit = process->heap_top;
+        process->heap_upper_limit = (uint32_t) stack-0x1000;
+
     }
 
     if(list_is_empty(process->zombie_tids))

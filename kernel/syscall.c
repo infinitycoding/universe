@@ -44,7 +44,7 @@ void identify_os(struct cpu_state **cpu)
 
 
 
-#define DEFINED_LINUX_FUNCTIONS 45
+#define DEFINED_LINUX_FUNCTIONS 60
 
 
 void (*linux_functions[])(struct cpu_state **cpu) =
@@ -57,7 +57,8 @@ void (*linux_functions[])(struct cpu_state **cpu) =
     NULL /*sys_stime*/, NULL /*sys_ptrace*/, NULL /*sys_alarm*/, sys_fstat, NULL /*sys_pause*/,
     NULL /*sys_utime*/, NULL /*sys_stty*/, NULL /*sys_gtty*/, NULL /*sys_access*/, NULL /*sys_nice*/,
     NULL /*sys_ftime*/, NULL /*sys_sync*/, NULL /*sys_kill*/, NULL /*sys_rename*/, sys_mkdir,
-    NULL /*sys_rmdir*/, NULL /*sys_dup*/, sys_pipe,
+    NULL /*sys_rmdir*/, NULL /*sys_dup*/, sys_pipe, NULL /*sys_times*/, NULL /*sys_prof*/,
+    sys_brk, NULL /*sys_setgid*/, NULL /*sys_getgid*/, NULL /*sys_signal*/, NULL /*sys_getuid*/,
 
     /* 141: sys_getdents hab ich mal readdir genannt */
     sys_getdents, NULL, NULL, NULL,

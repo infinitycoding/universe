@@ -25,6 +25,7 @@
 #include <arch_paging.h>
 #include <memory_layout.h>
 #include <idt.h>
+#include <sched/thread.h>
 
 vmm_context_t *current_context = NULL;
 
@@ -166,3 +167,49 @@ void alloc_memory(struct cpu_state **cpu)
     (*cpu)->CPU_ARG0 = (uint32_t)dest;
 }
 
+
+extern struct thread_state* current_thread;
+
+void sys_brk(struct cpu_state **cpu)
+{
+    uint32_t new_bss_top = (*cpu)->CPU_ARG1;
+    uint32_t heap_top = current_thread->process->heap_top;
+    printf("heap top: %x\n", heap_top);
+    if(new_bss_top == 0)
+    {
+        (*cpu)->CPU_ARG0 = heap_top; 
+    }
+    else if(new_bss_top > current_thread->process->heap_upper_limit || new_bss_top < current_thread->process->heap_lower_limit)
+    {
+        (*cpu)->CPU_ARG0 = 0; 
+    }
+    else if(new_bss_top > (heap_top|0x00000FFF))
+    {
+        printf("adding new block\n");
+        int req_memory = new_bss_top-((heap_top|0x00000FFF));
+        int pages = 1+(req_memory/PAGE_SIZE);
+        if(req_memory%PAGE_SIZE)
+            pages++;
+
+        heap_top = arch_vaddr_find(&current_context->arch_context, pages, MEMORY_LAYOUT_USER_HEAP_START, MEMORY_LAYOUT_USER_HEAP_END, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
+        int i;
+        for(i = 0; i < pages; i++)
+        {
+            paddr_t paddr = pmm_alloc_page();
+            vaddr_t vaddr = heap_top + i*PAGE_SIZE;
+            vmm_map(current_context, paddr, vaddr, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
+        }
+
+        heap_top += req_memory;
+    }
+    else if(new_bss_top < (heap_top^0xFFFFF000))
+    {
+        //todo Free
+    }
+    else
+        heap_top = new_bss_top;
+
+
+    current_thread->process->heap_top = heap_top;
+    (*cpu)->CPU_ARG0 = heap_top; 
+}
