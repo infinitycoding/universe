@@ -19,7 +19,7 @@
 /**
  * @author Thomas Haller <thomas.haller@familie-haller.eu>
  * @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
- * @author Michael Sippel <micha.linuxfreak@gmail.com>
+ * @author Michael Sippel <micha@infinitycoding.de>
  */
 
 #define MEMORY_LAYOUT_KERNEL_START 0xC0000000

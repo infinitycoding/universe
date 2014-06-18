@@ -25,7 +25,7 @@
 #include <mm/heap.h>
 
 
-#define COUNT 10001
+#define COUNT 100
 #define STEP (int)((float)COUNT/(float)10)
 extern vfs_inode_t *root;
 
@@ -102,3 +102,4 @@ bool test_vfs()
         return false;
     return true;
 }
+

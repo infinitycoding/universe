@@ -51,11 +51,13 @@ void heap_add(alloc_t *inode)
  * @param pages number of pages to allocate
  * @return allocation inode
  */
-alloc_t *heap_expand(int pages)
+alloc_t *heap_expand(int bytes)
 {
 #ifdef HEAP_DEBUG
     printf("heap_expand(): add %d pages...\n", pages);
 #endif
+
+	int pages = NUM_PAGES(bytes+sizeof(alloc_t));
 
     // allocate memory
     paddr_t pframe = 0;
@@ -94,9 +96,7 @@ alloc_t *heap_expand(int pages)
 void *malloc(size_t bytes)
 {
     alloc_t *header = first_node;
-    //vaddr_t data = 0;         // currently unused, maybe useless (someone check this please)
-    int n_size = bytes + sizeof(alloc_t);
-
+/*
     // go through all inodes...
     while(header != NULL)
     {
@@ -123,9 +123,9 @@ void *malloc(size_t bytes)
 
         header = header->next;
     }
-
+*/
     // if nothing found, create new stuff...
-    header = heap_expand(NUM_PAGES(n_size));
+    header = heap_expand(bytes);
     if(header != NULL)
     {
         header->status = HEAP_STATUS_USED;

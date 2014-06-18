@@ -85,11 +85,12 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
     int string_len = min(strlen(name), 255);
     state->name = (char *) malloc(string_len + 1);
     strncpy(state->name, name, string_len);
-    state->name[string_len + 1] = 0;
+    state->name[string_len + 1] = '\0';
     string_len = min(strlen(desc), 255);
     state->desc = (char *) malloc(string_len + 1);
     strncpy(state->desc, desc, string_len);
-    state->desc[string_len + 1] = 0;
+    state->desc[string_len + 1] = '\0';
+
     state->flags = flags;
     state->files = list_create();
     state->env = list_create();

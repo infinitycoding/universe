@@ -23,33 +23,41 @@
 #include <mm/heap.h>
 #include <printf.h>
 
-bool test_heap()
+bool test_heap(int na, int nb)
 {
     int i;
-    printf("allocating array a with 5000 integers...\n");
-    int *a = malloc(sizeof(int) * 5000);
+    printf("allocating array a with %d integers...\n", na);
+    int *a = malloc(sizeof(int) * na);
     printf("a is at 0x%p\nwriting to a...", a);
 
-    for(i = 0; i < 5000; i++) a[i] = i;
+    for(i = 0; i < na; i++) a[i] = i;
 
-    printf("allocating array b with 25000 integers...\n");
-    int *b = malloc(sizeof(int) * 25000);
+    printf("allocating array b with %d integers...\n", nb);
+    int *b = malloc(sizeof(int) * nb);
     printf("b is at 0x%p\nwriting to b...\n", b);
-    for(i = 0; i < 25000; i++) b[i] = 25000-i;
+    for(i = 0; i < nb; i++) b[i] = nb-i;
 
-    printf("reallocating array a with 25000...\n");
-    a = realloc(a, sizeof(int) * 25000);
+    printf("reallocating array a with %d...\n", nb);
+    a = realloc(a, sizeof(int) * nb);
 
     printf("copying array b to array a...\n");
-    for(i = 0; i < 25000; i++) a[i] = b[i];
+    for(i = 0; i < nb; i++) a[i] = b[i];
 
     printf("freeing b\n");
     free(b);
 
-    for(i = 0; i < 2500; i++) ;//printf("test : %d, %d\n", i, a[i]);
+    for(i = 0; i < nb; i++)
+	{
+		if(nb-i != a[i])
+		{
+			printf("failure.\n");
+			return false;
+		}
+	}
 
     printf("freeing a\n");
     free(a);
 
     return true;
 }
+

@@ -234,11 +234,15 @@ int send_event(uint32_t ID)
 
                 if(current_entry->callback != NULL)
                 {
-                    struct cpu_state **cpu = &thread->state;
+					// save current thread
                     struct thread_state *tmp = current_thread;
+
+                    struct cpu_state **cpu = &thread->state;
                     current_thread = thread;
                     vmm_switch_context(&current_thread->context);
+
                     current_entry->callback(cpu);
+
                     current_thread = tmp;
                     vmm_switch_context(&current_thread->context);
                 }

@@ -96,7 +96,6 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     printf("\n");
     INIT_PCI();
 
-
     int i;
     struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
 

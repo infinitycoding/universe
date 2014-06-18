@@ -89,6 +89,6 @@ int mknod(char *path, int mode, int dev)
 
 int mkfifo(char *path, int mode)
 {
-	return mknod(path, S_IFIFO | S_IRUSR | S_IWUSR, 0);
+	return mknod(path, S_IFIFO | S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH, 0);
 }
 

@@ -53,11 +53,12 @@ int main(int argc, char **argv)
 	char inchar;
 	char inbuffer[MAX_LINE_LENGTH] = "";
 
-	int input = 0;
+	int input = -1;
+	while(input < 0)
+	{
+		input = open("/dev/kbd", O_RDONLY, 0);
+	}
 
-	while(input <= 0)
-		input = open("/dev/kb", O_RDONLY, 0);
-	
 	do
 	{
 		read(input, &inchar, sizeof(char));

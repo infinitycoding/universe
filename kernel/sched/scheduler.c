@@ -18,12 +18,13 @@
 
 /**
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
- *	@author Michael Sippel <micha.linuxfreak@gmail.com>
+ *	@author Michael Sippel <micha@infinitycoding.de>
 */
 
 #include <sched/scheduler.h>
 
 #include <string.h>
+#include <list.h>
 #include <printf.h>
 
 #include <mm/heap.h>
@@ -33,7 +34,6 @@
 #include <tss.h>
 #include <gdt.h>
 #include <pmm.h>
-
 
 
 tss_s tss = { .ss0 = 0x10 };
