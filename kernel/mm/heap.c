@@ -57,7 +57,7 @@ alloc_t *heap_expand(int bytes)
     printf("heap_expand(): add %d pages...\n", pages);
 #endif
 
-	int pages = NUM_PAGES(bytes+sizeof(alloc_t));
+    int pages = NUM_PAGES(bytes+sizeof(alloc_t));
 
     // allocate memory
     paddr_t pframe = 0;
@@ -96,34 +96,34 @@ alloc_t *heap_expand(int bytes)
 void *malloc(size_t bytes)
 {
     alloc_t *header = first_node;
-/*
-    // go through all inodes...
-    while(header != NULL)
-    {
-        // fits the size?
-        if(header->size >= bytes && header->status == HEAP_STATUS_FREE)
+    /*
+        // go through all inodes...
+        while(header != NULL)
         {
-            // mark as used
-            header->status = HEAP_STATUS_USED;
-
-            // if something is left, split it down
-            if(header->size > n_size)
+            // fits the size?
+            if(header->size >= bytes && header->status == HEAP_STATUS_FREE)
             {
-                alloc_t *new_header = (alloc_t *)(header->base + bytes);
-                new_header->base    = header->base + n_size;
-                new_header->size = header->size - n_size;
-                new_header->status = HEAP_STATUS_FREE;
-                header->size = bytes;
+                // mark as used
+                header->status = HEAP_STATUS_USED;
 
-                heap_add(new_header);
+                // if something is left, split it down
+                if(header->size > n_size)
+                {
+                    alloc_t *new_header = (alloc_t *)(header->base + bytes);
+                    new_header->base    = header->base + n_size;
+                    new_header->size = header->size - n_size;
+                    new_header->status = HEAP_STATUS_FREE;
+                    header->size = bytes;
+
+                    heap_add(new_header);
+                }
+
+                return (void*) header->base;
             }
 
-            return (void*) header->base;
+            header = header->next;
         }
-
-        header = header->next;
-    }
-*/
+    */
     // if nothing found, create new stuff...
     header = heap_expand(bytes);
     if(header != NULL)

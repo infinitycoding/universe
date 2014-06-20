@@ -47,13 +47,13 @@ bool test_heap(int na, int nb)
     free(b);
 
     for(i = 0; i < nb; i++)
-	{
-		if(nb-i != a[i])
-		{
-			printf("failure.\n");
-			return false;
-		}
-	}
+    {
+        if(nb-i != a[i])
+        {
+            printf("failure.\n");
+            return false;
+        }
+    }
 
     printf("freeing a\n");
     free(a);

@@ -234,7 +234,7 @@ int send_event(uint32_t ID)
 
                 if(current_entry->callback != NULL)
                 {
-					// save current thread
+                    // save current thread
                     struct thread_state *tmp = current_thread;
 
                     struct cpu_state **cpu = &thread->state;

@@ -91,13 +91,21 @@ extern void isr_128(void);
 extern void isr_default(void);
 extern void isr_pci(void);
 
+#define INTERRUPT_GATE 0x06
+#define TRAP_GATE 0x07
+#define TASK_GATE 0x05
 
 struct IDT_Entry
 {
-    uint16_t Base_low;
+    uint16_t offset_low;
     uint16_t selector;
-    uint16_t flags;
-    uint16_t Base_hi;
+    uint8_t ist :3;
+    uint8_t reserved :5;
+    uint8_t type :3;
+    uint8_t d :2;
+    uint8_t dpl :2;
+    uint8_t present :1;
+    uint16_t offset_high;
 } __attribute__((packed));
 
 struct idtpt
@@ -109,7 +117,7 @@ struct idtpt
 
 void lidt(uint16_t irq);
 void EOI(int irq);
-void Set_IDT_Entry(uint32_t intnr, uint16_t selector, uint32_t Base, uint16_t flags);
+void Set_IDT_Entry(int i, uint32_t offset, uint16_t selector, uint8_t type, int dpl);
 
 struct cpu_state* irq_handler(struct cpu_state* cpu);
 int install_irq(int irqnum, void *handler);
