@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 	int input = -1;
 	while(input < 0)
 	{
-		input = open("/dev/kbd", O_RDONLY, 0);
+		input = open("kbd", O_RDONLY, 0);
 	}
 
 	do

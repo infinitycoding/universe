@@ -215,13 +215,13 @@ int vfs_write(vfs_inode_t *inode, int off, void *buffer, int bytes)
         inode->length = off + bytes;
         inode->stat.st_size = inode->length;
     }
+
     // pipes send an event signal
     if(inode->type == VFS_PIPE)
     {
-        if(S_ISFIFO(inode->stat))
-            printf("[vfs] written, now %d, sending signal...\n", inode->length);
         send_event(info->event_id);
         info->event_id = get_new_event_ID();
+
         launch_pipe_handlers(info);
     }
 
@@ -240,7 +240,7 @@ int vfs_read(vfs_inode_t *inode, int offset, void *buffer, int bytes)
 {
     GET_INODE(inode);
 
-    if(inode->length >= (offset+bytes))
+    if(inode->length >= offset)
     {
         int block_id = offset / PAGE_SIZE;
         int block_off= offset % PAGE_SIZE;
@@ -285,14 +285,17 @@ int vfs_read(vfs_inode_t *inode, int offset, void *buffer, int bytes)
                 }
             }
 
+			if(inode->length <= (offset+i))
+			{
+				break;
+			}
+
             // copy data
             data[i] = block->base[index++];
         }
 
         return i;
     }
-    if(S_ISFIFO(inode->stat))
-        printf("[vfs] vfs_read(): %d < %d\n", inode->length, (offset+bytes));
 
     return 0;
 }
@@ -620,9 +623,6 @@ void sys_open(struct cpu_state **cpu)
         desc->write_pos = 0;
         desc->inode = inode;
 
-        if(desc->inode->name != NULL && current_thread->process->name != NULL)
-            printf("[vfs] opened %s for process %s\n", desc->inode->name, current_thread->process->name);
-
         if(oflags & O_APPEND)
         {
             desc->read_pos = inode->length;
@@ -673,7 +673,6 @@ void sys_pipe(struct cpu_state **cpu)
     }
     else
     {
-        //	printf("feehler\n");
         (*cpu)->CPU_ARG0 = _FAILURE;
     }
 }
@@ -691,7 +690,6 @@ void sys_mknod(struct cpu_state **cpu)
         if(S_ISFIFO(inode->stat))
         {
             inode->buffer->event_id = get_new_event_ID();
-            printf("event id is=%d\n", inode->buffer->event_id);
             inode->buffer->handlers = list_create();
             inode->type = VFS_PIPE;
         }
@@ -746,11 +744,6 @@ void sys_read(struct cpu_state **cpu)
             if(vfs_access(inode, R_OK, current_thread->process->uid, current_thread->process->gid) == 0)
             {
                 int ret = vfs_read(inode, desc->read_pos, buf, len);
-                if(S_ISFIFO(inode->stat))
-                {
-                    printf("[vfs] read %d bytes at %d: \"%c\", fd=%d\n", ret, desc->read_pos, *((char*)buf), fd);
-                    printf("size:%d, 0x%x\n\n", inode->length, inode);
-                }
 
                 if(ret == len)
                 {
@@ -766,10 +759,6 @@ void sys_read(struct cpu_state **cpu)
                 {
                     if(inode->type == VFS_PIPE)
                     {
-                        if(S_ISFIFO(inode->stat))
-                        {
-                            printf("[vfs] sleeping (fd=%d)\n\n", fd);
-                        }
                         add_trigger(WAIT_EVENT, info->event_id, 0, current_thread, sys_read);
                         suspend_thread(current_thread);
                         *cpu = (struct cpu_state *)task_schedule(*cpu);
@@ -823,18 +812,8 @@ void sys_write(struct cpu_state **cpu)
 
             if(vfs_access(inode, W_OK, current_thread->process->uid, current_thread->process->gid) == 0)
             {
-                if(S_ISFIFO(inode->stat))
-                {
-                    printf("[vfs] writing...\n");
-                }
                 int ret = vfs_write(inode, desc->write_pos, buf, len);
                 (*cpu)->CPU_ARG0 = ret;
-
-                if(S_ISFIFO(inode->stat))
-                {
-                    printf("[vfs] wrote \"%c\" to %s\n", *buf, inode->name);
-                    printf("size:%d, 0x%x\n\n", inode->length, inode);
-                }
 
                 if(ret > 0)
                 {
