@@ -1,0 +1,96 @@
+#ifndef	_pfp_h_
+#define	_pfp_h_
+
+/*
+     Copyright 2012-2014 Infinitycoding all rights reserved
+     This file is part of the Universe Kernel.
+
+     The Universe Kernel is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     any later version.
+
+     The Universe Kernel is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+/**
+ *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
+ *  @author Peter Hösch aka. BlitzBasic <peter.hoesch@infinitycoding.de>
+ **/
+
+
+
+#include <list.h>
+#include <stdint.h>
+
+
+#define NOTHING 0
+#define REPLACE 1
+#define APPEND 2
+#define UNESSENTIAL  4
+#define SERVICE  8
+#define DRIVER     16
+#define KERNELROOT 32
+
+
+
+
+
+
+
+typedef unsigned int ptype;
+
+typedef enum
+{
+    DEFAULT_MODE = 1,
+    SECTION_MODE = 2,
+    SECTION_NAME_MODE = 4,
+    SERVICE_MODE = 8,
+    SERVICE_NAME_MODE = 16,
+    PIPE_MODE = 32,
+    PIPE_NAME_MODE = 64,
+    CHILDREN_MODE = 128,
+    FALLBACK_MODE = 256,
+    OPTION_MODE = 512
+}parser_mode_t;
+
+struct pnode
+{
+    char *file;
+    ptype type;
+    struct pnode *fallback;
+    list_t *subtree;
+    struct pnode *parent;
+};
+
+
+struct section
+{
+    ptype type;
+    char *name;
+    list_t *subtree;
+};
+
+struct parser_state
+{
+    struct section *section;
+    struct pnode *node;
+    list_t *section_list;
+    parser_mode_t mode;
+    list_t *mode_stack;
+    bool success;
+};
+
+
+int validate_pf(char *file);
+
+
+
+#endif
