@@ -273,7 +273,7 @@ int send_event(uint32_t ID)
 uint32_t get_new_event_ID(void)
 {
 //    if(list_is_empty(event_id_list))
-        return event_id_counter++;
+    return event_id_counter++;
 
     return (uint32_t) list_pop_back(event_id_list);
 }

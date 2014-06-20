@@ -83,8 +83,8 @@ int main(void)
         udrcp_error(conn,"could not get interrupt signal for IRQ 0x1\n");
     }
 
-    int mret = mkfifo("kbd", S_IWUSR | S_IRUSR | S_IRGRP);
-    f = open("kbd", O_WRONLY, 0);
+    int mret = mkfifo("/dev/kbd", S_IWUSR | S_IRUSR | S_IRGRP);
+    f = open("/dev/kbd", O_WRONLY, 0);
 
     if(f < 0 || mret < 0)
     {

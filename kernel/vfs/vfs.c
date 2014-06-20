@@ -285,10 +285,10 @@ int vfs_read(vfs_inode_t *inode, int offset, void *buffer, int bytes)
                 }
             }
 
-			if(inode->length <= (offset+i))
-			{
-				break;
-			}
+            if(inode->length <= (offset+i))
+            {
+                break;
+            }
 
             // copy data
             data[i] = block->base[index++];
