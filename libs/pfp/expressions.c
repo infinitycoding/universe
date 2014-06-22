@@ -86,22 +86,6 @@ char *name_handle(char *str, struct parser_state *state)
             exit(1);
         break;
 
-        case SERVICE_MODE:
-        case SECTION_MODE:
-            state->node = malloc(sizeof(struct pnode));
-            state->node->type = DRIVER;
-            state->node->file = malloc(name_len+1);
-            memcpy(state->node->file,str,name_len);
-            state->node->file[name_len] = 0; // terminator
-            state->node->fallback = 0;
-            state->node->subtree = NULL;
-            if(!state->section->subtree)
-                state->section->subtree = list_create();
-            list_push_front(state->section->subtree, state->node);
-            printf("Pipline\n%s\n",state->node->file);
-            state->mode = PIPE_MODE;
-        break;
-
         case SECTION_NAME_MODE:
             state->section->name = malloc(name_len+1);
             memcpy(state->section->name, str, name_len);
@@ -116,10 +100,40 @@ char *name_handle(char *str, struct parser_state *state)
             printf("%s\n", state->node->file);
         break;
 
+        case SERVICE_MODE:
+            mode_push(state);
+            node = malloc(sizeof(struct pnode));
+            node->type = DRIVER;
+            node->file = malloc(name_len+1);
+            memcpy(state->node->file,str,name_len);
+            node->file[name_len] = 0; // terminator
+            node->fallback = NULL;
+            node->subtree = NULL;
+            if(!state->node->subtree)
+                state->node->subtree = list_create();
+            list_push_front(state->section->subtree, node);
+            printf("Pipline\n%s\n",state->node->file);
+            state->node = node;
+            state->mode = PIPE_MODE;
+        break;
 
-        case CHILDREN_MODE:
-            list_push_front(state->mode_stack,(void *) state->mode);
-        case PIPE_MODE:
+        case SECTION_MODE:
+            state->node = malloc(sizeof(struct pnode));
+            state->node->type = DRIVER;
+            state->node->file = malloc(name_len+1);
+            memcpy(state->node->file,str,name_len);
+            state->node->file[name_len] = 0; // terminator
+            state->node->fallback = NULL;
+            state->node->subtree = NULL;
+            if(!state->section->subtree)
+                state->section->subtree = list_create();
+            list_push_front(state->section->subtree, state->node);
+            printf("Pipline\n%s\n",state->node->file);
+            state->mode = PIPE_MODE;
+        break;
+
+
+        case PIPE_NAME_MODE:
             state->node->file = malloc(name_len+1);
             memcpy(state->node->file,str,name_len);
             state->node->file[name_len] = 0; // terminator
@@ -131,7 +145,7 @@ char *name_handle(char *str, struct parser_state *state)
 
 
         default:
-            printf("unknown expression\n");
+            printf("unknown expression %s\n",str);
             exit(1);
         break;
 

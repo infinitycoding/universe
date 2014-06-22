@@ -26,7 +26,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <pfp.h>
-#include <tokens.h>
 #include <stdio.h>
 
 extern char *call_identifier_handle(int num, char *str, struct parser_state *state);
@@ -45,9 +44,11 @@ int validate_pf(char *file)
     struct parser_state state;
     state.section = NULL;
     state.node = NULL;
-    state.success = true;
+    state.section_list = list_create();
     state.mode = DEFAULT_MODE;
     state.mode_stack = list_create();
+    state.success = true;
+
     parser(state, file, strlen(file));
     return state.success;
 }
@@ -56,7 +57,7 @@ int validate_pf(char *file)
 struct parser_state parser(struct parser_state state, char *file, size_t len)
 {
     char *strend = file + len;
-    while(file < strend)
+    while(state.success && file < strend)
     {
         int id = is_identifier(file);
 
@@ -76,10 +77,36 @@ struct parser_state parser(struct parser_state state, char *file, size_t len)
         state.success = false;
         return state;
     }
-
     if(list_length(state.mode_stack))
+    {
         state.success = false;
+        // todo: scan stack and print a useful error message
+    }
     else
         state.success = true;
     return state;
+}
+
+
+void mode_push(struct parser_state *state)
+{
+    struct parser_mode *current_mode = malloc(sizeof(struct parser_mode));
+    current_mode->mode = state->mode;
+    current_mode->node = state->node;
+    list_push_front(state->mode_stack, current_mode);
+}
+
+bool mode_pull(struct parser_state *state)
+{
+    if(list_is_empty(state->mode_stack))
+    {
+        printf("tried to pull from a empty stack\n");
+        return false;
+    }
+
+    struct parser_mode *new_mode = (struct parser_mode *)list_pop_front(state->mode_stack);
+    state->mode = new_mode->mode;
+    state->node = new_mode->node;
+    //free(new_mode); // i dont'get it why it crashes at this point...
+    return true;
 }

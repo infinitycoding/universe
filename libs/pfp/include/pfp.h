@@ -53,9 +53,9 @@ typedef enum
     SECTION_MODE = 2,
     SECTION_NAME_MODE = 4,
     SERVICE_MODE = 8,
-    SERVICE_NAME_MODE = 16,
+    SERVICE_NAME_MODE = 16, 
     PIPE_MODE = 32,
-    PIPE_NAME_MODE = 64,
+    PIPE_NAME_MODE = 64, // pipemode in which names are allowed
     CHILDREN_MODE = 128,
     FALLBACK_MODE = 256,
     OPTION_MODE = 512
@@ -67,7 +67,6 @@ struct pnode
     ptype type;
     struct pnode *fallback;
     list_t *subtree;
-    struct pnode *parent;
 };
 
 
@@ -78,19 +77,26 @@ struct section
     list_t *subtree;
 };
 
+struct parser_mode
+{
+    parser_mode_t mode;
+    struct pnode *node;
+};
+
 struct parser_state
 {
-    struct section *section;
-    struct pnode *node;
-    list_t *section_list;
-    parser_mode_t mode;
-    list_t *mode_stack;
-    bool success;
+    struct section *section;    // NULL pointer by defualt
+    struct pnode *node;         // NULL pointer by default
+    list_t *section_list;       // empty list by default
+    parser_mode_t mode;         // DEFAULT_MODE by defualt
+    list_t *mode_stack;         // empty list by defualt
+    bool success;               //true by default
 };
 
 
 int validate_pf(char *file);
 
-
+void mode_push(struct parser_state *state);
+bool mode_pull(struct parser_state *state);
 
 #endif
