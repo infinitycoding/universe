@@ -27,16 +27,26 @@
 
 //#define DYN_ARRAY_DEBUG
 
+typedef enum dynamic_array_status
+{
+	status_normal,
+	status_unexistent,
+	status_low_damage,
+	status_high_damage
+}dynamic_array_status;
+
 typedef struct dynamic_array_block
 {
-     char *value;
-     struct dynamic_array_block *next;
+	char *value;
+	struct dynamic_array_block *next;
 }dynamic_array_block;
 
 typedef struct dynamic_array
 {
-     int blocksize;
-     struct dynamic_array_block *first;
+	unsigned int blocksize;
+	unsigned int usr_errors;
+	unsigned int array_errors;
+    struct dynamic_array_block *first;
 }dynamic_array;
 
 dynamic_array *create_array(int blcksize);
@@ -44,6 +54,9 @@ dynamic_array *delete_array(dynamic_array *array);
 char get(dynamic_array *array, int nr);
 char set(dynamic_array *array, int nr, char val);
 char *as_string(dynamic_array *array);
+dynamic_array_status get_status(dynamic_array *array);
+
+
 
 #endif
 
