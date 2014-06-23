@@ -27,6 +27,10 @@
 
 
 
+ #define MAX_WD_LENGTH 80
+
+
+
 int echo(int argc, char **argv);
 int sver(int argc, char **argv);
 int cmdtrue(int argc, char **argv);

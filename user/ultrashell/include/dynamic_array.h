@@ -22,37 +22,28 @@
 
 
 
-#ifndef ULTRASHELL_H
-#define ULTRASHELL_H
+#ifndef _DYNAMIC_ARRAY_H_
+#define _DYNAMIC_ARRAY_H_
 
+//#define DYN_ARRAY_DEBUG
 
-
-#include <binaryTree.h>
-
-
-
-#define FOREVER while(1)
-#define MAX_PATH_LENGTH 100
-#define MAX_TOKEN_LENGTH 50
-#define BLOCKSIZE 10         // it should be larger but i want the dynamic array to do something to test it
-
-
-
-struct shell_state
+typedef struct dynamic_array_block
 {
-	int last_ret_value;
-	binary_tree *cmds;
-};
+     char *value;
+     struct dynamic_array_block *next;
+}dynamic_array_block;
 
+typedef struct dynamic_array
+{
+     int blocksize;
+     struct dynamic_array_block *first;
+}dynamic_array;
 
-
-int main(int argc, char **argv);
-binary_tree *initBinaryTree();
-int parserLine(struct shell_state *state, const char *line);
-int getTokens(const char *instring, char ***tokens);
-int replaceTokens(int number, char ***tokens, struct shell_state *state);
-int countTokens(const char *instring);
-
-
+dynamic_array *create_array(int blcksize);
+dynamic_array *delete_array(dynamic_array *array);
+char get(dynamic_array *array, int nr);
+char set(dynamic_array *array, int nr, char val);
+char *as_string(dynamic_array *array);
 
 #endif
+

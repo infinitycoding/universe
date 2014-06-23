@@ -23,6 +23,7 @@
 
 
 #include <ultrashell.h>
+#include <dynamic_array.h>
 #include <basicCMDs.h>
 #include <binaryTree.h>
 
@@ -51,7 +52,7 @@ int main(int argc, char **argv)
 
 	int counter = 0;
 	char inchar;
-	char inbuffer[MAX_LINE_LENGTH] = "";
+	dynamic_array *inbuffer = create_array(BLOCKSIZE);
 
 	int input = -1;
 	while(input < 0)
@@ -62,7 +63,6 @@ int main(int argc, char **argv)
 	do
 	{
 		read(input, &inchar, sizeof(char));
-		printf("%c", inchar);
 
 		switch(inchar)
 		{
@@ -70,21 +70,26 @@ int main(int argc, char **argv)
 			break;
 
 			case '\b':
-				inbuffer[--counter] = '\0';
+				if(counter != 0)
+				{
+					set(inbuffer, --counter,  '\0');
+					printf("\b");
+				}
 			break;
 
 			default:
-				inbuffer[counter++] = inchar;
-				inbuffer[counter] = '\0';
+				set(inbuffer, counter++, inchar);
+				set(inbuffer, counter, '\0');
+				printf("%c", inchar);
 			break;
 		}
 
-        	if(inchar == '\n')
+       	if(inchar == '\n')
 		{
-			parserLine(&shell, inbuffer);
+			parserLine(&shell, as_string(inbuffer));
 
 			counter = 0;
-			inbuffer[counter] = '\0';
+			set(inbuffer, counter, '\0');
 		}
 	}FOREVER;
 
