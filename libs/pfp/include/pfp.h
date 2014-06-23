@@ -45,20 +45,20 @@
 
 
 
-typedef unsigned int ptype;
+typedef int ptype;
 
 typedef enum
 {
     DEFAULT_MODE = 1,
     SECTION_MODE = 2,
     SECTION_NAME_MODE = 4,
-    SERVICE_MODE = 8,
-    SERVICE_NAME_MODE = 16, 
-    PIPE_MODE = 32,
-    PIPE_NAME_MODE = 64, // pipemode in which names are allowed
-    CHILDREN_MODE = 128,
-    FALLBACK_MODE = 256,
-    OPTION_MODE = 512
+    SECTION_TYPE_MODE = 8,
+    SERVICE_MODE = 16,
+    SERVICE_NAME_MODE = 32, 
+    PIPE_MODE = 64,
+    PIPE_NAME_MODE = 128, // pipemode in which names are allowed
+    CHILDREN_MODE = 256,
+    FALLBACK_MODE = 512,
 }parser_mode_t;
 
 struct pnode

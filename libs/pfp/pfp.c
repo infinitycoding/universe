@@ -49,7 +49,7 @@ int validate_pf(char *file)
     state.mode_stack = list_create();
     state.success = true;
 
-    parser(state, file, strlen(file));
+    state = parser(state, file, strlen(file));
     return state.success;
 }
 
@@ -77,13 +77,16 @@ struct parser_state parser(struct parser_state state, char *file, size_t len)
         state.success = false;
         return state;
     }
+    
     if(list_length(state.mode_stack))
     {
+        printf("stack %d\n",list_length(state.mode_stack));
         state.success = false;
         // todo: scan stack and print a useful error message
     }
     else
         state.success = true;
+
     return state;
 }
 

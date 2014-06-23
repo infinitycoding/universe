@@ -89,12 +89,30 @@ bool is_name(char *in)
     return false;
 }
 
+char *section_modes[] = {"default", "append", "replace", NULL};
+
+
+ptype is_section_mode(char *str)
+{
+    int i;
+    size_t str_len = strlen(str);
+    for(i = 0; section_modes[i] != NULL; i++)
+    {
+        size_t mode_len = strlen(section_modes[i]);
+        if(str_len < mode_len)
+            continue;
+
+        if(strncmp(str, section_modes[i], mode_len) == 0)
+            return i;
+    }
+    return -1;
+}
+
 
 char *name_handle(char *str, struct parser_state *state)
 {
     if(!is_name(str))
         return str;
-
     size_t name_len = 0;
     while(is_name(&str[name_len]) && name_len < strlen(str))
         name_len++;
@@ -163,7 +181,16 @@ char *name_handle(char *str, struct parser_state *state)
             printf("%s\n", state->node->file);
         break;
 
-
+        case SECTION_TYPE_MODE:
+            state->section->type = is_section_mode(str);
+            printf("mode: %s\n", section_modes[state->section->type]);
+            if(state->section->type <= 0)
+            {
+                printf("invalid section mode \n");
+                state->success = false;
+                return str;
+            }
+        break;
 
 
         default:
