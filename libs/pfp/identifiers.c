@@ -94,9 +94,10 @@ char *call_identifier_handle(int num, char *str, struct parser_state *state)
 
     if(identifier_handles[num] == NULL)
     {
-        printf("Identifier %s\n", identifiers[num]);
+        
         return str;
     }
+    printf("Identifier %s\n", identifiers[num]);
     return identifier_handles[num](str,state);
 }
 
@@ -318,6 +319,7 @@ char *colon_handle(char *str, struct parser_state *state)
 
 char *semicolon_handle(char *str, struct parser_state *state)
 {
+    printf("semicolon\n");
     if(! (state->mode & (SERVICE_MODE | PIPE_MODE) ))
     {
         printf("invalid identifier \";\"\n");
@@ -378,6 +380,15 @@ char *comma_handle(char *str, struct parser_state *state)
     }
 
     mode_push(state);
+
+    struct pnode *new_node = malloc(sizeof(struct pnode));
+    new_node->type = NOTHING;
+    new_node->file = NULL;
+    new_node->fallback = NULL;
+    new_node->subtree = NULL;
+
+    
+    state->node = new_node;
     state->mode = PIPE_NAME_MODE;
     return str;
 }

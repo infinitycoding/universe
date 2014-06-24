@@ -50,6 +50,8 @@ int validate_pf(char *file)
     state.success = true;
 
     state = parser(state, file, strlen(file));
+    printf("\n");
+    print_structure(&state);
     return state.success;
 }
 
@@ -91,11 +93,16 @@ struct parser_state parser(struct parser_state state, char *file, size_t len)
 }
 
 
+
 void mode_push(struct parser_state *state)
 {
     struct parser_mode *current_mode = malloc(sizeof(struct parser_mode));
     current_mode->mode = state->mode;
     current_mode->node = state->node;
+    if(current_mode->node)
+        printf("push %s\n",current_mode->node->file);
+    else
+        printf("push NULL node\n");
     list_push_front(state->mode_stack, current_mode);
 }
 
@@ -107,7 +114,9 @@ bool mode_pull(struct parser_state *state)
         return false;
     }
 
+    
     struct parser_mode *new_mode = (struct parser_mode *)list_pop_front(state->mode_stack);
+    printf("file: %s pull %s\n",state->node->file,new_mode->node->file);
     state->mode = new_mode->mode;
     state->node = new_mode->node;
     //free(new_mode); // i dont'get it why it crashes at this point...

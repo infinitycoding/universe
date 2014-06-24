@@ -158,6 +158,7 @@ char *name_handle(char *str, struct parser_state *state)
         break;
 
         case SECTION_MODE:
+            mode_push(state);
             state->node = malloc(sizeof(struct pnode));
             state->node->type = DRIVER;
             state->node->file = malloc(name_len+1);
