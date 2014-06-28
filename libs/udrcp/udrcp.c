@@ -56,20 +56,20 @@ pckmgr *new_pckmgr(int in, int out, int err)
  */
 pckid_t gen_pckid(pckmgr *mgr)
 {
-    list_set_first(mgr->used_ids);
-    while(!list_is_empty(mgr->used_ids) && !list_is_last(mgr->used_ids))
+    iterator_t  i = iterator_create(mgr->used_ids);
+    while(!list_is_last(&i))
     {
-        if((pckid_t)list_get_current(mgr->used_ids) == mgr->counter )
+        if((pckid_t)list_get_current(&i) == mgr->counter )
         {
             if(mgr->counter == MAX_ID)
                 mgr->counter = 0;
             else
                 mgr->counter++;
 
-            list_set_first(mgr->used_ids);
+            list_set_first(&i);
         }
         else
-            list_next(mgr->used_ids);
+            list_next(&i);
     }
     list_push_front(mgr->used_ids,(void*)mgr->counter);
     return mgr->counter++;
@@ -84,16 +84,16 @@ pckid_t gen_pckid(pckmgr *mgr)
  */
 int free_pckid(pckmgr *mgr, pckid_t id)
 {
-    list_set_first(mgr->used_ids);
-    while(!list_is_empty(mgr->used_ids) && !list_is_last(mgr->used_ids))
+    iterator_t  i = iterator_create(mgr->used_ids);
+    while(!list_is_last(&i))
     {
-        if((pckid_t)list_get_current(mgr->used_ids) == id )
+        if((pckid_t)list_get_current(&i) == id )
         {
-            list_remove(mgr->used_ids);
+            list_remove(&i);
             return true;
         }
         else
-            list_next(mgr->used_ids);
+            list_next(&i);
     }
 
     return false;
@@ -221,16 +221,16 @@ void poll_queue(pckmgr *mgr)
  */
 pck_t *fetch_queue(pckmgr *mgr,pckid_t id)
 {
-    list_set_first(mgr->recieved_pcks);
-    while(!list_is_last(mgr->recieved_pcks) && !list_is_empty(mgr->recieved_pcks))
+    iterator_t i = iterator_create(mgr->recieved_pcks);
+    while(!list_is_last(&i))
     {
-        pck_t *current = list_get_current(mgr->recieved_pcks);
+        pck_t *current = list_get_current(&i);
         if(current->id == id)
         {
-            list_remove(mgr->recieved_pcks);
+            list_remove(&i);
             return current;
         }
-        list_next(mgr->recieved_pcks);
+        list_next(&i);
     }
     return NULL;
 }

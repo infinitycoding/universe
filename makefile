@@ -3,10 +3,10 @@ all: kernel libs drivers user iso-img
 # PPC
 # I386
 # arm
-ARCH=I386
+ARCH=i686
 CFLAGS = -Wall -g -nostdinc -fno-stack-protector -fno-builtin-log
-ASFLAGS =  -f elf32
-LDFLAGS = -muniverse_i386
+ASFLAGS =-felf32
+#LDFLAGS = -muniverse_i386
 
 PREFIX = $(PWD)/build
 #USBDEV = /dev/sdb
@@ -14,11 +14,11 @@ PREFIX = $(PWD)/build
 ifeq ($(ARCH),PPC)
 QEMU = qemu-system-ppc
 
-else ifeq ($(ARCH),I386)
+else ifeq ($(ARCH),i686)
 QEMU = qemu-system-i386 -cdrom cdrom.iso -net nic,model=rtl8139 -net user
 CC = i686-universe-gcc
 ASM = nasm
-LD = i686-universe-ld 
+LD = i686-universe-ld
 
 else ifeq ($(ARCH),arm)
 CC = arm-linux-gnueabi-gcc
@@ -28,26 +28,27 @@ QEMU = qemu-system-arm -cpu arm1176 -M versatilepb -m 256M -nographic -kernel un
 endif
 
 # Export for subfiles 
-export CC
-export ASM
-export LD
-export CFLAGS
-export ASFLAGS
-export LDFLAGS
+#export CC
+#export ASM
+#export LD
+#export CFLAGS
+#export ASFLAGS
+#export LDFLAGS
 export PREFIX
 
 
 kernel:
-	@$(MAKE) -C kernel ARCH=$(ARCH)
+	@$(MAKE) -C kernel ARCH=$(ARCH) CC=$(CC) ASM=$(ASM) LD=$(LD) ASFLAGS=$(ASFLAGS) LDFLAGS=$(LDFLAGS)
 
 libs:
-	@$(MAKE) -C libs ARCH=$(ARCH)
+	@$(MAKE) -C libs/newlib ARCH=$(ARCH)
+	@$(MAKE) -C libs ARCH=$(ARCH) CC=$(CC) ASM=$(ASM) LD=$(LD) ASFLAGS=$(ASFLAGS) LDFLAGS=$(LDFLAGS)
 
 drivers:libs
-	@$(MAKE) -C drivers ARCH=$(ARCH)
+	@$(MAKE) -C drivers ARCH=$(ARCH) CC=$(CC) ASM=$(ASM) LD=$(LD) ASFLAGS=$(ASFLAGS) LDFLAGS=$(LDFLAGS)
 
 user: libs
-	@$(MAKE) -C user ARCH=$(ARCH)
+	@$(MAKE) -C user ARCH=$(ARCH) CC=$(CC) ASM=$(ASM) LD=$(LD) ASFLAGS=$(ASFLAGS) LDFLAGS=$(LDFLAGS)
 
 iso-img:
 	@genisoimage -R -b boot/grub/stage2_eltorito -input-charset utf-8 -no-emul-boot -boot-load-size 4 -boot-info-table -o cdrom.iso build
@@ -70,7 +71,10 @@ clean:
 	@$(MAKE) -C kernel clean
 	@$(MAKE) -C drivers clean
 	@$(MAKE) -C user clean
+	@$(MAKE) -C libs/newlib clean
 	@$(MAKE) -C libs clean
 	@rm *.iso -f
+
+
 
 .PHONY: all kernel libs drivers user clean qemu

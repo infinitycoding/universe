@@ -9,29 +9,29 @@ STYLEFLAGS = --style=allman --indent-switches
 CFLAGS += -Iinclude -Iinclude/util
 LDFLAGS += -Tlinkerscript.x
 
-ifeq ($(ARCH),PPC)
+ifeq (${ARCH},PPC)
 CFLAGS +=  -Iinclude/arch/ppc
-else ifeq ($(ARCH),I386)
+else ifeq ($(ARCH),i686)
 CFLAGS +=  -Iinclude/arch/x86
 else ifeq ($(ARCH),arm)
 CFLAGS +=  -Iinclude/arch/arm
 endif
 
 kernel32.elf: $(OBJS) linkerscript.x
-	@$(LD) $(LDFLAGS) -o $@ $^
+	@${LD} ${LDFLAGS} -o $@ $^
 	@cp kernel32.elf $(PREFIX)/kernel32.elf
 
 %.o: %.c
-	@$(CC) $(CFLAGS) -c -o $@ $^
+	@${CC} ${CFLAGS} -c -o $@ $^
 
 %.ppasm: %.asm
-	@$(CC) $(CFLAGS) -x assembler-with-cpp -P -E -o $@ $^
+	@${CC} ${CFLAGS} -x assembler-with-cpp -P -E -o $@ $^
 
 %.o: %.ppasm
-	@$(ASM) $(ASFLAGS) -o $@ $^
+	@${ASM} ${ASFLAGS} -o $@ $^
 
 %.x: %.gen
-	@$(CC) $(CFLAGS) -x assembler-with-cpp -P -E -o $@ $^
+	@${CC} ${CFLAGS} -x assembler-with-cpp -P -E -o $@ $^
 
 style: $(C_SRCS) $(C_HDRS)
 	astyle $(STYLEFLAGS) $^

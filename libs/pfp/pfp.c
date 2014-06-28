@@ -28,9 +28,12 @@
 #include <pfp.h>
 #include <stdio.h>
 
+extern int is_identifier(char *str);
+extern int is_expression(char *str);
 extern char *call_identifier_handle(int num, char *str, struct parser_state *state);
 char *call_expression_handle(int num, char *str, struct parser_state *state);
 struct parser_state parser(struct parser_state state, char *file, size_t len);
+
 
 
 /**
@@ -51,7 +54,6 @@ int validate_pf(char *file)
 
     state = parser(state, file, strlen(file));
     printf("\n");
-    print_structure(&state);
     return state.success;
 }
 

@@ -1,23 +1,20 @@
 SHELL = /bin/bash
 
-all: download configure build
-
-KERNEL_HEADERS = `pwd`/../../../kernel/include
+all: download configure build install
 
 SOURCEWARE = ftp://sourceware.org
 NEWLIB = newlib-2.1.0
 
 BUILD = build
-TARGET = target
+
 
 download:
 	$(MAKE) -C ../../download load unpack NAME=$(NEWLIB) DPATH=$(SOURCEWARE)/pub/newlib/$(NEWLIB).tar.gz TYPE=tar.gz
 	cp -ru ../../download/$(NEWLIB) ./$(NEWLIB)
 	mkdir -p $(BUILD)
-	mkdir -p $(TARGET)
 
 configure: download
-	if [ ! -f $(NEWLIB)/config.log ]; then \
+	if [ ! -f $(BUILD)/config.log ]; then \
 		cd $(NEWLIB); \
 		patch -p1 < ../newlib.patch; \
 		mkdir -p newlib/libc/sys/universe; \
@@ -28,7 +25,7 @@ configure: download
 		autoreconf; \
 		cd ../../../../..; \
 		cd $(BUILD); \
-		../$(NEWLIB)/configure --prefix="$(PREFIX)/usr/" --target=i686-universe; \
+		../$(NEWLIB)/configure --prefix=$(PREFIX)/usr --target=$(ARCH)-universe; \
 		cd ..; \
 	fi
 
@@ -37,9 +34,10 @@ build: configure
 
 install: build
 	$(MAKE) -C $(BUILD) install
+	@rm -R $(PREFIX)/usr/share
+	@cp -R $(PREFIX)/usr/$(ARCH)-universe/* $(PREFIX)/usr/
+	@rm -rf $(PREFIX)/usr/$(ARCH)-universe
 
 clean:
 	rm -rf $(NEWLIB)
 	rm -rf $(BUILD)
-	rm -rf $(TARGET)
-

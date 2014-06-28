@@ -11,7 +11,7 @@ libc.a: $(OBJS)
 	@ar -rcs $@ $^
 
 %.o: %.c
-	@$(CC) $(CFLAGS) -c -o $@ $^
+	@${CC} ${CFLAGS} -c -o $@ $^
 
 clean:
 	@rm $(OBJS) -f
