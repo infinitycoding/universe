@@ -27,63 +27,48 @@
 #include <mm/paging.h>
 #include <string.h>
 
-static alloc_t *first_node = NULL;
+static struct header_block *used_blocks = NULL;
+static struct header_block *free_blocks = NULL;
 
 void INIT_HEAP(void)
 {
-    // nothing to do here :)
+    used_blocks = create_block();
+    free_blocks = create_block();
+    free_blocks->fragments[0].base = MEMORY_LAYOUT_KERNEL_HEAP_START;
+    free_blocks->fragments[0].size = MEMORY_LAYOUT_KERNEL_HEAP_END - MEMORY_LAYOUT_KERNEL_HEAP_START;
+}
+
+struct header_block *create_block(void)
+{
+    struct header_block *block = vmm_automap_kernel(current_context, pmm_alloc_page(), VMM_WRITABLE);
+    memset((void*)block, 0, PAGE_SIZE);
+
+    return block;
 }
 
 /**
- * add an inode to the list
+ * provide a specific data area
  *
- * @param inode node to add
+ * @param start pointer to begin of data
+ * @param end pointer to end of data
  */
-void heap_add(alloc_t *inode)
+void heap_provide_address(vaddr_t start, vaddr_t end)
 {
-    inode->next = first_node;
-    first_node = inode;
-}
+    int pages = NUM_PAGES(end - (start & PAGE_MASK));
 
-/**
- * create an allocation inode with a specific size
- *
- * @param pages number of pages to allocate
- * @return allocation inode
- */
-alloc_t *heap_expand(int bytes)
-{
-#ifdef HEAP_DEBUG
-    printf("heap_expand(): add %d pages...\n", pages);
-#endif
-
-    int pages = NUM_PAGES(bytes+sizeof(alloc_t));
-
-    // allocate memory
-    paddr_t pframe = 0;
-    vaddr_t vframe = arch_vaddr_find(&current_context->arch_context, pages,
-                                     MEMORY_LAYOUT_KERNEL_HEAP_START,
-                                     MEMORY_LAYOUT_KERNEL_HEAP_END, VMM_WRITABLE);
-    vaddr_t vframe_cur = vframe;
+    paddr_t pframe = NULL;
+    vaddr_t vframe = start & PAGE_MASK;
 
     int i;
     for(i = 0; i < pages; i++)
     {
-        pframe = pmm_alloc_page();
-        vmm_map(current_context, pframe, vframe_cur, VMM_WRITABLE);
-        vframe_cur += PAGE_SIZE;
+        if(! arch_vmm_is_present(&current_context->arch_context, vframe))
+        {
+            pframe = pmm_alloc_page();
+            vmm_map(current_context, pframe, vframe, VMM_WRITABLE);
+        }
+        vframe += PAGE_SIZE;
     }
-
-    // create inode
-    alloc_t *new_header = (alloc_t *) vframe;
-
-    new_header->size = pages*PAGE_SIZE - sizeof(alloc_t);
-    new_header->base = vframe + sizeof(alloc_t);
-    new_header->status = HEAP_STATUS_FREE;
-
-    heap_add(new_header);
-
-    return new_header;
 }
 
 /**
@@ -95,48 +80,73 @@ alloc_t *heap_expand(int bytes)
  */
 void *malloc(size_t bytes)
 {
-    alloc_t *header = first_node;
-    /*
-        // go through all inodes...
-        while(header != NULL)
+    struct header_block *header = free_blocks;
+
+    // go through all header blocks...
+    while(header != NULL)
+    {
+        int i;
+
+        // go through all fragments...
+        for(i = 0; i < 511; i++)
         {
-            // fits the size?
-            if(header->size >= bytes && header->status == HEAP_STATUS_FREE)
+            if(header->fragments[i].base == NULL)
             {
-                // mark as used
-                header->status = HEAP_STATUS_USED;
-
-                // if something is left, split it down
-                if(header->size > n_size)
-                {
-                    alloc_t *new_header = (alloc_t *)(header->base + bytes);
-                    new_header->base    = header->base + n_size;
-                    new_header->size = header->size - n_size;
-                    new_header->status = HEAP_STATUS_FREE;
-                    header->size = bytes;
-
-                    heap_add(new_header);
-                }
-
-                return (void*) header->base;
+                continue;
             }
 
-            header = header->next;
+            if(header->fragments[i].size >= bytes)
+            {
+                // found some space.
+                vaddr_t base = header->fragments[i].base;
+
+                if(header->fragments[i].size > bytes+4)
+                {
+                    // shrink fragment
+                    header->fragments[i].base += bytes;
+                    header->fragments[i].size -= bytes;
+                }
+                else
+                {
+                    // remove fragment
+                    header->fragments[i].base = NULL;
+                }
+
+                // add fragment to used list
+                struct header_block *used_header = used_blocks;
+
+                // go through all header blocks...
+                while(used_header != NULL)
+                {
+                    int j;
+
+                    // go through all fragments...
+                    for(j = 0; j < 511; j++)
+                    {
+                        if(used_header->fragments[j].base == NULL)
+                        {
+                            used_header->fragments[j].base = base;
+                            used_header->fragments[j].size = bytes;
+                            goto end;
+                        }
+                    }
+                    used_header = used_header->next;
+                }
+
+end:
+                // make sure that everything is mapped
+                heap_provide_address(base, base + bytes);
+
+                return base;
+            }
         }
-    */
-    // if nothing found, create new stuff...
-    header = heap_expand(bytes);
-    if(header != NULL)
-    {
-        header->status = HEAP_STATUS_USED;
-        return (void *)header->base;
+
+        header = header->next;
     }
 
-#ifdef HEAP_DEBUG
-    printf("malloc(): reserving %d bytes of memory: %p - %p\n", header->size, data, data + header->size);
-#endif
-
     // no more memory :'(
+    printf("!!! ERROR: no memory for malloc.. !!!\n");
+    while(1);
     return NULL;
 }
 
@@ -147,14 +157,46 @@ void *malloc(size_t bytes)
  */
 void free(void *ptr)
 {
-    // calculate inode adress
-    alloc_t *header = (alloc_t*)((uintptr_t)ptr - sizeof(alloc_t));
-    // mark as free
-    header->status = HEAP_STATUS_FREE;
+    struct header_block *header = used_blocks;
 
-#ifdef HEAP_DEBUG
-    printf("free(): freeing %d bytes of memory: %p - %p\n", header->size, ptr, ptr + header->size);
-#endif
+    // go through all header blocks...
+    while(header != NULL)
+    {
+        int i;
+
+        // go through all fragments...
+        for(i = 0; i < 511; i++)
+        {
+            if(header->fragments[i].base == ptr)
+            {
+                // remove fragment
+                header->fragments[i].base = NULL;
+                size_t bytes = header->fragments[i].size;
+
+                // add to free list
+                struct header_block *free_header = free_blocks;
+
+                // go through all header blocks...
+                while(free_header != NULL)
+                {
+                    int j;
+
+                    // go through all fragments...
+                    for(j = 0; j < 511; j++)
+                    {
+                        if(free_header->fragments[j].base == NULL)
+                        {
+                            free_header->fragments[j].base = ptr;
+                            free_header->fragments[j].size = bytes;
+                            return;
+                        }
+                    }
+                    free_header = free_header->next;
+                }
+            }
+        }
+        header = header->next;
+    }
 }
 
 /**
@@ -185,18 +227,30 @@ void *calloc(size_t num, size_t size)
  */
 void *realloc(void *ptr, size_t size)
 {
-    void *dest = malloc(size);
-    alloc_t *source_alloc = (alloc_t*)((uintptr_t)ptr - sizeof(alloc_t));
-
-#ifdef HEAP_DEBUG
-    printf("realloc(): copying %d bytes from 0x%x to 0x%x\n", source_alloc->size, ptr, dest);
-#endif
-
-    if(source_alloc->size < size)
+    // get fragment size
+    size_t old_size = 0;
+    struct header_block *header = used_blocks;
+    while(header != NULL)
     {
-        memcpy(dest, ptr, source_alloc->size);
+        int i;
+        for(i = 0; i < 511; i++)
+        {
+            if(header->fragments[i].base == ptr)
+            {
+                old_size = header->fragments[i].size;
+            }
+        }
+        header = header->next;
     }
 
+    // malloc new
+    void *dest = malloc(size);
+
+    // copy data from old to new
+    size_t copy_size = (size > old_size) ? old_size : size;
+    memcpy(dest, ptr, copy_size);
+
+    // free old
     free(ptr);
 
     return dest;

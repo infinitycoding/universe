@@ -31,6 +31,7 @@ extern void kernel_virt_end;
 #define MEMORY_LAYOUT_DIRECT_MAPPED		0x02000000
 
 #define PAGE_SIZE				4096
+#define PAGE_MASK				(~0xFFF)
 
 #define MEMORY_LAYOUT_STACK_TOP			0xC0000000
 #define MEMORY_LAYOUT_KERNEL_START		0xC0000000

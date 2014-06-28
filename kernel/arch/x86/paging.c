@@ -362,6 +362,19 @@ vaddr_t arch_vaddr_find(arch_vmm_context_t *context, int num, vaddr_t limit_low,
     return 0;
 }
 
+int arch_vmm_is_present(arch_vmm_context_t *context, vaddr_t vaddr)
+{
+    unsigned int pd_index = PDE_INDEX(vaddr);
+    unsigned int pt_index = PTE_INDEX(vaddr);
+
+    if(context->entries[pd_index] & VMM_PRESENT)
+    {
+        pt_t *pt = (pt_t *)pt_get(context, pd_index, 0);
+        return ((uint32_t)pt[pt_index] & VMM_PRESENT) ? 1 : 0;
+    }
+    return 0;
+}
+
 paddr_t arch_vaddr2paddr(arch_vmm_context_t *context, vaddr_t vaddr)
 {
     unsigned int pd_index = PDE_INDEX(vaddr);

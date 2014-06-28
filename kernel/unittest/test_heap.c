@@ -28,13 +28,13 @@ bool test_heap(int na, int nb)
     int i;
     printf("allocating array a with %d integers...\n", na);
     int *a = malloc(sizeof(int) * na);
-    printf("a is at 0x%p\nwriting to a...", a);
+    printf("a is at %p\nwriting to a...", a);
 
     for(i = 0; i < na; i++) a[i] = i;
 
     printf("allocating array b with %d integers...\n", nb);
     int *b = malloc(sizeof(int) * nb);
-    printf("b is at 0x%p\nwriting to b...\n", b);
+    printf("b is at %p\nwriting to b...\n", b);
     for(i = 0; i < nb; i++) b[i] = nb-i;
 
     printf("reallocating array a with %d...\n", nb);

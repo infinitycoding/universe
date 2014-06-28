@@ -38,20 +38,22 @@ void *realloc(void *ptr, size_t size);
 	internal interface
 */
 
-#define HEAP_STATUS_USED 0
-#define HEAP_STATUS_FREE 1
-
-typedef struct alloc
+struct memory_block
 {
     size_t size;
     vaddr_t base;
-    int status;
+};
 
-    struct alloc *next;
-} alloc_t;
+struct header_block
+{
+    struct memory_block fragments[511];
+    struct header_block *next;
+};
 
 void INIT_HEAP(void);
-alloc_t *heap_expand(int pages);
+
+struct header_block *create_block(void);
+void heap_provide_address(vaddr_t start, vaddr_t end);
 void *heap_alloc(size_t size);
 void heap_free(void *ptr);
 
