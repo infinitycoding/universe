@@ -46,6 +46,50 @@ struct header_block *create_block(void)
     return block;
 }
 
+void heap_add_fragment(struct header_block *header, vaddr_t base, size_t size)
+{
+    // go through all header blocks...
+    while(header != NULL)
+    {
+        int i;
+
+        // go through all fragments...
+        for(i = 0; i < 511; i++)
+        {
+            if(header->fragments[i].base == NULL)
+            {
+                header->fragments[i].base = base;
+                header->fragments[i].size = size;
+                return;
+            }
+        }
+
+        header = header->next;
+    }
+}
+
+size_t heap_remove_fragment(struct header_block *header, vaddr_t base)
+{
+    // go through all header blocks...
+    while(header != NULL)
+    {
+        int i;
+
+        // go through all fragments...
+        for(i = 0; i < 511; i++)
+        {
+            if(header->fragments[i].base == base)
+            {
+                header->fragments[i].base = NULL;
+                return header->fragments[i].size;
+            }
+        }
+
+        header = header->next;
+    }
+}
+
+
 /**
  * provide a specific data area
  *
@@ -73,8 +117,7 @@ void heap_provide_address(vaddr_t start, vaddr_t end)
 }
 
 /**
- * Search for a free allocation inode and mark it as used.
- * If nothing found, add a new inode.
+ * Search for a free address and mark it as used.
  *
  * @param size number of bytes
  * @return pointer to reserved bytes
@@ -101,7 +144,7 @@ void *malloc(size_t bytes)
                 // found some space.
                 vaddr_t base = header->fragments[i].base;
 
-                if(header->fragments[i].size > bytes+4)
+                if(header->fragments[i].size > bytes)
                 {
                     // shrink fragment
                     header->fragments[i].base += bytes;
@@ -114,27 +157,8 @@ void *malloc(size_t bytes)
                 }
 
                 // add fragment to used list
-                struct header_block *used_header = used_blocks;
+                heap_add_fragment(used_blocks, base, bytes);
 
-                // go through all header blocks...
-                while(used_header != NULL)
-                {
-                    int j;
-
-                    // go through all fragments...
-                    for(j = 0; j < 511; j++)
-                    {
-                        if(used_header->fragments[j].base == NULL)
-                        {
-                            used_header->fragments[j].base = base;
-                            used_header->fragments[j].size = bytes;
-                            goto end;
-                        }
-                    }
-                    used_header = used_header->next;
-                }
-
-end:
                 // make sure that everything is mapped
                 heap_provide_address(base, base + bytes);
 
@@ -153,52 +177,14 @@ end:
 }
 
 /**
- * Free a range of bytes in th heap
+ * Free a range of bytes in the heap
  *
  * @param ptr pointer
  */
 void free(void *ptr)
 {
-    struct header_block *header = used_blocks;
-
-    // go through all header blocks...
-    while(header != NULL)
-    {
-        int i;
-
-        // go through all fragments...
-        for(i = 0; i < 511; i++)
-        {
-            if(header->fragments[i].base == ptr)
-            {
-                // remove fragment
-                header->fragments[i].base = NULL;
-                size_t bytes = header->fragments[i].size;
-
-                // add to free list
-                struct header_block *free_header = free_blocks;
-
-                // go through all header blocks...
-                while(free_header != NULL)
-                {
-                    int j;
-
-                    // go through all fragments...
-                    for(j = 0; j < 511; j++)
-                    {
-                        if(free_header->fragments[j].base == NULL)
-                        {
-                            free_header->fragments[j].base = ptr;
-                            free_header->fragments[j].size = bytes;
-                            return;
-                        }
-                    }
-                    free_header = free_header->next;
-                }
-            }
-        }
-        header = header->next;
-    }
+    size_t bytes = heap_remove_fragment(used_blocks, ptr);
+    heap_add_fragment(free_blocks, ptr, bytes);
 }
 
 /**
@@ -229,21 +215,8 @@ void *calloc(size_t num, size_t size)
  */
 void *realloc(void *ptr, size_t size)
 {
-    // get fragment size
-    size_t old_size = 0;
-    struct header_block *header = used_blocks;
-    while(header != NULL)
-    {
-        int i;
-        for(i = 0; i < 511; i++)
-        {
-            if(header->fragments[i].base == ptr)
-            {
-                old_size = header->fragments[i].size;
-            }
-        }
-        header = header->next;
-    }
+    // get fragment size and remove
+    size_t old_size = heap_remove_fragment(used_blocks, ptr);
 
     // malloc new
     void *dest = malloc(size);
@@ -251,9 +224,6 @@ void *realloc(void *ptr, size_t size)
     // copy data from old to new
     size_t copy_size = (size > old_size) ? old_size : size;
     memcpy(dest, ptr, copy_size);
-
-    // free old
-    free(ptr);
 
     return dest;
 }
