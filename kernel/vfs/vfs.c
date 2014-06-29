@@ -548,18 +548,17 @@ void vfs_debug_output(vfs_inode_t *start)
 
 struct fd *get_fd(int fd)
 {
-    struct fd *desc = NULL;
-    struct list_node *node = current_thread->process->files->head->next;
-    while(node != current_thread->process->files->head)
+    iterator_t it = iterator_create(current_thread->process->files);
+    while(!list_is_empty(current_thread->process->files) && !list_is_last(&it))
     {
-        desc = node->element;
+        struct fd *desc = list_get_current(&it);
         if(desc->id == fd)
         {
             return desc;
         }
         else
         {
-            node = node->next;
+            list_next(&it);
         }
     }
 

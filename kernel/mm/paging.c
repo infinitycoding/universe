@@ -108,7 +108,7 @@ vaddr_t vmm_automap_kernel(vmm_context_t *context, paddr_t pframe, uint8_t flags
 {
     vaddr_t vframe = arch_vaddr_find(&context->arch_context, 1,
                                      MEMORY_LAYOUT_RESERVED_AREA_END,
-                                     MEMORY_LAYOUT_KERNEL_END, flags);
+                                     MEMORY_LAYOUT_KERNEL_HEAP_START, flags);
     vmm_map(context, pframe, vframe, flags | VMM_PRESENT);
 
     return vframe;
@@ -117,7 +117,7 @@ vaddr_t vmm_automap_kernel(vmm_context_t *context, paddr_t pframe, uint8_t flags
 vaddr_t vmm_automap_kernel_range(vmm_context_t *context, paddr_t pframe, int pages, uint8_t flags)
 {
     int i;
-    vaddr_t vaddr_start = arch_vaddr_find(&context->arch_context, pages, MEMORY_LAYOUT_RESERVED_AREA_END, MEMORY_LAYOUT_KERNEL_END, flags);
+    vaddr_t vaddr_start = arch_vaddr_find(&context->arch_context, pages, MEMORY_LAYOUT_RESERVED_AREA_END, MEMORY_LAYOUT_KERNEL_HEAP_START, flags);
     for(i = 0; i < pages; i++)
     {
         paddr_t paddr = pframe + i*PAGE_SIZE;

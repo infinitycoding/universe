@@ -66,6 +66,7 @@ struct thread_state *kernel_thread_create(uintptr_t eip, int argc, void **argv)
 struct thread_state *thread_create(struct process_state *process, privilege_t prev, uint32_t eip, struct cpu_state *state, int argc, void **argv, void *return_address, vmm_context_t *context)
 {
     struct thread_state *new_thread = malloc(sizeof(struct thread_state));
+
     new_thread->flags = THREAD_ACTIV;
     new_thread->process = process;
 
@@ -87,7 +88,7 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     new_thread->return_value = 0;
 
     void *kernel_stack = malloc(0x1000);
-    struct cpu_state *new_state = kernel_stack + (0x1000 - sizeof(struct cpu_state))-12;
+    struct cpu_state *new_state = kernel_stack + 0x1000 - sizeof(struct cpu_state) - 12;
     new_thread->state = new_state;
 
     if(state != NULL)
@@ -149,7 +150,6 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
         new_thread->tid = (tid_t) list_pop_back(process->zombie_tids);
 
     list_push_front(process->threads,new_thread);
-
     list_push_front(running_threads, new_thread);
 
 

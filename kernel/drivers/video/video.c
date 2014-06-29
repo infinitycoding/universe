@@ -126,7 +126,16 @@ void gotoxy(uint8_t _x, uint8_t _y)
     if ((_y * columns + _x) >= (columns * lines))   /* scroll if neccessary */
     {
         memmove(video_mem, video_mem + 2 * columns, 2 * lines * columns);
-        memset(video_mem + 2 * lines * columns, 0, 2 * columns);
+
+        int i;
+        for(i = 0; i < 2*columns; i++)
+        {
+            if(i%2==0)
+                video_mem[2 * lines * columns + i] = 0;
+            else
+                video_mem[2 * lines * columns + i] = color;
+        }
+
         --_y;
     }
 

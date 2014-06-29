@@ -62,7 +62,8 @@ void heap_provide_address(vaddr_t start, vaddr_t end)
     int i;
     for(i = 0; i < pages; i++)
     {
-        if(! arch_vmm_is_present(&current_context->arch_context, vframe))
+        if(! arch_vmm_is_present(&current_context->arch_context, vframe) &&
+                arch_vaddr2paddr(&current_context->arch_context, vframe) == NULL)
         {
             pframe = pmm_alloc_page();
             vmm_map(current_context, pframe, vframe, VMM_WRITABLE);
@@ -147,6 +148,7 @@ end:
     // no more memory :'(
     printf("!!! ERROR: no memory for malloc.. !!!\n");
     while(1);
+
     return NULL;
 }
 

@@ -28,7 +28,7 @@ bool test_heap(int na, int nb)
     int i;
     printf("allocating array a with %d integers...\n", na);
     int *a = malloc(sizeof(int) * na);
-    printf("a is at %p\nwriting to a...", a);
+    printf("a is at %p\nwriting to a...\n", a);
 
     for(i = 0; i < na; i++) a[i] = i;
 

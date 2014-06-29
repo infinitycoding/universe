@@ -7,7 +7,7 @@
 
 int main(int argc, char **argv)
 {
-	printf("TEST!\n");
+	printf("TEST!\n");while(1);
     bool success = true;
     success &= test_vfs_api();
 

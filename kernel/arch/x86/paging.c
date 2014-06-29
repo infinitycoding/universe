@@ -380,8 +380,12 @@ paddr_t arch_vaddr2paddr(arch_vmm_context_t *context, vaddr_t vaddr)
     unsigned int pd_index = PDE_INDEX(vaddr);
     unsigned int pt_index = PTE_INDEX(vaddr);
 
-    pt_t *pt = (pt_t *)pt_get(context, pd_index, 0);
-    return (paddr_t) pt[pt_index] & ~0xfff;
+    if(context->entries[pd_index] & VMM_PRESENT)
+    {
+        pt_t *pt = (pt_t *)pt_get(context, pd_index, 0);
+        return (paddr_t) pt[pt_index] & ~0xfff;
+    }
+    return NULL;
 }
 
 /**

@@ -66,9 +66,7 @@ void panic(char *message)
 // 		"      |                             Universe                             |      \n"
 // 		"      |==================================================================|      \n"
                    "                                                                                \n"
-                   "                                                                                \n"
                    "      Universe has been crashed. You have to restart your computer.             \n"
-                   "                                                                                \n"
                    "                                                                                \n"
                   );
 
@@ -86,15 +84,14 @@ void panic(char *message)
     }
 
     len += sprintf (buffer + len,
-                    "\n\n      To help us improving our systems, please report this incident to us."
+                    "\n      To help us improving our systems, please report this incident to us.     "
                    );
 
-    //set_color(WHITE | RED << 4);
+    set_color(WHITE | RED << 4);
     //clear_screen();
 
     //gotoxy(0, (25 / 2) - (lines / 2) - 1);
-    puts(buffer);
-    printf("\n\n      ");
+    printf("%s", buffer);
 
     halt();
 }
