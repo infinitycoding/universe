@@ -41,7 +41,6 @@ kernel:
 	@$(MAKE) -C kernel ARCH="$(ARCH)" CC="$(CC)" ASM="$(ASM)" LD="$(LD)" CFLAGS="$(CFLAGS)" ASFLAGS="$(ASFLAGS)" LDFLAGS="$(LDFLAGS)"
 
 libs:
-#	@$(MAKE) -C libs/newlib ARCH=$(ARCH)
 	@$(MAKE) -C libs ARCH="$(ARCH)" CC="$(CC)" ASM="$(ASM)" LD="$(LD)" CFLAGS="$(CFLAGS)" ASFLAGS="$(ASFLAGS)" LDFLAGS="$(LDFLAGS)"
 
 drivers:libs
@@ -66,6 +65,9 @@ debug: kernel libs drivers user iso-img
 
 style:
 	$(MAKE) -C kernel style
+
+newlib:
+	@$(MAKE) -C libs/newlib ARCH=$(ARCH)
 
 clean:
 	@$(MAKE) -C kernel clean

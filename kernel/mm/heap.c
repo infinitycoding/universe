@@ -26,6 +26,7 @@
 #include <memory_layout.h>
 #include <mm/paging.h>
 #include <string.h>
+#include <printf.h>
 
 static struct header_block *used_blocks = NULL;
 static struct header_block *free_blocks = NULL;
@@ -40,7 +41,7 @@ void INIT_HEAP(void)
 
 struct header_block *create_block(void)
 {
-    struct header_block *block = vmm_automap_kernel(current_context, pmm_alloc_page(), VMM_WRITABLE);
+    struct header_block *block = (struct header_block *) vmm_automap_kernel(current_context, pmm_alloc_page(), VMM_WRITABLE);
     memset((void*)block, 0, PAGE_SIZE);
 
     return block;
@@ -56,7 +57,7 @@ void heap_add_fragment(struct header_block *header, vaddr_t base, size_t size)
         // go through all fragments...
         for(i = 0; i < 511; i++)
         {
-            if(header->fragments[i].base == NULL)
+            if(header->fragments[i].base == 0)
             {
                 header->fragments[i].base = base;
                 header->fragments[i].size = size;
@@ -80,7 +81,7 @@ size_t heap_remove_fragment(struct header_block *header, vaddr_t base)
         {
             if(header->fragments[i].base == base)
             {
-                header->fragments[i].base = NULL;
+                header->fragments[i].base = 0;
                 return header->fragments[i].size;
             }
         }
@@ -100,14 +101,14 @@ void heap_provide_address(vaddr_t start, vaddr_t end)
 {
     int pages = NUM_PAGES(end - (start & PAGE_MASK));
 
-    paddr_t pframe = NULL;
+    paddr_t pframe = 0;
     vaddr_t vframe = start & PAGE_MASK;
 
     int i;
     for(i = 0; i < pages; i++)
     {
         if(! arch_vmm_is_present(&current_context->arch_context, vframe) &&
-                arch_vaddr2paddr(&current_context->arch_context, vframe) == NULL)
+                arch_vaddr2paddr(&current_context->arch_context, vframe) == 0)
         {
             pframe = pmm_alloc_page();
             vmm_map(current_context, pframe, vframe, VMM_WRITABLE);
@@ -134,7 +135,7 @@ void *malloc(size_t bytes)
         // go through all fragments...
         for(i = 0; i < 511; i++)
         {
-            if(header->fragments[i].base == NULL)
+            if(header->fragments[i].base == 0)
             {
                 continue;
             }
@@ -153,7 +154,7 @@ void *malloc(size_t bytes)
                 else
                 {
                     // remove fragment
-                    header->fragments[i].base = NULL;
+                    header->fragments[i].base = 0;
                 }
 
                 // add fragment to used list
@@ -162,7 +163,7 @@ void *malloc(size_t bytes)
                 // make sure that everything is mapped
                 heap_provide_address(base, base + bytes);
 
-                return base;
+                return (void *)base;
             }
         }
 
@@ -183,8 +184,8 @@ void *malloc(size_t bytes)
  */
 void free(void *ptr)
 {
-    size_t bytes = heap_remove_fragment(used_blocks, ptr);
-    heap_add_fragment(free_blocks, ptr, bytes);
+    size_t bytes = heap_remove_fragment(used_blocks, (vaddr_t) ptr);
+    heap_add_fragment(free_blocks, (vaddr_t)ptr, bytes);
 }
 
 /**
@@ -216,7 +217,7 @@ void *calloc(size_t num, size_t size)
 void *realloc(void *ptr, size_t size)
 {
     // get fragment size and remove
-    size_t old_size = heap_remove_fragment(used_blocks, ptr);
+    size_t old_size = heap_remove_fragment(used_blocks, (vaddr_t) ptr);
 
     // malloc new
     void *dest = malloc(size);

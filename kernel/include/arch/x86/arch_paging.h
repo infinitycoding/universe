@@ -71,6 +71,7 @@ paddr_t arch_vaddr2paddr(arch_vmm_context_t *context, vaddr_t vaddr);
 void arch_switch_context(arch_vmm_context_t *context);
 
 void pagefault_handler(struct cpu_state **cpu_p);
+int arch_vmm_is_present(arch_vmm_context_t *context, vaddr_t vaddr);
 
 #endif
 
