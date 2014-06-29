@@ -6,32 +6,32 @@ C_SRCS = $(shell find `pwd` -name '*.c')
 C_HDRS = $(shell find `pwd` -name '*.h')
 STYLEFLAGS = --style=allman --indent-switches
 
-CFLAGS += -Iinclude -Iinclude/util
-LDFLAGS += -Tlinkerscript.x
+L_CFLAGS = -Iinclude -Iinclude/util
+L_LDFLAGS = -Tlinkerscript.x
 
 ifeq (${ARCH},PPC)
-CFLAGS +=  -Iinclude/arch/ppc
+L_CFLAGS +=  -Iinclude/arch/ppc
 else ifeq ($(ARCH),i686)
-CFLAGS +=  -Iinclude/arch/x86
+L_CFLAGS +=  -Iinclude/arch/x86
 else ifeq ($(ARCH),arm)
-CFLAGS +=  -Iinclude/arch/arm
+L_CFLAGS +=  -Iinclude/arch/arm
 endif
 
 kernel32.elf: $(OBJS) linkerscript.x
-	@${LD} ${LDFLAGS} -o $@ $^
+	@${LD} ${LDFLAGS} $(L_CFLAGS) -o $@ $^
 	@cp kernel32.elf $(PREFIX)/kernel32.elf
 
 %.o: %.c
-	@${CC} ${CFLAGS} -c -o $@ $^
+	@${CC} $(L_CFLAGS) ${CFLAGS} -c -o $@ $^
 
 %.ppasm: %.asm
-	@${CC} ${CFLAGS} -x assembler-with-cpp -P -E -o $@ $^
+	@${CC} $(L_CFLAGS) ${CFLAGS} -x assembler-with-cpp -P -E -o $@ $^
 
 %.o: %.ppasm
 	@${ASM} ${ASFLAGS} -o $@ $^
 
 %.x: %.gen
-	@${CC} ${CFLAGS} -x assembler-with-cpp -P -E -o $@ $^
+	@${CC} $(L_CFLAGS) ${CFLAGS} -x assembler-with-cpp -P -E -o $@ $^
 
 style: $(C_SRCS) $(C_HDRS)
 	astyle $(STYLEFLAGS) $^

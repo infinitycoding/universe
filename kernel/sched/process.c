@@ -93,7 +93,6 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
 
     state->flags = flags;
     state->files = list_create();
-    state->env = list_create();
     state->heap_top = 0;
     state->heap_lower_limit = 0;
     state->heap_upper_limit = 0;

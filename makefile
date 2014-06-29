@@ -38,17 +38,17 @@ export PREFIX
 
 
 kernel:
-	@$(MAKE) -C kernel ARCH=$(ARCH) CC=$(CC) ASM=$(ASM) LD=$(LD) ASFLAGS=$(ASFLAGS) LDFLAGS=$(LDFLAGS)
+	@$(MAKE) -C kernel ARCH="$(ARCH)" CC="$(CC)" ASM="$(ASM)" LD="$(LD)" CFLAGS="$(CFLAGS)" ASFLAGS="$(ASFLAGS)" LDFLAGS="$(LDFLAGS)"
 
 libs:
-	@$(MAKE) -C libs/newlib ARCH=$(ARCH)
-	@$(MAKE) -C libs ARCH=$(ARCH) CC=$(CC) ASM=$(ASM) LD=$(LD) ASFLAGS=$(ASFLAGS) LDFLAGS=$(LDFLAGS)
+#	@$(MAKE) -C libs/newlib ARCH=$(ARCH)
+	@$(MAKE) -C libs ARCH="$(ARCH)" CC="$(CC)" ASM="$(ASM)" LD="$(LD)" CFLAGS="$(CFLAGS)" ASFLAGS="$(ASFLAGS)" LDFLAGS="$(LDFLAGS)"
 
 drivers:libs
-	@$(MAKE) -C drivers ARCH=$(ARCH) CC=$(CC) ASM=$(ASM) LD=$(LD) ASFLAGS=$(ASFLAGS) LDFLAGS=$(LDFLAGS)
+	@$(MAKE) -C drivers ARCH="$(ARCH)" CC="$(CC)" ASM="$(ASM)" LD="$(LD)" CFLAGS="$(CFLAGS)" ASFLAGS="$(ASFLAGS)" LDFLAGS="$(LDFLAGS)"
 
 user: libs
-	@$(MAKE) -C user ARCH=$(ARCH) CC=$(CC) ASM=$(ASM) LD=$(LD) ASFLAGS=$(ASFLAGS) LDFLAGS=$(LDFLAGS)
+	@$(MAKE) -C user ARCH="$(ARCH)" CC="$(CC)" ASM="$(ASM)" LD="$(LD)" CFLAGS="$(CFLAGS)" ASFLAGS="$(ASFLAGS)" LDFLAGS="$(LDFLAGS)"
 
 iso-img:
 	@genisoimage -R -b boot/grub/stage2_eltorito -input-charset utf-8 -no-emul-boot -boot-load-size 4 -boot-info-table -o cdrom.iso build
@@ -71,7 +71,7 @@ clean:
 	@$(MAKE) -C kernel clean
 	@$(MAKE) -C drivers clean
 	@$(MAKE) -C user clean
-	@$(MAKE) -C libs/newlib clean
+#	@$(MAKE) -C libs/newlib clean
 	@$(MAKE) -C libs clean
 	@rm *.iso -f
 

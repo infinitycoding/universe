@@ -1,7 +1,7 @@
 SRCS = $(shell find -name '*.c')
 OBJS = $(addsuffix .o,$(basename $(SRCS)))
 
-CFLAGS = -m32 -Wall -fno-stack-protector -fno-builtin -fno-builtin-log -Wimplicit-function-declaration -nostdinc -I ../libc/include -I include
+L_CFLAGS = -m32 -Wall -fno-stack-protector -fno-builtin -fno-builtin-log -Wimplicit-function-declaration -nostdinc -I../libc/include -Iinclude
 
 all: udrcp.a
 	cp -R ./include/* $(PREFIX)/usr/include
@@ -11,7 +11,7 @@ udrcp.a: $(OBJS)
 	@ar -rcs $@ $^
 
 %.o: %.c
-	@$(CC) $(CFLAGS) -c -o $@ $^
+	@$(CC) $(L_CFLAGS) -c -o $@ $^
 
 clean:
 	@rm $(OBJS) -f
