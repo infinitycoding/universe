@@ -136,9 +136,9 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
         else
         {
             load_elf_from_file(testnode, 0, 0, 0);
-        }
+        }*/
     //test_heap(0xFFFF, 0xFFFFF);
-    */
+
     return 0;
 }
 

@@ -88,6 +88,8 @@ size_t heap_remove_fragment(struct header_block *header, vaddr_t base)
 
         header = header->next;
     }
+
+	return 0;
 }
 
 
@@ -125,7 +127,7 @@ void heap_provide_address(vaddr_t start, vaddr_t end)
  */
 void *malloc(size_t bytes)
 {
-    struct header_block *header = free_blocks;
+	struct header_block *header = free_blocks;
 
     // go through all header blocks...
     while(header != NULL)

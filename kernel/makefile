@@ -17,8 +17,10 @@ else ifeq ($(ARCH),arm)
 L_CFLAGS +=  -Iinclude/arch/arm
 endif
 
-kernel32.elf: $(OBJS) linkerscript.x
-	@${LD} ${LDFLAGS} $(L_CFLAGS) -o $@ $^
+all: linkerscript.x kernel32.elf
+
+kernel32.elf: $(OBJS)
+	${LD} $(L_LDFLAGS) ${LDFLAGS} -o $@ $^
 	@cp kernel32.elf $(PREFIX)/kernel32.elf
 
 %.o: %.c
