@@ -61,8 +61,14 @@ void heap_add_fragment(struct header_block *header, vaddr_t base, size_t size)
             {
                 header->fragments[i].base = base;
                 header->fragments[i].size = size;
+                printf("[heap/add] %p, %d to %p\n", base, size, header);
                 return;
             }
+        }
+
+        if(header->next == NULL)
+        {
+            header->next = create_block();
         }
 
         header = header->next;
@@ -82,6 +88,7 @@ size_t heap_remove_fragment(struct header_block *header, vaddr_t base)
             if(header->fragments[i].base == base)
             {
                 header->fragments[i].base = 0;
+                printf("[heap/remove] %p, %d from %p\n", base, header->fragments[i].size, header);
                 return header->fragments[i].size;
             }
         }
@@ -89,7 +96,7 @@ size_t heap_remove_fragment(struct header_block *header, vaddr_t base)
         header = header->next;
     }
 
-	return 0;
+    return 0;
 }
 
 
@@ -127,7 +134,7 @@ void heap_provide_address(vaddr_t start, vaddr_t end)
  */
 void *malloc(size_t bytes)
 {
-	struct header_block *header = free_blocks;
+    struct header_block *header = free_blocks;
 
     // go through all header blocks...
     while(header != NULL)
@@ -146,6 +153,8 @@ void *malloc(size_t bytes)
             {
                 // found some space.
                 vaddr_t base = header->fragments[i].base;
+
+                printf("[heap/malloc] %p (%d >= %d) in %p\n", base, header->fragments[i].size,bytes, header);
 
                 if(header->fragments[i].size > bytes)
                 {

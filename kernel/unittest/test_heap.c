@@ -23,40 +23,34 @@
 #include <mm/heap.h>
 #include <printf.h>
 
-bool test_heap(int na, int nb)
+bool test_heap(int n)
 {
-    int i;
-    printf("allocating array a with %d integers...\n", na);
-    int *a = malloc(sizeof(int) * na);
-    printf("a is at %p\nwriting to a...\n", a);
+    int **vals = malloc(n * sizeof(int*));
 
-    for(i = 0; i < na; i++) a[i] = i;
-
-    printf("allocating array b with %d integers...\n", nb);
-    int *b = malloc(sizeof(int) * nb);
-    printf("b is at %p\nwriting to b...\n", b);
-    for(i = 0; i < nb; i++) b[i] = nb-i;
-
-    printf("reallocating array a with %d...\n", nb);
-    a = realloc(a, sizeof(int) * nb);
-
-    printf("copying array b to array a...\n");
-    for(i = 0; i < nb; i++) a[i] = b[i];
-
-    printf("freeing b\n");
-    free(b);
-
-    for(i = 0; i < nb; i++)
+    int i,j;
+    for(i = 0; i < n; i++)
     {
-        if(nb-i != a[i])
+        vals[i] = malloc((i+1) * sizeof(int));
+        for(j = 0; j < (i+1); j++)
         {
-            printf("failure.\n");
-            return false;
+            vals[i][j] = n + i - j;
         }
     }
 
-    printf("freeing a\n");
-    free(a);
+    printf("testing....\n");
+    for(i = 0; i < n; i++)
+    {
+        for(j = 0; j < (i+1); j++)
+        {
+            int expected = n + i - j;
+            if(vals[i][j] != expected)
+            {
+                printf("FAILURE!\n");
+            }
+        }
+    }
+
+    printf("SUCCESS!\n");
 
     return true;
 }

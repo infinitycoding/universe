@@ -78,66 +78,69 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     INIT_CLOCK(600);
     INIT_SCHEDULER();
     asm volatile("sti");
-
-    //print Logo and loading message
-    clear_screen();
-    print_logo(YELLOW);
-    puts("Universe wird gestartet...\n");
-    // count free memory and display it
-    /*uint32_t pages = pmm_count_free_pages();
-    printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);*/
-    //print current time
-    struct time t;
-    update_time(&t);
-    print_time(&t); //crashes on a real computer and on virtual box
-    printf("\n");
-    printf("Timestamp:%d\n\n",unix_time(&t));
-    INIT_CPUID();
-    printf("\n");
-    INIT_PCI();
-
-    int i;
-    struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
-
-    void *phys = (void*)((int)modules[0].string & (int)~0xfff);
-    void *virt = (void*) vmm_automap_kernel(current_context, (paddr_t)phys, VMM_WRITABLE);
-    for(i = 0; i < mb_info->mods_count; i++)
-    {
-        int diff = (int)modules[i].string - (int)phys;
-        modules[i].string = virt + diff;
-    }
-
-    struct mapping_statistics stats = map_all(mb_info);
-    printf("%d modules total, %d successfully loaded, %d failed\n", stats.total, stats.load_success, stats.load_failed);
-
-    vfs_inode_t *pfnode = vfs_lookup_path("/drivers/system.pf");
-
-    if(pfnode != NULL)
-    {
-        int argc = 2;
-        void *argv[2];
-        char *pf = (char *)malloc(pfnode->length+1);
-        vfs_read(pfnode, 0, pf, pfnode->length);
-        pf[pfnode->length+1] = '\0';
-        list_t *pipelines = pfp(pf);
-        struct section *sec = list_pop_front(pipelines);
-
-        argv[1] = mb_info;
-        argv[0] = sec;
-        kernel_thread_create((uintptr_t)INIT_HYPERVISOR,argc,argv);
-    }
     /*
-        vfs_inode_t *testnode = vfs_lookup_path("/test.elf");
+        //print Logo and loading message
+        clear_screen();
+        print_logo(YELLOW);
+        puts("Universe wird gestartet...\n");
+        // count free memory and display it
+        /*uint32_t pages = pmm_count_free_pages();
+        printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);*/
+    //print current time
+    //struct time t;
+    //update_time(&t);
+    //print_time(&t); //crashes on a real computer and on virtual box
+    //printf("\n");
+    //printf("Timestamp:%d\n\n",unix_time(&t));
+    //INIT_CPUID();
+    //printf("\n");
+    //INIT_PCI();
+    /*
+    	// mapping strings
+        int i;
+        struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
 
-        if(testnode == NULL)
+        void *phys = (void*)((int)modules[0].string & (int)~0xfff);
+        void *virt = (void*) vmm_automap_kernel(current_context, (paddr_t)phys, VMM_WRITABLE);
+        for(i = 0; i < mb_info->mods_count; i++)
         {
-            printf("ultrashell.elf not in vfs\n");
+            int diff = (int)modules[i].string - (int)phys;
+            modules[i].string = virt + diff;
         }
-        else
+
+        struct mapping_statistics stats = map_all(mb_info);
+        printf("%d modules total, %d successfully loaded, %d failed\n", stats.total, stats.load_success, stats.load_failed);
+
+        vfs_inode_t *pfnode = vfs_lookup_path("/drivers/system.pf");
+
+        if(pfnode != NULL)
         {
-            load_elf_from_file(testnode, 0, 0, 0);
-        }*/
-    //test_heap(0xFFFF, 0xFFFFF);
+            int argc = 2;
+            void *argv[2];
+            char *pf = (char *)malloc(pfnode->length+1);
+            vfs_read(pfnode, 0, pf, pfnode->length);
+            pf[pfnode->length+1] = '\0';
+            list_t *pipelines = pfp(pf);
+            struct section *sec = list_pop_front(pipelines);
+
+            argv[1] = mb_info;
+            argv[0] = sec;
+            //kernel_thread_create((uintptr_t)INIT_HYPERVISOR,argc,argv);
+        }
+
+            vfs_inode_t *testnode = vfs_lookup_path("/test.elf");
+
+            if(testnode == NULL)
+            {
+                printf("ultrashell.elf not in vfs\n");
+            }
+            else
+            {
+                load_elf_from_file(testnode, 0, 0, 0);
+            }
+    */
+
+    test_heap(0xFFF);
 
     return 0;
 }

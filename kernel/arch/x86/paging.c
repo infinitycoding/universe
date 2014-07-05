@@ -55,7 +55,7 @@ void ARCH_INIT_PAGING(struct multiboot_struct *mb_info)
     memset(kernel_context.arch_context.entries, 0, PAGE_SIZE);
 
     kernel_context.arch_context.entries[PDE_INDEX(vframe)] = pframe | VMM_WRITABLE | VMM_PRESENT;
-    vmm_map_range(&kernel_context, 0, MEMORY_LAYOUT_KERNEL_START, MEMORY_LAYOUT_DIRECT_MAPPED/PAGE_SIZE, VMM_WRITABLE);// kernel
+    vmm_map_range(&kernel_context, 0, MEMORY_LAYOUT_KERNEL_START, NUM_PAGES(MEMORY_LAYOUT_DIRECT_MAPPED), VMM_WRITABLE);// kernel
     vmm_map(&kernel_context, 0xB8000, 0xC00B8000, VMM_WRITABLE);// videomemory (0xB8000 - 0xBFFFF)
     // multiboot
     vmm_map(&kernel_context, ((vaddr_t)mb_info & (~0xfff)) - MEMORY_LAYOUT_KERNEL_START, ((paddr_t)mb_info&(~0xfff)), VMM_WRITABLE);
