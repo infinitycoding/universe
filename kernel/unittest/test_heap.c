@@ -23,6 +23,14 @@
 #include <mm/heap.h>
 #include <printf.h>
 
+int xorshift32(int x)
+{
+    x ^= x << 13;
+    x ^= x >> 17;
+    x ^= x << 5;
+    return x;
+}
+
 bool test_heap(int n)
 {
     int **vals = malloc(n * sizeof(int*));
@@ -33,19 +41,20 @@ bool test_heap(int n)
         vals[i] = malloc((i+1) * sizeof(int));
         for(j = 0; j < (i+1); j++)
         {
-            vals[i][j] = n + i - j;
+            vals[i][j] = xorshift32(n + i - j);
         }
     }
 
-    printf("testing....\n");
+    printf("testing....");
     for(i = 0; i < n; i++)
     {
         for(j = 0; j < (i+1); j++)
         {
-            int expected = n + i - j;
+            int expected = xorshift32(n + i - j);
             if(vals[i][j] != expected)
             {
                 printf("FAILURE!\n");
+                return;
             }
         }
     }
