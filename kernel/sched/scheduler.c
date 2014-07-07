@@ -61,7 +61,7 @@ void INIT_SCHEDULER(void)
 
 
 
-    kernelstack = malloc(KERNEL_STACK_SIZE) + KERNEL_STACK_SIZE;
+    kernelstack = malloc(KERNEL_STACK_SIZE) + (KERNEL_STACK_SIZE-sizeof(struct cpu_state));
     tss.esp0 = (uint32_t)kernelstack;
 
     running_threads = list_create();
