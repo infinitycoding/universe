@@ -112,23 +112,23 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     printf("%d modules total, %d successfully loaded, %d failed\n", stats.total, stats.load_success, stats.load_failed);
 
     vfs_inode_t *pfnode = vfs_lookup_path("/drivers/system.pf");
-    /*
-        if(pfnode != NULL)
-        {
-                    int argc = 2;
-                    void *argv[2];
-                    char *pf = (char *)malloc(pfnode->length+1);
-                    vfs_read(pfnode, 0, pf, pfnode->length);
-                    pf[pfnode->length+1] = '\0';
-                    list_t *pipelines = pfp(pf);
-                    struct section *sec = list_pop_front(pipelines);
 
-                    argv[1] = mb_info;
-                    argv[0] = sec;
-                    //kernel_thread_create((uintptr_t)INIT_HYPERVISOR,argc,argv);
-                }
-    */
-    vfs_inode_t *testnode = vfs_lookup_path("/test.elf");
+    if(pfnode != NULL)
+    {
+        int argc = 2;
+        void *argv[2];
+        char *pf = (char *)malloc(pfnode->length+1);
+        vfs_read(pfnode, 0, pf, pfnode->length);
+        pf[pfnode->length+1] = '\0';
+        list_t *pipelines = pfp(pf);
+        struct section *sec = list_pop_front(pipelines);
+
+        argv[1] = mb_info;
+        argv[0] = sec;
+        kernel_thread_create((uintptr_t)INIT_HYPERVISOR,argc,argv);
+    }
+
+    vfs_inode_t *testnode = vfs_lookup_path("/ultrashell.elf");
 
     if(testnode == NULL)
     {
@@ -138,9 +138,6 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     {
         load_elf_from_file(testnode, 0, 0, 0);
     }
-
-
-    //test_heap(0xFF);
 
     return 0;
 }

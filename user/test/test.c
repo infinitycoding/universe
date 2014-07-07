@@ -7,7 +7,6 @@
 
 int main(int argc, char **argv)
 {
-	while(1);
     bool success = true;
     success &= test_vfs_api();
 

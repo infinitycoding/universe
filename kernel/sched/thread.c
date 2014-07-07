@@ -88,7 +88,7 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     new_thread->return_value = 0;
 
     void *kernel_stack = malloc(0x1000);
-    struct cpu_state *new_state = kernel_stack + 0x1000 - sizeof(struct cpu_state) - 12;
+    struct cpu_state *new_state = kernel_stack + 0x1000 - sizeof(struct cpu_state) - 3*sizeof(uint32_t);
     new_thread->state = new_state;
 
     if(state != NULL)
@@ -111,25 +111,25 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
         new_state->es = 0x10;
         new_state->fs = 0x10;
         new_state->gs = 0x10;
-        stack = kernel_stack + 0x1000-8;
+        stack = kernel_stack + 0x1000 - 2*sizeof(uint32_t);
         *--stack = (uint32_t) argv;
         *--stack = argc;
         *--stack = (uint32_t) return_address;
     }
     else
     {
-        if(!state)
-        {
-            paddr_t pframe = pmm_alloc_page();
-            vmm_map(&new_thread->context, pframe, MEMORY_LAYOUT_STACK_TOP-0x1000, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
-            new_state->esp = (uint32_t) MEMORY_LAYOUT_STACK_TOP - 12;
+        paddr_t pframe = pmm_alloc_page();
+        vmm_map(&new_thread->context, pframe, MEMORY_LAYOUT_STACK_TOP-0x1000, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
+        new_state->esp = (uint32_t) MEMORY_LAYOUT_STACK_TOP - 3*sizeof(uint32_t);
 
-            stack = (uint32_t *) (vmm_automap_kernel(current_context, pframe, VMM_PRESENT | VMM_WRITABLE | VMM_USER) + 0x1000);
-            *--stack = (uint32_t) argv;
-            *--stack = argc;
-            *--stack = (uint32_t) return_address;
-            vmm_unmap(current_context, (vaddr_t) stack);
-        }
+        vaddr_t vframe = vmm_automap_kernel(current_context, pframe, VMM_PRESENT | VMM_WRITABLE);
+
+        stack = vframe + 0x1000;
+        *--stack = (uint32_t) argv;
+        *--stack = argc;
+        *--stack = (uint32_t) return_address;
+
+        vmm_unmap(current_context, vframe);
 
         new_state->cs = 0x1b;
         new_state->ss = 0x23;
