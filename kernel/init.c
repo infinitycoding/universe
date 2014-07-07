@@ -84,17 +84,17 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     print_logo(YELLOW);
     puts("Universe wird gestartet...\n");
     // count free memory and display it
-    /*uint32_t pages = pmm_count_free_pages();
-    printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);*/
+    uint32_t pages = pmm_count_free_pages();
+    printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
     //print current time
-    //struct time t;
-    //update_time(&t);
-    //print_time(&t); //crashes on a real computer and on virtual box
-    //printf("\n");
-    //printf("Timestamp:%d\n\n",unix_time(&t));
-    //INIT_CPUID();
-    //printf("\n");
-    //INIT_PCI();
+    struct time t;
+    update_time(&t);
+    print_time(&t); //crashes on a real computer and on virtual box
+    printf("\n");
+    printf("Timestamp:%d\n\n",unix_time(&t));
+    INIT_CPUID();
+    printf("\n");
+    INIT_PCI();
 
     // mapping strings
     int i;
@@ -110,37 +110,37 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 
     struct mapping_statistics stats = map_all(mb_info);
     printf("%d modules total, %d successfully loaded, %d failed\n", stats.total, stats.load_success, stats.load_failed);
+
+    vfs_inode_t *pfnode = vfs_lookup_path("/drivers/system.pf");
     /*
-            vfs_inode_t *pfnode = vfs_lookup_path("/drivers/system.pf");
+        if(pfnode != NULL)
+        {
+                    int argc = 2;
+                    void *argv[2];
+                    char *pf = (char *)malloc(pfnode->length+1);
+                    vfs_read(pfnode, 0, pf, pfnode->length);
+                    pf[pfnode->length+1] = '\0';
+                    list_t *pipelines = pfp(pf);
+                    struct section *sec = list_pop_front(pipelines);
 
-            if(pfnode != NULL)
-            {
-                int argc = 2;
-                void *argv[2];
-                char *pf = (char *)malloc(pfnode->length+1);
-                vfs_read(pfnode, 0, pf, pfnode->length);
-                pf[pfnode->length+1] = '\0';
-                list_t *pipelines = pfp(pf);
-                struct section *sec = list_pop_front(pipelines);
-
-                argv[1] = mb_info;
-                argv[0] = sec;
-                kernel_thread_create((uintptr_t)INIT_HYPERVISOR,argc,argv);
-            }
-
-                vfs_inode_t *testnode = vfs_lookup_path("/test.elf");
-
-                if(testnode == NULL)
-                {
-                    printf("ultrashell.elf not in vfs\n");
+                    argv[1] = mb_info;
+                    argv[0] = sec;
+                    //kernel_thread_create((uintptr_t)INIT_HYPERVISOR,argc,argv);
                 }
-                else
-                {
-                    load_elf_from_file(testnode, 0, 0, 0);
-                }
-
     */
-    test_heap(0xFF);
+    vfs_inode_t *testnode = vfs_lookup_path("/test.elf");
+
+    if(testnode == NULL)
+    {
+        printf("ultrashell.elf not in vfs\n");
+    }
+    else
+    {
+        load_elf_from_file(testnode, 0, 0, 0);
+    }
+
+
+    //test_heap(0xFF);
 
     return 0;
 }
