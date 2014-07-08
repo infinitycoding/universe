@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <list.h>
 
+
 /**
  *  @brief Creates a linked list.
  *  @return new list
@@ -42,7 +43,6 @@ list_t *list_create(void)
     unlock(&list->lock);
     return list;
 }
-
 
 /**
  *  @brief Destroys a list.
@@ -62,7 +62,6 @@ void list_destroy(list_t *list)
     return;
 }
 
-
 /**
  *  @brief Moves all elements between start and end after target.
  *  @param start Start of the element chain
@@ -80,7 +79,12 @@ void list_splice(struct list_node *start, struct list_node *end, struct list_nod
     return;
 }
 
-
+/**
+ *  @brief Adds an element before the dummy element (...|last element|new element|dummy|first entry|...).
+ *  @param list the list
+ *  @param element the element to be added to the list
+ *  @return pointer to the list
+ */
 list_t *list_push_back(list_t *list, void *element)
 {
     struct list_node *node = (struct list_node *) malloc(sizeof(struct list_node));
@@ -91,6 +95,12 @@ list_t *list_push_back(list_t *list, void *element)
     return list;
 }
 
+/**
+ *  @brief Adds an element after of the dummy to a list (...|last element|dummy|new element|first entry|...).
+ *  @param list the list
+ *  @param element the element to be added to the list
+ *  @return pointer to the list
+ */
 list_t *list_push_front(list_t *list, void *element)
 {
     struct list_node *node = (struct list_node *) malloc(sizeof(struct list_node));
@@ -101,6 +111,11 @@ list_t *list_push_front(list_t *list, void *element)
     return list;
 }
 
+/**
+ *  @brief Internal function which removes a specific node from a list.
+ *  @param node the node to be removed
+ *  @return pointer to the content of the removed element
+ */
 void *list_remove_node(struct list_node *node)
 {
     void *element = node->element;
@@ -110,6 +125,11 @@ void *list_remove_node(struct list_node *node)
     return element;
 }
 
+/**
+ *  @brief Removes the element before the dummy (complementary to list_pop_back).
+ *  @param the list
+ *  @pointer to the removed element 
+ */
 void *list_pop_back(list_t *list)
 {
     struct list_node *last = list->head->prev;
@@ -120,6 +140,11 @@ void *list_pop_back(list_t *list)
     return element;
 }
 
+/**
+ *  @brief Removes the element after the dummy (complementary to list_pop_front).
+ *  @param the list
+ *  @pointer to the removed element 
+ */
 void *list_pop_front(list_t *list)
 {
     struct list_node *first = list->head->next;
@@ -130,7 +155,11 @@ void *list_pop_front(list_t *list)
     return element;
 }
 
-
+/**
+ *  @brief Counts the number of elements in the given list.
+ *  @brief list the list
+ *  @return number of elements
+ */
 int list_length(list_t *list)
 {
     struct list_node *node = list->head->next;
@@ -144,23 +173,39 @@ int list_length(list_t *list)
     return size;
 }
 
+/**
+ *  @brief Checks if the given list is empty.
+ *  @param list the list
+ *  @return true if the list is empty, false if the list contains elements
+ */
 bool list_is_empty(list_t *list)
 {
     return (list->head == list->head->next);
 }
 
+/**
+ *  @brief Locks the optional mutex of a list.
+ *  @param list the list
+ */
 void list_lock(list_t *list)
 {
     lock(&list->lock);
 }
 
+/**
+ *  @brief Unlocks the optional mutex of a list.
+ *  @param list the list
+ */
 void list_unlock(list_t *list)
 {
     unlock(&list->lock);
 }
 
-
-// using interators
+/**
+ *  @breif Creates a new iterator fot a list.
+ *  @param list the list
+ *  @return the new iterator
+ */
 iterator_t iterator_create(list_t *list)
 {
     iterator_t new_iterator;
@@ -169,8 +214,11 @@ iterator_t iterator_create(list_t *list)
     return new_iterator;
 }
 
-
-
+/**
+ *  @brief Inserts an element after the current element which is selected by the iterator.  
+ *  @param iterator the iterator
+ *  @param element the element to be inserted
+ */
 void list_insert_after(iterator_t *it, void *element)
 {
     struct list_node *node = (struct list_node *) malloc(sizeof(struct list_node));
@@ -180,7 +228,11 @@ void list_insert_after(iterator_t *it, void *element)
     list_splice(node, node, it->current);
 }
 
-
+/**
+ *  @brief Inserts an element before the current element which is selected by the iterator.  
+ *  @param iterator the iterator
+ *  @param element the element to be inserted
+ */
 void list_insert_before(iterator_t *it, void *element)
 {
     struct list_node *node = (struct list_node *) malloc(sizeof(struct list_node));
@@ -190,7 +242,11 @@ void list_insert_before(iterator_t *it, void *element)
     list_splice(node, node, it->current->prev);
 }
 
-
+/**
+ *  @brief Get the current element of a list selected by an iterator.
+ *  @param the iterator
+ *  @return the current element
+ */
 void *list_get_current(iterator_t *it)
 {
     if(it)
@@ -200,31 +256,56 @@ void *list_get_current(iterator_t *it)
     return NULL;
 }
 
+/**
+ *  @brief Switches the current element of an iterator to the next element of it's list. (forward)
+ *  @param iterator the iterator
+ */
 void list_next(iterator_t *it)
 {
     it->current = it->current->next;
 }
 
+/**
+ *  @brief Switches the current element of an iterator to the previous element of it's list.
+ *  @param iterator the iterator
+ */
 void list_previous(iterator_t *it)
 {
     it->current = it->current->prev;
 }
 
+/**
+ *  @brief Checks if the current element is the last before the dummy element or if the list is empty.
+ *  @return true if it's the last element, false if it's not.
+ */
 bool list_is_last(iterator_t *it)
 {
     return (it->current == it->list->head);
 }
 
+/**
+ *  @brief Sets the first element after the dummy as current element of an iterator. 
+ *  @param iterator the iterator
+ */
 void list_set_first(iterator_t *it)
 {
     it->current = it->list->head->next;
 }
 
+/**
+ *  @brief Sets the first element before the dummy as current element of an iterator. 
+ *  @param iterator the iterator
+ */
 void list_set_last(iterator_t *it)
 {
     it->current = it->list->head->prev;
 }
 
+/**
+ *  @brief Removes the current element from the list and returns it.
+ *  @param iterator the iterator
+ *  @return the corrent element
+ */
 void *list_remove(iterator_t *it)
 {
     void *element = list_get_current(it);
