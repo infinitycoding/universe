@@ -237,14 +237,14 @@ int send_event(uint32_t ID)
                     // save current thread
                     struct thread_state *tmp = current_thread;
 
-                    struct cpu_state **cpu = &thread->state;
+                    struct cpu_state **cpu = &thread->context.state;
                     current_thread = thread;
-                    vmm_switch_context(&current_thread->context);
+                    vmm_switch_context(&current_thread->context.memory);
 
                     current_entry->callback(cpu);
 
                     current_thread = tmp;
-                    vmm_switch_context(&current_thread->context);
+                    vmm_switch_context(&current_thread->context.memory);
                 }
             }
             // that's a temporary workaround. I have to fix it later.

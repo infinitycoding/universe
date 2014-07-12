@@ -106,7 +106,7 @@ struct process_state *load_elf_thread(void *image, struct process_state *proc, i
         }
     }
 
-    thread_create(proc, 3, header->entry, NULL, argc,(void **) argv, NULL, &context);
+    thread_create(proc, 3, header->entry, argc,(void **) argv, NULL, &context);
 
     return proc;
 }

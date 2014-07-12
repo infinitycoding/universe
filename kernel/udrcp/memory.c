@@ -72,7 +72,7 @@ void handle_pma_alloc(struct driver *drv, pck_t *req)
 
     iterator_t i = iterator_create(drv->process->threads);
     struct pma_response resp;
-    resp.mem_base = vmm_automap_user_range( &((struct thread_state*)list_get_current(&i))->context, phys_base, pma_req->size/PAGE_SIZE, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
+    resp.mem_base = vmm_automap_user_range( &((struct thread_state*)list_get_current(&i))->context.memory, phys_base, pma_req->size/PAGE_SIZE, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
     resp.phys_base = phys_base;
     respond(drv->pman, req->id, SUCCESS, sizeof(struct pma_response), &resp);
 }

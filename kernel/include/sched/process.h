@@ -50,12 +50,6 @@ typedef enum
 
 typedef uint32_t pid_t;
 
-typedef enum
-{
-    KERNELMODE = 0,
-    USERMODE = 3
-} privilege_t;
-
 struct env_var
 {
     char *name;

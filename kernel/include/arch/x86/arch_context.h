@@ -1,5 +1,5 @@
-#ifndef _CPU_H_
-#define _CPU_H_
+#ifndef _ARCH_CONTEXT_H_
+#define _ARCH_CONTEXT_H_
 
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
@@ -23,63 +23,17 @@
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
-#include <stdint.h>
+#include <cpu.h>
+#include <mm/paging.h>
 
-
-typedef enum
+struct arch_thread_context
 {
-    KERNELMODE = 0,
-    USERMODE = 3
-} privilege_t;
+    struct cpu_state *state;
+    vaddr_t kernel_mode_stack;
+    vaddr_t programm_stack;
+    vmm_context_t memory;
+}arch_thread_context;
 
-struct cpu_state
-{
-    uint32_t   gs;
-    uint32_t   fs;
-    uint32_t   es;
-    uint32_t   ds;
-
-    uint32_t   edi;
-    uint32_t   esi;
-    uint32_t   ebp;
-
-    uint32_t   ebx;
-    uint32_t   edx;
-    uint32_t   ecx;
-    uint32_t   eax;
-
-    uint32_t   intr;
-    uint32_t   error;
-
-    uint32_t   eip;
-    uint32_t   cs;
-    uint32_t   eflags;
-    uint32_t   esp;
-    uint32_t   ss;
-};
-
-#define CPU_ARG0 eax
-#define CPU_ARG1 ebx
-#define CPU_ARG2 ecx
-#define CPU_ARG3 edx
-#define CPU_ARG4 esi
-#define CPU_ARG5 edi
-
-#ifndef _cpu_c_
-extern char *exception_messages[];
-#endif
-
-
-void halt(void);
-
-static inline void disable_irqs(void)
-{
-    asm volatile("cli");
-}
-
-static inline void enable_irqs(void)
-{
-    asm volatile("sti");
-}
-
+struct cpu_state *arch_create_thread_context(struct arch_thread_context *context, privilege_t prev, vaddr_t entry, vaddr_t return_address, int argc, void **argv);
+void arch_destroy_thread_context(struct arch_thread_context *context);
 #endif

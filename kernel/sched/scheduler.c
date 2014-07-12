@@ -69,7 +69,7 @@ void INIT_SCHEDULER(void)
     process_list = list_create();
     zombie_list = list_create();
     kernel_state = process_create("Kernel INIT", "initiate system", PROCESS_ACTIVE, NULL, 0, 0, NULL);
-    current_thread = thread_create(kernel_state, KERNELMODE, 0, NULL, 0, 0,0, NULL);
+    current_thread = thread_create(kernel_state, KERNELMODE, 0, 0, 0,0, NULL);
 }
 
 
@@ -81,11 +81,11 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
 {
     if((current_thread->flags & THREAD_KERNELMODE))
     {
-        current_thread->state = cpu;
+        current_thread->context.state = cpu;
     }
     else
     {
-        memcpy(current_thread->state, cpu, sizeof(struct cpu_state));
+        memcpy(current_thread->context.state, cpu, sizeof(struct cpu_state));
     }
 
     if(current_thread->flags & THREAD_ZOMBIE)
@@ -104,8 +104,8 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
 
         list_set_first(&thread_iterator);
         current_thread = list_get_current(&thread_iterator);
-        vmm_switch_context(&current_thread->context);
-        memcpy(cpu, current_thread->state, sizeof(struct cpu_state));
+        vmm_switch_context(&current_thread->context.memory);
+        memcpy(cpu, current_thread->context.state, sizeof(struct cpu_state));
 //       dump_thread_list(running_threads);
     }
     else if(current_thread->ticks == 0)
@@ -115,16 +115,16 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
         if(list_is_last(&thread_iterator))
             list_set_first(&thread_iterator);
         current_thread = list_get_current(&thread_iterator);
-        vmm_switch_context(&current_thread->context);
+        vmm_switch_context(&current_thread->context.memory);
 
         if(current_thread->flags & THREAD_KERNELMODE)
         {
-            cpu = current_thread->state;
+            cpu = current_thread->context.state;
         }
         else
         {
             cpu = (struct cpu_state *)kernelstack;
-            memcpy(cpu, current_thread->state, sizeof(struct cpu_state));
+            memcpy(cpu, current_thread->context.state, sizeof(struct cpu_state));
         }
     }
     else

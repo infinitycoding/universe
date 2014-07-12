@@ -22,6 +22,7 @@
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
+#include <arch_context.h>
 #include <sched/process.h>
 #include <mm/paging.h>
 #include <stdint.h>
@@ -39,9 +40,8 @@
 
 struct thread_state
 {
-    struct cpu_state *state;
+    struct arch_thread_context context;
     struct process_state *process;
-    vmm_context_t context;
     uint32_t ticks;
     uint16_t flags;
     uint32_t waitpid;
@@ -49,7 +49,7 @@ struct thread_state
     tid_t tid; //Thread ID
 };
 
-struct thread_state *thread_create(struct process_state *process, privilege_t prev,uintptr_t eip, struct cpu_state *state, int argc, void **argv, void *return_address, vmm_context_t *context);
+struct thread_state *thread_create(struct process_state *process, privilege_t prev, uint32_t eip, int argc, void **argv, void *return_address, vmm_context_t *context);
 void thread_kill(struct thread_state *thread);
 void thread_kill_sub(struct thread_state *thread);
 void thread_exit(struct cpu_state **cpu);
@@ -58,4 +58,5 @@ struct thread_state *kernel_thread_create(uintptr_t eip, int argc, void **argv);
 void kernel_thread_exit(void);
 void thread_start(struct thread_state *thread);
 
+struct thread_state *thread_clone(struct process_state *process, struct thread_state *src_thread);
 #endif

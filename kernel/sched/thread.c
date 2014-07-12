@@ -40,8 +40,7 @@ void thread_sync_context(struct thread_state *thread)
     if(thread != main_thread && main_thread != NULL && thread != NULL)
     {
         int end = PDE_INDEX(0xB0000000);
-        //printf("call sync... 0x%x, 0x%x, %d, %d\n", &thread->context.arch_context, &main_thread->context.arch_context, 0, end);
-        arch_sync_pts(&thread->context.arch_context, &main_thread->context.arch_context, 0, end);
+        arch_sync_pts(&thread->context.memory.arch_context, &main_thread->context.memory.arch_context, 0, end);
     }
 }
 
@@ -54,94 +53,47 @@ void kernel_thread_exit(void)
 }
 
 
-
 struct thread_state *kernel_thread_create(uintptr_t eip, int argc, void **argv)
 {
-    struct thread_state *new_thread = thread_create(kernel_state, KERNELMODE, (uint32_t) eip, NULL, argc, argv, NULL, NULL);
+    struct thread_state *new_thread = thread_create(kernel_state, KERNELMODE, (uint32_t) eip, argc, argv, NULL, NULL);
 
     return new_thread;
 }
 
 
-struct thread_state *thread_create(struct process_state *process, privilege_t prev, uint32_t eip, struct cpu_state *state, int argc, void **argv, void *return_address, vmm_context_t *context)
+struct thread_state *thread_create(struct process_state *process, privilege_t prev, uint32_t eip, int argc, void **argv, void *return_address, vmm_context_t *context)
 {
     struct thread_state *new_thread = malloc(sizeof(struct thread_state));
 
     new_thread->flags = THREAD_ACTIV;
     new_thread->process = process;
+    new_thread->ticks = 10;
+    new_thread->return_value = 0;
 
-    if(return_address == NULL)
-        return_address = &kernel_thread_exit;
+    if(prev == KERNELMODE)
+    {
+        new_thread->flags |= THREAD_KERNELMODE;
+        if(return_address == NULL)
+            return_address = &kernel_thread_exit;
+    }
 
     if(process->main_thread == NULL)
     {
         process->main_thread = new_thread;
     }
 
-    vmm_create_context(&new_thread->context);
-
+    vmm_create_context(&new_thread->context.memory);
     if(context != NULL)
-        memcpy(&new_thread->context.arch_context, &context->arch_context, sizeof(arch_vmm_context_t));
-
+        memcpy(&new_thread->context.memory.arch_context, &context->arch_context, sizeof(arch_vmm_context_t));
     thread_sync_context(new_thread);
-    new_thread->ticks = 10;
-    new_thread->return_value = 0;
-
-    void *kernel_stack = malloc(0x1000);
-    struct cpu_state *new_state = kernel_stack + 0x1000 - sizeof(struct cpu_state) - 3*sizeof(uint32_t);
-    new_thread->state = new_state;
-
-    if(state != NULL)
-    {
-        memcpy(new_state, state, sizeof(struct cpu_state));
-    }
-    else
-    {
-        memset(new_state, 0, sizeof(struct cpu_state));
-        new_state->eip = eip;
-        new_state->eflags = 0x202;
-    }
-
-    uint32_t *stack;
-    if(prev == KERNELMODE)
-    {
-        new_thread->flags |= THREAD_KERNELMODE;
-        new_state->cs = 0x08;
-        new_state->ds = 0x10;
-        new_state->es = 0x10;
-        new_state->fs = 0x10;
-        new_state->gs = 0x10;
-        stack = kernel_stack + 0x1000 - 2*sizeof(uint32_t);
-        *--stack = (uint32_t) argv;
-        *--stack = argc;
-        *--stack = (uint32_t) return_address;
-    }
-    else
-    {
-        paddr_t pframe = pmm_alloc_page();
-        vmm_map(&new_thread->context, pframe, MEMORY_LAYOUT_STACK_TOP-0x1000, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
-        new_state->esp = (uint32_t) MEMORY_LAYOUT_STACK_TOP - 3*sizeof(uint32_t);
-
-        vaddr_t vframe = vmm_automap_kernel(current_context, pframe, VMM_PRESENT | VMM_WRITABLE);
-
-        stack = vframe + 0x1000;
-        *--stack = (uint32_t) argv;
-        *--stack = argc;
-        *--stack = (uint32_t) return_address;
-
-        vmm_unmap(current_context, vframe);
-
-        new_state->cs = 0x1b;
-        new_state->ss = 0x23;
-    }
+    arch_create_thread_context(&new_thread->context, prev, (vaddr_t) eip, (vaddr_t) return_address, argc, argv);
 
     if(process->heap_top == 0)
     {
-        process->heap_top = arch_vaddr_find(&new_thread->context.arch_context, 1, MEMORY_LAYOUT_USER_HEAP_START, MEMORY_LAYOUT_USER_HEAP_END, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
-        vmm_map(&new_thread->context, pmm_alloc_page(), process->heap_top, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
+        process->heap_top = arch_vaddr_find(&new_thread->context.memory.arch_context, 1, MEMORY_LAYOUT_USER_HEAP_START, MEMORY_LAYOUT_USER_HEAP_END, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
+        vmm_map(&new_thread->context.memory, pmm_alloc_page(), process->heap_top, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
         process->heap_lower_limit = process->heap_top;
-        process->heap_upper_limit = (uint32_t) stack-0x1000;
-
+        process->heap_upper_limit = (uint32_t) MEMORY_LAYOUT_STACK_TOP - 0x1000;
     }
 
     if(list_is_empty(process->zombie_tids))
@@ -156,16 +108,64 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     return new_thread;
 }
 
+struct thread_state *thread_clone(struct process_state *process, struct thread_state *src_thread)
+{
+    struct thread_state *new_thread = malloc(sizeof(struct thread_state));
+    new_thread->flags = THREAD_ACTIV;
+    new_thread->process = process;
+    new_thread->ticks = 10;
+    new_thread->return_value = 0;
+    privilege_t prev;
+
+    if(src_thread->flags & THREAD_KERNELMODE)
+    {
+        prev = KERNELMODE;
+        new_thread->flags |= THREAD_KERNELMODE;
+    }
+    else
+        prev = USERMODE;
+
+    if(process->main_thread == NULL)
+    {
+        process->main_thread = new_thread;
+    }
+
+    vmm_create_context(&new_thread->context.memory);
+    memcpy(&new_thread->context.memory.arch_context, &src_thread->context.memory.arch_context, sizeof(arch_vmm_context_t));
+    thread_sync_context(new_thread);
+    arch_create_thread_context(&new_thread->context, prev, (vaddr_t) 0, (vaddr_t) 0, 0, 0);
+    *new_thread->context.state = *src_thread->context.state;
+
+    if(process->heap_top == 0)
+    {
+        process->heap_top = arch_vaddr_find(&new_thread->context.memory.arch_context, 1, MEMORY_LAYOUT_USER_HEAP_START, MEMORY_LAYOUT_USER_HEAP_END, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
+        vmm_map(&new_thread->context.memory, pmm_alloc_page(), process->heap_top, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
+        process->heap_lower_limit = process->heap_top;
+        process->heap_upper_limit = (uint32_t) MEMORY_LAYOUT_STACK_TOP - 0x1000;
+    }
+
+    if(list_is_empty(process->zombie_tids))
+        new_thread->tid = process->tid_counter++;
+    else
+        new_thread->tid = (tid_t) list_pop_back(process->zombie_tids);
+
+    list_push_front(process->threads,new_thread);
+    list_push_front(running_threads, new_thread);
+
+    return new_thread;
+}
+
+
 void thread_kill(struct thread_state *thread)
 {
-    asm volatile("cli");
+    disable_irqs();
     if(current_thread == thread)
         thread->flags |= THREAD_ZOMBIE;
     else
     {
         thread_kill_sub(thread);
     }
-    asm volatile("sti");
+    enable_irqs();
 }
 
 void thread_kill_sub(struct thread_state *thread)
@@ -188,8 +188,7 @@ void thread_kill_sub(struct thread_state *thread)
     // only delete the cpu state of usermode threads. Freeing the kernel cpu-state can cause pagefaults
     if(! (thread->flags & THREAD_KERNELMODE))
     {
-        free(thread->state);
-        arch_vmm_destroy_context(&thread->context.arch_context);
+        arch_destroy_thread_context(&thread->context);
     }
 
     if(thread->process->flags & PROCESS_ZOMBIE)
@@ -220,7 +219,7 @@ void thread_exit(struct cpu_state **cpu)
 
 void launch_thread(struct cpu_state **cpu)
 {
-    thread_create(current_thread->process, USERMODE, (*cpu)->CPU_ARG1, NULL, (*cpu)->CPU_ARG2, (void**)(*cpu)->CPU_ARG3, (void*)(*cpu)->CPU_ARG4, NULL);
+    thread_create(current_thread->process, USERMODE, (*cpu)->CPU_ARG1, (*cpu)->CPU_ARG2, (void**)(*cpu)->CPU_ARG3, (void*)(*cpu)->CPU_ARG4, NULL);
 }
 
 
