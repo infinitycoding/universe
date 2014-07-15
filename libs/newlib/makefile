@@ -30,9 +30,7 @@ configure: download
 	fi
 
 build: configure
-	if  find -name $(PREFIX)/usr/lib/libc.a -newer system/syscalls.c; then \
-		$(MAKE) -C $(BUILD); \
-	fi
+		$(MAKE) -C $(BUILD); 
 	
 
 install: build
