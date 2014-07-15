@@ -26,12 +26,13 @@ configure: download
 		cd ../../../../..; \
 		cd $(BUILD); \
 		../$(NEWLIB)/configure --prefix=$(PREFIX)/usr --target=$(ARCH)-universe; \
+		../$(NEWLIB)/newlib/libc/sys/universe/configure; \
 		cd ..; \
 	fi
 
 build: configure
-		$(MAKE) -C $(BUILD); 
-	
+	$(MAKE) -C $(BUILD)
+	$(MAKE) -C $(BUILD)/i686-universe/newlib/libc/syscalls
 
 install: build
 	$(MAKE) -C $(BUILD) install
@@ -42,3 +43,4 @@ install: build
 clean:
 	rm -rf $(NEWLIB)
 	rm -rf $(BUILD)
+

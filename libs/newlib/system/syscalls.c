@@ -150,3 +150,9 @@ int gettimeofday(struct timeval *p, struct timezone *z)
     }
     return 0;
 }
+
+int isatty(int file)
+{
+	return 1;
+}
+

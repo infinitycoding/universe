@@ -32,7 +32,7 @@ struct arch_thread_context
     vaddr_t kernel_mode_stack;
     vaddr_t programm_stack;
     vmm_context_t memory;
-}arch_thread_context;
+} arch_thread_context;
 
 struct cpu_state *arch_create_thread_context(struct arch_thread_context *context, privilege_t prev, vaddr_t entry, vaddr_t return_address, int argc, void **argv);
 void arch_destroy_thread_context(struct arch_thread_context *context);

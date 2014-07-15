@@ -298,6 +298,7 @@ void remap_pic(void)
 void INIT_IDT(void)
 {
     remap_pic();
+
     //Exceptions
     int i;
     for(i = 0; i < 256; i++)
@@ -355,7 +356,9 @@ void INIT_IDT(void)
     Set_IDT_Entry(46,(uint32_t)isr_46,0x08,INTERRUPT_GATE, 0  );
     Set_IDT_Entry(47,(uint32_t)isr_47,0x08,INTERRUPT_GATE, 0  );
 
+    //Syscalls
     Set_IDT_Entry(0x70,(uint32_t)isr_112,0x08,INTERRUPT_GATE, 3  ); //Universe syscall interface
     Set_IDT_Entry(0x80,(uint32_t)isr_128,0x08,INTERRUPT_GATE, 3  ); //Linux syscall interface
-    lidt(0xff);
+
+    lidt(0xFF);
 }

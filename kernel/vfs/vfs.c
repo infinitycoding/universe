@@ -105,7 +105,7 @@ vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_
 
 vfs_inode_t *vfs_create_pipe(uid_t uid, gid_t gid)
 {
-    vfs_inode_t *inode = vfs_create_inode("pipe", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH, NULL, uid, gid);
+    vfs_inode_t *inode = vfs_create_inode(NULL, 0, NULL, uid, gid);
 
     inode->buffer->event_id = get_new_event_ID();
     inode->buffer->handlers = list_create();
@@ -599,43 +599,48 @@ void sys_open(struct cpu_state **cpu)
         }
     }
 
-    if(vfs_access(inode, R_OK, current_thread->process->uid, current_thread->process->gid) == 0)
+    if(oflags & O_TRUNC)
     {
-        if(oflags & O_TRUNC)
+        if(vfs_access(inode, W_OK, current_thread->process->uid, current_thread->process->gid) == 0)
         {
-            if(vfs_access(inode, W_OK, current_thread->process->uid, current_thread->process->gid) == 0)
-            {
-                // TODO: clear file
-            }
-            else
-            {
-                (*cpu)->CPU_ARG0 = _NO_PERMISSION;
-                return;
-            }
+            // TODO: clear file
         }
-
-        struct fd *desc = malloc(sizeof(struct fd));
-        desc->id = list_length(current_thread->process->files);
-        desc->mode = mode;
-        desc->flags = oflags;
-        desc->read_pos = 0;
-        desc->write_pos = 0;
-        desc->inode = inode;
-
-        if(oflags & O_APPEND)
+        else
         {
-            desc->read_pos = inode->length;
-            desc->write_pos = inode->length;
+            (*cpu)->CPU_ARG0 = _NO_PERMISSION;
+            return;
         }
-
-        list_push_back(current_thread->process->files, desc);
-
-        (*cpu)->CPU_ARG0 = desc->id;
     }
-    else
+
+    struct fd *desc = malloc(sizeof(struct fd));
+    desc->id = list_length(current_thread->process->files);
+    desc->mode = mode;
+    desc->flags = oflags;
+
+    desc->permission = 0;
+    desc->read_pos = 0;
+    desc->write_pos = 0;
+    desc->inode = inode;
+
+    if(oflags & O_APPEND)
     {
-        (*cpu)->CPU_ARG0 = _NO_PERMISSION;
+        desc->read_pos = inode->length;
+        desc->write_pos = inode->length;
     }
+
+    if( (oflags & O_RDONLY || oflags & O_RDWR) && vfs_access(inode, R_OK, current_thread->process->uid, current_thread->process->gid) == 0)
+    {
+        desc->permission |= VFS_PERMISSION_READ;
+    }
+
+    if( (oflags & O_WRONLY || oflags & O_RDWR) && vfs_access(inode, W_OK, current_thread->process->uid, current_thread->process->gid) == 0)
+    {
+        desc->permission |= VFS_PERMISSION_WRITE;
+    }
+
+    list_push_back(current_thread->process->files, desc);
+
+    (*cpu)->CPU_ARG0 = desc->id;
 }
 
 void sys_pipe(struct cpu_state **cpu)
@@ -649,6 +654,7 @@ void sys_pipe(struct cpu_state **cpu)
     desc0->id = id[0] = list_length(current_thread->process->files);
     desc0->mode = O_APPEND;
     desc0->flags = O_RDONLY;
+    desc0->permission =  VFS_PERMISSION_READ;
     desc0->read_pos = 0;
     desc0->write_pos = 0;
     desc0->inode = inode;
@@ -659,6 +665,7 @@ void sys_pipe(struct cpu_state **cpu)
     desc1->id = id[1] = list_length(current_thread->process->files);
     desc1->mode = O_APPEND;
     desc1->flags = O_WRONLY;
+    desc1->permission = VFS_PERMISSION_WRITE;
     desc1->read_pos = 0;
     desc1->write_pos = 0;
     desc1->inode = inode;
@@ -734,43 +741,35 @@ void sys_read(struct cpu_state **cpu)
     struct fd *desc = get_fd(fd);
     if(desc != NULL)
     {
-        if(desc->flags & O_RDONLY ||
-                desc->flags & O_RDWR)
+        if(desc->permission & VFS_PERMISSION_READ)
         {
             vfs_inode_t *inode = desc->inode;
             vfs_buffer_info_t *info = inode->buffer;
 
-            if(vfs_access(inode, R_OK, current_thread->process->uid, current_thread->process->gid) == 0)
+            int ret = vfs_read(inode, desc->read_pos, buf, len);
+
+            if(ret == len)
             {
-                int ret = vfs_read(inode, desc->read_pos, buf, len);
-
-                if(ret == len)
+                desc->read_pos += len;
+                if(inode->type != VFS_PIPE)
                 {
-                    desc->read_pos += len;
-                    if(inode->type != VFS_PIPE)
-                    {
-                        desc->write_pos += len;
-                    }
+                    desc->write_pos += len;
+                }
 
-                    (*cpu)->CPU_ARG0 = len;
-                }
-                else
-                {
-                    if(inode->type == VFS_PIPE)
-                    {
-                        add_trigger(WAIT_EVENT, info->event_id, 0, current_thread, sys_read);
-                        suspend_thread(current_thread);
-                        *cpu = (struct cpu_state *)task_schedule(*cpu);
-                    }
-                    else
-                    {
-                        (*cpu)->CPU_ARG0 = _FAILURE;
-                    }
-                }
+                (*cpu)->CPU_ARG0 = len;
             }
             else
             {
-                (*cpu)->CPU_ARG0 = _NO_PERMISSION;
+                if(inode->type == VFS_PIPE)
+                {
+                    add_trigger(WAIT_EVENT, info->event_id, 0, current_thread, sys_read);
+                    suspend_thread(current_thread);
+                    *cpu = (struct cpu_state *)task_schedule(*cpu);
+                }
+                else
+                {
+                    (*cpu)->CPU_ARG0 = _FAILURE;
+                }
             }
         }
         else
@@ -804,28 +803,20 @@ void sys_write(struct cpu_state **cpu)
     struct fd *desc = get_fd(fd);
     if(desc != NULL)
     {
-        if(desc->flags & O_WRONLY ||
-                desc->flags & O_RDWR)
+        if(desc->permission & VFS_PERMISSION_WRITE)
         {
             vfs_inode_t *inode = desc->inode;
 
-            if(vfs_access(inode, W_OK, current_thread->process->uid, current_thread->process->gid) == 0)
-            {
-                int ret = vfs_write(inode, desc->write_pos, buf, len);
-                (*cpu)->CPU_ARG0 = ret;
+            int ret = vfs_write(inode, desc->write_pos, buf, len);
+            (*cpu)->CPU_ARG0 = ret;
 
-                if(ret > 0)
-                {
-                    desc->write_pos += len;
-                    if(inode->type != VFS_PIPE)
-                    {
-                        desc->read_pos += len;
-                    }
-                }
-            }
-            else
+            if(ret > 0)
             {
-                (*cpu)->CPU_ARG0 = _NO_PERMISSION;
+                desc->write_pos += len;
+                if(inode->type != VFS_PIPE)
+                {
+                    desc->read_pos += len;
+                }
             }
         }
         else
@@ -858,6 +849,7 @@ void sys_create(struct cpu_state **cpu)
                 desc->id = list_length(current_thread->process->files);
                 desc->mode = mode;
                 desc->flags = O_RDWR;
+                desc->permission = VFS_PERMISSION_READ | VFS_PERMISSION_WRITE;
                 desc->read_pos = 0;
                 desc->write_pos = 0;
                 desc->inode = inode;
@@ -1126,9 +1118,10 @@ void launch_pipe_handlers(vfs_buffer_info_t *pipe)
 void set_pipe_trigger(struct cpu_state **cpu)
 {
     int fd = (*cpu)->CPU_ARG1;
-    vfs_inode_t *inode = get_fd(fd)->inode;
+    struct fd *desc = get_fd(fd);
+    vfs_inode_t *inode = desc->inode;
 
-    if(vfs_access(inode, R_OK, current_thread->process->uid, current_thread->process->gid) == 0)
+    if(desc->permission & VFS_PERMISSION_READ)
     {
         vfs_buffer_info_t *pipe = inode->buffer;
 
@@ -1246,6 +1239,7 @@ void sys_lchown(struct cpu_state **cpu)
         return;
     }
 
+    // TODO: change  the  permissions in filedescriptors
     node->stat.st_uid = (uid_t) (*cpu)->CPU_ARG2;
     node->stat.st_gid = (gid_t) (*cpu)->CPU_ARG3;
     (*cpu)->CPU_ARG0 = _SUCCESS;

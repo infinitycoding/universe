@@ -51,6 +51,8 @@
 #define O_CREAT 0x20 /* create the file */
 #define O_EXCL 0x40 /* forced file creation. if it already exist: fail */
 
+#define VFS_PERMISSION_READ 1
+#define VFS_PERMISSION_WRITE 2
 
 #define VFS_BLOCK_SIZE 4096
 
@@ -110,6 +112,7 @@ struct fd
     vfs_inode_t *inode;
     mode_t mode;
     int flags;
+    int permission;
 
     int read_pos;
     int write_pos;

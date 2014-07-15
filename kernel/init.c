@@ -75,7 +75,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     INIT_HEAP();
     INIT_VFS();
     INIT_TRIGGER();
-    INIT_CLOCK(600);
+    INIT_CLOCK(500);
     INIT_SCHEDULER();
     asm volatile("sti");
 

@@ -1,17 +1,17 @@
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the universe standart c library.
- 
+
      The universe standart c library is free software: you can redistribute it and/or modify
      it under the terms of the GNU Lesser General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
- 
+
      The universe standart c library is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU Lesser General Public License for more details.
- 
+
      You should have received a copy of the GNU Lesser General Public License
      along with the universe standart c library.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -128,7 +128,7 @@ void *list_remove_node(struct list_node *node)
 /**
  *  @brief Removes the element before the dummy (complementary to list_pop_back).
  *  @param the list
- *  @pointer to the removed element 
+ *  @pointer to the removed element
  */
 void *list_pop_back(list_t *list)
 {
@@ -143,7 +143,7 @@ void *list_pop_back(list_t *list)
 /**
  *  @brief Removes the element after the dummy (complementary to list_pop_front).
  *  @param the list
- *  @pointer to the removed element 
+ *  @pointer to the removed element
  */
 void *list_pop_front(list_t *list)
 {
@@ -215,7 +215,7 @@ iterator_t iterator_create(list_t *list)
 }
 
 /**
- *  @brief Inserts an element after the current element which is selected by the iterator.  
+ *  @brief Inserts an element after the current element which is selected by the iterator.
  *  @param iterator the iterator
  *  @param element the element to be inserted
  */
@@ -229,7 +229,7 @@ void list_insert_after(iterator_t *it, void *element)
 }
 
 /**
- *  @brief Inserts an element before the current element which is selected by the iterator.  
+ *  @brief Inserts an element before the current element which is selected by the iterator.
  *  @param iterator the iterator
  *  @param element the element to be inserted
  */
@@ -284,7 +284,7 @@ bool list_is_last(iterator_t *it)
 }
 
 /**
- *  @brief Sets the first element after the dummy as current element of an iterator. 
+ *  @brief Sets the first element after the dummy as current element of an iterator.
  *  @param iterator the iterator
  */
 void list_set_first(iterator_t *it)
@@ -293,7 +293,7 @@ void list_set_first(iterator_t *it)
 }
 
 /**
- *  @brief Sets the first element before the dummy as current element of an iterator. 
+ *  @brief Sets the first element before the dummy as current element of an iterator.
  *  @param iterator the iterator
  */
 void list_set_last(iterator_t *it)

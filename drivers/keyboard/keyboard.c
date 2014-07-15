@@ -83,12 +83,12 @@ int main(void)
         udrcp_error(conn,"could not get interrupt signal for IRQ 0x1\n");
     }
 
-    int mret = mkfifo("/dev/kbd", S_IWUSR | S_IRUSR | S_IRGRP);
+    int mret = mkfifo("/dev/kbd", S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH);
     f = open("/dev/kbd", O_WRONLY, 0);
 
     if(f < 0 || mret < 0)
     {
-        udrcp_error(conn,"could not create fifo buffer /dev/kb\n");
+        udrcp_error(conn,"could not create fifo buffer /dev/kbd\n");
 		while(1);
     }
 
