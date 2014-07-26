@@ -45,5 +45,6 @@ struct gdtpt
 void set_GDT_entry(int entry, uint32_t base, uint32_t size, uint8_t acess, int8_t flags);
 void load_gdt(uint16_t last_entry);
 void INIT_GDT(void);
+void set_kernelstack(void *stack);
 
 #endif

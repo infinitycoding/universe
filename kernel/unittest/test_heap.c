@@ -54,7 +54,7 @@ bool test_heap(int n)
             if(vals[i][j] != expected)
             {
                 printf("FAILURE!\n");
-                return;
+                return false;
             }
         }
     }

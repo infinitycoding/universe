@@ -77,7 +77,6 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     INIT_TRIGGER();
     INIT_CLOCK(500);
     INIT_SCHEDULER();
-    asm volatile("sti");
 
     //print Logo and loading message
     clear_screen();

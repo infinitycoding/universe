@@ -31,7 +31,6 @@ void free(void *ptr);
 void *calloc(size_t num, size_t size);
 void *realloc(void *ptr, size_t size);
 
-char *getenv(const char *name);
 void exit(int retv);
 
 #endif

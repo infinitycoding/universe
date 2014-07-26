@@ -80,7 +80,7 @@ char get(dynamic_array *array, int nr)
 		if(current == NULL)
 		{
 			array->usr_errors++;
-			return NULL;
+			return 0;
 		}
 
         current = current->next;

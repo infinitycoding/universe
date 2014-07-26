@@ -234,6 +234,7 @@ struct cpu_state* irq_handler(struct cpu_state* cpu)
     {
         sync_sys_clock();
         cpu = task_schedule(cpu);
+        EOI(0);
     }
     //IRQs
     else if (cpu->intr < 46)

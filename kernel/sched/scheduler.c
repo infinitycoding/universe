@@ -30,19 +30,16 @@
 #include <mm/heap.h>
 #include <mm/paging.h>
 
-#include <idt.h>
-#include <tss.h>
 #include <gdt.h>
-#include <pmm.h>
 
 
-tss_s tss = { .ss0 = 0x10 };
 
-uint32_t *kernelstack;
+
 
 struct process_state *kernel_state;
 struct thread_state *current_thread;
 list_t *running_threads;
+void *kernelstack;
 
 iterator_t thread_iterator;
 
@@ -53,23 +50,18 @@ extern list_t *zombie_list;
  * Initiate the scheduler module
  */
 void INIT_SCHEDULER(void)
-{
-    set_GDT_entry(5, (uint32_t) &tss, sizeof(tss), 0x89, 0x8); //qemu does not support TSS-Desc on position 7... wiered hardware stuff
-    load_gdt(5);
-
-    asm volatile("ltr %%ax" : : "a" (5 << 3));
-
-
-
-    kernelstack = malloc(KERNEL_STACK_SIZE) + (KERNEL_STACK_SIZE-sizeof(struct cpu_state));
-    tss.esp0 = (uint32_t)kernelstack;
-
+{   
     running_threads = list_create();
-    thread_iterator = iterator_create(running_threads);
     process_list = list_create();
     zombie_list = list_create();
+    thread_iterator = iterator_create(running_threads);
+    // create kernel process
     kernel_state = process_create("Kernel INIT", "initiate system", PROCESS_ACTIVE, NULL, 0, 0, NULL);
     current_thread = thread_create(kernel_state, KERNELMODE, 0, 0, 0,0, NULL);
+    kernelstack = malloc(KERNEL_STACK_SIZE) + (KERNEL_STACK_SIZE-sizeof(struct cpu_state));
+    set_kernelstack(kernelstack);
+    // enable multitasking
+    enable_irqs();
 }
 
 
@@ -80,34 +72,26 @@ void INIT_SCHEDULER(void)
 struct cpu_state *task_schedule(struct cpu_state *cpu)
 {
     if((current_thread->flags & THREAD_KERNELMODE))
-    {
         current_thread->context.state = cpu;
-    }
     else
-    {
         memcpy(current_thread->context.state, cpu, sizeof(struct cpu_state));
-    }
 
     if(current_thread->flags & THREAD_ZOMBIE)
     {
-//        dump_thread_list(running_threads);
         thread_kill_sub(current_thread);
         if(list_is_empty(running_threads))
         {
-            asm volatile("sti");
-            while(list_is_empty(running_threads))
-            {
-                printf("halted!\n");
-            }
-            asm volatile("cli");
+            enable_irqs();
+                while(list_is_empty(running_threads));
+            disable_irqs();
         }
 
         list_set_first(&thread_iterator);
         current_thread = list_get_current(&thread_iterator);
         vmm_switch_context(&current_thread->context.memory);
         memcpy(cpu, current_thread->context.state, sizeof(struct cpu_state));
-//       dump_thread_list(running_threads);
     }
+
     else if(current_thread->ticks == 0)
     {
         current_thread->ticks = 10;
@@ -127,10 +111,10 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
             memcpy(cpu, current_thread->context.state, sizeof(struct cpu_state));
         }
     }
+
     else
     {
         current_thread->ticks--;
     }
-    EOI(0);
     return cpu;
 }

@@ -441,6 +441,7 @@ void send_killed_process(struct process_state *proc)
         if((int)current_entry->ID < -1 && current_entry->type == WAIT_PID) // pid < -1
         {
             /*
+                TODO:
                 Process groups aren't implemented yet.
                 Please rewrite this case.
             */

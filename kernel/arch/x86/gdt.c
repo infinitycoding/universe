@@ -21,9 +21,11 @@
  */
 
 #include <gdt.h>
+#include <tss.h>
 
 static struct gdt_entry GDT[7]; //nulldesc,Datadesc0,Codedesc0,Datadesc3,Codedesc3,TSS,Callgate 6 descs +1 opt.
 static struct gdtpt gdtp;
+tss_s tss = { .ss0 = 0x10 };
 
 /**
 	@brief sets gdt entry
@@ -54,6 +56,16 @@ void load_gdt(uint16_t last_entry)
     asm volatile("lgdt %0"::"m" (gdtp));
 }
 
+/**
+ * @brief set the kernel stack for syscalls
+ * @param adress of the kernel stack
+ */
+void set_kernelstack(void *stack)
+{
+    tss.esp0 = (uint32_t)stack;
+}
+
+
 void INIT_GDT(void)
 {
     set_GDT_entry(0,0,0,0,0);
@@ -64,8 +76,9 @@ void INIT_GDT(void)
     //Ring 3 Descriptors
     set_GDT_entry(3,0,0xFFFFF,0xFA,0xC);
     set_GDT_entry(4,0,0xFFFFF,0xF2,0xC);
+    set_GDT_entry(5, (uint32_t) &tss, sizeof(tss), 0x89, 0x8); //qemu does not support TSS-Desc on position 7... wiered hardware stuff
+    load_gdt(5);
 
-    load_gdt(4);
     asm volatile(
         "mov $0x10, %ax;"
         "mov %ax, %ds;"
@@ -76,4 +89,6 @@ void INIT_GDT(void)
         "ljmp $0x8, $.1;"
         ".1:;"
     );
+
+    asm volatile("ltr %%ax" : : "a" (5 << 3));
 }

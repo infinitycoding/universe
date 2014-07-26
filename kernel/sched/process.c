@@ -30,6 +30,8 @@
 #include <memory_layout.h>
 #include <event/trigger.h>
 #include <printf.h>
+#include <math.h>
+
 
 extern struct process_state *kernel_state;
 extern struct thread_state *current_thread;
@@ -42,16 +44,6 @@ list_t *process_list = 0;
 list_t *zombie_list = 0;
 pid_t pid_counter = 1;
 
-/**
- * @brief returns the smaller inputvalue
- * @param a     inputvalue
- * @param b     inputvalue
- * @return the smallest inputvalue
- */
-inline int min(int a, int b)
-{
-    return (a < b) ? a : b;
-}
 
 /**
  * @breif Prints a thread-list.
@@ -82,10 +74,13 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
 {
     struct process_state *state = malloc(sizeof(struct process_state));
 
+    // copy name string
     int string_len = min(strlen(name), 255);
     state->name = (char *) malloc(string_len + 1);
     strncpy(state->name, name, string_len);
     state->name[string_len + 1] = '\0';
+
+    //copy description string
     string_len = min(strlen(desc), 255);
     state->desc = (char *) malloc(string_len + 1);
     strncpy(state->desc, desc, string_len);
@@ -99,16 +94,13 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
 
     state->main_thread = NULL;
 
+    // if parent is not set the working directory is the root dir
     if(parent != NULL)
-    {
         state->cwd = parent->cwd;
-    }
     else
-    {
         state->cwd = root;
-    }
 
-    state->children = list_create();    // he crashes here...
+    state->children = list_create();
     state->zombie_tids = list_create();
     state->threads = list_create();
     state->ports = list_create();
@@ -122,13 +114,9 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
         state->parent = parent;
 
     if (list_is_empty(zombie_list))
-    {
         state->pid = pid_counter++;
-    }
     else
-    {
         state->pid = (pid_t) list_pop_front(zombie_list);
-    }
 
 
     list_lock(process_list);
@@ -161,10 +149,6 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
         stderr = set->stderr;
     }
 
-
-
-    /*extern vfs_inode_t *kbd_inode;
-    kbd_inode = stdin;*/
 
     struct fd *desc0 = malloc(sizeof(struct fd));
     desc0->id = 0;
@@ -207,71 +191,73 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
  */
 void process_kill(struct process_state *process)
 {
-    asm volatile("cli");
-    send_killed_process(process);
+    disable_irqs();
 
-    while(!list_is_empty(process->threads))
-    {
-        struct thread_state *thread = list_pop_front(process->threads);
-        if(thread == current_thread)
+        send_killed_process(process);
+
+        while(!list_is_empty(process->threads))
         {
-            current_thread->flags |= THREAD_ZOMBIE;
-            process->flags |= PROCESS_ZOMBIE;
+            struct thread_state *thread = list_pop_front(process->threads);
+            if(thread == current_thread)
+            {
+                current_thread->flags |= THREAD_ZOMBIE;
+                process->flags |= PROCESS_ZOMBIE;
+            }
+            else
+                thread_kill_sub(thread);
         }
-        else
-            thread_kill_sub(thread);
-    }
 
-    list_lock(process->children);
-    while(!list_is_empty(process->children))
-    {
-        struct child *current_child = list_pop_front(process->children);
-        if(current_child->process)
-            process_kill(current_child->process);
-        free(current_child);
-    }
-    free(process->children);
-
-    list_lock(process->parent->children);
-    iterator_t parents_children_it = iterator_create(process->parent->children);
-
-    while(!list_is_empty(process->parent->children) && !list_is_last(&parents_children_it))
-    {
-        struct child *current_child = list_get_current(&parents_children_it);
-        if(current_child->process == process)
+        list_lock(process->children);
+        while(!list_is_empty(process->children))
         {
-            current_child->process = 0;
-            break;
+            struct child *current_child = list_pop_front(process->children);
+            if(current_child->process)
+                process_kill(current_child->process);
+            free(current_child);
         }
-        list_next(&parents_children_it);
-    }
-    list_unlock(process->parent->children);
+        free(process->children);
 
-    list_destroy(process->ports);
-    list_destroy(process->zombie_tids);
+        list_lock(process->parent->children);
+        iterator_t parents_children_it = iterator_create(process->parent->children);
 
-    list_lock(process_list);
-    iterator_t process_it = iterator_create(process_list);
-
-    while(!list_is_empty(process_list) &&!list_is_last(&process_it))
-    {
-        if(((struct process_state *)list_get_current(&process_it)) == process)
+        while(!list_is_empty(process->parent->children) && !list_is_last(&parents_children_it))
         {
-            list_remove(&process_it);
-            break;
+            struct child *current_child = list_get_current(&parents_children_it);
+            if(current_child->process == process)
+            {
+                current_child->process = 0;
+                break;
+            }
+            list_next(&parents_children_it);
         }
-        list_next(&process_it);
-    }
-    list_unlock(process_list);
 
-    free(process->name);
-    free(process->desc);
+        list_unlock(process->parent->children);
+            list_destroy(process->ports);
+            list_destroy(process->zombie_tids);
+        list_lock(process_list);
 
-    if(!(process->flags & PROCESS_ZOMBIE) )
-    {
-        free(process);
-    }
-    asm volatile("sti");
+        iterator_t process_it = iterator_create(process_list);
+
+        while(!list_is_empty(process_list) &&!list_is_last(&process_it))
+        {
+            if(((struct process_state *)list_get_current(&process_it)) == process)
+            {
+                list_remove(&process_it);
+                break;
+            }
+            list_next(&process_it);
+        }
+        list_unlock(process_list);
+
+        free(process->name);
+        free(process->desc);
+
+        if(!(process->flags & PROCESS_ZOMBIE) )
+        {
+            free(process);
+        }
+
+    enable_irqs();
 }
 
 /**

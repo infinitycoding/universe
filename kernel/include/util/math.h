@@ -39,4 +39,17 @@ int abs(int x);
 
 unsigned int bit_scan_forward(unsigned int);
 
+
+
+/**
+ * @brief returns the smaller inputvalue
+ * @param a     inputvalue
+ * @param b     inputvalue
+ * @return the smallest inputvalue
+ */
+static inline int min(int a, int b)
+{
+    return (a < b) ? a : b;
+}
+
 #endif
