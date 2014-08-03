@@ -620,7 +620,6 @@ void sys_open(struct cpu_state **cpu)
     desc->permission = 0;
     desc->read_pos = 0;
     desc->write_pos = 0;
-    desc->inode = inode;
 
     if(oflags & O_APPEND)
     {
@@ -631,11 +630,13 @@ void sys_open(struct cpu_state **cpu)
     if( (oflags & O_RDONLY || oflags & O_RDWR) && vfs_access(inode, R_OK, current_thread->process->uid, current_thread->process->gid) == 0)
     {
         desc->permission |= VFS_PERMISSION_READ;
+        desc->read_inode = inode;
     }
 
     if( (oflags & O_WRONLY || oflags & O_RDWR) && vfs_access(inode, W_OK, current_thread->process->uid, current_thread->process->gid) == 0)
     {
         desc->permission |= VFS_PERMISSION_WRITE;
+        desc->write_inode = inode;
     }
 
     list_push_back(current_thread->process->files, desc);
@@ -657,7 +658,8 @@ void sys_pipe(struct cpu_state **cpu)
     desc0->permission =  VFS_PERMISSION_READ;
     desc0->read_pos = 0;
     desc0->write_pos = 0;
-    desc0->inode = inode;
+    desc0->read_inode = inode;
+    desc0->write_inode = NULL;
     list_push_back(current_thread->process->files, desc0);
 
     // create write channel
@@ -668,7 +670,8 @@ void sys_pipe(struct cpu_state **cpu)
     desc1->permission = VFS_PERMISSION_WRITE;
     desc1->read_pos = 0;
     desc1->write_pos = 0;
-    desc1->inode = inode;
+    desc1->read_inode = NULL;
+    desc1->write_inode = inode;
     list_push_back(current_thread->process->files, desc1);
 
     //printf("kernel: piieeepe %d %d\n", desc0->id, desc1->id);
@@ -741,9 +744,9 @@ void sys_read(struct cpu_state **cpu)
     struct fd *desc = get_fd(fd);
     if(desc != NULL)
     {
-        if(desc->permission & VFS_PERMISSION_READ)
+        if(desc->permission & VFS_PERMISSION_READ && desc->read_inode != NULL)
         {
-            vfs_inode_t *inode = desc->inode;
+            vfs_inode_t *inode = desc->read_inode;
             vfs_buffer_info_t *info = inode->buffer;
 
             int ret = vfs_read(inode, desc->read_pos, buf, len);
@@ -803,9 +806,9 @@ void sys_write(struct cpu_state **cpu)
     struct fd *desc = get_fd(fd);
     if(desc != NULL)
     {
-        if(desc->permission & VFS_PERMISSION_WRITE)
+        if(desc->permission & VFS_PERMISSION_WRITE && desc->write_inode != NULL)
         {
-            vfs_inode_t *inode = desc->inode;
+            vfs_inode_t *inode = desc->write_inode;
 
             int ret = vfs_write(inode, desc->write_pos, buf, len);
             (*cpu)->CPU_ARG0 = ret;
@@ -852,7 +855,8 @@ void sys_create(struct cpu_state **cpu)
                 desc->permission = VFS_PERMISSION_READ | VFS_PERMISSION_WRITE;
                 desc->read_pos = 0;
                 desc->write_pos = 0;
-                desc->inode = inode;
+                desc->read_inode = inode;
+                desc->write_inode = inode;
 
                 list_push_back(current_thread->process->files, desc);
 
@@ -976,7 +980,7 @@ void sys_getdents(struct cpu_state **cpu)
     int fd = (*cpu)->CPU_ARG1;
     //int count = (*cpu)->CPU_ARG2;		// count is currently unused, so i commented it out
 
-    vfs_inode_t *parent = get_fd(fd)->inode;
+    vfs_inode_t *parent = get_fd(fd)->read_inode;
     if(vfs_access(parent, R_OK, current_thread->process->uid, current_thread->process->gid) == 0)
     {
         dirent_t *dentry = (dirent_t *)(*cpu)->CPU_ARG2;
@@ -1028,8 +1032,8 @@ void sys_seek(struct cpu_state **cpu)
             file->write_pos += off;
             break;
         case SEEK_END: // relative from end
-            file->read_pos = file->inode->length - off;
-            file->write_pos = file->inode->length - off;
+            file->read_pos = file->read_inode->length - off;
+            file->write_pos = file->write_inode->length - off;
             break;
         default: // ???
             (*cpu)->CPU_ARG0 = _FAILURE;
@@ -1119,7 +1123,7 @@ void set_pipe_trigger(struct cpu_state **cpu)
 {
     int fd = (*cpu)->CPU_ARG1;
     struct fd *desc = get_fd(fd);
-    vfs_inode_t *inode = desc->inode;
+    vfs_inode_t *inode = desc->read_inode;
 
     if(desc->permission & VFS_PERMISSION_READ)
     {
@@ -1173,7 +1177,7 @@ void sys_fstat(struct cpu_state **cpu)
         struct fd *file = list_get_current(&file_it);
         if(file->id == (*cpu)->CPU_ARG1)
         {
-            (*cpu)->CPU_ARG0 = vfs_stat(file->inode, (struct stat *)(*cpu)->CPU_ARG2);
+            (*cpu)->CPU_ARG0 = vfs_stat(file->read_inode, (struct stat *)(*cpu)->CPU_ARG2);
             return;
         }
         list_next(&file_it);

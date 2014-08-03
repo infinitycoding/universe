@@ -50,7 +50,7 @@ extern list_t *zombie_list;
  * Initiate the scheduler module
  */
 void INIT_SCHEDULER(void)
-{   
+{
     running_threads = list_create();
     process_list = list_create();
     zombie_list = list_create();
@@ -82,7 +82,7 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
         if(list_is_empty(running_threads))
         {
             enable_irqs();
-                while(list_is_empty(running_threads));
+            while(list_is_empty(running_threads));
             disable_irqs();
         }
 

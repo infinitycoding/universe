@@ -109,11 +109,12 @@ typedef struct dirent
 struct fd
 {
     unsigned int id;
-    vfs_inode_t *inode;
     mode_t mode;
     int flags;
     int permission;
 
+    vfs_inode_t *read_inode;
+    vfs_inode_t *write_inode;
     int read_pos;
     int write_pos;
 };

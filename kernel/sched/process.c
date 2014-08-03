@@ -157,7 +157,8 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
     desc0->permission = VFS_PERMISSION_READ;
     desc0->read_pos = 0;
     desc0->write_pos = 0;
-    desc0->inode = stdin;
+    desc0->read_inode = stdin;
+    desc0->write_inode = NULL;
     list_push_back(state->files, desc0);
 
     struct fd *desc1 = malloc(sizeof(struct fd));
@@ -167,7 +168,8 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
     desc1->permission = VFS_PERMISSION_WRITE;
     desc1->read_pos = 0;
     desc1->write_pos = 0;
-    desc1->inode = stdout;
+    desc1->read_inode = NULL;
+    desc1->write_inode = stdout;
     list_push_back(state->files, desc1);
 
     struct fd *desc2 = malloc(sizeof(struct fd));
@@ -177,7 +179,8 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
     desc2->permission = VFS_PERMISSION_WRITE;
     desc2->read_pos = 0;
     desc2->write_pos = 0;
-    desc2->inode = stderr;
+    desc2->read_inode = NULL;
+    desc2->write_inode = stderr;
     list_push_back(state->files, desc2);
 
 
@@ -193,69 +196,69 @@ void process_kill(struct process_state *process)
 {
     disable_irqs();
 
-        send_killed_process(process);
+    send_killed_process(process);
 
-        while(!list_is_empty(process->threads))
+    while(!list_is_empty(process->threads))
+    {
+        struct thread_state *thread = list_pop_front(process->threads);
+        if(thread == current_thread)
         {
-            struct thread_state *thread = list_pop_front(process->threads);
-            if(thread == current_thread)
-            {
-                current_thread->flags |= THREAD_ZOMBIE;
-                process->flags |= PROCESS_ZOMBIE;
-            }
-            else
-                thread_kill_sub(thread);
+            current_thread->flags |= THREAD_ZOMBIE;
+            process->flags |= PROCESS_ZOMBIE;
         }
+        else
+            thread_kill_sub(thread);
+    }
 
-        list_lock(process->children);
-        while(!list_is_empty(process->children))
+    list_lock(process->children);
+    while(!list_is_empty(process->children))
+    {
+        struct child *current_child = list_pop_front(process->children);
+        if(current_child->process)
+            process_kill(current_child->process);
+        free(current_child);
+    }
+    free(process->children);
+
+    list_lock(process->parent->children);
+    iterator_t parents_children_it = iterator_create(process->parent->children);
+
+    while(!list_is_empty(process->parent->children) && !list_is_last(&parents_children_it))
+    {
+        struct child *current_child = list_get_current(&parents_children_it);
+        if(current_child->process == process)
         {
-            struct child *current_child = list_pop_front(process->children);
-            if(current_child->process)
-                process_kill(current_child->process);
-            free(current_child);
+            current_child->process = 0;
+            break;
         }
-        free(process->children);
+        list_next(&parents_children_it);
+    }
 
-        list_lock(process->parent->children);
-        iterator_t parents_children_it = iterator_create(process->parent->children);
+    list_unlock(process->parent->children);
+    list_destroy(process->ports);
+    list_destroy(process->zombie_tids);
+    list_lock(process_list);
 
-        while(!list_is_empty(process->parent->children) && !list_is_last(&parents_children_it))
+    iterator_t process_it = iterator_create(process_list);
+
+    while(!list_is_empty(process_list) &&!list_is_last(&process_it))
+    {
+        if(((struct process_state *)list_get_current(&process_it)) == process)
         {
-            struct child *current_child = list_get_current(&parents_children_it);
-            if(current_child->process == process)
-            {
-                current_child->process = 0;
-                break;
-            }
-            list_next(&parents_children_it);
+            list_remove(&process_it);
+            break;
         }
+        list_next(&process_it);
+    }
+    list_unlock(process_list);
 
-        list_unlock(process->parent->children);
-            list_destroy(process->ports);
-            list_destroy(process->zombie_tids);
-        list_lock(process_list);
+    free(process->name);
+    free(process->desc);
 
-        iterator_t process_it = iterator_create(process_list);
-
-        while(!list_is_empty(process_list) &&!list_is_last(&process_it))
-        {
-            if(((struct process_state *)list_get_current(&process_it)) == process)
-            {
-                list_remove(&process_it);
-                break;
-            }
-            list_next(&process_it);
-        }
-        list_unlock(process_list);
-
-        free(process->name);
-        free(process->desc);
-
-        if(!(process->flags & PROCESS_ZOMBIE) )
-        {
-            free(process);
-        }
+    if(!(process->flags & PROCESS_ZOMBIE) )
+    {
+        free(process);
+    }
 
     enable_irqs();
 }
