@@ -32,6 +32,7 @@
 #include <memory_layout.h>
 #include <mm/paging.h>
 #include <sched/thread.h>
+#include <sched/process.h>
 #include <event/trigger.h>
 #include <drivers/clock.h>
 
@@ -39,11 +40,10 @@ extern struct thread_state *current_thread;
 extern vfs_inode_t *root;
 
 // Systemcalls
-
-struct fd *get_fd(int fd)
+struct fd *get_fd(struct process_state *process, int fd)
 {
-    iterator_t it = iterator_create(current_thread->process->files);
-    while(!list_is_empty(current_thread->process->files) && !list_is_last(&it))
+    iterator_t it = iterator_create(process->files);
+    while(!list_is_empty(process->files) && !list_is_last(&it))
     {
         struct fd *desc = list_get_current(&it);
         if(desc->id == fd)
@@ -57,6 +57,18 @@ struct fd *get_fd(int fd)
     }
 
     return NULL;
+}
+
+struct fd *create_fd(struct process_state *process)
+{
+    struct fd *desc = malloc(sizeof(struct fd));
+
+    memset(desc, 0, sizeof(struct fd));
+    desc->id = list_length(process->files);
+
+    list_push_back(process->files, desc);
+
+    return desc;
 }
 
 void sys_open(struct cpu_state **cpu)
@@ -106,14 +118,9 @@ void sys_open(struct cpu_state **cpu)
         }
     }
 
-    struct fd *desc = malloc(sizeof(struct fd));
-    desc->id = list_length(current_thread->process->files);
+    struct fd *desc = create_fd(current_thread->process);
     desc->mode = mode;
     desc->flags = oflags;
-
-    desc->permission = 0;
-    desc->read_pos = 0;
-    desc->write_pos = 0;
 
     if(oflags & O_APPEND)
     {
@@ -133,8 +140,6 @@ void sys_open(struct cpu_state **cpu)
         desc->write_inode = inode;
     }
 
-    list_push_back(current_thread->process->files, desc);
-
     (*cpu)->CPU_ARG0 = desc->id;
 }
 
@@ -145,26 +150,19 @@ void sys_pipe(struct cpu_state **cpu)
     vfs_inode_t *inode = vfs_create_pipe(current_thread->process->uid, current_thread->process->gid);
 
     // create read channel
-    struct fd *desc0 = malloc(sizeof(struct fd));
-    desc0->id = id[0] = list_length(current_thread->process->files);
+    struct fd *desc0 = create_fd(current_thread->process);
+    id[0] = desc0->id;
     desc0->mode = O_APPEND;
     desc0->flags = O_RDONLY;
     desc0->permission =  VFS_PERMISSION_READ;
-    desc0->read_pos = 0;
-    desc0->write_pos = 0;
     desc0->read_inode = inode;
-    desc0->write_inode = NULL;
-    list_push_back(current_thread->process->files, desc0);
 
     // create write channel
-    struct fd *desc1 = malloc(sizeof(struct fd));
-    desc1->id = id[1] = list_length(current_thread->process->files);
+    struct fd *desc1 = create_fd(current_thread->process);
+    id[1] = desc1->id;
     desc1->mode = O_APPEND;
     desc1->flags = O_WRONLY;
     desc1->permission = VFS_PERMISSION_WRITE;
-    desc1->read_pos = 0;
-    desc1->write_pos = 0;
-    desc1->read_inode = NULL;
     desc1->write_inode = inode;
     list_push_back(current_thread->process->files, desc1);
 
@@ -235,7 +233,7 @@ void sys_read(struct cpu_state **cpu)
     void *buf = (void*) (*cpu)->CPU_ARG2;
     size_t len = (*cpu)->CPU_ARG3;
 
-    struct fd *desc = get_fd(fd);
+    struct fd *desc = get_fd(current_thread->process, fd);
     if(desc != NULL)
     {
         if(desc->permission & VFS_PERMISSION_READ && desc->read_inode != NULL)
@@ -297,7 +295,7 @@ void sys_write(struct cpu_state **cpu)
         return;
     }
 
-    struct fd *desc = get_fd(fd);
+    struct fd *desc = get_fd(current_thread->process, fd);
     if(desc != NULL)
     {
         if(desc->permission & VFS_PERMISSION_WRITE && desc->write_inode != NULL)
@@ -342,17 +340,12 @@ void sys_create(struct cpu_state **cpu)
 
             if(inode != NULL)
             {
-                struct fd *desc = malloc(sizeof(struct fd));
-                desc->id = list_length(current_thread->process->files);
+                struct fd *desc = create_fd(current_thread->process);
                 desc->mode = mode;
                 desc->flags = O_RDWR;
                 desc->permission = VFS_PERMISSION_READ | VFS_PERMISSION_WRITE;
-                desc->read_pos = 0;
-                desc->write_pos = 0;
                 desc->read_inode = inode;
                 desc->write_inode = inode;
-
-                list_push_back(current_thread->process->files, desc);
 
                 (*cpu)->CPU_ARG0 = desc->id;
             }
@@ -378,18 +371,7 @@ void sys_socket(struct cpu_state **cpu)
     int type = (*cpu)->CPU_ARG2;
     int protocol = (*cpu)->CPU_ARG3;
 
-    struct fd *desc = malloc(sizeof(struct fd));
-    desc->id = list_length(current_thread->process->files);
-    desc->mode = 0;
-    desc->flags = 0;
-    desc->read_pos = 0;
-    desc->write_pos = 0;
-    desc->permission = 0;
-    desc->read_inode = NULL;
-    desc->write_inode = NULL;
-
-    list_push_back(current_thread->process->files, desc);
-
+    struct fd *desc = create_fd(current_thread->process);
     (*cpu)->CPU_ARG0 = desc->id;
 }
 
@@ -495,7 +477,7 @@ void sys_getdents(struct cpu_state **cpu)
     int fd = (*cpu)->CPU_ARG1;
     //int count = (*cpu)->CPU_ARG2;		// count is currently unused, so i commented it out
 
-    vfs_inode_t *parent = get_fd(fd)->read_inode;
+    vfs_inode_t *parent = get_fd(current_thread->process, fd)->read_inode;
     if(vfs_access(parent, R_OK, current_thread->process->uid, current_thread->process->gid) == 0)
     {
         dirent_t *dentry = (dirent_t *)(*cpu)->CPU_ARG2;
@@ -533,7 +515,7 @@ void sys_seek(struct cpu_state **cpu)
     int off = (*cpu)->CPU_ARG2;
     int whence = (*cpu)->CPU_ARG3;
 
-    struct fd *file = get_fd(fd);
+    struct fd *file = get_fd(current_thread->process, fd);
 
     file->flags |= O_APPEND;
     switch(whence)
@@ -623,7 +605,7 @@ void sys_getcwd(struct cpu_state **cpu)
 void set_pipe_trigger(struct cpu_state **cpu)
 {
     int fd = (*cpu)->CPU_ARG1;
-    struct fd *desc = get_fd(fd);
+    struct fd *desc = get_fd(current_thread->process, fd);
     vfs_inode_t *inode = desc->read_inode;
 
     if(desc->permission & VFS_PERMISSION_READ)

@@ -31,7 +31,6 @@
 #include <cpu.h>
 #include <list.h>
 
-
 #define VFS_DEBUG
 
 #define SEEK_SET 0x1
@@ -135,6 +134,11 @@ vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid);
 #ifdef VFS_DEBUG
 void vfs_debug_output(vfs_inode_t *start);
 void vfs_debug_output_all();
+#endif
+
+#ifndef _PROCESS_H_
+struct fd *get_fd(struct process_state *process, int fd);
+struct fd *create_fd(struct process_state *process);
 #endif
 
 void sys_open(struct cpu_state **cpu);
