@@ -119,6 +119,9 @@ struct fd
     int write_pos;
 };
 
+// solve a link
+#define GET_INODE(i) if(i->type == VFS_LINK) i = (vfs_inode_t*) i->buffer;
+
 void INIT_VFS(void);
 vfs_inode_t *vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_t uid, gid_t gid);
 vfs_inode_t *vfs_create_pipe(uid_t uid, gid_t gid);
