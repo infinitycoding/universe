@@ -66,14 +66,16 @@ debug: kernel libs drivers user iso-img
 style:
 	$(MAKE) -C kernel style
 
-newlib:
-	@$(MAKE) -C libs/newlib ARCH=$(ARCH)
+update:
+	if [ ! -d libs/mercury ]; then \
+		git clone git@github.com:infinitycoding/mercury.git libs/mercury; \
+	fi;
+	git pull origin master
 
 clean:
 	@$(MAKE) -C kernel clean
 	@$(MAKE) -C drivers clean
 	@$(MAKE) -C user clean
-#	@$(MAKE) -C libs/newlib clean
 	@$(MAKE) -C libs clean
 	@rm *.iso -f
 

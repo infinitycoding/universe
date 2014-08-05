@@ -15,6 +15,7 @@ cc/
 download/
 newlib/
 build/usr
+libs/mercury
 
 #Andere unerwünschte Daten
 .directory

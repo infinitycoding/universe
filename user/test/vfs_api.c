@@ -192,7 +192,7 @@ bool test_apped_file(const char *name)
 
 bool test_fifo(char *name)
 {
-	/*if(mkfifo(name, 0) < 0)
+	if(mkfifo(name, 0) < 0)
 	{
 		printf("could not create fifo.\n");
 		return false;
@@ -214,8 +214,7 @@ bool test_fifo(char *name)
 		return true;
 
 	close(fd);
-*/
+
 	return false;
 }
-
 

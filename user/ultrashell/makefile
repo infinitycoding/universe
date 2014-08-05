@@ -1,10 +1,10 @@
 SRCS = $(shell find -name '*.c')
 OBJS = $(addsuffix .o,$(basename $(SRCS)))
 
-L_CFLAGS = -m32 -Wall -fno-stack-protector -fno-builtin -nostdinc -I ../../libs/libc/include -I include
+L_CFLAGS = -m32 -Wall -fno-stack-protector -fno-builtin -nostdinc -I ../../libs/mercury/include -I include
 L_LDFLAGS = -muniverse_i386 -flto -T ../link.ld
 
-ultrashell.elf: ../../libs/crt/entry.o $(OBJS) ../../libs/libc/libc.a
+ultrashell.elf: ../../libs/crt/entry.o $(OBJS) ../../libs/mercury/libc.a
 	@$(LD) $(L_LDFLAGS) -o $@ $^
 	cp ultrashell.elf $(PREFIX)/ultrashell.elf
 
