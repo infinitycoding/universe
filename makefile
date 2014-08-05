@@ -1,4 +1,4 @@
-all: kernel libs drivers user iso-img
+all: dependices kernel libs drivers user iso-img
 
 # PPC
 # I386
@@ -66,10 +66,12 @@ debug: kernel libs drivers user iso-img
 style:
 	$(MAKE) -C kernel style
 
-update:
+dependices:
 	if [ ! -d libs/mercury ]; then \
 		git clone https://github.com/infinitycoding/mercury.git libs/mercury; \
 	fi;
+
+update:
 	git pull origin master
 
 clean:
