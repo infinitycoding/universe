@@ -31,6 +31,7 @@
 #include <event/trigger.h>
 #include <printf.h>
 #include <math.h>
+#include <vfs/fd.h>
 
 
 extern struct process_state *kernel_state;

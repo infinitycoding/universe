@@ -105,19 +105,6 @@ typedef struct dirent
     struct stat stat;
 } dirent_t;
 
-struct fd
-{
-    unsigned int id;
-    mode_t mode;
-    int flags;
-    int permission;
-
-    vfs_inode_t *read_inode;
-    vfs_inode_t *write_inode;
-    int read_pos;
-    int write_pos;
-};
-
 // solve a link
 #define GET_INODE(i) if(i->type == VFS_LINK) i = (vfs_inode_t*) i->buffer;
 
@@ -134,11 +121,6 @@ vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid);
 #ifdef VFS_DEBUG
 void vfs_debug_output(vfs_inode_t *start);
 void vfs_debug_output_all();
-#endif
-
-#ifndef _PROCESS_H_
-struct fd *get_fd(struct process_state *process, int fd);
-struct fd *create_fd(struct process_state *process);
 #endif
 
 void sys_open(struct cpu_state **cpu);

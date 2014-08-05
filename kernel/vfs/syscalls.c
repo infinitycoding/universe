@@ -27,6 +27,7 @@
 #include <printf.h>
 #include <sys/unistd.h>
 #include <vfs/vfs.h>
+#include <vfs/fd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <memory_layout.h>
