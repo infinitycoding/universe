@@ -68,7 +68,7 @@ style:
 
 update:
 	if [ ! -d libs/mercury ]; then \
-		git clone git@github.com:infinitycoding/mercury.git libs/mercury; \
+		git clone https://github.com/infinitycoding/mercury.git libs/mercury; \
 	fi;
 	git pull origin master
 
