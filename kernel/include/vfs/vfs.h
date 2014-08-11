@@ -143,6 +143,7 @@ void sys_stat(struct cpu_state **cpu);
 void sys_fstat(struct cpu_state **cpu);
 void sys_chmod(struct cpu_state **cpu);
 void sys_lchown(struct cpu_state **cpu);
+void sys_rename(struct cpu_state **cpu);
 
 #endif
 

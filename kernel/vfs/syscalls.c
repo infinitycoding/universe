@@ -697,6 +697,43 @@ void sys_chmod(struct cpu_state **cpu)
 }
 
 
+void sys_rename(struct cpu_state **cpu)
+{
+    // Check if path is not NULL
+    char *file = (char *)(*cpu)->CPU_ARG1;
+    char *new_filename = (char *)(*cpu)->CPU_ARG2;
+    if(file == NULL)
+    {
+        (*cpu)->CPU_ARG0 = _FAILURE;
+        return;
+    }
+
+    // Lookup path
+    vfs_inode_t *node = vfs_lookup_path(file);
+    if(node == NULL)
+    {
+        (*cpu)->CPU_ARG0 = _FAILURE;
+        return;
+    }
+
+    if(vfs_access(node, W_OK, current_thread->process->uid, current_thread->process->gid) != 0)
+    {
+        (*cpu)->CPU_ARG0 = _NO_PERMISSION;
+        return;
+    }
+
+    //creante new namebuffer
+    size_t bufferlen = strlen(new_filename);
+    char *namebuffer = (char *) malloc(bufferlen+1); // bufferlen + zero terminator
+    namebuffer[bufferlen] = '\0';
+    strncpy(namebuffer,new_filename,bufferlen);
+    free(node->name);
+    node->name = namebuffer;
+
+    (*cpu)->CPU_ARG0 = _SUCCESS;
+}
+
+
 void sys_lchown(struct cpu_state **cpu)
 {
     char *file = (char *)(*cpu)->CPU_ARG1;
