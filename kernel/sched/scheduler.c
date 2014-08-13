@@ -57,7 +57,7 @@ void INIT_SCHEDULER(void)
     thread_iterator = iterator_create(running_threads);
     // create kernel process
     kernel_state = process_create("Kernel INIT", "initiate system", PROCESS_ACTIVE, NULL, 0, 0, NULL);
-    current_thread = thread_create(kernel_state, KERNELMODE, 0, 0, 0,0, NULL);
+    current_thread = thread_create(kernel_state, KERNELMODE, 0, 0, 0, 0, 0, NULL);
     kernelstack = malloc(KERNEL_STACK_SIZE) + (KERNEL_STACK_SIZE-sizeof(struct cpu_state));
     set_kernelstack(kernelstack);
     // enable multitasking

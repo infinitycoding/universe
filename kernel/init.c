@@ -124,7 +124,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 
         argv[1] = mb_info;
         argv[0] = sec;
-        kernel_thread_create((uintptr_t)INIT_HYPERVISOR,argc,argv);
+        kernel_thread_create((uintptr_t)INIT_HYPERVISOR,argc,argv, NULL);
     }
 
     vfs_inode_t *testnode = vfs_lookup_path("/test.elf");

@@ -53,15 +53,15 @@ void kernel_thread_exit(void)
 }
 
 
-struct thread_state *kernel_thread_create(uintptr_t eip, int argc, void **argv)
+struct thread_state *kernel_thread_create(uintptr_t eip, int argc, void **argv, char **environ)
 {
-    struct thread_state *new_thread = thread_create(kernel_state, KERNELMODE, (uint32_t) eip, argc, argv, NULL, NULL);
+    struct thread_state *new_thread = thread_create(kernel_state, KERNELMODE, (uint32_t) eip, argc, argv, environ, &kernel_thread_exit, NULL);
 
     return new_thread;
 }
 
 
-struct thread_state *thread_create(struct process_state *process, privilege_t prev, uint32_t eip, int argc, void **argv, void *return_address, vmm_context_t *context)
+struct thread_state *thread_create(struct process_state *process, privilege_t prev, uint32_t eip, int argc, void **argv, char **environ, void *return_address, vmm_context_t *context)
 {
     struct thread_state *new_thread = malloc(sizeof(struct thread_state));
 
@@ -86,7 +86,7 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     if(context != NULL)
         memcpy(&new_thread->context.memory.arch_context, &context->arch_context, sizeof(arch_vmm_context_t));
     thread_sync_context(new_thread);
-    arch_create_thread_context(&new_thread->context, prev, (vaddr_t) eip, (vaddr_t) return_address, argc, argv);
+    arch_create_thread_context(&new_thread->context, prev, (vaddr_t) eip, (vaddr_t) return_address, argc, argv, environ);
 
     if(process->heap_top == 0)
     {
@@ -133,7 +133,7 @@ struct thread_state *thread_clone(struct process_state *process, struct thread_s
     vmm_create_context(&new_thread->context.memory);
     memcpy(&new_thread->context.memory.arch_context, &src_thread->context.memory.arch_context, sizeof(arch_vmm_context_t));
     thread_sync_context(new_thread);
-    arch_create_thread_context(&new_thread->context, prev, (vaddr_t) 0, (vaddr_t) 0, 0, 0);
+    arch_create_thread_context(&new_thread->context, prev, (vaddr_t) 0, (vaddr_t) 0, 0, 0, 0);
     *new_thread->context.state = *src_thread->context.state;
 
     if(process->heap_top == 0)
@@ -219,7 +219,7 @@ void thread_exit(struct cpu_state **cpu)
 
 void launch_thread(struct cpu_state **cpu)
 {
-    thread_create(current_thread->process, USERMODE, (*cpu)->CPU_ARG1, (*cpu)->CPU_ARG2, (void**)(*cpu)->CPU_ARG3, (void*)(*cpu)->CPU_ARG4, NULL);
+    thread_create(current_thread->process, USERMODE, (*cpu)->CPU_ARG1, (*cpu)->CPU_ARG2, (void**)(*cpu)->CPU_ARG3, (void*)(*cpu)->CPU_ARG4, NULL, NULL);
 }
 
 

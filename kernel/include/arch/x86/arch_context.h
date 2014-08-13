@@ -34,6 +34,6 @@ struct arch_thread_context
     vmm_context_t memory;
 } arch_thread_context;
 
-struct cpu_state *arch_create_thread_context(struct arch_thread_context *context, privilege_t prev, vaddr_t entry, vaddr_t return_address, int argc, void **argv);
+struct cpu_state *arch_create_thread_context(struct arch_thread_context *context, privilege_t prev, vaddr_t entry, vaddr_t return_address, int argc, void **argv, char **environ);
 void arch_destroy_thread_context(struct arch_thread_context *context);
 #endif

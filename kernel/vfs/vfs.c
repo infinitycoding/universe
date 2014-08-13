@@ -550,7 +550,7 @@ void launch_pipe_handlers(vfs_buffer_info_t *pipe)
     while(node != head)
     {
         vfs_pipe_trigger_t *trigger = (vfs_pipe_trigger_t*) node->element;
-        thread_create(current_thread->process, USERMODE, trigger->eip, trigger->argc, trigger->argv, NULL, NULL);
+        thread_create(current_thread->process, USERMODE, trigger->eip, trigger->argc, trigger->argv, NULL, NULL, NULL);
 
         node = node->next;
     }

@@ -29,10 +29,10 @@
 #include <mm/heap.h>
 
 
-struct cpu_state *arch_create_thread_context(struct arch_thread_context *context, privilege_t prev, vaddr_t entry, vaddr_t return_address, int argc, void **argv)
+struct cpu_state *arch_create_thread_context(struct arch_thread_context *context, privilege_t prev, vaddr_t entry, vaddr_t return_address, int argc, void **argv, char **environ)
 {
     void *kernel_stack = malloc(0x1000);
-    struct cpu_state *new_state = kernel_stack + 0x1000 - sizeof(struct cpu_state) - 3*sizeof(uint32_t);
+    struct cpu_state *new_state = kernel_stack + 0x1000 - sizeof(struct cpu_state) - 4*sizeof(uint32_t);
     context->state = new_state;
 
     memset(new_state, 0, sizeof(struct cpu_state));
@@ -47,9 +47,10 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
         new_state->es = 0x10;
         new_state->fs = 0x10;
         new_state->gs = 0x10;
-        stack = kernel_stack + 0x1000 - 3*sizeof(uint32_t);
+        stack = kernel_stack + 0x1000 -3*sizeof(uint32_t);
         *--stack = (uint32_t) argv;
-        *--stack = argc;
+        *--stack = (uint32_t) argc;
+        *--stack = (uint32_t) environ;
         *--stack = (uint32_t) return_address;
     }
     else
@@ -58,15 +59,13 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
         vmm_map(&context->memory, pframe, MEMORY_LAYOUT_STACK_TOP-0x1000, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
         new_state->esp = (uint32_t) MEMORY_LAYOUT_STACK_TOP - 3*sizeof(uint32_t);
 
-        vaddr_t vframe = vmm_automap_kernel(current_context, pframe, VMM_PRESENT | VMM_WRITABLE);
+        stack  = (uint32_t *) vmm_automap_kernel(current_context, pframe, VMM_PRESENT | VMM_WRITABLE);
 
-        stack = (uint32_t *) vframe + 0xFFF - 3*sizeof(uint32_t);
-        printf("v frame: %x    stack:%x\n", vframe, stack);
-        *--stack = (uint32_t) argv;
-        *--stack = argc;
-        *--stack = (uint32_t) return_address;
+        stack[1023] = (uint32_t) environ;
+        stack[1022] = (uint32_t) argv;
+        stack[1021] = (uint32_t) argc;
 
-        vmm_unmap(current_context, vframe);
+        vmm_unmap(current_context, (vaddr_t)stack);
 
         new_state->cs = 0x1b;
         new_state->ss = 0x23;
