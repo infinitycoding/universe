@@ -5,8 +5,20 @@
 #include <vfs_api.h>
 #include <universe.h>
 
+char file[] = "/ultrashell.elf";
+
 int main(int argc, char **argv)
 {
+
+
+    /*linux_syscall(SYS_RENAME,(uint32_t) "foo.txt",(uint32_t) "bar.txt", 0, 0, 0);
+
+    FILE *f = fopen("bar.txt", "r");
+    char buffer[20];
+    fread(buffer,20, 1, f);
+    printf("%s\n",buffer);
+    while(1);*/
+
     bool success = true;
     success &= test_vfs_api();
 

@@ -36,6 +36,8 @@ struct parser_state parser(struct parser_state state, char *file, size_t len);
 
 
 
+
+
 /**
  * @brief validates a pipeline file
  * @param file the pipeline file as a ascii string
@@ -51,7 +53,7 @@ int validate_pf(char *file)
     state.mode = DEFAULT_MODE;
     state.mode_stack = list_create();
     state.success = true;
-
+    printf("validate\n");
     state = parser(state, file, strlen(file));
     printf("\n");
     return state.success;
@@ -112,7 +114,7 @@ bool mode_pull(struct parser_state *state)
 {
     if(list_is_empty(state->mode_stack))
     {
-        printf("tried to pull from a empty stack\n");
+        printf("tried to pull from an empty stack\n");
         return false;
     }
 

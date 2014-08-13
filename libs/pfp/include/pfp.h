@@ -49,15 +49,15 @@ typedef int ptype;
 
 typedef enum
 {
-    DEFAULT_MODE = 1,
-    SECTION_MODE = 2,
-    SECTION_NAME_MODE = 4,
-    SECTION_TYPE_MODE = 8,
-    SERVICE_MODE = 16,
-    SERVICE_NAME_MODE = 32, 
-    PIPE_MODE = 64,
+    DEFAULT_MODE = 1, // before a section is specified
+    SECTION_MODE = 2, // ain the section definition
+    SECTION_NAME_MODE = 4, // in the section name defionition
+    SECTION_TYPE_MODE = 8, // in the section type defionition
+    SERVICE_MODE = 16, // in a service definition
+    SERVICE_NAME_MODE = 32, // in the name definiition of a service
+    PIPE_MODE = 64, // in a pipe definition
     PIPE_NAME_MODE = 128, // pipemode in which names are allowed
-    CHILDREN_MODE = 256,
+    CHILDREN_MODE = 256, 
     FALLBACK_MODE = 512,
 }parser_mode_t;
 
@@ -99,4 +99,8 @@ int validate_pf(char *file);
 void mode_push(struct parser_state *state);
 bool mode_pull(struct parser_state *state);
 
+#define DEBUG
+#define EXPRESSION_TYPE
+#define IDENTIFIER_TYPE
+#define DUMP_NAME
 #endif

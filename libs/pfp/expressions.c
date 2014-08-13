@@ -76,6 +76,9 @@ bool is_whitespace(char *str)
 
 char *whitespace_handle(char *str, struct parser_state *state)
 {
+    #ifdef EXPRESSION_TYPE
+            printf("Whitespace:\n");
+    #endif
     for(;is_whitespace(str); str++);
     return str;
 }
@@ -85,28 +88,18 @@ bool is_name(char *in)
 {
     char c = *in;
     if(isalnum(c) || c == '_' || c == '.')
+    {
         return true;
+        #ifdef EXPRESSION_TYPE
+            printf("Name:\n");
+        #endif
+    }
     return false;
 }
 
 char *section_modes[] = {"default", "append", "replace", NULL};
 
 
-ptype is_section_mode(char *str)
-{
-    int i;
-    size_t str_len = strlen(str);
-    for(i = 0; section_modes[i] != NULL; i++)
-    {
-        size_t mode_len = strlen(section_modes[i]);
-        if(str_len < mode_len)
-            continue;
-
-        if(strncmp(str, section_modes[i], mode_len) == 0)
-            return i;
-    }
-    return -1;
-}
 
 
 char *name_handle(char *str, struct parser_state *state)
@@ -119,86 +112,13 @@ char *name_handle(char *str, struct parser_state *state)
     
     struct pnode *node;
 
-    switch(state->mode)
-    {
-        case DEFAULT_MODE:
-            printf("unknown identifier\n");
-            exit(1);
-        break;
+#ifdef DUMP_NAME
+    printf("name: ");
+    int i;
+    for(i = 0; i < name_len; i++)
+        printf("%c",str[i]);
+    printf("\n");
+#endif
 
-        case SECTION_NAME_MODE:
-            state->section->name = malloc(name_len+1);
-            memcpy(state->section->name, str, name_len);
-            state->section->name[name_len] = 0;
-            printf("%s\n",state->section->name);
-        break;
-
-        case SERVICE_NAME_MODE:
-            state->node->file = malloc(name_len+1);
-            memcpy(state->node->file,str,name_len);
-            state->node->file[name_len] = 0; // terminator
-            printf("%s\n", state->node->file);
-        break;
-
-        case SERVICE_MODE:
-            mode_push(state);
-            node = malloc(sizeof(struct pnode));
-            node->type = DRIVER;
-            node->file = malloc(name_len+1);
-            memcpy(state->node->file,str,name_len);
-            node->file[name_len] = 0; // terminator
-            node->fallback = NULL;
-            node->subtree = NULL;
-            if(!state->node->subtree)
-                state->node->subtree = list_create();
-            list_push_front(state->section->subtree, node);
-            printf("Pipline\n%s\n",state->node->file);
-            state->node = node;
-            state->mode = PIPE_MODE;
-        break;
-
-        case SECTION_MODE:
-            mode_push(state);
-            state->node = malloc(sizeof(struct pnode));
-            state->node->type = DRIVER;
-            state->node->file = malloc(name_len+1);
-            memcpy(state->node->file,str,name_len);
-            state->node->file[name_len] = 0; // terminator
-            state->node->fallback = NULL;
-            state->node->subtree = NULL;
-            if(!state->section->subtree)
-                state->section->subtree = list_create();
-            list_push_front(state->section->subtree, state->node);
-            printf("Pipline\n%s\n",state->node->file);
-            state->mode = PIPE_MODE;
-        break;
-
-
-        case PIPE_NAME_MODE:
-            state->node->file = malloc(name_len+1);
-            memcpy(state->node->file,str,name_len);
-            state->node->file[name_len] = 0; // terminator
-            state->mode = PIPE_MODE;
-            printf("%s\n", state->node->file);
-        break;
-
-        case SECTION_TYPE_MODE:
-            state->section->type = is_section_mode(str);
-            printf("mode: %s\n", section_modes[state->section->type]);
-            if(state->section->type <= 0)
-            {
-                printf("invalid section mode \n");
-                state->success = false;
-                return str;
-            }
-        break;
-
-
-        default:
-            printf("unknown expression %s\n",str);
-            exit(1);
-        break;
-
-    };
     return str+name_len;
 }

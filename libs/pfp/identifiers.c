@@ -31,7 +31,7 @@
 
 
 char *comment_handle(char *str, struct parser_state *state);
-char *section_handle(char *str, struct parser_state *state);
+/*char *section_handle(char *str, struct parser_state *state);
 char *kernel_root_handle(char *str, struct parser_state *state);
 char *pipe_handle(char *str, struct parser_state *state);
 char *semicolon_handle(char *str, struct parser_state *state);
@@ -43,15 +43,15 @@ char *close_square_brace_handle(char *str, struct parser_state *state);
 char *fallback_handle(char *str, struct parser_state *state);
 char *end_fallback_handle(char *str, struct parser_state *state);
 char *section_type_handle(char *str, struct parser_state *state);
-char *end_section_type_handle(char *str, struct parser_state *state);
+char *end_section_type_handle(char *str, struct parser_state *state);*/
 
 
 char *identifiers[] = {"#", "section", "service", "->", "|", "[", "]", "~{", "}", ";", ":", "," ,"(", ")", NULL};
 char *(*identifier_handles[])(char *str, struct parser_state *state) =
 {
-    comment_handle, section_handle, service_handle, kernel_root_handle, pipe_handle,
-    open_square_brace_handle, close_square_brace_handle, fallback_handle, end_fallback_handle, semicolon_handle,
-    colon_handle, comma_handle, section_type_handle, end_section_type_handle, NULL
+    comment_handle, NULL /*section_handle*/, NULL /*service_handle*/, NULL /*kernel_root_handle*/, NULL /*pipe_handle*/,
+    NULL /*open_square_brace_handle*/, NULL /*close_square_brace_handle*/, NULL /*fallback_handle*/, NULL /*end_fallback_handle*/, NULL /*semicolon_handle*/,
+    NULL /*colon_handle*/, NULL /*comma_handle*/, NULL /*section_type_handle*/, NULL /*end_section_type_handle*/, NULL
 };
 
 
@@ -92,12 +92,13 @@ char *call_identifier_handle(int num, char *str, struct parser_state *state)
 {
     str = str+strlen(identifiers[num]);
 
+    printf("Identifier %s\n", identifiers[num]);
     if(identifier_handles[num] == NULL)
     {
         
         return str;
     }
-    printf("Identifier %s\n", identifiers[num]);
+    
     return identifier_handles[num](str,state);
 }
 
@@ -115,362 +116,4 @@ char *comment_handle(char *str, struct parser_state *state)
         i++;
     printf("comment lengh: %d\n",i);
     return str+i;
-}
-
-
-char *section_handle(char *str, struct parser_state *state)
-{
-    // check mode
-    if(! (state->mode & (DEFAULT_MODE|SECTION_MODE)))
-    {
-        printf("invalid identifier section\n");
-        state->success = false;
-        return str;
-    }
-
-    state->section = malloc(sizeof(struct section));
-    state->section->type = APPEND;
-    state->section->name = NULL;
-    state->section->subtree = NULL;
-    list_push_front(state->section_list, state->section);
-
-    state->node = NULL;
-    state->mode = SECTION_NAME_MODE;
-
-    printf("Section ");
-    return str;
-}
-
-char *service_handle(char *str, struct parser_state *state)
-{
-    // check mode
-    if(! (state->mode & SECTION_MODE))
-    {
-        printf("invalid identifier \"service\"\n");
-        state->success = false;
-        return str;
-    }
-
-    mode_push(state);
-
-    struct pnode *new_node = malloc(sizeof(struct pnode));
-    new_node->type = SERVICE;
-    new_node->file = NULL;
-    new_node->fallback = NULL;
-    new_node->subtree = NULL;
-
-    state->mode = SERVICE_NAME_MODE;
-    state->node = new_node;
-
-    if(!state->section->subtree)
-        state->section->subtree = list_create();
-    list_push_front(state->section->subtree, new_node);
-
-
-    printf("Service: ");
-
-    return str;
-}
-
-
-char *kernel_root_handle(char *str, struct parser_state *state)
-{
-    if(! (state->mode & (SECTION_MODE | SERVICE_MODE | PIPE_MODE | PIPE_NAME_MODE)))
-    {
-        printf("no section specified before first pipe (->)\n");
-        state->success = false;
-        return str;
-    }
-
-    printf("Kernel Root Nodes:\n");
-    mode_push(state);
-
-
-    struct pnode *new_node = malloc(sizeof(struct pnode));
-    state->mode = PIPE_NAME_MODE;
-    new_node->type = KERNELROOT;
-    new_node->file = NULL;
-    new_node->fallback = NULL;
-
-    if(!state->node || state->mode == SECTION_MODE)
-    {
-        if(!state->section->subtree)
-            state->section->subtree = list_create();
-        list_push_front(state->section->subtree, new_node);
-    }
-    else
-    {
-        if(!state->node->subtree)
-            state->node->subtree = list_create();
-        list_push_front(state->node->subtree, new_node);
-    }
-
-    state->node = new_node;
-    return str;
-}
-
-
-char *pipe_handle(char *str, struct parser_state *state)
-{
-    if(! (state->mode & PIPE_MODE))
-    {
-        printf("no section or driver tree specified before first pipe (|) %d\n",state->mode);
-        state->success = false;
-        return str;
-    }
-
-    printf("Pipe\n");
-    struct pnode *new_node = malloc(sizeof(struct pnode));
-    new_node->type = NOTHING;
-    new_node->file = NULL;
-    new_node->fallback = NULL;
-    new_node->subtree = NULL;
-
-    if(!state->node->subtree)
-            state->node->subtree = list_create();
-    list_push_front(state->node->subtree, new_node);
-
-    state->node = new_node;
-    state->mode = PIPE_NAME_MODE;
-    return str;
-
-}
-
-
-char *open_square_brace_handle(char *str, struct parser_state *state)
-{
-    if(! (state->mode & (PIPE_NAME_MODE | PIPE_MODE) ))
-    {
-        printf("invalid identifier \"[\"\n");
-        state->success = false;
-        return str;
-    }
-
-    state->mode = CHILDREN_MODE;
-    mode_push(state);
-
-    struct pnode *new_node = malloc(sizeof(struct pnode));
-    new_node->type = NOTHING;
-    new_node->file = NULL;
-    new_node->fallback = NULL;
-    new_node->subtree = NULL;
-
-    if(!state->node->subtree)
-            state->node->subtree = list_create();
-    list_push_front(state->node->subtree, new_node);
-
-    state->node = new_node;
-    state->mode = PIPE_NAME_MODE;
-    return str;
-}
-
-
-char *close_square_brace_handle(char *str, struct parser_state *state)
-{
-    if(! (state->mode & (PIPE_NAME_MODE | PIPE_MODE) ))
-    {
-        printf("invalid identifier \"[\"\n");
-        state->success = false;
-        return str;
-    }
-
-    if(!mode_pull(state))
-    {
-        state->success = false;
-        return str;
-    }
-
-    if(state->mode != CHILDREN_MODE)
-    {
-        printf("invalid identifier \"]\"\n");
-        state->success = false;
-        return str;
-    }
-
-    state->mode = PIPE_MODE;
-    return str;
-}
-
-
-char *colon_handle(char *str, struct parser_state *state)
-{
-    if(! (state->mode &  (SERVICE_NAME_MODE | SECTION_NAME_MODE)))
-    {
-        printf("invalid identifier \":\"\n");
-        state->success = false;
-        return str;
-    }
-
-    if(state->mode & SERVICE_NAME_MODE)
-        state->mode = SERVICE_MODE;
-    else
-    {
-        if(state->section->name == NULL)
-        {
-            printf("missing section name\n");
-            state->success = false;
-            return str;  
-        }
-
-        state->mode = SECTION_MODE;
-    }
-    return str;
-}
-
-char *semicolon_handle(char *str, struct parser_state *state)
-{
-    printf("semicolon\n");
-    if(! (state->mode & (SERVICE_MODE | PIPE_MODE) ))
-    {
-        printf("invalid identifier \";\"\n");
-        state->success = false;
-        return str;
-    }
-    if(state->mode & PIPE_MODE)
-    {
-        if(!mode_pull(state))
-        {
-            state->success = false;
-            return str;
-        }
-
-        if(state->mode & SERVICE_MODE)
-        {
-            if(!mode_pull(state))
-            {
-                state->success = false;
-                return str;
-            }
-        }
-    }
-    else
-    {
-        if(!mode_pull(state))
-        {
-            state->success = false;
-            return str;
-        }
-    }
-    state->node = NULL;
-    return str;
-}
-
-
-char *comma_handle(char *str, struct parser_state *state)
-{
-    if(! (state->mode & PIPE_MODE ))
-    {
-        printf("invalid identifier \",\"\n");
-        state->success = false;
-        return str;
-    }
-
-
-    if(!mode_pull(state))
-    {
-        state->success = false;
-        return str;
-    }
-
-    if(state->mode != CHILDREN_MODE)
-    {
-        printf("invalid identifier \",\"\n");
-        state->success = false;
-        return str;
-    }
-
-    mode_push(state);
-
-    struct pnode *new_node = malloc(sizeof(struct pnode));
-    new_node->type = NOTHING;
-    new_node->file = NULL;
-    new_node->fallback = NULL;
-    new_node->subtree = NULL;
-
-    
-    state->node = new_node;
-    state->mode = PIPE_NAME_MODE;
-    return str;
-}
-
-
-char *fallback_handle(char *str, struct parser_state *state)
-{
-    if(! (state->mode & PIPE_MODE ))
-    {
-        printf("invalid identifier \"~{\"\n");
-        state->success = false;
-        return str;
-    }
-
-    state->mode = FALLBACK_MODE;
-    mode_push(state);
-
-    struct pnode *new_node = malloc(sizeof(struct pnode));
-    new_node->type = NOTHING;
-    new_node->file = NULL;
-    new_node->fallback = NULL;
-    new_node->subtree = NULL;
-
-    state->node->fallback = new_node;
-    state->node = new_node;
-    state->mode = PIPE_NAME_MODE;
-    return str;
-}
-
-
-
-char *end_fallback_handle(char *str, struct parser_state *state)
-{
-    if(! (state->mode & (PIPE_NAME_MODE | PIPE_MODE) ))
-    {
-        printf("invalid identifier \"}\"\n");
-        state->success = false;
-        return str;
-    }
-
-    if(!mode_pull(state))
-    {
-        state->success = false;
-        return str;
-    }
-
-    if(state->mode != FALLBACK_MODE)
-    {
-        printf("invalid identifier \"}\"\n");
-        state->success = false;
-        return str;
-    }
-
-    state->mode = PIPE_MODE;
-    return str;
-}
-
-
-
-char *section_type_handle(char *str, struct parser_state *state)
-{
-    if(! (state->mode & SECTION_NAME_MODE ))
-    {
-        printf("invalid identifier \"(\" \n");
-        state->success = false;
-        return str;
-    }
-
-    state->mode = SECTION_TYPE_MODE;
-    return str;
-}
-
-char *end_section_type_handle(char *str, struct parser_state *state)
-{
-    if(! (state->mode & SECTION_TYPE_MODE ))
-    {
-        printf("invalid identifier \")\"\n");
-        state->success = false;
-        return str;
-    }
-
-
-    state->mode = SECTION_NAME_MODE;
-    return str;
 }

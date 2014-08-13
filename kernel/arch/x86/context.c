@@ -47,7 +47,7 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
         new_state->es = 0x10;
         new_state->fs = 0x10;
         new_state->gs = 0x10;
-        stack = kernel_stack + 0x1000 - 2*sizeof(uint32_t);
+        stack = kernel_stack + 0x1000 - 3*sizeof(uint32_t);
         *--stack = (uint32_t) argv;
         *--stack = argc;
         *--stack = (uint32_t) return_address;
@@ -60,10 +60,11 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
 
         vaddr_t vframe = vmm_automap_kernel(current_context, pframe, VMM_PRESENT | VMM_WRITABLE);
 
-        /*stack = (uint32_t *) vframe + 0x1000;
+        stack = (uint32_t *) vframe + 0xFFF - 3*sizeof(uint32_t);
+        printf("v frame: %x    stack:%x\n", vframe, stack);
         *--stack = (uint32_t) argv;
         *--stack = argc;
-        *--stack = (uint32_t) return_address;*/
+        *--stack = (uint32_t) return_address;
 
         vmm_unmap(current_context, vframe);
 
