@@ -27,5 +27,8 @@
 #define _FAILURE (-1)
 #define _NO_PERMISSION (-2)
 
+#define EOF -1
+#define eof -1
+
 #endif
 

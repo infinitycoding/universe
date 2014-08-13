@@ -23,7 +23,7 @@
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
-
+#include <stdbool.h>
 bool test_vfs_api(void);
 bool test_create_file(const char *name);
 bool test_read_write_file(const char *name);
