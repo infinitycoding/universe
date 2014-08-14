@@ -17,8 +17,10 @@
  */
 
 /**
- *  @author Tom Slawik <tom.slawik@gmail.com>
- *	@author Michael Sippel (Universe Team) <micha.linuxfreak@gmail.com>
+ *  @file /mm/paging.c
+ *  @brief common paging wrappers and additional functions
+ *
+ *  @author Michael Sippel <micha@infinitycoding.de>
  */
 
 #include <mm/paging.h>
@@ -27,12 +29,14 @@
 #include <idt.h>
 #include <sched/thread.h>
 
-vmm_context_t *current_context = NULL;
+vmm_context_t *current_context = NULL; /// @var current_context pointer to the current memory context
 
 /**
- * Initalize paging
+ * @fn INIT_PAGING
+ * @brief Initalize the virtual memory management.
+ * Setup the hardware for paging and create basic mappings.
  *
- * @param void
+ * @param mb_info pointer to multiboot structure
  * @return void
  */
 void INIT_PAGING(struct multiboot_struct *mb_info)
@@ -42,19 +46,37 @@ void INIT_PAGING(struct multiboot_struct *mb_info)
 }
 
 /**
- * Create & Destroy
+ * @fn vmm_create_context
+ * @brief Initalizes a new vmm context from a pointer.
+ * The memory must be allocated before.
+ *
+ * @param context pointer to the memory structure
+ * @return void
  */
 void vmm_create_context(vmm_context_t *context)
 {
     arch_vmm_create_context(&context->arch_context);
-
 }
 
+/**
+ * @fn vmm_destroy_context
+ * @brief Destroys a vmm context
+ *
+ * @param context pointer to to destroying context
+ * @return void
+ */
 void vmm_destroy_context(vmm_context_t *context)
 {
     arch_vmm_destroy_context(&context->arch_context);
 }
 
+/**
+ * @fn vmm_switch_context
+ * @brief Change the vmm context running currently on hardware
+ *
+ * @param context pointer to context
+ * @return void
+ */
 void vmm_switch_context(vmm_context_t *context)
 {
     if(context != current_context)
@@ -66,20 +88,44 @@ void vmm_switch_context(vmm_context_t *context)
 }
 
 /**
- * Map a physical address to a virtual adress
+ * @fn vmm_map
+ * @brief Map a physical adress to a virtual adress.
+ * The adresses must be 4k-aligned as in all other following mapping functions too.
+ *
+ * @param context the context
+ * @param pframe the physical adress
+ * @param vframe virtual adress
+ * @param flags additional paging flags (defined /include/arch/x86/arch_paging.h)
+ * @return success
  */
 int vmm_map(vmm_context_t *context, paddr_t pframe, vaddr_t vframe, uint8_t flags)
 {
     return arch_map(&context->arch_context, pframe, vframe, flags);
 }
 
+/**
+ * @fn vmm_unmap
+ * @brief free a virtual adress from the mapping
+ *
+ * @param context the vmm context
+ * @param frame the adress to free
+ * @return success
+ */
 int vmm_unmap(vmm_context_t *context, vaddr_t frame)
 {
     return arch_unmap(&context->arch_context, frame);
 }
 
 /**
- * Range
+ * @fn vmm_map_range
+ * @brief map a rage of pages
+ *
+ * @param context the context
+ * @param pframe physical start adress
+ * @param vframe virtual start adress
+ * @param pages number of pages / size of the range to map
+ * @param flags paging flags (same for vmm_map)
+ * @return success
  */
 int vmm_map_range(vmm_context_t *context, paddr_t pframe, vaddr_t vframe, int pages, uint8_t flags)
 {
@@ -91,6 +137,15 @@ int vmm_map_range(vmm_context_t *context, paddr_t pframe, vaddr_t vframe, int pa
     return 0;
 }
 
+/**
+ * @fn vmm_unmap_range
+ * @brief free a range in virtual memory from mappings
+ *
+ * @param context context
+ * @param frame the start adress in virtual space
+ * @param pages number of pages / length of the range
+ * @return success
+ */
 int vmm_unmap_range(vmm_context_t *context, vaddr_t frame, int pages)
 {
     int p;
@@ -102,7 +157,15 @@ int vmm_unmap_range(vmm_context_t *context, vaddr_t frame, int pages)
 }
 
 /**
- * Automap
+ * @fn vmm_automap_kernel
+ * @brief map a physical adress to an automatically searched free virtual adress in kernelspace.
+ * Searches a free virtual adress in kernel-adress-space with arch_vaddr_find,
+ * maps it to the given physical adress and returns the found virtual adress.
+ *
+ * @param context context
+ * @param pframe the physical adress of the page
+ * @param flags paging flags (same for vmm_map)
+ * @return the virtual adress
  */
 vaddr_t vmm_automap_kernel(vmm_context_t *context, paddr_t pframe, uint8_t flags)
 {
@@ -114,6 +177,18 @@ vaddr_t vmm_automap_kernel(vmm_context_t *context, paddr_t pframe, uint8_t flags
     return vframe;
 }
 
+/**
+ * @fn vmm_automap_kernel_range
+ * @brief map automatically a range in kernelspace.
+ * Searches a free virtual adress range in kernel-adress-space with arch_vaddr_find,
+ * maps it to the given physical adress range and returns the found virtual start adress.
+ *
+ * @param context context
+ * @param pframe physical start adress
+ * @param pages number of pages to map
+ * @param flags paging flags (same as vmm_map)
+ * @return the virtual start adress
+ */
 vaddr_t vmm_automap_kernel_range(vmm_context_t *context, paddr_t pframe, int pages, uint8_t flags)
 {
     int i;
@@ -128,6 +203,17 @@ vaddr_t vmm_automap_kernel_range(vmm_context_t *context, paddr_t pframe, int pag
     return vaddr_start;
 }
 
+/**
+ * @fn vmm_automap_user
+ * @brief map a physical adress to an automatically searched free virtual adress in userspace.
+ * Searches a free virtual adress in user-adress-space with arch_vaddr_find,
+ * maps it to the given physical adress and returns the found virtual adress.
+ *
+ * @param context context
+ * @param pframe the physical adress of the page
+ * @param flags paging flags (same for vmm_map)
+ * @return the virtual adress
+ */
 vaddr_t vmm_automap_user(vmm_context_t *context, paddr_t pframe, uint8_t flags)
 {
     vaddr_t vframe = arch_vaddr_find(&context->arch_context, 1,
@@ -137,6 +223,18 @@ vaddr_t vmm_automap_user(vmm_context_t *context, paddr_t pframe, uint8_t flags)
     return vframe;
 }
 
+/**
+ * @fn vmm_automap_user_range
+ * @brief map automatically a range in userspace.
+ * Searches a free virtual adress range in user-adress-space with arch_vaddr_find,
+ * maps it to the given physical adress range and returns the found virtual start adress.
+ *
+ * @param context context
+ * @param pframe physical start adress
+ * @param pages number of pages to map
+ * @param flags paging flags (same as vmm_map)
+ * @return the virtual start adress
+ */
 vaddr_t vmm_automap_user_range(vmm_context_t *context, paddr_t pframe, int pages, uint8_t flags)
 {
     int i;
@@ -168,7 +266,7 @@ void alloc_memory(struct cpu_state **cpu)
 }
 
 
-extern struct thread_state* current_thread;
+extern struct thread_state* current_thread; /// defined in /sched/scheduler.c
 
 void sys_brk(struct cpu_state **cpu)
 {

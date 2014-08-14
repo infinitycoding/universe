@@ -20,7 +20,10 @@
  */
 
 /**
- *  @author Michael Sippel (Universe Team) <michamimosa@gmail.com>
+ * @file /include/mm/paging.h
+ * @brief header file for common paging functions
+ *
+ * @author Michael Sippel <micha@infinitycoding.de>
  */
 
 #include <sys/multiboot.h>
@@ -28,17 +31,16 @@
 #include <stdint.h>
 #include <cpu.h>
 
-
-
-
-
-
+/**
+ * @struct vmm_context
+ * @brief Abstracts an architecture dependend vmm-context.
+ */
 typedef struct vmm_context
 {
     arch_vmm_context_t arch_context;
 } vmm_context_t;
 
-extern vmm_context_t *current_context;
+extern vmm_context_t *current_context; /// defined in mm/paging.c
 
 // arch
 void ARCH_INIT_PAGING(struct multiboot_struct *mb_info);
