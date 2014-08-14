@@ -44,7 +44,7 @@
 
 
 
-//#define DEBUG
+#define DEBUG
 
 
 list_t *subdrivers;
@@ -62,12 +62,11 @@ void subsystem_isr(int irq)
     }
 }
 
-void INIT_HYPERVISOR(int argc, void **argv)
+int INIT_HYPERVISOR(int argc, char **argv, char **environ)
 {
     subdrivers = list_create();
     interrupts = list_create();
-    //struct multiboot_struct *mb_info =  argv[1];      // currently unused
-    struct section *current_section = argv[0];
+    struct section *current_section = (struct section *)argv[0];
     pckmgr *pman;
     printf("hypervisor subsystems:\n");
     iterator_t i = iterator_create(current_section->subtree);
@@ -83,7 +82,7 @@ void INIT_HYPERVISOR(int argc, void **argv)
 
             struct driver *new_driver = malloc(sizeof(struct driver));
             new_driver->pman = pman;
-            new_driver->process = load_elf_from_file(driver_inode, 0, 0, &pman->pset);
+            new_driver->process = load_elf_from_file(driver_inode, 0, 0, &pman->pset, 0, NULL, NULL);
             new_driver->ports = list_create();
             new_driver->memory = list_create();
             list_push_front(subdrivers,new_driver);
@@ -185,5 +184,5 @@ void INIT_HYPERVISOR(int argc, void **argv)
 
     }
 
-    return; /// i don't know why, but it is necessary to return into kernel_thread_exit(). Without a return command the function will cause a memory access exception
+    return 0; /// i don't know why, but it is necessary to return into kernel_thread_exit(). Without a return command the function will cause a memory access exception
 }

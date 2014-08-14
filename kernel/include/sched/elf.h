@@ -116,9 +116,9 @@ struct elf_program_header
     uint32_t alignment;
 } __attribute__((packed));
 
-struct process_state *load_elf_thread(void *image, struct process_state *proc, int argc, void **argv);
-struct process_state *load_elf_thread_from_file(vfs_inode_t *inode, struct process_state *proc, int argc, void **argv);
-struct process_state *load_elf(void *image, char *name, uid_t uid, gid_t gid, struct pipeset *s);
-struct process_state *load_elf_from_file(vfs_inode_t *inode, uid_t uid, gid_t gid, struct pipeset *s);
+struct process_state *load_elf_thread(void *image, struct process_state *proc, int argc, char **argv, char **environ);
+struct process_state *load_elf_thread_from_file(vfs_inode_t *inode, struct process_state *proc, int argc, char **argv, char **environ);
+struct process_state *load_elf(void *image, char *name, uid_t uid, gid_t gid, struct pipeset *s, int argc, char **argv, char **environ);
+struct process_state *load_elf_from_file(vfs_inode_t *inode, uid_t uid, gid_t gid, struct pipeset *s, int argc, char **argv, char **environ);
 
 #endif

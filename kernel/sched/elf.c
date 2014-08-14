@@ -29,35 +29,35 @@
 #include <printf.h>
 #include <string.h>
 
-struct process_state *load_elf_from_file(vfs_inode_t *inode, uid_t uid, gid_t gid, struct pipeset *s)
+struct process_state *load_elf_from_file(vfs_inode_t *inode, uid_t uid, gid_t gid, struct pipeset *s, int argc, char **argv, char **environ)
 {
     void *image = malloc(inode->length);
     vfs_read(inode, 0, image, inode->length);
-    struct process_state *state = load_elf(image, inode->name, uid, gid, s);
+    struct process_state *state = load_elf(image, inode->name, uid, gid, s, argc, argv, environ);
     free(image);
 
     return state;
 }
 
-struct process_state *load_elf(void *image, char *name, uid_t uid, gid_t gid, struct pipeset *s)
+struct process_state *load_elf(void *image, char *name, uid_t uid, gid_t gid, struct pipeset *s, int argc, char **argv, char **environ)
 {
-    struct process_state *proc = process_create(name, "Hallo", PROCESS_ACTIVE, NULL, uid, gid, s);
-    load_elf_thread(image, proc, 0, 0);
+    struct process_state *proc = process_create(name, PROCESS_ACTIVE, NULL, uid, gid, s);
+    load_elf_thread(image, proc, argc, argv, environ);
 
     return proc;
 }
 
-struct process_state *load_elf_thread_from_file(vfs_inode_t *inode, struct process_state *proc, int argc, void **argv)
+struct process_state *load_elf_thread_from_file(vfs_inode_t *inode, struct process_state *proc, int argc, char **argv, char **environ)
 {
     void *image = malloc(inode->length);
     vfs_read(inode, 0, image, inode->length);
-    struct process_state *state = load_elf_thread(image, proc, argc, argv);
+    struct process_state *state = load_elf_thread(image, proc, argc, argv, environ);
     free(image);
 
     return state;
 }
 
-struct process_state *load_elf_thread(void *image, struct process_state *proc, int argc, void **argv)
+struct process_state *load_elf_thread(void *image, struct process_state *proc, int argc, char **argv, char **environ)
 {
     struct elf_header *header = image;
     struct elf_program_header *ph;
@@ -106,7 +106,7 @@ struct process_state *load_elf_thread(void *image, struct process_state *proc, i
         }
     }
 
-    thread_create(proc, 3, header->entry, argc,(void **) argv, NULL, NULL, &context);
+    thread_create(proc, 3, header->entry, argc, argv, environ, 0, &context);
 
     return proc;
 }

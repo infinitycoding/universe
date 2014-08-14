@@ -40,7 +40,7 @@ struct driver
 };
 
 
-void INIT_HYPERVISOR(int argc, void **argv);
+int INIT_HYPERVISOR(int argc, char **argv, char **environ);
 
 
 

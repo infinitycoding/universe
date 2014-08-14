@@ -88,7 +88,8 @@ typedef struct vfs_pipe_trigger
 {
     uint32_t eip;
     int argc;
-    void **argv;
+    char **argv;
+    char **environ;
     struct thread_state *thread;
 } vfs_pipe_trigger_t;
 

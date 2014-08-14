@@ -17,9 +17,10 @@
  */
 
 /**
- * @author Thomas Haller <thomas.haller@familie-haller.eu>
- * @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
- * @author Michael Sippel <micha@infinitycoding.de>
+ *  @file /arch/x86/boot.asm
+ *  @brief Kernel Startcode For I386 based Processors with MMU.
+ *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
+ *  @author Michael Sippel <micha@infinitycoding.de>
  */
 
 #define MEMORY_LAYOUT_KERNEL_START 0xC0000000
@@ -30,26 +31,29 @@ section .multiboot
 #define MB_FLAGS 0x0
 #define MB_CHECKSUM -(MB_MAGIC + MB_FLAGS)
 
+/// brief Multiboot header
 align 4
-dd MB_MAGIC
-dd MB_FLAGS
-dd MB_CHECKSUM
+dd MB_MAGIC     /// @var Multiboot magic number (0x1BADB002)
+dd MB_FLAGS     /// @var Multiboot flags (0x0)
+dd MB_CHECKSUM  /// @var Multiboot checksum
 
 section .data
 align 4096
-boot_pd:
+boot_pd: /// @var Page Directory for higher half mapping of the kernel
     dd 0x00000083
     times (KERNEL_PAGES - 1) dd 0
     dd 0x00000083
     times (1024 - KERNEL_PAGES - 1) dd 0
 
-/**
- * setting up Paging and call the init function
- * @param pointer to the multiboot structures
- * @param Checksum
- * @return void
- */
+
 section .text
+
+/**
+ *  @brief Setting up Paging and call the Kernel init function.
+ *  @param pointer to the multiboot structures
+ *  @param Checksum
+ *  @return void
+ */
 
 global start
 start:
@@ -82,5 +86,5 @@ extern init
 
 section .bss
 align 4096
-resb 4096
+resb 4096 /// @var 4096 byte startup stack
 stack:

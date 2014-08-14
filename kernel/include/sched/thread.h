@@ -49,14 +49,15 @@ struct thread_state
     tid_t tid; //Thread ID
 };
 
-struct thread_state *thread_create(struct process_state *process, privilege_t prev, uint32_t eip, int argc, void **argv, char **environ, void *return_address, vmm_context_t *context);
+struct thread_state *thread_create(struct process_state *process, privilege_t prev, vaddr_t eip, int argc, char **argv, char **environ, vaddr_t return_address, vmm_context_t *context);
+struct thread_state *kernel_thread_create(int (*thread)(int argc, char **argv, char **environ), int argc, char **argv, char **environ);
+
 void thread_kill(struct thread_state *thread);
 void thread_kill_sub(struct thread_state *thread);
 void thread_exit(struct cpu_state **cpu);
 void launch_thread(struct cpu_state **cpu);
-struct thread_state *kernel_thread_create(uintptr_t eip, int argc, void **argv, char **environ);
 void kernel_thread_exit(void);
 void thread_start(struct thread_state *thread);
-
 struct thread_state *thread_clone(struct process_state *process, struct thread_state *src_thread);
+
 #endif

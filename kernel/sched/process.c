@@ -71,7 +71,7 @@ void dump_thread_list(list_t *threads)
  * @param parent    pointer to the parent process struct (NULL: Kernel Init = parent)
  * @return          The new process-state
  */
-struct process_state *process_create(const char *name, const char *desc, uint16_t flags,struct process_state *parent, uid_t uid, gid_t gid,struct pipeset *set)
+struct process_state *process_create(const char *name, uint16_t flags,struct process_state *parent, uid_t uid, gid_t gid,struct pipeset *set)
 {
     struct process_state *state = malloc(sizeof(struct process_state));
 
@@ -80,12 +80,6 @@ struct process_state *process_create(const char *name, const char *desc, uint16_
     state->name = (char *) malloc(string_len + 1);
     strncpy(state->name, name, string_len);
     state->name[string_len + 1] = '\0';
-
-    //copy description string
-    string_len = min(strlen(desc), 255);
-    state->desc = (char *) malloc(string_len + 1);
-    strncpy(state->desc, desc, string_len);
-    state->desc[string_len + 1] = '\0';
 
     state->flags = flags;
     state->files = list_create();
@@ -254,7 +248,6 @@ void process_kill(struct process_state *process)
     list_unlock(process_list);
 
     free(process->name);
-    free(process->desc);
 
     if(!(process->flags & PROCESS_ZOMBIE) )
     {
@@ -315,7 +308,7 @@ void sys_fork(struct cpu_state **cpu)
     vmm_context_t context;
     vmm_create_context(&context);
     arch_fork_context(&current_thread->context.memory.arch_context, &context.arch_context);
-    struct process_state *new_process = process_create(current_thread->process->name ,current_thread->process->desc ,current_thread->process->flags ,current_thread->process, current_thread->process->uid, current_thread->process->gid, NULL);
+    struct process_state *new_process = process_create(current_thread->process->name ,current_thread->process->flags ,current_thread->process, current_thread->process->uid, current_thread->process->gid, NULL);
     struct thread_state *new_thread = thread_clone(new_process, current_thread);
 
     void *stack_src = (void *)(MEMORY_LAYOUT_STACK_TOP - THREAD_STACK_SIZE);
@@ -376,7 +369,7 @@ void sys_execve(struct cpu_state **cpu)
 {
     char *filename = (char*) (*cpu)->CPU_ARG1;
     char **argv = (char**) (*cpu)->CPU_ARG2;
-    //char **envp = (char**) (*cpu)->CPU_ARG3;
+    char **envp = (char**) (*cpu)->CPU_ARG3;
 
     vfs_inode_t *filenode = vfs_lookup_path(filename);
     printf(filename);
@@ -405,5 +398,5 @@ void sys_execve(struct cpu_state **cpu)
     process->zombie_tids = list_create();
 
     // run the new process
-    load_elf_thread_from_file(filenode, process, 0,(void**) argv);
+    load_elf_thread_from_file(filenode, process, 0, argv, envp);
 }

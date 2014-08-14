@@ -616,7 +616,8 @@ void set_pipe_trigger(struct cpu_state **cpu)
         vfs_pipe_trigger_t *trigger = malloc(sizeof(vfs_pipe_trigger_t));
         trigger->eip = (*cpu)->CPU_ARG2;
         trigger->argc = (*cpu)->CPU_ARG3;
-        trigger->argv = (void**)(*cpu)->CPU_ARG4;
+        trigger->argv = (char**)(*cpu)->CPU_ARG4;
+        trigger->environ = (char**)(*cpu)->CPU_ARG5;
         list_push_back(pipe->handlers, (void*) trigger);
 
         (*cpu)->CPU_ARG0 = _SUCCESS;

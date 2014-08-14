@@ -56,8 +56,8 @@ void INIT_SCHEDULER(void)
     zombie_list = list_create();
     thread_iterator = iterator_create(running_threads);
     // create kernel process
-    kernel_state = process_create("Kernel INIT", "initiate system", PROCESS_ACTIVE, NULL, 0, 0, NULL);
-    current_thread = thread_create(kernel_state, KERNELMODE, 0, 0, 0, 0, 0, NULL);
+    kernel_state = process_create("Kernel INIT", PROCESS_ACTIVE, NULL, 0, 0, NULL);
+    current_thread = kernel_thread_create(NULL, 0, NULL, NULL);
     kernelstack = malloc(KERNEL_STACK_SIZE) + (KERNEL_STACK_SIZE-sizeof(struct cpu_state));
     set_kernelstack(kernelstack);
     // enable multitasking

@@ -124,10 +124,10 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 
         argv[1] = mb_info;
         argv[0] = sec;
-        kernel_thread_create((uintptr_t)INIT_HYPERVISOR,argc,argv, NULL);
+        kernel_thread_create(INIT_HYPERVISOR, argc,(char **) argv, NULL);
     }
 
-    vfs_inode_t *testnode = vfs_lookup_path("/test.elf");
+    vfs_inode_t *testnode = vfs_lookup_path("/ultrashell.elf");
 
     if(testnode == NULL)
     {
