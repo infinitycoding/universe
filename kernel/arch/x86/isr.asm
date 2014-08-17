@@ -17,8 +17,11 @@
  */
 
 /**
+ *  @file /arch/x86/isr.asm
+ *  @brief Interrupt service stubs for the IRQ module.
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
+
 
 %macro ISR 1
 Global isr_%1

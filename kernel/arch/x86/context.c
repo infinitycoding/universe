@@ -103,3 +103,4 @@ void arch_destroy_thread_context(struct arch_thread_context *context)
     arch_vmm_destroy_context(&context->memory.arch_context);
     free(context);
 }
+

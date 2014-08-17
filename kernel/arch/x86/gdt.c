@@ -17,6 +17,8 @@
  */
 
 /**
+ *  @file /arch/x86/gdt.c
+ *  @brief Modul for setting the X86 Global Descriptor Table (GDT).
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
@@ -28,12 +30,12 @@ static struct gdtpt gdtp;
 tss_s tss = { .ss0 = 0x10 };
 
 /**
-	@brief sets gdt entry
-	@param entry 	GDT Index
-	@param base 	Linear segment base address
-	@param size 	Segment size (Limit)
-	@param access 	Access Settings
-	@param flags	Flags
+ *  @brief sets gdt entry
+ *  @param entry 	GDT Index
+ *  @param base 	Linear segment base address
+ *  @param size 	Segment size (Limit)
+ *  @param access 	Access Settings
+ *  @param flags	Flags
  */
 void set_GDT_entry(int entry, uint32_t base, uint32_t size, uint8_t access, int8_t flags)
 {
@@ -46,8 +48,8 @@ void set_GDT_entry(int entry, uint32_t base, uint32_t size, uint8_t access, int8
 }
 
 /**
-	@brief Load GDT into register
-	@param last_entry last entry
+ *  @brief Load GDT into register
+ *  @param last_entry last entry
  */
 void load_gdt(uint16_t last_entry)
 {
@@ -65,10 +67,14 @@ void set_kernelstack(void *stack)
     tss.esp0 = (uint32_t)stack;
 }
 
-
+/**
+ * @brief INIT function for the GDT module.
+ */
 void INIT_GDT(void)
 {
+    //NULL Descriptor
     set_GDT_entry(0,0,0,0,0);
+
     //Ring 0 Descriptors
     set_GDT_entry(1,0,0xFFFFF,0x9A,0xC);
     set_GDT_entry(2,0,0xFFFFF,0x92,0xC);
@@ -76,9 +82,12 @@ void INIT_GDT(void)
     //Ring 3 Descriptors
     set_GDT_entry(3,0,0xFFFFF,0xFA,0xC);
     set_GDT_entry(4,0,0xFFFFF,0xF2,0xC);
-    set_GDT_entry(5, (uint32_t) &tss, sizeof(tss), 0x89, 0x8); //qemu does not support TSS-Desc on position 7... wiered hardware stuff
+    set_GDT_entry(5, (uint32_t) &tss, sizeof(tss), 0x89, 0x8); //qemu does not support TSS-Desc on position 7... weired hardware stuff
+    
+    //load the new table
     load_gdt(5);
 
+    //jump into the new segments
     asm volatile(
         "mov $0x10, %ax;"
         "mov %ax, %ds;"
@@ -90,5 +99,6 @@ void INIT_GDT(void)
         ".1:;"
     );
 
+    // load the TSS
     asm volatile("ltr %%ax" : : "a" (5 << 3));
 }

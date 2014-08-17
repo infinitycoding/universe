@@ -17,14 +17,37 @@
  */
 
 /**
+ *  @file /arch/x86/cpu.c
+ *  @brief Architecture dependent functions.
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
+
+/**
+ * @brief Stops the execution of the kernel and disables interrupts.
+ */
 void halt(void)
 {
     while (1)
     {
         asm volatile("cli; hlt");
     }
+}
+
+/**
+ * @brief Disables interrupts. 
+ */
+void disable_irqs(void)
+{
+    asm volatile("cli");
+}
+
+
+/**
+ * @brief Enables interrupts.
+ */
+void enable_irqs(void)
+{
+    asm volatile("sti");
 }
 

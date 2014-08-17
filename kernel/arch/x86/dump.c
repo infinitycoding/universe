@@ -17,6 +17,8 @@
  */
 
 /**
+ *  @file /arch/x86/dump.c
+ *  @brief Dump tool functions for kernel debugging.
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
@@ -26,12 +28,11 @@
 #include <cpu.h>
 
 /**
- * Mapping Dump
+ * @brief Mapping Dump
  * Only works wehne every PD is mapped in in kernelspace Area
  * @param pointer to the phys. pd frame
  * @return void
  */
-
 void pd_dump(arch_vmm_context_t *context)
 {
     int pdi, pti, phys_base, virt_base, size, sec = 0;
@@ -96,6 +97,8 @@ void pd_dump(arch_vmm_context_t *context)
         printf("%#010X - %#010X => %#010X - %#010X\n", phys_base, phys_base + (4096 * size), virt_base, virt_base + (4096 * size));
     }
 }
+
+
 
 void pd_dump2(arch_vmm_context_t *context)
 {

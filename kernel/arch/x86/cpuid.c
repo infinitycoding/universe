@@ -18,23 +18,25 @@
 
 
 /**
+ *  @file /arch/x86/cpuid.c
+ *  @brief This file contaions functions for CPU and CPU feature identification.
+ *  @todo Standardize these functions for multiple proceccor architectures.
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
 #include <stdint.h>
 #include <string.h>
 #include <printf.h>
-
 #include <cpuid.h>
 
 
-static char* vendorID[]=
+static char* vendorID[]= 
 {
     "AuthenticAMD",	"AMDisbetter!", "GenuineIntel", "CentaurHauls",
     "CyrixInstead", "TransmetaCPU", "GenuineTMx86", "Geode by NSC",
     "NexGenDriven", "RiseRiseRise", "SiS SiS SiS ", "UMC UMC UMC ",
     "VIA VIA VIA ", "Vortex86 SoC"
-};
+};  ///@var ID strings of X86 vendors
 
 static char* cpu_manufactorys[]=
 {
@@ -42,7 +44,8 @@ static char* cpu_manufactorys[]=
     "Cyrix", "Transmeta", "Transmeta","National Semiconductor",
     "NexGen", "Rise", "SiS", "UMC",
     "VIA", "Vortex", "unknown"
-};
+};  ///@var ID strings of X86 manufactories
+
 
 static char* scall[]= {"Callgate", "Sysenter", "Syscall"};
 static char* architecture[]= {"I386","AMD64", "IA32", "IA64"};
@@ -51,11 +54,11 @@ static char* architecture[]= {"I386","AMD64", "IA32", "IA64"};
 
 struct cpu_properties current_CPU;
 
-/*
- * Inline function of CPUID
- * @param uint32_t cpuid function number
- * @param pointer to output register structure
- * @return sucess (0=sucess, 1=CPUID is not supported)
+/**
+ *  @brief Inline function of CPUID
+ *  @param cpuid function number
+ *  @param output pointer to output register structure
+ *  @return sucess (0=sucess, 1=CPUID is not supported)
  */
 static void cpuid(uint32_t function,struct cpuid_regs* output)
 {
@@ -63,10 +66,10 @@ static void cpuid(uint32_t function,struct cpuid_regs* output)
 }
 
 
-/*
- * Identify curret CPU
- * @param pointer to 128byte free bytes for cpu_prpoerties struct
- * @return sucess (0=sucess, 1=CPUID is not supported)
+/**
+ *  @brief Identify curret CPU
+ *  @param pointer to 128byte free bytes for cpu_prpoerties struct
+ *  @return sucess (0=sucess, 1=CPUID is not supported)
  */
 int identify_cpu(struct cpu_properties *cpu)
 {
@@ -156,10 +159,7 @@ int identify_cpu(struct cpu_properties *cpu)
         else
             cpu->architecture = I386;
     }
-
-
-
-
+    
 
     //Detect Dynamic Syscall
     if (cpu->flagblock1 & SEP && cpu->manufactory == 2)
@@ -198,7 +198,7 @@ int identify_cpu(struct cpu_properties *cpu)
 
     }
 
-    else if(cpu->family == 6 && cpu->model == 3 && cpu->stepping == 3)
+    else if(cpu->family == 6 && cpu->model == 6 && cpu->stepping == 3)
     {
         strcat(cpu->cpu_type,"Quemu ");
         strcat(cpu->cpu_type,architecture[cpu->architecture]);
@@ -215,8 +215,10 @@ int identify_cpu(struct cpu_properties *cpu)
     return 0;
 }
 
-/*
- * prints CPU Information (not much)
+
+/**
+ * @brief prints CPU Information (not much)
+ * @param cpu CPU properties to print
  * @return void
  */
 void CPU_info(struct cpu_properties *cpu)
@@ -250,8 +252,8 @@ void CPU_info(struct cpu_properties *cpu)
 }
 
 
-/*
- * Creates structures containing CPU Informations
+/**
+ * @brief Creates structures containing CPU Informations
  * @return void
  */
 void INIT_CPUID(void)

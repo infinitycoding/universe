@@ -17,9 +17,10 @@
  */
 
 /**
+ *  @file /arch/x86/irq.c
+ *  @brief Interrupt and exception handling module.
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
-
 
 #include <idt.h>
 #include <io.h>
@@ -31,7 +32,8 @@
 #include <drivers/pci.h>
 #include <drivers/clock.h>
 
-static struct IDT_Entry IDT[256];
+
+static struct IDT_Entry IDT[256]; ///@var define the interrupt decriptor table
 static struct idtpt idtp;
 
 
@@ -45,14 +47,13 @@ char *exception_messages[] =
     "Reserved",                "Reserved",                      "Reserved",                  "Reserved",
     "Reserved",                "Reserved",                      "Reserved",                  "Reserved",
     "Reserved",                "Reserved",                      "Reserved",                  "Reserved"
-};
+}; ///@var List of all possible exceptions
 
 
 /**
- * Load IDT
- * @param nuber of the last defined Descriptor
- * @return void
- **/
+ *  @brief Loads IDT.
+ *  @param irq nuber of the last defined Descriptor
+ */
 void lidt(uint16_t irq)
 {
     idtp.limit = (8 * irq)-1;
@@ -62,10 +63,9 @@ void lidt(uint16_t irq)
 
 
 /**
- * Send End of Interrupt Signal to the PIC
- * @param number of the runnig interrupt
- * @return void
- **/
+ *  @brief Sends End of Interrupt Signal to the PIC.
+ *  @param irq number of the runnig interrupt
+ */
 void EOI(int irq)
 {
     outb(0x20, 0x20);
@@ -77,10 +77,9 @@ void EOI(int irq)
 
 
 /**
- * block hardware IRQs
- * @param number of the IRQ which should be blocked
- * @return void
- **/
+ *  @brief Blocks hardware IRQs.
+ *  @param mask Number of the IRQ which should be blocked
+ */
 void pic_mask_irqs(uint16_t mask)
 {
     outb(0x21, (uint8_t) mask);
@@ -89,13 +88,13 @@ void pic_mask_irqs(uint16_t mask)
 
 
 /**
- * Set an Interrupt Descriptor
- * @param 0 number of the interrupt
- * @param 1 code segment selector of the ISR
- * @param 2 Baseadress of the ISR function
- * @param 3 Flags
- * @return void
- **/
+ *  @brief Sets an Interrupt Descriptor.
+ *  @param i number of the interrupt
+ *  @param offset code segment selector of the ISR
+ *  @param selector Baseadress of the ISR function
+ *  @param type Interrupt type
+ *  @param dpl Descriptor previleg level (kernelmode usermode)
+ */
 void Set_IDT_Entry(int i, uint32_t offset, uint16_t selector, uint8_t type, int dpl)
 {
     struct IDT_Entry ent;
@@ -151,12 +150,11 @@ static void (*exc[32])(struct cpu_state **cpu) =
 
 
 /**
- * install an interrupthandler
- * @param 0 interrupt number
- * @param 1 pointer to the handler function
- * @return false  -> Handler is already seted-up
- * @return true -> Handler sucessfully installed
- **/
+ *  @brief Installs an interrupt handler.
+ *  @param intr interrupt number
+ *  @param handler pointer to the handler function
+ *  @return false  -> Handler is already seted-up; true -> Handler sucessfully installed
+ */
 int install_irq(int intr,void *handler)
 {
     if (irq[intr] != NULL)
@@ -170,12 +168,11 @@ int install_irq(int intr,void *handler)
 
 
 /**
- * install an exception handler
- * @param 0 exception number
- * @param 1 pointer to the handler function
- * @return true  -> Handler is already seted-up
- * @return false -> Handler sucessfully installed
- **/
+ *  @brief installs an exception handler.
+ *  @param excnum exception number
+ *  @param handler pointer to the handler function
+ *  @return true  -> Handler is already seted-up; false -> Handler sucessfully installed
+ */
 int install_exc(int excnum, void *handler)
 {
     if (exc[excnum] != NULL)
@@ -188,10 +185,9 @@ int install_exc(int excnum, void *handler)
 }
 
 /**
- * deinstall IRQ handlder
- * @param interrupt number
- * @return void
-**/
+ *  @brief Deinstalls an IRQ handlder.
+ *  @param interrupt number
+ */
 void deinstall_irq(int intr)
 {
     irq[intr] = NULL;
@@ -199,10 +195,9 @@ void deinstall_irq(int intr)
 
 
 /**
- * deinstall exception handlder
- * @param exception number
- * @return void
-**/
+ *  @brief Deinstalls an exception handlder.
+ *  @param exception number
+ */
 void deinstall_exc(int excnum)
 {
     exc[excnum] = NULL;
@@ -210,10 +205,10 @@ void deinstall_exc(int excnum)
 
 
 /**
- * General IRQ Handler
- * @param pointer to cpu_state struct of the interrupted Process
- * @return pointer to cpu_state struct of the interrupted Process
- **/
+ *  @brief General IRQ Handler
+ *  @param pointer to cpu_state struct of the interrupted Process
+ *  @return pointer to cpu_state struct of the interrupted Process
+ */
 struct cpu_state* irq_handler(struct cpu_state* cpu)
 {
     //Exceptions
@@ -272,11 +267,10 @@ struct cpu_state* irq_handler(struct cpu_state* cpu)
     return cpu;
 }
 
+
 /**
- * remap IRQs to irqnum 31
- * @param void
- * @return void
- **/
+ *  @brief Remaps IRQs to irqnum 31.
+ */
 void remap_pic(void)
 {
     outb(0x20, 0x11);
@@ -291,13 +285,13 @@ void remap_pic(void)
     outb(0xA1, 0x00);
 }
 
+
 /**
- * Initialize IDT wit exceptions and basical ISRs
- * @param 0 void
- * @param 1 void
- **/
+ * @brief Initializes IDT wit exceptions and basical ISRs.
+ */
 void INIT_IDT(void)
 {
+    //remap IRQs
     remap_pic();
 
     //Exceptions
@@ -339,6 +333,7 @@ void INIT_IDT(void)
     Set_IDT_Entry(29,(uint32_t)isr_29,0x08,INTERRUPT_GATE, 0  );
     Set_IDT_Entry(30,(uint32_t)isr_30,0x08,INTERRUPT_GATE, 0  );
     Set_IDT_Entry(31,(uint32_t)isr_31,0x08,INTERRUPT_GATE, 0  );
+    
     //IRQs
     Set_IDT_Entry(32,(uint32_t)isr_32,0x08,INTERRUPT_GATE, 0  );
     Set_IDT_Entry(33,(uint32_t)isr_33,0x08,INTERRUPT_GATE, 0  );
