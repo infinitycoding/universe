@@ -47,8 +47,8 @@
  */
 struct cpu_state *arch_create_thread_context(struct arch_thread_context *context, privilege_t prev, vaddr_t entry,vaddr_t return_adress, int argc, char **argv, char **environ)
 {
-    void *kernel_stack = malloc(0x1000);
-    struct cpu_state *new_state = kernel_stack + 0x1000 - sizeof(struct cpu_state) - 4*sizeof(uint32_t);
+    void *kernel_stack = malloc(0x2000);
+    struct cpu_state *new_state = kernel_stack + 0x1000 - sizeof(struct cpu_state) - 3*sizeof(uint32_t);
     context->state = new_state;
 
     memset(new_state, 0, sizeof(struct cpu_state));
@@ -63,11 +63,14 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
         new_state->es = 0x10;
         new_state->fs = 0x10;
         new_state->gs = 0x10;
-        stack = kernel_stack + 0x1000 -3*sizeof(uint32_t);
+        stack = kernel_stack + 0x1000;
+        *--stack = (uint32_t) return_adress;
+        *--stack = (uint32_t) environ;
         *--stack = (uint32_t) argv;
         *--stack = (uint32_t) argc;
-        *--stack = (uint32_t) environ;
-        *--stack = (uint32_t) return_adress;
+        
+        
+        
     }
     else
     {
@@ -77,10 +80,10 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
 
         stack  = (uint32_t *) vmm_automap_kernel(current_context, pframe, VMM_PRESENT | VMM_WRITABLE);
 
+        stack[1020] = (uint32_t) return_adress;
         stack[1023] = (uint32_t) environ;
         stack[1022] = (uint32_t) argv;
         stack[1021] = (uint32_t) argc;
-        stack[1020] = (uint32_t) return_adress;
 
         vmm_unmap(current_context, (vaddr_t)stack);
 
