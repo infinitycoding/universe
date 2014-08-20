@@ -333,7 +333,7 @@ void INIT_IDT(void)
     Set_IDT_Entry(29,(uint32_t)isr_29,0x08,INTERRUPT_GATE, 0  );
     Set_IDT_Entry(30,(uint32_t)isr_30,0x08,INTERRUPT_GATE, 0  );
     Set_IDT_Entry(31,(uint32_t)isr_31,0x08,INTERRUPT_GATE, 0  );
-    
+
     //IRQs
     Set_IDT_Entry(32,(uint32_t)isr_32,0x08,INTERRUPT_GATE, 0  );
     Set_IDT_Entry(33,(uint32_t)isr_33,0x08,INTERRUPT_GATE, 0  );

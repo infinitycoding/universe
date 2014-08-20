@@ -83,7 +83,7 @@ void INIT_GDT(void)
     set_GDT_entry(3,0,0xFFFFF,0xFA,0xC);
     set_GDT_entry(4,0,0xFFFFF,0xF2,0xC);
     set_GDT_entry(5, (uint32_t) &tss, sizeof(tss), 0x89, 0x8); //qemu does not support TSS-Desc on position 7... weired hardware stuff
-    
+
     //load the new table
     load_gdt(5);
 

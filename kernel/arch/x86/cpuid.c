@@ -30,7 +30,7 @@
 #include <cpuid.h>
 
 
-static char* vendorID[]= 
+static char* vendorID[]=
 {
     "AuthenticAMD",	"AMDisbetter!", "GenuineIntel", "CentaurHauls",
     "CyrixInstead", "TransmetaCPU", "GenuineTMx86", "Geode by NSC",
@@ -159,7 +159,7 @@ int identify_cpu(struct cpu_properties *cpu)
         else
             cpu->architecture = I386;
     }
-    
+
 
     //Detect Dynamic Syscall
     if (cpu->flagblock1 & SEP && cpu->manufactory == 2)

@@ -1,17 +1,17 @@
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
- 
+
      The Universe Kernel is free software: you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
      the Free Software Foundation, either version 3 of the License, or
      any later version.
- 
+
      The Universe Kernel is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU General Public License for more details.
- 
+
      You should have received a copy of the GNU General Public License
      along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -20,7 +20,7 @@
  *  @file /arch/x86/context.c
  *  @brief Management for architecuture dependent threads.
  *  Because Multitasking is based on switching between serveral CPU states and memory contexts
- *  there is a need for hardware abstraction. In ths file are functions defined which manage the 
+ *  there is a need for hardware abstraction. In ths file are functions defined which manage the
  *  creation, destruction and switching of these states and contexts.
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
@@ -39,7 +39,7 @@
  *  @param context Pointer to an allocated memory area in which the context will be stored
  *  @param prev Previleg level of the new thread (kernelmode, usermode)
  *  @param entry Pointer to the programm init (_start or main, ...)
- *  @param return_adress (usermode only) The adress to wich the thread should return when it's work is done. 
+ *  @param return_adress (usermode only) The adress to wich the thread should return when it's work is done.
  *  @param argc Number of arguments passed to the thread
  *  @param argv Argument sting array
  *  @param environ String array of enviroent varrables. (Terminated by a NULL pointer)
@@ -68,9 +68,9 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
         *--stack = (uint32_t) environ;
         *--stack = (uint32_t) argv;
         *--stack = (uint32_t) argc;
-        
-        
-        
+
+
+
     }
     else
     {
@@ -97,8 +97,8 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
 
 
 /**
- *  @brief Destroys a thread context and frees its associated memory. 
- *  @param context The context to destroy. 
+ *  @brief Destroys a thread context and frees its associated memory.
+ *  @param context The context to destroy.
  */
 void arch_destroy_thread_context(struct arch_thread_context *context)
 {

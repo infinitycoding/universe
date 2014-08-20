@@ -69,9 +69,9 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     set_color(WHITE | BLACK << 4);
     //Init Kernelmodules
     INIT_PMM(mb_info);
+    INIT_PAGING(mb_info);
     INIT_GDT();
     INIT_IDT();
-    INIT_PAGING(mb_info);
     INIT_HEAP();
     INIT_VFS();
     INIT_TRIGGER();

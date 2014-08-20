@@ -35,7 +35,7 @@ void halt(void)
 }
 
 /**
- * @brief Disables interrupts. 
+ * @brief Disables interrupts.
  */
 void disable_irqs(void)
 {

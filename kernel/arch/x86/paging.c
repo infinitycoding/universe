@@ -83,6 +83,9 @@ void ARCH_INIT_PAGING(struct multiboot_struct *mb_info)
 
     arch_switch_context(&kernel_context.arch_context);
     current_context = &kernel_context;
+
+    // map kernel stack
+    vmm_map(current_context, pmm_alloc_page(), 0xFFFFF000, VMM_WRITABLE);
 }
 
 /**
@@ -176,8 +179,7 @@ void arch_fork_context(arch_vmm_context_t *src, arch_vmm_context_t *dest)
 void arch_update_context(arch_vmm_context_t *context)
 {
 #define START PDE_INDEX(MEMORY_LAYOUT_KERNEL_START)
-#define END   PDE_INDEX(MEMORY_LAYOUT_KERNEL_END)
-    arch_sync_pts(context, &current_context->arch_context, START, END);
+    arch_sync_pts(context, &current_context->arch_context, START, 1024);
     context->entries[PDE_INDEX(MEMORY_LAYOUT_PAGING_STRUCTURES_START)] = (uint32_t) context->phys_addr | VMM_PRESENT | VMM_WRITABLE;
 }
 

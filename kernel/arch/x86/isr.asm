@@ -20,8 +20,9 @@
  *  @file /arch/x86/isr.asm
  *  @brief Interrupt service stubs for the IRQ module.
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
+ *  @author Michael Sippel <micha@infinitycoding.de>
  */
-
+#define MEMORY_LAYOUT_KERNEL_STACK_TOP 0xFFFFFFFF
 
 %macro ISR 1
 Global isr_%1
@@ -162,7 +163,9 @@ mov ds, dx
 mov es, dx
 mov fs, dx
 mov gs, dx
-push esp
+mov edx,esp
+mov esp,MEMORY_LAYOUT_KERNEL_STACK_TOP
+push edx
 call irq_handler
 mov esp,eax
 pop gs
