@@ -16,7 +16,6 @@ download/
 newlib/
 build/usr
 build/boot/grub/stage2_eltorito
-libs/mercury
 
 #Andere unerwünschte Daten
 .directory

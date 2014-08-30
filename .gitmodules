@@ -1,0 +1,3 @@
+[submodule "libs/mercury"]
+	path = libs/mercury
+	url = https://github.com/infinitycoding/mercury.git
