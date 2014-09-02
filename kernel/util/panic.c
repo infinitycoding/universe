@@ -17,31 +17,19 @@
  */
 
 /**
+ *  @file /util/panic.c
+ *  @brief Kernel panic dump screen module. 
  *  @author Tom Slawik <tom.slawik@gmail.com>
  *  @author Simon Diepold <simon.diepold@infinitycoding.de>
  */
 
-#include <idt.h>
 #include <cpu.h>
 #include <printf.h>
 
-int cpu_dump(struct cpu_state* cpu, char *str)
-{
-    int len = 0;
-
-    len += sprintf(str + len, "EAX:  %#010X    EBX:     %#010X\n",  cpu->eax, 	cpu->ebx);
-    len += sprintf(str + len, "ECX:  %#010X    EDX:     %#010X\n",  cpu->ecx, 	cpu->edx);
-    len += sprintf(str + len, "ESI:  %#010X    EDI:     %#010X\n",  cpu->esi, 	cpu->edi);
-    len += sprintf(str + len, "ESP:  %#010X    EBP:     %#010X\n",  cpu->esp, 	cpu->ebp);
-    len += sprintf(str + len, "CS:   %#010X    DS:      %#010X\n",  cpu->cs, 	cpu->ds);
-    len += sprintf(str + len, "SS:   %#010X    ES:      %#010X\n",  cpu->ss, 	cpu->es);
-    len += sprintf(str + len, "GS:   %#010X    FS:      %#010X\n",  cpu->gs, 	cpu->fs);
-    len += sprintf(str + len, "EIP:  %#010X    EFLAGS:  %#010X\n",  cpu->eip, 	cpu->eflags);
-
-    return len;
-}
-
-
+/**
+ *  @brief Shows an errorscreen  with a error message.
+ *  @param message The errormessage to be printed.
+ */
 void panic(char *message)
 {
     char buffer[1024];
@@ -96,18 +84,7 @@ void panic(char *message)
     halt();
 }
 
-// just used in case of untreated exceptions
-void exc_panic(struct cpu_state* cpu)
-{
-    char message[512];
-    char *exception = exception_messages[cpu->intr];
-    int len = 0;
 
-    len = sprintf(message, "%s\n\n", exception);
-    cpu_dump(cpu, message + len);
-
-    panic(message);
-}
 
 /* easter egg! */
 void winpanic(char *message)

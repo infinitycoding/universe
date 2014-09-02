@@ -17,6 +17,9 @@
  */
 
 /**
+ *  @file /arch/x86/context.c
+ *  @brief General Kernel event management module.
+ *  This module provides the functionality to set up trigger for certain events.
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
@@ -27,108 +30,27 @@
 #include <sched/scheduler.h>
 #include <idt.h>
 
+// process structures
 extern struct thread_state *current_thread;
 extern list_t *process_list;
 extern list_t *running_threads;
 
+// event lists
 list_t *trigger_list = 0;
 list_t *event_id_list = 0;
 uint32_t event_id_counter = 1;
 
 
 /**
- * Initiates the process/thread trigger module
- * @param void
- * @return void
+ *  @brief Initiates the lists of the trigger module
+ *  @param void
+ *  @return void
  **/
 void INIT_TRIGGER(void)
 {
     trigger_list = list_create();
     event_id_list = list_create();
 }
-
-
-/**
- * Suspends a running thread
- * @param 0 pointer to the thread state
- * @return void
- */
-void suspend_thread(struct thread_state *object)
-{
-    if(list_is_empty(running_threads))
-        return;
-
-    iterator_t it = iterator_create(running_threads);
-    list_set_first(&it);
-    while(list_get_current(&it) != object && !list_is_last(&it))
-        list_next(&it);
-
-    if(list_get_current(&it) == object)
-    {
-        list_remove(&it);
-        object->ticks  =  0;
-        object->flags &= ~THREAD_ACTIV;
-    }
-}
-
-
-/**
- * Suspends a process
- * @param 0 pointer to the process state
- * @return void
- */
-void suspend_process(struct process_state *object)
-{
-    if(list_is_empty(object->threads))
-        return;
-
-    iterator_t it = iterator_create(object->threads);
-    list_set_first(&it);
-    while(!list_is_last(&it))
-    {
-        struct thread_state *thread = (struct thread_state *)list_get_current(&it);
-        if(thread->flags & THREAD_ACTIV)
-            suspend_thread(thread);
-
-        list_next(&it);
-    }
-
-    object->flags &= ~PROCESS_ACTIVE;
-}
-
-
-/**
- * Wakes up a thread
- * @param 0 pointer to the thread state
- * @return void
- **/
-void wakeup_thread(struct thread_state *object)
-{
-    list_push_front(running_threads, object);
-    object->flags |= THREAD_ACTIV;
-}
-
-
-/**
- * Wakes up a process
- * @param 0 pointer to the process state
- * @return void
- **/
-void wakeup_process(struct process_state *object)
-{
-    struct process_state *process = object;
-    iterator_t it = iterator_create(process->threads);
-    list_set_first(&it);
-    while(!list_is_empty(process->threads) && !list_is_last(&it))
-    {
-        struct thread_state *thread = (struct thread_state *)list_get_current(&it);
-        if(!(thread->flags & THREAD_ACTIV))
-            wakeup_thread(thread);
-        list_next(&it);
-    }
-    object->flags |= PROCESS_ACTIVE;
-}
-
 
 /**
  * Removes a event trigger by object name and ID (if given),
@@ -223,14 +145,14 @@ int send_event(uint32_t ID)
         {
             if(current_entry->proc)
             {
-                wakeup_process(current_entry->object);
+                process_wakeup(current_entry->object);
                 remove_event_trigger(current_entry->object, current_entry->ID);
             }
             else
             {
                 struct thread_state *thread = current_entry->object;
                 remove_event_trigger(current_entry->object, current_entry->ID);
-                wakeup_thread(thread);
+                thread_wakeup(thread);
 
                 if(current_entry->callback != NULL)
                 {
@@ -391,12 +313,12 @@ void send_killed_process(struct process_state *proc)
         {
             if(current_entry->proc)
             {
-                wakeup_process(current_entry->object);
+                process_wakeup(current_entry->object);
                 remove_event_trigger(current_entry->object, current_entry->ID);
             }
             else
             {
-                wakeup_thread(current_entry->object);
+                thread_wakeup(current_entry->object);
                 remove_event_trigger(current_entry->object, current_entry->ID);
             }
 
@@ -418,7 +340,7 @@ void send_killed_process(struct process_state *proc)
         {
             if(current_entry->object == proc->parent)
             {
-                wakeup_process(proc->parent);
+                process_wakeup(proc->parent);
                 remove_event_trigger(proc->parent, current_entry->ID);
             }
             else
@@ -430,7 +352,7 @@ void send_killed_process(struct process_state *proc)
                     struct thread_state *thread = list_get_current(&thread_it);
                     if(thread == current_entry->object)
                     {
-                        wakeup_thread(thread);
+                        thread_wakeup(thread);
                         remove_event_trigger(thread, current_entry->ID);
                     }
                     list_next(&thread_it);

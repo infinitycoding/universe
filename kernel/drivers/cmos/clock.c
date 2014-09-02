@@ -17,6 +17,8 @@
  */
 
 /**
+ *  @file drivers/cmos/clock.c
+ *  @brief Kernel driver for the realtime clock (RTC) and the programmable interrupt timer (PIT) of x86 Computers.
  *  @author Michael Sippel <michamimosa@gmail.com>
  */
 
@@ -32,6 +34,10 @@ int timer_freq = 0;
 struct time *startup;
 uint64_t up_time;
 
+
+/**
+ * @brief Initiates PIT and RTC. 
+ */
 void INIT_CLOCK(int freq)
 {
     startup = malloc(sizeof(struct time));
@@ -41,8 +47,7 @@ void INIT_CLOCK(int freq)
 }
 
 /**
- * set PIT Fequency
- *
+ * @brief set PIT Fequency.
  * @param freqency
  * @return void
  */
@@ -55,8 +60,7 @@ void set_pit_freq(int freq)
 }
 
 /**
- * Initalize the Programmable Intervall Timer
- *
+ * @brief Initalize the Programmable Intervall Timer.
  * @param frequency
  * @return void
  */
@@ -67,8 +71,7 @@ void INIT_PIT(int freq)
 }
 
 /**
- * Initalize the Real Time Clock
- *
+ * @brief Initalize the Real Time Clock.
  * @param void
  * @return void
  */
@@ -85,8 +88,7 @@ void sync_sys_clock()
 }
 
 /**
- * Updates the time from CMOS-RTC
- *
+ * @brief Updates the time from CMOS-RTC.
  * @param void
  */
 void update_time(struct time *time)
@@ -105,8 +107,7 @@ void update_time(struct time *time)
 }
 
 /**
- * Changes the Time from CMOS
- *
+ * @brief Changes the Time from CMOS.
  * @param time New time
  */
 void change_time(struct time *time)

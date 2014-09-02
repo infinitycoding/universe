@@ -17,6 +17,8 @@
  */
 
 /**
+ *  @file /drivers/cmos/cmos.c
+ *  @brief Kernel driver for x86 computer CMOS RAM.
  *  @author Michael Sippel <michamimosa@gmail.com>
  */
 
@@ -24,8 +26,7 @@
 #include <drivers/cmos.h>
 
 /**
- * Reads the Values from Complementary Metal Oxide Semiconductor
- *
+ * @brief Reads the Values from Complementary Metal Oxide Semiconductor.
  * @param buffer
  * @return void
  */
@@ -57,9 +58,8 @@ void get_cmos_data(struct cmos_data *cmos)
 }
 
 /**
- * Reads a byte from CMOS
+ * @brief Reads a byte from CMOS.
  * @param offset Offset in the CMOS
- *
  * @return Read value from CMOS
  */
 uint8_t cmos_read_byte(uint8_t offset)
@@ -70,11 +70,9 @@ uint8_t cmos_read_byte(uint8_t offset)
 }
 
 /**
- * Write a byte to CMOS
- *
+ * @brief Write a byte to CMOS
  * @param offset Offset in the CMOS
  * @param value Value which is written into the CMOS
- *
  * @return void
  */
 void cmos_write_byte(uint8_t offset, uint8_t value)

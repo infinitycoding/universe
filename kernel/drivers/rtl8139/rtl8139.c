@@ -17,6 +17,9 @@
  */
 
 /**
+ *  @file /drivers/rtl8139/rtl8139.c
+ *  @brief Kernel driver for the rtl8139 ethernet adapter.
+ *  @todo Move this driver to userspace.
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 

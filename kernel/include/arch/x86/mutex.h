@@ -30,7 +30,7 @@ typedef int mutex;
 
 void lock(mutex *m);
 void unlock(mutex *m);
-bool try_lock(mutex *m);
+int try_lock(mutex *m);
 
 
 

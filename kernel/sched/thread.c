@@ -149,6 +149,42 @@ struct thread_state *thread_clone(struct process_state *process, struct thread_s
     return new_thread;
 }
 
+/**
+ *  @brief Suspends a running thread
+ *  @param 0 pointer to the thread state
+ *  @return void
+ */
+void thread_suspend(struct thread_state *object)
+{
+    if(list_is_empty(running_threads))
+        return;
+
+    iterator_t it = iterator_create(running_threads);
+    list_set_first(&it);
+    while(list_get_current(&it) != object && !list_is_last(&it))
+        list_next(&it);
+
+    if(list_get_current(&it) == object)
+    {
+        list_remove(&it);
+        object->ticks  =  0;
+        object->flags &= ~THREAD_ACTIV;
+    }
+}
+
+
+/**
+ * Wakes up a thread
+ * @param 0 pointer to the thread state
+ * @return void
+ **/
+void thread_wakeup(struct thread_state *object)
+{
+    list_push_front(running_threads, object);
+    object->flags |= THREAD_ACTIV;
+}
+
+
 
 void thread_kill(struct thread_state *thread)
 {
@@ -205,15 +241,5 @@ void thread_kill_sub(struct thread_state *thread)
     }
 }
 
-void thread_exit(struct cpu_state **cpu)
-{
-    current_thread->flags |= THREAD_ZOMBIE;
-    *cpu = task_schedule(*cpu);
-}
-
-void launch_thread(struct cpu_state **cpu)
-{
-    thread_create(current_thread->process, USERMODE, (vaddr_t) (*cpu)->CPU_ARG1, (int) (*cpu)->CPU_ARG2, (char**)(*cpu)->CPU_ARG3, (char **)(*cpu)->CPU_ARG4, (vaddr_t)(*cpu)->CPU_ARG5, NULL);
-}
 
 

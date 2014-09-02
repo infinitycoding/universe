@@ -1,3 +1,6 @@
+#ifndef _SCHED_SYSCALLS_H_
+#define _SCHED_SYSCALLS_H_
+
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
@@ -20,26 +23,15 @@
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
-#include <mutex.h>
+#include <cpu.h>
 
-void lock(mutex *m)
-{
-    while(!try_lock(m));
-}
+void usys_thread_exit(struct cpu_state **cpu);
+void usys_thread_launch(struct cpu_state **cpu);
 
-void unlock(mutex *m)
-{
-    *m = false;
-}
+void sys_exit(struct cpu_state **cpu);
+void sys_fork(struct cpu_state **cpu);
+void sys_waitpid(struct cpu_state **cpu);
+void sys_getpid(struct cpu_state **cpu);
+void sys_execve(struct cpu_state **cpu);
 
-
-bool try_lock(mutex *m)
-{
-    int r;
-    asm(
-        "mov $1, %%eax;"
-        "xchg %%eax,(%1);"
-        : "=a"(r) : "D" (m)
-    );
-    return !r;
-}
+#endif

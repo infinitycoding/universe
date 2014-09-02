@@ -24,6 +24,7 @@
 
 void exc_panic(struct cpu_state* cpu);
 void panic(char* message);
+void winpanic(char *message);
 
 #endif
 

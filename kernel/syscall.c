@@ -21,8 +21,7 @@
  */
 
 #include <sched/thread.h>
-#include <sched/scheduler.h>
-#include <sched/process.h>
+#include <sched/syscalls.h>
 #include <event/time.h>
 #include <syscall.h>
 #include <vfs/vfs.h>
@@ -37,7 +36,7 @@ extern struct process_state *kernel_state;
 
 
 
-void identify_os(struct cpu_state **cpu)
+void usys_identify_os(struct cpu_state **cpu)
 {
     (*cpu)->CPU_ARG0 = 'u' | ('n' << 8) | ('i' << 16) | (OS_VERSION << 24);
 };
@@ -78,7 +77,7 @@ void linux_syscall_handler(struct cpu_state **cpu)
 #define DEFINED_UNIVERSE_FUNCTIONS 5
 void (*universe_functions[])(struct cpu_state **cpu) =
 {
-    thread_exit,launch_thread,alloc_memory,identify_os,set_pipe_trigger
+    usys_thread_exit,usys_thread_launch,alloc_memory,usys_identify_os,set_pipe_trigger
 };
 
 

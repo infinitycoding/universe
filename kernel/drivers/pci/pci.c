@@ -17,6 +17,9 @@
  */
 
 /**
+ *  @file /drivers/pci/pci.c
+ *  @brief Kernel driver for the PCI bus system.
+ *  @todo Move this driver to userspace.
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 

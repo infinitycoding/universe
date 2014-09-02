@@ -47,7 +47,7 @@
  */
 struct cpu_state *arch_create_thread_context(struct arch_thread_context *context, privilege_t prev, vaddr_t entry,vaddr_t return_adress, int argc, char **argv, char **environ)
 {
-    void *kernel_stack = malloc(0x2000);
+    void *kernel_stack = malloc(0x1000);
     struct cpu_state *new_state = kernel_stack + 0x1000 - sizeof(struct cpu_state) - 3*sizeof(uint32_t);
     context->state = new_state;
 
@@ -68,8 +68,6 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
         *--stack = (uint32_t) environ;
         *--stack = (uint32_t) argv;
         *--stack = (uint32_t) argc;
-
-
 
     }
     else

@@ -259,7 +259,7 @@ void sys_read(struct cpu_state **cpu)
                 if(inode->type == VFS_PIPE)
                 {
                     add_trigger(WAIT_EVENT, info->event_id, 0, current_thread, sys_read);
-                    suspend_thread(current_thread);
+                    thread_suspend(current_thread);
                     *cpu = (struct cpu_state *)task_schedule(*cpu);
                 }
                 else

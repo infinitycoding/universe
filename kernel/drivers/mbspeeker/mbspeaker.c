@@ -16,6 +16,14 @@
      along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ *  @file /drivers/mbspeaker/mbspeaker.c
+ *  @brief Kernel driver for the motherboard speaker of x86 computers.
+ *  @todo Move this driver to userspace.
+ *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
+ */
+
+
 #include <io.h>
 
 void sound_on()

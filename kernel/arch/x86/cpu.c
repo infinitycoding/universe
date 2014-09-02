@@ -22,9 +22,10 @@
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
+#include <mutex.h>
 
 /**
- * @brief Stops the execution of the kernel and disables interrupts.
+ *  @brief Stops the execution of the kernel and disables interrupts.
  */
 void halt(void)
 {
@@ -35,7 +36,7 @@ void halt(void)
 }
 
 /**
- * @brief Disables interrupts.
+ *  @brief Disables interrupts.
  */
 void disable_irqs(void)
 {
@@ -44,10 +45,44 @@ void disable_irqs(void)
 
 
 /**
- * @brief Enables interrupts.
+ *  @brief Enables interrupts.
  */
 void enable_irqs(void)
 {
     asm volatile("sti");
 }
 
+
+/**
+ *  @brief Tries to lock a atomic mutex. 
+ *  @param m The mutex to be locked.
+ *  @return true = sucess; false = already locked
+ */
+int try_lock(mutex *m)
+{
+    int r;
+    asm(
+        "mov $1, %%eax;"
+        "xchg %%eax,(%1);"
+        : "=a"(r) : "D" (m)
+    );
+    return !r;
+}
+
+/**
+ *  @brief Trys locking a atomic mutex until it is lockable.
+ *  @param m The mutex to be locked.
+ */
+void lock(mutex *m)
+{
+    while(!try_lock(m));
+}
+
+/**
+ * @brief Unlocks a atomic mutex.
+ * @param m The mutex to be unlocked. 
+ */
+void unlock(mutex *m)
+{
+    *m = false;
+}
