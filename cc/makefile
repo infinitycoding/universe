@@ -7,7 +7,16 @@ GCC = gcc-4.7.3
 GNU = ftp://ftp.gnu.org/gnu
 
 BUILD = build
-HOST_PREFIX = /usr/
+
+ifndef ${HOST_PREFIX}
+	HOST_PREFIX=/usr/
+	export HOST_PREFIX
+endif
+
+ifndef ${TARGET_ARCH}
+	TARGET_ARCH=i686
+	export TARGET_ARCH
+endif
 
 download:
 	$(MAKE) -C ../download load unpack NAME=$(BINUTILS) DPATH=$(GNU)/binutils/$(BINUTILS).tar.bz2 TYPE=tar.bz2
@@ -24,14 +33,14 @@ configure_binutils: download
 		cp -rT binutils_adapted $(BINUTILS); \
 		mkdir -p $(BUILD)/$(BINUTILS); \
 		cd $(BUILD)/$(BINUTILS); \
-		../../$(BINUTILS)/configure --prefix=$(HOST_PREFIX) --target=i686-universe -disable-nls  CFLAGS="-w"; \
+		../../$(BINUTILS)/configure --prefix=${HOST_PREFIX} --target=${TARGET_ARCH}-universe -disable-nls  CFLAGS="-w"; \
 		cd ../..; \
 	fi;\
 
 binutils: configure_binutils
 	$(MAKE) -C $(BUILD)/$(BINUTILS)
 
-configure_gcc: download binutils
+configure_gcc: vars download binutils
 	if [ ! -f $(BUILD)/$(GCC)/config.log ]; then \
 		cd $(GCC); \
 		patch -p1 < ../gcc.patch; \
@@ -40,7 +49,7 @@ configure_gcc: download binutils
 		PATH=${PATH}:`pwd`/../../$(TARGET)/bin; \
 		mkdir -p $(BUILD)/$(GCC); \
 		cd $(BUILD)/$(GCC) ;\
-		../../$(GCC)/configure --prefix=$(HOST_PREFIX) --target=i686-universe --disable-nls --enable-languages=c --disable-shared --disable-libssp --without-docdir CFLAGS="-I/usr/include/"; \
+		../../$(GCC)/configure --prefix=${HOST_PREFIX} --target=${TARGET_ARCH}-universe --disable-nls --enable-languages=c --disable-shared --disable-libssp --without-docdir CFLAGS="-I/usr/include/"; \
 		cd ../..; \
 	fi;\
 
@@ -52,7 +61,7 @@ install:
 	$(MAKE) -C $(BUILD)/$(BINUTILS) install
 	$(MAKE) -C $(BUILD)/$(GCC) install-gcc
 #	$(MAKE) -C $(BUILD)/$(GCC) install-target-libgcc
-	ln -s /usr/bin/i686-universe-gcc /usr/bin/i686-universe-cc
+	ln -s /usr/bin/${TARGET_ARCH}-universe-gcc /usr/bin/${TARGET_ARCH}-universe-cc
 
 clean:
 	rm -rf $(BUILD)

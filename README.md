@@ -10,3 +10,11 @@ Licenses:
 
 If you find any kind of bug please report it to info@infinitycoding.de
 
+How to compile:
+=======
+
+make dependencies
+make all
+
+run in qemu vm:
+make qemu

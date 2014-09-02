@@ -1,9 +1,12 @@
 all: kernel libs drivers user iso-img
 
 # PPC
-# I386
+# I686
 # arm
 ARCH=i686
+
+HOST_PREFIX=/usr/
+
 CFLAGS = -Wall -g -nostdinc -fno-stack-protector -fno-builtin-log
 ASFLAGS =-felf32
 #LDFLAGS = -muniverse_i386
@@ -11,29 +14,24 @@ ASFLAGS =-felf32
 PREFIX = $(PWD)/build
 #USBDEV = /dev/sdb
 
+CC = $(ARCH)-universe-gcc
+LD = $(ARCH)-universe-ld
+ASM = $(ARCH)-universe-as
+
+
+#change defaults
 ifeq ($(ARCH),PPC)
 QEMU = qemu-system-ppc
 
 else ifeq ($(ARCH),i686)
 QEMU = qemu-system-i386 -cdrom cdrom.iso -net nic,model=rtl8139 -net user
-CC = i686-universe-gcc
 ASM = nasm
-LD = i686-universe-ld
 
 else ifeq ($(ARCH),arm)
-CC = arm-linux-gnueabi-gcc
-ASM = arm-linux-gnueabi-as
-LD = arm-linux-gnueabi-ld
 QEMU = qemu-system-arm -cpu arm1176 -M versatilepb -m 256M -nographic -kernel universe.bin
 endif
 
-# Export for subfiles 
-#export CC
-#export ASM
-#export LD
-#export CFLAGS
-#export ASFLAGS
-#export LDFLAGS
+
 export PREFIX
 
 
@@ -76,6 +74,15 @@ clean:
 	@$(MAKE) -C libs clean
 	@rm *.iso -f
 
+dependencies:
+	git submodule init
+	git submodule update
+	if [ ! -f $(HOST_PREFIX)/bin/$(ARCH)-universe-gcc ]; then \
+		cd cc; \
+		make all; HOST_PREFIX="$(HOST_PREFIX)" TARGET_ARCH="$(ARCH)"\
+		sudo make install; \
+		cd ..; \
+	fi
 
 
 .PHONY: all kernel libs drivers user clean qemu
