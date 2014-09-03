@@ -29,22 +29,6 @@
 #include <cpu.h>
 #include <panic.h>
 
-/**
- *  @brief Prints panic screen for CPU exceptions.
- *  just used in case of untreated exceptions.
- *  @param cpu The cpu state given by the exception.
- */
-void exc_panic(struct cpu_state* cpu)
-{
-    char message[512];
-    char *exception = exception_messages[cpu->intr];
-    int len = 0;
-
-    len = sprintf(message, "%s\n\n", exception);
-    cpu_dump(cpu, message + len);
-
-    panic(message);
-}
 
 /**
  *  @brief Dups the current CPU state.
@@ -66,6 +50,24 @@ int cpu_dump(struct cpu_state *cpu, char *str)
     len += sprintf(str + len, "EIP:  %#010X    EFLAGS:  %#010X\n",  cpu->eip,   cpu->eflags);
 
     return len;
+}
+
+
+/**
+ *  @brief Prints panic screen for CPU exceptions.
+ *  just used in case of untreated exceptions.
+ *  @param cpu The cpu state given by the exception.
+ */
+void exc_panic(struct cpu_state* cpu)
+{
+    char message[512];
+    char *exception = exception_messages[cpu->intr];
+    int len = 0;
+
+    len = sprintf(message, "%s\n\n", exception);
+    cpu_dump(cpu, message + len);
+
+    panic(message);
 }
 
 /**
