@@ -125,10 +125,21 @@ struct thread_state *thread_clone(struct process_state *process, struct thread_s
     }
 
     vmm_create_context(&new_thread->context.memory);
-    memcpy(&new_thread->context.memory.arch_context, &src_thread->context.memory.arch_context, sizeof(arch_vmm_context_t));
+    arch_fork_context(&src_thread->context.memory.arch_context, &new_thread->context.memory.arch_context);
     thread_sync_context(new_thread);
+
     arch_create_thread_context(&new_thread->context, prev, (vaddr_t) 0, (vaddr_t) 0, 0, 0, 0);
-    *new_thread->context.state = *src_thread->context.state;
+    memcpy(new_thread->context.kernel_mode_stack, src_thread->context.kernel_mode_stack, 0x1000);
+
+	if(prev == USERMODE)
+	{
+		paddr_t src_paddr = src_thread->context.program_stack;
+		paddr_t dest_paddr = new_thread->context.program_stack;
+		void *src_stack = vmm_automap_kernel(&current_thread->context.memory, src_paddr, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
+		void *dest_stack = vmm_automap_kernel(&current_thread->context.memory, dest_paddr, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
+
+		memcpy(dest_stack, src_stack, 0x1000);
+	}
 
     if(process->heap_top == 0)
     {

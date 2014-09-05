@@ -111,7 +111,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     printf("%d modules total, %d successfully loaded, %d failed\n", stats.total, stats.load_success, stats.load_failed);
 
     vfs_inode_t *pfnode = vfs_lookup_path("/drivers/system.pf");
-
+/*
     if(pfnode != NULL)
     {
         int argc = 2;
@@ -126,8 +126,8 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
         argv[0] = sec;
         kernel_thread_create(INIT_HYPERVISOR, argc,(char **) argv, NULL);
     }
-
-    vfs_inode_t *testnode = vfs_lookup_path("/ultrashell.elf");
+*/
+    vfs_inode_t *testnode = vfs_lookup_path("/test.elf");
 
     if(testnode == NULL)
     {
@@ -137,6 +137,8 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     {
         load_elf_from_file(testnode, 0, 0, 0, 0, 0, 0);
     }
+
+	while(1);
 
     return 0;
 }

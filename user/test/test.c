@@ -9,15 +9,13 @@ char file[] = "/ultrashell.elf";
 
 int main(int argc, char **argv)
 {
-
-
     /*linux_syscall(SYS_RENAME,(uint32_t) "foo.txt",(uint32_t) "bar.txt", 0, 0, 0);
 
     FILE *f = fopen("bar.txt", "r");
     char buffer[20];
     fread(buffer,20, 1, f);
     printf("%s\n",buffer);
-    while(1);*/
+    while(1);
 
     bool success = true;
     success &= test_vfs_api();
@@ -48,7 +46,19 @@ int main(int argc, char **argv)
 
 	read(fd[0], &buf, 5);
 	printf("%s\n", buf);
+*/
 
+	int pid = fork();
+	printf("hi ");
+	if(pid == 0)
+	{
+		printf("child\n");
+	}
+	else
+	{
+		printf("parent\n");
+	}
+while(1);
     return 0;
 }
 

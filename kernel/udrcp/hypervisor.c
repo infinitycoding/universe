@@ -57,7 +57,9 @@ void subsystem_isr(int irq)
     {
         struct int_relation *rel = list_get_current(&int_it);
         if(rel->intnr == irq)
+		{
             send_package(rel->drv, INTSIG, 0, NULL);
+		}
         list_next(&int_it);
     }
 }

@@ -30,7 +30,7 @@ struct arch_thread_context
 {
     struct cpu_state *state;
     vaddr_t kernel_mode_stack;
-    vaddr_t programm_stack;
+    vaddr_t program_stack;
     vmm_context_t memory;
 } arch_thread_context;
 

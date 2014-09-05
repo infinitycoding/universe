@@ -78,18 +78,15 @@ void sys_exit(struct cpu_state **cpu)
  */
 void sys_fork(struct cpu_state **cpu)
 {
-    vmm_context_t context;
-    vmm_create_context(&context);
-    arch_fork_context(&current_thread->context.memory.arch_context, &context.arch_context);
-    struct process_state *new_process = process_create(current_thread->process->name ,current_thread->process->flags ,current_thread->process, current_thread->process->uid, current_thread->process->gid, NULL);
+	const char *add = "_fork";
+	char *newname = malloc(strlen(current_thread->process->name)+strlen(add)+1);
+	strcpy(newname, current_thread->process->name);
+	strcat(newname, add);
+
+    struct process_state *new_process = process_create(newname ,current_thread->process->flags ,current_thread->process, current_thread->process->uid, current_thread->process->gid, NULL);
     struct thread_state *new_thread = thread_clone(new_process, current_thread);
 
-    void *stack_src = (void *)(MEMORY_LAYOUT_STACK_TOP - THREAD_STACK_SIZE);
-    paddr_t pframe = pmm_alloc_page();
-    vmm_map(&new_thread->context.memory, pframe, MEMORY_LAYOUT_STACK_TOP-0x1000, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
-    void *stack = (void *)vmm_automap_kernel(current_context, pframe, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
-    memcpy(stack, stack_src, THREAD_STACK_SIZE);
-
+	// copy file descriptors
     struct list_node *node = current_thread->process->files->head->next;
     struct list_node *head = current_thread->process->files->head;
     while(node != head)

@@ -29,6 +29,7 @@
 
 #include <mm/heap.h>
 #include <mm/paging.h>
+#include <memory_layout.h>
 
 #include <gdt.h>
 
@@ -37,7 +38,6 @@
 struct process_state *kernel_state;
 struct thread_state *current_thread;
 list_t *running_threads;
-//void *kernelstack;
 
 iterator_t thread_iterator;
 
@@ -56,13 +56,25 @@ void INIT_SCHEDULER(void)
     // create kernel process
     kernel_state = process_create("Kernel INIT", PROCESS_ACTIVE, NULL, 0, 0, NULL);
     current_thread = kernel_thread_create(NULL, 0, NULL, NULL);
-    //kernelstack = malloc(KERNEL_STACK_SIZE) + KERNEL_STACK_SIZE-sizeof(struct cpu_state));
-    //set_kernelstack(kernelstack+1);
+
+    // map kernel stack
+    vmm_map(current_context, pmm_alloc_page(), 0xFFFFF000, VMM_PRESENT | VMM_WRITABLE);
+    vmm_map(current_context, pmm_alloc_page(), 0xFFFFE000, VMM_PRESENT | VMM_WRITABLE);
+    vmm_map(current_context, pmm_alloc_page(), 0xFFFFD000, VMM_PRESENT | VMM_WRITABLE);
+    vmm_map(current_context, pmm_alloc_page(), 0xFFFFC000, VMM_PRESENT | VMM_WRITABLE);
 
     // enable multitasking
     enable_irqs();
 }
 
+struct cpu_state *task_switch(struct thread_state *thread)
+{
+	struct cpu_state *cpu = thread->context.state;
+	set_kernelstack(cpu+1);
+	vmm_switch_context(&thread->context.memory);
+
+	return cpu;
+}
 
 /**
  * performs context switches
@@ -70,10 +82,7 @@ void INIT_SCHEDULER(void)
  */
 struct cpu_state *task_schedule(struct cpu_state *cpu)
 {
-    //if((current_thread->flags & THREAD_KERNELMODE))
-    current_thread->context.state = cpu;
-    //else
-    //    memcpy(current_thread->context.state, cpu, sizeof(struct cpu_state));
+	current_thread->context.state = cpu;
 
     if(current_thread->flags & THREAD_ZOMBIE)
     {
@@ -87,10 +96,8 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
 
         list_set_first(&thread_iterator);
         current_thread = list_get_current(&thread_iterator);
-
-        cpu = current_thread->context.state;
-        set_kernelstack(cpu+1);
-        vmm_switch_context(&current_thread->context.memory);
+		
+		cpu = task_switch(current_thread);
     }
 
     else if(current_thread->ticks == 0)
@@ -101,19 +108,7 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
             list_set_first(&thread_iterator);
         current_thread = list_get_current(&thread_iterator);
 
-        cpu = current_thread->context.state;
-        set_kernelstack(cpu+1);
-        vmm_switch_context(&current_thread->context.memory);
-        /*
-                if(current_thread->flags & THREAD_KERNELMODE)
-                {
-                    cpu = current_thread->context.state;
-                }
-                else
-                {
-                    cpu = (struct cpu_state *)kernelstack;
-                    memcpy(cpu, current_thread->context.state, sizeof(struct cpu_state));
-                }*/
+        cpu = task_switch(current_thread);
     }
 
     else
