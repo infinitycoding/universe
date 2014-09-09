@@ -24,19 +24,9 @@
  *	@author Adrian Jablonski <support@quadsoft.org>
  */
 
-#define PI = 3.1415926535897931
-#define E  = 2.7182818284590451
-
-double exp(double x);
-double ln(double y);
-double pow(double base, double exp);
-double sin(double x);
-double cos(double x);
 
 int powi(int base, int exponent);
-double factorial(long n);
 int abs(int x);
-
 unsigned int bit_scan_forward(unsigned int);
 
 

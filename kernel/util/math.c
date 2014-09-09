@@ -23,66 +23,9 @@
 
 #include <math.h>
 
-/**
-	Exponential-Function
-**/
-double exp(double x)
-{
-    double sigma = 0;
-    int i;
-    for (i = 0; i < 150; i++)
-        sigma += powi(x, i ) / factorial(i);
-    return sigma;
-}
 
-/**
-	Natural logarithm
-**/
-double ln(double y)
-{
-    double x = (y - 1) / (y + 1);
-    double sigma = 0;
-    int i;
-    for (i = 0; i < 150; i++)
-        sigma += powi(x, 2*i+1) /(2*i+1);
-    return 2*sigma;
-}
 
-/**
-	Power for real exponents
-**/
-double pow(double base, double exponent)
-{
-    return exp(exponent * ln(base));
-}
 
-/**
-	Sine
-**/
-double sin(double x)
-{
-    double sigma = 0;
-    int i;
-    for (i = 0; i < 20; i++)
-        sigma += ((powi(-1, i) * powi(x, 2 * i + 1)) / factorial(2 * i + 1));
-    return sigma;
-}
-
-/**
-	Cosine
-**/
-double cos(double x)
-{
-    double sigma = 0;
-    int i;
-    for (i = 0; i < 20; i++)
-        sigma += ((powi(-1, i) * powi(x, 2 * i)) / factorial(2 * i));
-    return sigma;
-}
-
-/**
-	Power for integer exponents
-**/
 int powi(int base, int exponent)
 {
     int result = base;
@@ -103,21 +46,7 @@ int powi(int base, int exponent)
     return result;
 }
 
-/**
-	Factorial function
-**/
-double factorial(long n)
-{
-    double res = 1;
-    int i;
-    for (i = 1; i <= n; i++)
-        res *= i;
-    return res;
-}
 
-/**
-	Absolute value
-**/
 int abs(int x)
 {
     if (x < 0)

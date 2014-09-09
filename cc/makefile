@@ -40,7 +40,7 @@ configure_binutils: download
 binutils: configure_binutils
 	$(MAKE) -C $(BUILD)/$(BINUTILS)
 
-configure_gcc: vars download binutils
+configure_gcc: download binutils
 	if [ ! -f $(BUILD)/$(GCC)/config.log ]; then \
 		cd $(GCC); \
 		patch -p1 < ../gcc.patch; \
@@ -49,18 +49,18 @@ configure_gcc: vars download binutils
 		PATH=${PATH}:`pwd`/../../$(TARGET)/bin; \
 		mkdir -p $(BUILD)/$(GCC); \
 		cd $(BUILD)/$(GCC) ;\
-		../../$(GCC)/configure --prefix=${HOST_PREFIX} --target=${TARGET_ARCH}-universe --disable-nls --enable-languages=c --disable-shared --disable-libssp --without-docdir CFLAGS="-I/usr/include/"; \
+		../../$(GCC)/configure --prefix=${HOST_PREFIX} --target=${TARGET_ARCH}-universe --disable-nls --enable-languages=c --disable-headers --enable-multilib --enable-multilib --without-docdir CFLAGS="-I/usr/include/"; \
 		cd ../..; \
 	fi;\
 
 gcc: configure_gcc
 	$(MAKE) -C $(BUILD)/$(GCC) all-gcc
-#	$(MAKE) -C $(BUILD)/$(GCC) all-target-libgcc
+	$(MAKE) -C $(BUILD)/$(GCC) all-target-libgcc
 
 install:
 	$(MAKE) -C $(BUILD)/$(BINUTILS) install
 	$(MAKE) -C $(BUILD)/$(GCC) install-gcc
-#	$(MAKE) -C $(BUILD)/$(GCC) install-target-libgcc
+	$(MAKE) -C $(BUILD)/$(GCC) install-target-libgcc
 	ln -s /usr/bin/${TARGET_ARCH}-universe-gcc /usr/bin/${TARGET_ARCH}-universe-cc
 
 clean:

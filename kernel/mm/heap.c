@@ -17,7 +17,9 @@
  */
 
 /**
- * @author Michael Sippel (Universe Team) <micha@infinitycoding.com>
+ *  @file /mm/heap.c
+ *  @brief Kernel Module for Dynamic memory management (malloc, free)
+ *  @author Michael Sippel (Universe Team) <micha@infinitycoding.com>
  */
 
 #include <stdint.h>
@@ -31,6 +33,11 @@
 static struct header_block *used_blocks = NULL;
 static struct header_block *free_blocks = NULL;
 
+
+
+/**
+ *  @brief Initiates the dynamic memory management module.
+ */
 void INIT_HEAP(void)
 {
     used_blocks = create_block();
@@ -39,6 +46,11 @@ void INIT_HEAP(void)
     free_blocks->fragments[0].size = MEMORY_LAYOUT_KERNEL_HEAP_END - MEMORY_LAYOUT_KERNEL_HEAP_START;
 }
 
+
+/**
+ *  @brief Allocates header block for internal memory management structs.
+ *  @return Pointer to the new header block
+ */
 struct header_block *create_block(void)
 {
     struct header_block *block = (struct header_block *) vmm_automap_kernel(current_context, pmm_alloc_page(), VMM_WRITABLE);
@@ -47,6 +59,13 @@ struct header_block *create_block(void)
     return block;
 }
 
+
+/**
+ *  @brief Adds a Memory fragment to management struct.
+ *  @param header The Header block.
+ *  @param base   The base adress of the new fragment.
+ *  @param size   The size of the new Fragment.
+ */
 void heap_add_fragment(struct header_block *header, vaddr_t base, size_t size)
 {
     // go through all header blocks...
@@ -64,7 +83,7 @@ void heap_add_fragment(struct header_block *header, vaddr_t base, size_t size)
 #if HEAP_DEBUG
                 printf("[heap/add] %p, %d to %p\n", base, size, header);
 #endif
-                return;
+                return; 
             }
         }
 
@@ -77,6 +96,13 @@ void heap_add_fragment(struct header_block *header, vaddr_t base, size_t size)
     }
 }
 
+
+/**
+ *  @brief Removes a fragment from the management struct
+ *  @param header Header Block.
+ *  @param base   Base address of the fragment to remove.
+ *  @return size  0 = failure else the size fo the removed fragment
+ */
 size_t heap_remove_fragment(struct header_block *header, vaddr_t base)
 {
     // go through all header blocks...
@@ -105,10 +131,9 @@ size_t heap_remove_fragment(struct header_block *header, vaddr_t base)
 
 
 /**
- * provide a specific data area
- *
- * @param start pointer to begin of data
- * @param end pointer to end of data
+ *  @brief provide a specific data area
+ *  @param start pointer to begin of data
+ *  @param end pointer to end of data
  */
 void heap_provide_address(vaddr_t start, vaddr_t end)
 {
@@ -130,9 +155,9 @@ void heap_provide_address(vaddr_t start, vaddr_t end)
     }
 }
 
+#
 /**
- * Search for a free address and mark it as used.
- *
+ * @brief Search for a free address and mark it as used.
  * @param size number of bytes
  * @return pointer to reserved bytes
  */
@@ -194,10 +219,10 @@ void *malloc(size_t bytes)
     return NULL;
 }
 
+
 /**
- * Free a range of bytes in the heap
- *
- * @param ptr pointer
+ *  @brief Free a range of bytes in the heap
+ *  @param ptr pointer
  */
 void free(void *ptr)
 {
@@ -205,12 +230,11 @@ void free(void *ptr)
     heap_add_fragment(free_blocks, (vaddr_t)ptr, bytes);
 }
 
+
 /**
- * allocate num*blocks and clear memory
- *
+ * @brief allocate num*blocks and clear memory
  * @param num number of blocks
  * @param size size of one block
- *
  * @return pointer to allocated memory
  */
 void *calloc(size_t num, size_t size)
@@ -223,13 +247,12 @@ void *calloc(size_t num, size_t size)
     return data;
 }
 
+
 /**
- * resize an allocated object
- *
- * @param ptr pointer to old location
- * @param size new size
- *
- * @return new pointer
+ *  @brief resize an allocated object
+ *  @param ptr pointer to old location
+ *  @param size new size
+ *  @return new pointer
  */
 void *realloc(void *ptr, size_t size)
 {

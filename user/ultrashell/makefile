@@ -4,7 +4,7 @@ OBJS = $(addsuffix .o,$(basename $(SRCS)))
 L_CFLAGS = -m32 -Wall -fno-stack-protector -fno-builtin -nostdinc -I ../../libs/mercury/include -I include
 L_LDFLAGS = -muniverse_i386 -flto -T ../link.ld
 
-ultrashell.elf: $(OBJS) ../../libs/mercury/libc.a
+ultrashell.elf: ../../libs/mercury/crt/crt0.o $(OBJS) ../../libs/mercury/libc.a
 	@$(LD) $(L_LDFLAGS) -o $@ $^
 	cp ultrashell.elf $(PREFIX)/ultrashell.elf
 
