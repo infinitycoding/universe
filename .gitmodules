@@ -1,3 +1,6 @@
 [submodule "libs/mercury"]
 	path = libs/mercury
 	url = https://github.com/infinitycoding/mercury.git
+[submodule "user/ultrashell"]
+	path = user/ultrashell
+	url = https://github.com/infinitycoding/ultrashell.git
