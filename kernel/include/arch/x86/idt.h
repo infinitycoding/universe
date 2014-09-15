@@ -114,17 +114,14 @@ struct idtpt
     void* base;
 } __attribute__((packed));
 
+typedef uint32_t intr_t;
+
 
 void lidt(uint16_t irq);
 void EOI(int irq);
 void Set_IDT_Entry(int i, uint32_t offset, uint16_t selector, uint8_t type, int dpl);
 
 struct cpu_state* irq_handler(struct cpu_state* cpu);
-int install_irq(int irqnum, void *handler);
-void deinstall_irq(int irqnum);
-
-int install_exc(int excnum, void *handler);
-void deinstall_exc(int excnum);
 
 void remap_pic(void);
 void INIT_IDT(void);

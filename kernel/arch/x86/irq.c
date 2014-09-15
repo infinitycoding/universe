@@ -113,95 +113,6 @@ void Set_IDT_Entry(int i, uint32_t offset, uint16_t selector, uint8_t type, int 
 }
 
 
-//pointer arrays for exception and interrupt handlers
-
-static void (*irq[16])(struct cpu_state **cpu) =
-{
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL
-};
-
-static void (*exc[32])(struct cpu_state **cpu) =
-{
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL,
-    NULL, NULL
-};
-
-
-
-/**
- *  @brief Installs an interrupt handler.
- *  @param intr interrupt number
- *  @param handler pointer to the handler function
- *  @return false  -> Handler is already seted-up; true -> Handler sucessfully installed
- */
-int install_irq(int intr,void *handler)
-{
-    if (irq[intr] != NULL)
-    {
-        return false;
-    }
-
-    irq[intr] = handler;
-    return true;
-}
-
-
-/**
- *  @brief installs an exception handler.
- *  @param excnum exception number
- *  @param handler pointer to the handler function
- *  @return true  -> Handler is already seted-up; false -> Handler sucessfully installed
- */
-int install_exc(int excnum, void *handler)
-{
-    if (exc[excnum] != NULL)
-    {
-        return false;
-    }
-
-    exc[excnum] = handler;
-    return true;
-}
-
-/**
- *  @brief Deinstalls an IRQ handlder.
- *  @param interrupt number
- */
-void deinstall_irq(int intr)
-{
-    irq[intr] = NULL;
-}
-
-
-/**
- *  @brief Deinstalls an exception handlder.
- *  @param exception number
- */
-void deinstall_exc(int excnum)
-{
-    exc[excnum] = NULL;
-}
 
 
 /**
@@ -211,59 +122,42 @@ void deinstall_exc(int excnum)
  */
 struct cpu_state* irq_handler(struct cpu_state* cpu)
 {
-    //Exceptions
-    if (cpu->intr < 32)
-    {
-        if (exc[cpu->intr] != NULL)
-        {
-            exc[cpu->intr](&cpu);
-            return cpu;
-        }
-        else
-        {
-            exc_panic(cpu);
-        }
-    }
+    intr_t irqnum = cpu->intr;
     //Taskscheduler
-    else if(cpu->intr == 32)
+    if(irqnum == 32)
     {
         sync_sys_clock();
         cpu = task_schedule(cpu);
         EOI(0);
     }
-    //IRQs
-    else if (cpu->intr < 46)
+    //Exceptions and IRQs
+    else if(irqnum < 46)
     {
-        asm volatile("cli");
-        int irqnum = cpu->intr - IRQ_OFFSET;
-        if (irq[irqnum] != NULL)
+        if (!handle_interupts(&cpu))
         {
-            irq[irqnum](&cpu);
+            if(irqnum == 0xe)
+                page_fault_handler(&cpu);
+            if(irqnum < 32)
+                exc_panic(cpu);
         }
-        EOI(irqnum);
-        asm volatile("sti");
-        return cpu;
+
+        if(irqnum > 32)
+            EOI(irqnum-IRQ_OFFSET);
+        else
+            EOI(irqnum);
     }
     //universe syscall
-    else if(cpu->intr == 0x70)
-    {
+    else if(irqnum == 0x70)
         universe_syscall_handler(&cpu);
-    }
+
     //linux syscall
-    else if(cpu->intr == 0x80)
-    {
+    else if(irqnum == 0x80)
         linux_syscall_handler(&cpu);
-    }
-    //pci IRQ
-    else if(cpu->intr == 50)
-    {
-        pci_irq_handler();
-    }
+
     //unspecified ISRs
     else
-    {
         panic("A unspecified ISR was called.");
-    }
+
     return cpu;
 }
 

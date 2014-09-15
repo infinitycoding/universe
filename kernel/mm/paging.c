@@ -41,7 +41,6 @@ vmm_context_t *current_context = NULL; /// @var current_context pointer to the c
  */
 void INIT_PAGING(struct multiboot_struct *mb_info)
 {
-    install_exc(0xe, page_fault_handler);
     ARCH_INIT_PAGING(mb_info);
 }
 

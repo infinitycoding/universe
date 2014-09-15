@@ -79,18 +79,18 @@ int main(void)
   	while (inb(kbc_io) != 0xFA);
 
 
-    if(!req_intsig(conn, 0x1))
-    {
-        udrcp_error(conn,"could not get interrupt signal for IRQ 0x1\n");
-    }
-
     int mret = mkfifo("/dev/kbd", S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH);
     f = open("/dev/kbd", O_WRONLY, 0);
 
     if(f < 0 || mret < 0)
     {
         udrcp_error(conn,"could not create fifo buffer /dev/kbd\n");
-		while(1);
+		    return 1;
+    }
+    if(!req_intsig(conn, 0x1))
+    {
+        udrcp_error(conn,"could not get interrupt signal for IRQ 0x1\n");
+        return 1;
     }
 
     while(1)
@@ -177,7 +177,6 @@ void kbd_irq_handler(void)
 
 	if (ASCII)
   {
-        //printf("%c",ASCII);
         write(f, &ASCII, sizeof(char));
   }
 

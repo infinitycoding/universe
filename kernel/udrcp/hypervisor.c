@@ -44,19 +44,19 @@
 
 
 
-#define DEBUG
+//#define DEBUG
 
 
 list_t *subdrivers;
 list_t *interrupts;
 
-void subsystem_isr(int irq)
+void subsystem_isr(struct cpu_state **cpu)
 {
     iterator_t int_it = iterator_create(interrupts);
     while(!list_is_last(&int_it) && !list_is_empty(interrupts))
     {
         struct int_relation *rel = list_get_current(&int_it);
-        if(rel->intnr == irq)
+        if(rel->intnr == (*cpu)->intr-32)
 		{
             send_package(rel->drv, INTSIG, 0, NULL);
 		}
@@ -149,17 +149,8 @@ int INIT_HYPERVISOR(int argc, char **argv, char **environ)
                 r->intnr = *((unsigned int*)pck->data);
                 r->drv = pman;
                 list_push_front(interrupts,r);
-                if(add_int_trigger(r->intnr, NULL,subsystem_isr))
-                {
-                    printf("sucess!\n");
-                    respond(pman,pck->id,SUCCESS,0,NULL);
-                }
-                else
-                {
-                    printf("could not allocate interrupt\n");
-                    ret = -1;
-                    respond(pman,pck->id,ERROR,sizeof(unsigned int),&ret);
-                }
+                add_trigger(WAIT_INT, r->intnr, false, NULL, subsystem_isr);
+                respond(pman,pck->id,SUCCESS,0,NULL);
                 break;
 
             case PMA_ALLOC:

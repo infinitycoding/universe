@@ -70,14 +70,13 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     //Init Kernelmodules
     INIT_PMM(mb_info);
     INIT_PAGING(mb_info);
+    INIT_HEAP();
     INIT_GDT();
     INIT_IDT();
-    INIT_HEAP();
     INIT_VFS();
     INIT_TRIGGER();
     INIT_CLOCK(500);
     INIT_SCHEDULER();
-
     //print Logo and loading message
     clear_screen();
     print_logo(YELLOW);
@@ -93,7 +92,6 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     printf("Timestamp:%d\n\n",unix_time(&t));
     INIT_CPUID();
     printf("\n");
-    INIT_PCI();
 
     // mapping strings
     int i;
@@ -111,7 +109,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     printf("%d modules total, %d successfully loaded, %d failed\n", stats.total, stats.load_success, stats.load_failed);
 
     vfs_inode_t *pfnode = vfs_lookup_path("/drivers/system.pf");
-/*
+
     if(pfnode != NULL)
     {
         int argc = 2;
@@ -126,7 +124,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
         argv[0] = sec;
         kernel_thread_create(INIT_HYPERVISOR, argc,(char **) argv, NULL);
     }
-*/
+
     vfs_inode_t *testnode = vfs_lookup_path("/test.elf");
 
     if(testnode == NULL)

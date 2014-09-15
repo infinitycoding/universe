@@ -36,8 +36,8 @@ extern list_t *process_list;
 extern list_t *running_threads;
 
 // event lists
-list_t *trigger_list = 0;
-list_t *event_id_list = 0;
+list_t *trigger_list = NULL;
+list_t *event_id_list = NULL;
 uint32_t event_id_counter = 1;
 
 
@@ -243,43 +243,40 @@ void add_trigger(trigger_t type, uint32_t ID, bool proc, void *object, void (*ca
 }
 
 
-/**
- * adds a interrupt trigger which activates a thread immediately
- * @param 0 IRQ number
- * @param 1 pointer to the thread (optional NULL)
- * @param 2 callback function (optional NULL)
- * @return true = sucess, false = failure
- **/
-int add_int_trigger(int irq, struct thread_state *object,void (*callback)(int irq))
-{
-    if(install_irq(irq,handle_interupts))
-    {
-        add_trigger(WAIT_INT, irq, false, object,(void (*)(struct cpu_state **cpu))callback);
-        return true;
-    }
-    return false;
-}
-
 
 /**
  * pulls a interrupt trigger
  * @param 0 cpu-state of the current process
- * @return void
+ * @return 0 = no handle found; number of called triggers
  **/
-void handle_interupts(struct cpu_state **cpu)
+int handle_interupts(struct cpu_state **cpu)
 {
+    if(trigger_list == NULL)
+        return 0;
+
+
     iterator_t it = iterator_create(trigger_list);
     list_set_first(&it);
+
+
+    uint32_t id;
+    size_t num = 0;
+
+
+    if((*cpu)->intr < IRQ_OFFSET)
+        id = (*cpu)->intr;
+    else
+        id = (*cpu)->intr-IRQ_OFFSET;
+
+
     while(!list_is_empty(trigger_list) && !list_is_last(&it))
     {
         struct trigger_entry *trg = list_get_current(&it);
-        list_next(&it);
-        if(trg->type == WAIT_INT && trg->ID == (*cpu)->intr-IRQ_OFFSET)
+        if((trg->type == WAIT_INT || trg->type == WAIT_EXC) && trg->ID == id)
         {
+
             if(trg->callback)
-            {
-                ((void (*)(int irq))trg->callback)(trg->ID);
-            }
+                trg->callback(cpu);
 
             if(trg->object && ! (((struct thread_state *)trg->object)->flags & THREAD_ACTIV))
             {
@@ -288,12 +285,15 @@ void handle_interupts(struct cpu_state **cpu)
                 ((struct thread_state *)trg->object)->ticks = 10;
                 current_thread->ticks = 0;
                 *cpu = task_schedule(*cpu);
-                return;
             }
+            num++;
 
         }
+        list_next(&it);
 
     }
+
+    return num;
 }
 
 /**
