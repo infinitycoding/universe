@@ -7,7 +7,7 @@ C_HDRS = $(shell find `pwd` -name '*.h')
 STYLEFLAGS = --style=allman --indent-switches
 
 L_CFLAGS = -Iinclude -Iinclude/util
-L_LDFLAGS = -Tlinkerscript.x
+L_LDFLAGS = -Tlinkerscript_${ARCH}.x
 
 ifeq (${ARCH},PPC)
 L_CFLAGS +=  -Iinclude/arch/ppc
@@ -17,11 +17,13 @@ else ifeq ($(ARCH),arm)
 L_CFLAGS +=  -Iinclude/arch/arm
 endif
 
-all: linkerscript.x kernel32.elf
+all: linkerscript_${ARCH}.x kernel32.elf
 
 kernel32.elf: $(OBJS)
 	${LD} $(L_LDFLAGS) ${LDFLAGS} -o $@ $^
 	@cp kernel32.elf $(PREFIX)/kernel32.elf
+	${OBJCOPY} -O binary kernel32.elf kernel.bin
+
 
 %.o: %.c
 	@${CC} $(L_CFLAGS) ${CFLAGS} -c -o $@ $^

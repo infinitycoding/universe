@@ -3,7 +3,7 @@ all: kernel libs drivers user iso-img
 # PPC
 # I686
 # arm
-ARCH=i686
+ARCH=arm
 
 HOST_PREFIX=/usr/
 
@@ -17,6 +17,7 @@ PREFIX = $(PWD)/build
 CC = $(ARCH)-universe-gcc
 LD = $(ARCH)-universe-ld
 ASM = $(ARCH)-universe-as
+OBJCOPY = $(ARCH)-universe-objcopy
 
 
 #change defaults
@@ -28,7 +29,7 @@ QEMU = qemu-system-i386 -cdrom cdrom.iso -net nic,model=rtl8139 -net user
 ASM = nasm
 
 else ifeq ($(ARCH),arm)
-QEMU = qemu-system-arm -cpu arm1176 -M versatilepb -m 256M -nographic -kernel universe.bin
+QEMU = qemu-system-arm -cpu arm1176 -M versatilepb -m 256M -nographic -kernel kernel/kernel.bin
 endif
 
 
@@ -36,7 +37,7 @@ export PREFIX
 
 
 kernel:
-	@$(MAKE) -C kernel ARCH="$(ARCH)" CC="$(CC)" ASM="$(ASM)" LD="$(LD)" CFLAGS="$(CFLAGS)" ASFLAGS="$(ASFLAGS)" LDFLAGS="$(LDFLAGS)"
+	@$(MAKE) -C kernel ARCH="$(ARCH)" CC="$(CC)" ASM="$(ASM)" LD="$(LD)" OBJCOPY="$(OBJCOPY)" CFLAGS="$(CFLAGS)" ASFLAGS="$(ASFLAGS)" LDFLAGS="$(LDFLAGS)"
 
 libs:
 	@$(MAKE) -C libs ARCH="$(ARCH)" CC="$(CC)" ASM="$(ASM)" LD="$(LD)" CFLAGS="$(CFLAGS)" ASFLAGS="$(ASFLAGS)" LDFLAGS="$(LDFLAGS)"
