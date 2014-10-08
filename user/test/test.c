@@ -64,7 +64,7 @@ int main(int argc, char **argv)
 	int err = execve("/ultrashell.elf", NULL, NULL);
 	printf("error %d\n", err);
 
-while(1);
+	while(1);
     return 0;
 }
 

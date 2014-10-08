@@ -150,25 +150,24 @@ void sys_execve(struct cpu_state **cpu)
         return;
     }
 
+    disable_irqs();
+
 	// terminate all threads
     struct process_state *process = current_thread->process;
-	//process_kill(process);
-    /*iterator_t it = iterator_create(process->threads);
-	while(!list_is_last(&it))
+	while(!list_is_empty(process->threads))
 	{
-		struct thread_state *t = list_get_current(&it);
-		thread_kill_sub(t);
-
-		list_next(&it);
+		struct thread_state *thread = list_pop_front(process->threads);
+		thread_kill_sub(thread);
 	}
-*/
-    //list_destroy(process->ports);
-    //list_destroy(process->zombie_tids);
-    //process->zombie_tids = list_create();
+
+    list_destroy(process->ports);
+    list_destroy(process->zombie_tids);
+    process->zombie_tids = list_create();
 
     // run the new process
-	load_elf_from_file(filenode, 0, 0, NULL, 0, argv, envp);
-    //load_elf_thread_from_file(filenode, process, 0, argv, envp);
+    load_elf_thread_from_file(filenode, process, 0, argv, envp);
+	*cpu = (struct cpu_state *)task_schedule(*cpu);
 
-        (*cpu)->CPU_ARG0 = _SUCCESS;
+	enable_irqs();
 }
+

@@ -220,12 +220,17 @@ void thread_kill_sub(struct thread_state *thread)
             if(t == thread)
             {
                 list_remove(&running_thread_it);
+				if(t == thread->process->main_thread)
+				{
+					thread->process->main_thread = NULL;
+				}
+
                 break;
             }
             list_next(&running_thread_it);
         }
     }
-
+/* FIXME: here is a bug?
     // only delete the cpu state of usermode threads. Freeing the kernel cpu-state can cause pagefaults
     if(! (thread->flags & THREAD_KERNELMODE))
     {
@@ -250,6 +255,7 @@ void thread_kill_sub(struct thread_state *thread)
         }
         free(thread);
     }
+*/
 }
 
 
