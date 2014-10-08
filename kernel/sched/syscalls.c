@@ -18,6 +18,7 @@
 
 /**
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
+ *  @author Michael Sippel <micha@infinitycoding.de>
  */
 
 #include <event/trigger.h>
@@ -141,6 +142,7 @@ void sys_execve(struct cpu_state **cpu)
     char **argv = (char**) (*cpu)->CPU_ARG2;
     char **envp = (char**) (*cpu)->CPU_ARG3;
 
+	// lookup file
     vfs_inode_t *filenode = vfs_lookup_path(filename);
     if(filenode == NULL)
     {
@@ -148,24 +150,25 @@ void sys_execve(struct cpu_state **cpu)
         return;
     }
 
+	// terminate all threads
     struct process_state *process = current_thread->process;
+	//process_kill(process);
+    /*iterator_t it = iterator_create(process->threads);
+	while(!list_is_last(&it))
+	{
+		struct thread_state *t = list_get_current(&it);
+		thread_kill_sub(t);
 
-    while(!list_is_empty(process->threads))
-    {
-        struct thread_state *thread = list_pop_front(process->threads);
-        if(thread == current_thread)
-        {
-            current_thread->flags |= THREAD_ZOMBIE;
-            process->flags |= PROCESS_ZOMBIE;
-        }
-        else
-            thread_kill_sub(thread);
-    }
-
-    list_destroy(process->ports);
-    list_destroy(process->zombie_tids);
-    process->zombie_tids = list_create();
+		list_next(&it);
+	}
+*/
+    //list_destroy(process->ports);
+    //list_destroy(process->zombie_tids);
+    //process->zombie_tids = list_create();
 
     // run the new process
-    load_elf_thread_from_file(filenode, process, 0, argv, envp);
+	load_elf_from_file(filenode, 0, 0, NULL, 0, argv, envp);
+    //load_elf_thread_from_file(filenode, process, 0, argv, envp);
+
+        (*cpu)->CPU_ARG0 = _SUCCESS;
 }

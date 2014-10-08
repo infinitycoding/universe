@@ -46,18 +46,24 @@ int main(int argc, char **argv)
 
 	read(fd[0], &buf, 5);
 	printf("%s\n", buf);
-*/
+
 
 	int pid = fork();
 	printf("hi ");
 	if(pid == 0)
 	{
-		printf("child\n");
+		printf("child.. executing ultrashell.\n");
+		execve("/test.elf", NULL, NULL);
+		printf("das soll nicht kommen.\n");
 	}
 	else
 	{
 		printf("parent\n");
-	}
+	}*/
+
+	int err = execve("/ultrashell.elf", NULL, NULL);
+	printf("error %d\n", err);
+
 while(1);
     return 0;
 }
