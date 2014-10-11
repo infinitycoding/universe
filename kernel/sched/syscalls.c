@@ -150,7 +150,9 @@ void sys_execve(struct cpu_state **cpu)
         return;
     }
 
+	printf("disable irqs..");
     disable_irqs();
+	printf("done well.\n");
 
 	// terminate all threads
     struct process_state *process = current_thread->process;
@@ -166,8 +168,14 @@ void sys_execve(struct cpu_state **cpu)
 
     // run the new process
     load_elf_thread_from_file(filenode, process, 0, argv, envp);
+
+	printf("re-enable..");
+	enable_irqs();
+	printf("good.\n");
+
 	*cpu = (struct cpu_state *)task_schedule(*cpu);
 
-	enable_irqs();
+
+
 }
 

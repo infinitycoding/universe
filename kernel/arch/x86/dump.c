@@ -48,6 +48,7 @@ int cpu_dump(struct cpu_state *cpu, char *str)
     len += sprintf(str + len, "SS:   %#010X    ES:      %#010X\n",  cpu->ss,    cpu->es);
     len += sprintf(str + len, "GS:   %#010X    FS:      %#010X\n",  cpu->gs,    cpu->fs);
     len += sprintf(str + len, "EIP:  %#010X    EFLAGS:  %#010X\n",  cpu->eip,   cpu->eflags);
+    len += sprintf(str + len, "ERRORCODE:  %#010X\n",  cpu->error);
 
     return len;
 }
