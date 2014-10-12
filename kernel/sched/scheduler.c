@@ -73,6 +73,8 @@ struct cpu_state *task_switch(struct thread_state *thread)
 	set_kernelstack(cpu+1);
 	vmm_switch_context(&thread->context.memory);
 
+	//printf("now %d in %s\n", thread->tid, thread->process->name);
+
 	return cpu;
 }
 
@@ -82,7 +84,15 @@ struct cpu_state *task_switch(struct thread_state *thread)
  */
 struct cpu_state *task_schedule(struct cpu_state *cpu)
 {
-	current_thread->context.state = cpu;
+	if(current_thread == NULL)
+	{
+        current_thread = list_get_current(&thread_iterator);
+        current_thread->ticks = 0;
+	}
+	else
+	{
+		current_thread->context.state = cpu;
+	}
 
     if(current_thread->flags & THREAD_ZOMBIE)
     {
@@ -99,21 +109,22 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
 		
 		cpu = task_switch(current_thread);
     }
-
     else if(current_thread->ticks == 0)
     {
         current_thread->ticks = 10;
         list_next(&thread_iterator);
         if(list_is_last(&thread_iterator))
+		{
             list_set_first(&thread_iterator);
+		}
         current_thread = list_get_current(&thread_iterator);
 
         cpu = task_switch(current_thread);
     }
-
     else
     {
         current_thread->ticks--;
     }
+
     return cpu;
 }

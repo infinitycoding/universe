@@ -76,9 +76,11 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     if(process->main_thread == NULL)
         process->main_thread = new_thread;
 
-    vmm_create_context(&new_thread->context.memory);
     if(context != NULL)
         memcpy(&new_thread->context.memory.arch_context, &context->arch_context, sizeof(arch_vmm_context_t));
+	else
+		vmm_create_context(&new_thread->context.memory);
+
     thread_sync_context(new_thread);
     arch_create_thread_context(&new_thread->context, prev, eip, (vaddr_t) return_address, argc, argv, environ);
 
@@ -97,7 +99,6 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
 
     list_push_front(process->threads,new_thread);
     list_push_front(running_threads, new_thread);
-
 
     return new_thread;
 }
@@ -157,6 +158,7 @@ struct thread_state *thread_clone(struct process_state *process, struct thread_s
     list_push_front(process->threads,new_thread);
     list_push_front(running_threads, new_thread);
 
+
     return new_thread;
 }
 
@@ -211,6 +213,14 @@ void thread_kill(struct thread_state *thread)
 
 void thread_kill_sub(struct thread_state *thread)
 {
+	struct process_state *process = thread->process;
+
+	// remove it from the global thread list
+	if(thread == current_thread)
+	{
+		current_thread = NULL;
+	}
+
     if(thread->flags & THREAD_ACTIV || thread->flags & THREAD_ZOMBIE)
     {
         iterator_t running_thread_it = iterator_create(running_threads);
@@ -220,42 +230,43 @@ void thread_kill_sub(struct thread_state *thread)
             if(t == thread)
             {
                 list_remove(&running_thread_it);
-				if(t == thread->process->main_thread)
-				{
-					thread->process->main_thread = NULL;
-				}
-
                 break;
             }
             list_next(&running_thread_it);
         }
     }
-/* FIXME: here is a bug?
+
     // only delete the cpu state of usermode threads. Freeing the kernel cpu-state can cause pagefaults
     if(! (thread->flags & THREAD_KERNELMODE))
     {
-        arch_destroy_thread_context(&thread->context);
+       // arch_destroy_thread_context(&thread->context); // FIXME
     }
 
-    if(thread->process->flags & PROCESS_ZOMBIE)
-    {
-        list_push_front(thread->process->zombie_tids,(void *) thread->tid);
-        iterator_t thread_it = iterator_create(thread->process->threads);
-        while(!list_is_last(&thread_it))
-        {
-            struct thread_state *t = list_get_current(&thread_it);
-            if(t == thread)
-            {
-                list_remove(&thread_it);
-                if(list_is_empty(thread->process->threads))
-                    process_kill(thread->process);
-                break;
-            }
-            list_next(&thread_it);
-        }
-        free(thread);
-    }
-*/
+	if(thread == thread->process->main_thread)
+	{
+		thread->process->main_thread = NULL;
+	}
+
+    //if(thread->process->flags & PROCESS_ZOMBIE)
+    //{
+    //    list_push_front(thread->process->zombie_tids,(void *) thread->tid);
+	// remove it from process thread list
+	iterator_t thread_it = iterator_create(process->threads);
+	while(!list_is_last(&thread_it))
+	{
+		struct thread_state *t = list_get_current(&thread_it);
+		if(t == thread)
+		{
+        	list_remove(&thread_it);
+                //if(list_is_empty(thread->process->threads))
+                //    process_kill(thread->process);
+			break;
+		}
+		list_next(&thread_it);
+	}
+
+	free(thread);
+    //}
 }
 
 

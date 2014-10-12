@@ -64,3 +64,4 @@ struct thread_state *thread_clone(struct process_state *process, struct thread_s
 void thread_suspend(struct thread_state *object);
 void thread_wakeup(struct thread_state *object);
 #endif
+

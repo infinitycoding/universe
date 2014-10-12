@@ -17,7 +17,7 @@
  */
 
 /**
- *  @author Michael Sippel <micha.linuxfreak@gmail.com>
+ *  @author Michael Sippel <micha@infinitycoding.de>
  */
 
 #include <sched/elf.h>
@@ -47,17 +47,17 @@ struct process_state *load_elf(void *image, char *name, uid_t uid, gid_t gid, st
     return proc;
 }
 
-struct process_state *load_elf_thread_from_file(vfs_inode_t *inode, struct process_state *proc, int argc, char **argv, char **environ)
+struct thread_state *load_elf_thread_from_file(vfs_inode_t *inode, struct process_state *proc, int argc, char **argv, char **environ)
 {
     void *image = malloc(inode->length);
     vfs_read(inode, 0, image, inode->length);
-    struct process_state *state = load_elf_thread(image, proc, argc, argv, environ);
+    struct thread_state *state = load_elf_thread(image, proc, argc, argv, environ);
     free(image);
 
     return state;
 }
 
-struct process_state *load_elf_thread(void *image, struct process_state *proc, int argc, char **argv, char **environ)
+struct thread_state *load_elf_thread(void *image, struct process_state *proc, int argc, char **argv, char **environ)
 {
     struct elf_header *header = image;
     struct elf_program_header *ph;
@@ -106,8 +106,7 @@ struct process_state *load_elf_thread(void *image, struct process_state *proc, i
         }
     }
 
-    thread_create(proc, 3, header->entry, argc, argv, environ, 0, &context);
-
-    return proc;
+    struct thread_state *thread = thread_create(proc, 3, header->entry, argc, argv, environ, 0, &context);
+    return thread;
 }
 

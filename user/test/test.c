@@ -61,10 +61,11 @@ int main(int argc, char **argv)
 		printf("parent\n");
 	}*/
 
+	printf("hi all!\n");
+
 	int err = execve("/ultrashell.elf", NULL, NULL);
 	printf("error %d\n", err);
 
-	while(1);
     return 0;
 }
 

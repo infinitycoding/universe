@@ -79,12 +79,12 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
         vmm_map(&context->memory, pframe, MEMORY_LAYOUT_STACK_TOP-0x1000, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
         new_state->esp = (uint32_t) MEMORY_LAYOUT_STACK_TOP - 3*sizeof(uint32_t);
 
-        stack  = (uint32_t *) vmm_automap_kernel(current_context, pframe, VMM_PRESENT | VMM_WRITABLE);
+        stack = (uint32_t *) vmm_automap_kernel(current_context, pframe, VMM_PRESENT | VMM_WRITABLE);
 
-        stack[1020] = (uint32_t) return_adress;
         stack[1023] = (uint32_t) environ;
         stack[1022] = (uint32_t) argv;
         stack[1021] = (uint32_t) argc;
+        stack[1020] = (uint32_t) return_adress;
 
         vmm_unmap(current_context, (vaddr_t)stack);
 

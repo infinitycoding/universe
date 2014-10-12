@@ -1,7 +1,7 @@
 
 all:
 	@$(MAKE) -C test
-#	@$(MAKE) -C ultrashell
+	@$(MAKE) -C ultrashell
 
 clean:
 	@$(MAKE) -C test clean

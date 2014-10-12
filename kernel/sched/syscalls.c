@@ -150,10 +150,6 @@ void sys_execve(struct cpu_state **cpu)
         return;
     }
 
-	printf("disable irqs..");
-    disable_irqs();
-	printf("done well.\n");
-
 	// terminate all threads
     struct process_state *process = current_thread->process;
 	while(!list_is_empty(process->threads))
@@ -162,20 +158,21 @@ void sys_execve(struct cpu_state **cpu)
 		thread_kill_sub(thread);
 	}
 
+	// cleanup the process
+    process->heap_top = 0;
+    process->heap_lower_limit = 0;
+    process->heap_upper_limit = 0;
+
     list_destroy(process->ports);
-    list_destroy(process->zombie_tids);
+	list_destroy(process->zombie_tids);
+
     process->zombie_tids = list_create();
+    process->ports = list_create();
+    process->tid_counter = 1;
 
-    // run the new process
-    load_elf_thread_from_file(filenode, process, 0, argv, envp);
-
-	printf("re-enable..");
-	enable_irqs();
-	printf("good.\n");
+    // run the new thread
+    struct thread_state *thread = load_elf_thread_from_file(filenode, process, 0, NULL, NULL);
 
 	*cpu = (struct cpu_state *)task_schedule(*cpu);
-
-
-
 }
 
