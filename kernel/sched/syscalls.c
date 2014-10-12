@@ -26,7 +26,7 @@
 #include <sched/thread.h>
 #include <sched/scheduler.h>
 #include <sched/elf.h>
- 
+
 #include <memory_layout.h>
 #include <string.h>
 #include <mm/heap.h>
@@ -79,15 +79,15 @@ void sys_exit(struct cpu_state **cpu)
  */
 void sys_fork(struct cpu_state **cpu)
 {
-	const char *add = "_fork";
-	char *newname = malloc(strlen(current_thread->process->name)+strlen(add)+1);
-	strcpy(newname, current_thread->process->name);
-	strcat(newname, add);
+    const char *add = "_fork";
+    char *newname = malloc(strlen(current_thread->process->name)+strlen(add)+1);
+    strcpy(newname, current_thread->process->name);
+    strcat(newname, add);
 
     struct process_state *new_process = process_create(newname ,current_thread->process->flags ,current_thread->process, current_thread->process->uid, current_thread->process->gid, NULL);
     struct thread_state *new_thread = thread_clone(new_process, current_thread);
 
-	// copy file descriptors
+    // copy file descriptors
     struct list_node *node = current_thread->process->files->head->next;
     struct list_node *head = current_thread->process->files->head;
     while(node != head)
@@ -142,7 +142,7 @@ void sys_execve(struct cpu_state **cpu)
     char **argv = (char**) (*cpu)->CPU_ARG2;
     char **envp = (char**) (*cpu)->CPU_ARG3;
 
-	// lookup file
+    // lookup file
     vfs_inode_t *filenode = vfs_lookup_path(filename);
     if(filenode == NULL)
     {
@@ -150,21 +150,21 @@ void sys_execve(struct cpu_state **cpu)
         return;
     }
 
-	// terminate all threads
+    // terminate all threads
     struct process_state *process = current_thread->process;
-	while(!list_is_empty(process->threads))
-	{
-		struct thread_state *thread = list_pop_front(process->threads);
-		thread_kill_sub(thread);
-	}
+    while(!list_is_empty(process->threads))
+    {
+        struct thread_state *thread = list_pop_front(process->threads);
+        thread_kill_sub(thread);
+    }
 
-	// cleanup the process
+    // cleanup the process
     process->heap_top = 0;
     process->heap_lower_limit = 0;
     process->heap_upper_limit = 0;
 
     list_destroy(process->ports);
-	list_destroy(process->zombie_tids);
+    list_destroy(process->zombie_tids);
 
     process->zombie_tids = list_create();
     process->ports = list_create();
@@ -173,6 +173,6 @@ void sys_execve(struct cpu_state **cpu)
     // run the new thread
     struct thread_state *thread = load_elf_thread_from_file(filenode, process, 0, NULL, NULL);
 
-	*cpu = (struct cpu_state *)task_schedule(*cpu);
+    *cpu = (struct cpu_state *)task_schedule(*cpu);
 }
 

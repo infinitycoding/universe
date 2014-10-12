@@ -57,9 +57,9 @@ void subsystem_isr(struct cpu_state **cpu)
     {
         struct int_relation *rel = list_get_current(&int_it);
         if(rel->intnr == (*cpu)->intr-32)
-		{
+        {
             send_package(rel->drv, INTSIG, 0, NULL);
-		}
+        }
         list_next(&int_it);
     }
 }

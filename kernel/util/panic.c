@@ -18,7 +18,7 @@
 
 /**
  *  @file /util/panic.c
- *  @brief Kernel panic dump screen module. 
+ *  @brief Kernel panic dump screen module.
  *  @author Tom Slawik <tom.slawik@gmail.com>
  *  @author Simon Diepold <simon.diepold@infinitycoding.de>
  */

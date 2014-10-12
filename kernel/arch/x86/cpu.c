@@ -54,7 +54,7 @@ void enable_irqs(void)
 
 
 /**
- *  @brief Tries to lock a atomic mutex. 
+ *  @brief Tries to lock a atomic mutex.
  *  @param m The mutex to be locked.
  *  @return true = sucess; false = already locked
  */
@@ -80,7 +80,7 @@ void lock(mutex *m)
 
 /**
  * @brief Unlocks a atomic mutex.
- * @param m The mutex to be unlocked. 
+ * @param m The mutex to be unlocked.
  */
 void unlock(mutex *m)
 {

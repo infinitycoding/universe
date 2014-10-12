@@ -32,9 +32,9 @@
 
 /**
  *  @brief Dups the current CPU state.
- *  @param cpu The state to be dumped. 
- *  @param str String buffer to dump in. 
- *  @return Number of written characters. 
+ *  @param cpu The state to be dumped.
+ *  @param str String buffer to dump in.
+ *  @return Number of written characters.
  */
 int cpu_dump(struct cpu_state *cpu, char *str)
 {

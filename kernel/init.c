@@ -18,7 +18,7 @@
 
 /**
  * @author Simon Diepold aka. Tdotu (Universe Team) <simon.diepold@infinitycoding.de>
- * @author Michael Sippel <micha.linuxfreak@gmail.com>
+ * @author Michael Sippel <micha@infinitycoding.de>
  * @author Christian Klahn <christian.klahn1@gmail.com>
  * @author Tom Slawik <tom.slawik@gmail.com>
  */
@@ -125,7 +125,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
         kernel_thread_create(INIT_HYPERVISOR, argc,(char **) argv, NULL);
     }
 
-    vfs_inode_t *testnode = vfs_lookup_path("/test.elf");
+    vfs_inode_t *testnode = vfs_lookup_path("/ultrashell.elf");
 
     if(testnode == NULL)
     {
@@ -136,7 +136,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
         load_elf_from_file(testnode, 0, 0, 0, 0, 0, 0);
     }
 
-	while(1);
+    while(1);
 
     return 0;
 }

@@ -50,9 +50,9 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
     void *kernel_stack = malloc(0x1000);
     struct cpu_state *new_state = kernel_stack + 0x1000 - sizeof(struct cpu_state) - 3*sizeof(uint32_t);
 
-	context->kernel_mode_stack = (uint32_t)kernel_stack;
+    context->kernel_mode_stack = (uint32_t)kernel_stack;
     context->state = new_state;
-	
+
     memset(new_state, 0, sizeof(struct cpu_state));
     new_state->eip = entry;
     new_state->eflags = 0x202;
@@ -75,7 +75,7 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
     else
     {
         paddr_t pframe = pmm_alloc_page();
-		context->program_stack = pframe;
+        context->program_stack = pframe;
         vmm_map(&context->memory, pframe, MEMORY_LAYOUT_STACK_TOP-0x1000, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
         new_state->esp = (uint32_t) MEMORY_LAYOUT_STACK_TOP - 3*sizeof(uint32_t);
 

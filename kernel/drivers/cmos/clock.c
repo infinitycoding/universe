@@ -36,7 +36,7 @@ uint64_t up_time;
 
 
 /**
- * @brief Initiates PIT and RTC. 
+ * @brief Initiates PIT and RTC.
  */
 void INIT_CLOCK(int freq)
 {

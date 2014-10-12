@@ -18,8 +18,8 @@
 
 /**
  *  @file /arch/x86/pmm.c
- *  @brief Kernel module for managin physical memory 
- *  @todo Replace static memory map with a dynamic list. 
+ *  @brief Kernel module for managin physical memory
+ *  @todo Replace static memory map with a dynamic list.
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 

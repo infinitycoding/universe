@@ -16,7 +16,7 @@ int main(int argc, char **argv)
     fread(buffer,20, 1, f);
     printf("%s\n",buffer);
     while(1);
-
+*/
     bool success = true;
     success &= test_vfs_api();
 
@@ -25,9 +25,7 @@ int main(int argc, char **argv)
         printf("success\n");
     else
         printf("failed\n");
-
-	while(1);
-
+return 0;
 	int fd[2];
 	linux_syscall(SYS_PIPE, (int)&fd, 0, 0, 0, 0);
 
@@ -52,19 +50,12 @@ int main(int argc, char **argv)
 	printf("hi ");
 	if(pid == 0)
 	{
-		printf("child.. executing ultrashell.\n");
-		execve("/test.elf", NULL, NULL);
-		printf("das soll nicht kommen.\n");
+		printf("child\n");
 	}
 	else
 	{
 		printf("parent\n");
-	}*/
-
-	printf("hi all!\n");
-
-	int err = execve("/ultrashell.elf", NULL, NULL);
-	printf("error %d\n", err);
+	}
 
     return 0;
 }

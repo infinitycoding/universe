@@ -83,7 +83,7 @@ void heap_add_fragment(struct header_block *header, vaddr_t base, size_t size)
 #if HEAP_DEBUG
                 printf("[heap/add] %p, %d to %p\n", base, size, header);
 #endif
-                return; 
+                return;
             }
         }
 
