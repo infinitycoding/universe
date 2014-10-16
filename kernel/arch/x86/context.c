@@ -116,6 +116,43 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
 		}
 		
 		vaddr_t *user_environ = NULL;
+		if(environ != NULL)
+		{
+			size_t envc = 0;
+			size_t size = 0;
+			
+			while(environ[envc] != NULL)
+			{
+				size += strlen(environ[envc]);
+				envc++;
+			}
+			size += ((envc+1)*sizeof(char *)+envc*sizeof(char)); //char * array + NULL entry + NULL terminators
+			
+			if(size)
+			{
+				size_t pages = size/4096;
+				if(size%4096)
+					pages++;
+				
+				paddr_t vars = pmm_alloc_page_range(pages);
+				user_environ = (vaddr_t *)vmm_automap_user_range(&context->memory, vars, pages, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
+				vaddr_t *kenrel_envp = (vaddr_t *) vmm_automap_kernel_range(current_context, vars, pages, VMM_PRESENT | VMM_WRITABLE);
+				vaddr_t vbase =(vaddr_t)( user_environ+((envc+1)*sizeof(char *)));
+				
+				char *user_strs = (char*) (kenrel_envp+(envc+1)*sizeof(char *));
+				int i;
+				for(i = 0; i < envc; i++)
+				{
+					kenrel_envp[i] = vbase;
+					strcpy(user_strs,environ[i]);
+					user_strs+= strlen(environ[i])+sizeof(char);
+					vbase += strlen(environ[i])+sizeof(char);	
+				}
+				kenrel_envp[i] = 0;
+				
+				vmm_unmap(current_context, (vaddr_t)kenrel_envp);
+			}
+		}
 		
 
 		
