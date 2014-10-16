@@ -68,7 +68,7 @@ void sys_exit(struct cpu_state **cpu)
         }
         list_next(&parents_children_it);
     }
-
+    send_killed_process(current_thread->process);
     process_kill(current_thread->process);
     *cpu = task_schedule(*cpu);
 }
@@ -171,7 +171,7 @@ void sys_execve(struct cpu_state **cpu)
     process->tid_counter = 1;
 
     // run the new thread
-    struct thread_state *thread = load_elf_thread_from_file(filenode, process, 0, NULL, NULL);
+    struct thread_state *thread = load_elf_thread_from_file(filenode, process, 0, argv, envp);
 
     *cpu = (struct cpu_state *)task_schedule(*cpu);
 }

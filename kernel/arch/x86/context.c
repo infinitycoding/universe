@@ -57,6 +57,8 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
     new_state->eip = entry;
     new_state->eflags = 0x202;
 
+
+
     uint32_t *stack;
     if(prev == KERNELMODE)
     {
@@ -74,6 +76,50 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
     }
     else
     {
+		vaddr_t *user_argv = NULL;
+		if(argv != NULL)
+		{
+			size_t args = 0;
+			size_t size = 0;
+			
+			while(argv[args] != NULL)
+			{
+				size += strlen(argv[args]);
+				args++;
+			}
+			size += ((args+1)*sizeof(char *)+args*sizeof(char)); //char * array + NULL entry + NULL terminators
+			if(size)
+			{
+				size_t pages = size/4096;
+				if(size%4096)
+					pages++;
+				
+				paddr_t vars = pmm_alloc_page_range(pages);
+				user_argv = (vaddr_t *)vmm_automap_user_range(&context->memory, vars, pages, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
+				vaddr_t *kenrel_argv = (vaddr_t *) vmm_automap_kernel_range(current_context, vars, pages, VMM_PRESENT | VMM_WRITABLE);
+				vaddr_t vbase =(vaddr_t)( user_argv+((args+1)*sizeof(char *)));
+				
+				char *user_strs = (char*) (kenrel_argv+(args+1)*sizeof(char *));
+				int i;
+				for(i = 0; i < args; i++)
+				{
+					kenrel_argv[i] = vbase;
+					strcpy(user_strs,argv[i]);
+					user_strs+= strlen(argv[i])+sizeof(char);
+					vbase += strlen(argv[i])+sizeof(char);	
+				}
+				kenrel_argv[i] = 0;
+				
+				vmm_unmap(current_context, (vaddr_t)user_argv);
+			}
+			argc = args;
+		}
+		
+		vaddr_t *user_environ = NULL;
+		
+
+		
+		
         paddr_t pframe = pmm_alloc_page();
         context->program_stack = pframe;
         vmm_map(&context->memory, pframe, MEMORY_LAYOUT_STACK_TOP-0x1000, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
@@ -81,8 +127,8 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
 
         stack = (uint32_t *) vmm_automap_kernel(current_context, pframe, VMM_PRESENT | VMM_WRITABLE);
 
-        stack[1023] = (uint32_t) environ;
-        stack[1022] = (uint32_t) argv;
+        stack[1023] = (uint32_t) user_environ;
+        stack[1022] = (uint32_t) user_argv;
         stack[1021] = (uint32_t) argc;
         stack[1020] = (uint32_t) return_adress;
 

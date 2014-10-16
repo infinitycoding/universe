@@ -216,7 +216,6 @@ paddr_t pmm_find_free_page_range(unsigned long lower_limit, unsigned int num)
 
     for (i = lower_limit / PAGE_SIZE / 32; i < PMM_MMAP_SIZE; i++)
     {
-        printf("%i\n", i);
         if (pmm_mmap[i] == 0)
         {
             found = 0;
@@ -234,7 +233,6 @@ paddr_t pmm_find_free_page_range(unsigned long lower_limit, unsigned int num)
         }
         else
         {
-            printf("bar\n");
             for (z = 0; z < 32; z++)
             {
                 if (pmm_mmap[i] & (1 << z))
