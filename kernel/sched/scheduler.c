@@ -55,7 +55,7 @@ void INIT_SCHEDULER(void)
     thread_iterator = iterator_create(running_threads);
     // create kernel process
     kernel_state = process_create("Kernel INIT", PROCESS_ACTIVE, NULL, 0, 0, NULL);
-    current_thread = kernel_thread_create(NULL, 0, NULL, NULL);
+    current_thread = kernel_thread_create(NULL, NULL, NULL);
 
     // map kernel stack
     vmm_map(current_context, pmm_alloc_page(), 0xFFFFF000, VMM_PRESENT | VMM_WRITABLE);

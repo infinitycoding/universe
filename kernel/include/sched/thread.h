@@ -49,8 +49,8 @@ struct thread_state
     tid_t tid; //Thread ID
 };
 
-struct thread_state *thread_create(struct process_state *process, privilege_t prev, vaddr_t eip, int argc, char **argv, char **environ, vaddr_t return_address, vmm_context_t *context);
-struct thread_state *kernel_thread_create(int (*thread)(int argc, char **argv, char **environ), int argc, char **argv, char **environ);
+struct thread_state *thread_create(struct process_state *process, privilege_t prev, vaddr_t eip, char **argv, char **environ, vaddr_t return_address, vmm_context_t *context);
+struct thread_state *kernel_thread_create(int (*thread)(int argc, char **argv, char **environ), char **argv, char **environ);
 
 void thread_kill(struct thread_state *thread);
 void thread_kill_sub(struct thread_state *thread);

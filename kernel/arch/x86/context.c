@@ -40,12 +40,11 @@
  *  @param prev Previleg level of the new thread (kernelmode, usermode)
  *  @param entry Pointer to the programm init (_start or main, ...)
  *  @param return_adress (usermode only) The adress to wich the thread should return when it's work is done.
- *  @param argc Number of arguments passed to the thread
  *  @param argv Argument sting array
  *  @param environ String array of enviroent varrables. (Terminated by a NULL pointer)
  *  @retur NULL if an error occured or the same addres as context
  */
-struct cpu_state *arch_create_thread_context(struct arch_thread_context *context, privilege_t prev, vaddr_t entry,vaddr_t return_adress, int argc, char **argv, char **environ)
+struct cpu_state *arch_create_thread_context(struct arch_thread_context *context, privilege_t prev, vaddr_t entry,vaddr_t return_adress, char **argv, char **environ)
 {
     void *kernel_stack = malloc(0x1000);
     struct cpu_state *new_state = kernel_stack + 0x1000 - sizeof(struct cpu_state) - 3*sizeof(uint32_t);
@@ -57,11 +56,17 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
     new_state->eip = entry;
     new_state->eflags = 0x202;
 
-
-
+	size_t argc = 0;
+	if(argv != NULL)
+	{
+		while(argv[argc] != NULL)
+			argc++;
+	}
+	
     uint32_t *stack;
     if(prev == KERNELMODE)
     {
+		
         new_state->cs = 0x08;
         new_state->ds = 0x10;
         new_state->es = 0x10;
@@ -79,15 +84,12 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
 		vaddr_t *user_argv = NULL;
 		if(argv != NULL)
 		{
-			size_t args = 0;
-			size_t size = 0;
-			
-			while(argv[args] != NULL)
+			size_t i,size = 0;
+			for(i = 0; i < argc; i++)
 			{
-				size += strlen(argv[args]);
-				args++;
+				size += strlen(argv[argc]);
 			}
-			size += ((args+1)*sizeof(char *)+args*sizeof(char)); //char * array + NULL entry + NULL terminators
+			size += ((argc+1)*sizeof(char *)+argc*sizeof(char)); //char * array + NULL entry + NULL terminators
 			if(size)
 			{
 				size_t pages = size/4096;
@@ -97,11 +99,10 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
 				paddr_t vars = pmm_alloc_page_range(pages);
 				user_argv = (vaddr_t *)vmm_automap_user_range(&context->memory, vars, pages, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
 				vaddr_t *kenrel_argv = (vaddr_t *) vmm_automap_kernel_range(current_context, vars, pages, VMM_PRESENT | VMM_WRITABLE);
-				vaddr_t vbase =(vaddr_t)( user_argv+((args+1)*sizeof(char *)));
+				vaddr_t vbase =(vaddr_t)( user_argv+((argc+1)*sizeof(char *)));
 				
-				char *user_strs = (char*) (kenrel_argv+(args+1)*sizeof(char *));
-				int i;
-				for(i = 0; i < args; i++)
+				char *user_strs = (char*) (kenrel_argv+(argc+1)*sizeof(char *));
+				for(i = 0; i < argc; i++)
 				{
 					kenrel_argv[i] = vbase;
 					strcpy(user_strs,argv[i]);
@@ -112,7 +113,6 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
 				
 				vmm_unmap(current_context, (vaddr_t)user_argv);
 			}
-			argc = args;
 		}
 		
 		vaddr_t *user_environ = NULL;

@@ -53,15 +53,14 @@ void kernel_thread_exit(void)
 }
 
 
-struct thread_state *kernel_thread_create(int (*thread)(int argc, char **argv, char **environ), int argc, char **argv, char **environ)
+struct thread_state *kernel_thread_create(int (*thread)(int argc, char **argv, char **environ), char **argv, char **environ)
 {
-    struct thread_state *new_thread = thread_create(kernel_state, KERNELMODE, (vaddr_t) thread, argc, argv, environ, (vaddr_t) &kernel_thread_exit, NULL);
-
+    struct thread_state *new_thread = thread_create(kernel_state, KERNELMODE, (vaddr_t) thread, argv, environ, (vaddr_t) &kernel_thread_exit, NULL);
     return new_thread;
 }
 
 
-struct thread_state *thread_create(struct process_state *process, privilege_t prev, vaddr_t eip, int argc, char **argv, char **environ, vaddr_t return_address, vmm_context_t *context)
+struct thread_state *thread_create(struct process_state *process, privilege_t prev, vaddr_t eip, char **argv, char **environ, vaddr_t return_address, vmm_context_t *context)
 {
     struct thread_state *new_thread = malloc(sizeof(struct thread_state));
 
@@ -82,7 +81,7 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
         vmm_create_context(&new_thread->context.memory);
 
     thread_sync_context(new_thread);
-    arch_create_thread_context(&new_thread->context, prev, eip, (vaddr_t) return_address, argc, argv, environ);
+    arch_create_thread_context(&new_thread->context, prev, eip, (vaddr_t) return_address, argv, environ);
 
     if(process->heap_top == 0)
     {
@@ -129,7 +128,7 @@ struct thread_state *thread_clone(struct process_state *process, struct thread_s
     arch_fork_context(&src_thread->context.memory.arch_context, &new_thread->context.memory.arch_context);
     thread_sync_context(new_thread);
 
-    arch_create_thread_context(&new_thread->context, prev, (vaddr_t) 0, (vaddr_t) 0, 0, 0, 0);
+    arch_create_thread_context(&new_thread->context, prev, (vaddr_t) 0, (vaddr_t) 0, 0, 0);
     memcpy((void*)new_thread->context.kernel_mode_stack,(void*) src_thread->context.kernel_mode_stack, 0x1000);
 
     if(prev == USERMODE)

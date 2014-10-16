@@ -92,7 +92,6 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     printf("Timestamp:%d\n\n",unix_time(&t));
     INIT_CPUID();
     printf("\n");
-
     // mapping strings
     int i;
     struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
@@ -112,7 +111,6 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 
     if(pfnode != NULL)
     {
-        int argc = 2;
         void *argv[2];
         char *pf = (char *)malloc(pfnode->length+1);
         vfs_read(pfnode, 0, pf, pfnode->length);
@@ -122,7 +120,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 
         argv[1] = mb_info;
         argv[0] = sec;
-        kernel_thread_create(INIT_HYPERVISOR, argc,(char **) argv, NULL);
+        kernel_thread_create(INIT_HYPERVISOR,(char **) argv, NULL);
     }
 
     vfs_inode_t *testnode = vfs_lookup_path("/ultrashell.elf");
@@ -133,10 +131,8 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     }
     else
     {
-        load_elf_from_file(testnode, 0, 0, 0, 0, 0, 0);
+        load_elf_from_file(testnode, 0, 0, 0, 0, 0);
     }
-
-    while(1);
 
     return 0;
 }

@@ -46,7 +46,7 @@ void usys_thread_exit(struct cpu_state **cpu)
 
 void usys_thread_launch(struct cpu_state **cpu)
 {
-    thread_create(current_thread->process, USERMODE, (vaddr_t) (*cpu)->CPU_ARG1, (int) (*cpu)->CPU_ARG2, (char**)(*cpu)->CPU_ARG3, (char **)(*cpu)->CPU_ARG4, (vaddr_t)(*cpu)->CPU_ARG5, NULL);
+    thread_create(current_thread->process, USERMODE, (vaddr_t) (*cpu)->CPU_ARG1, (char**)(*cpu)->CPU_ARG2, (char **)(*cpu)->CPU_ARG3, (vaddr_t)(*cpu)->CPU_ARG4, NULL);
 }
 
 
@@ -171,8 +171,7 @@ void sys_execve(struct cpu_state **cpu)
     process->tid_counter = 1;
 
     // run the new thread
-    struct thread_state *thread = load_elf_thread_from_file(filenode, process, 0, argv, envp);
-
+    load_elf_thread_from_file(filenode, process, argv, envp);
     *cpu = (struct cpu_state *)task_schedule(*cpu);
 }
 

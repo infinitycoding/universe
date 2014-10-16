@@ -30,7 +30,7 @@
 #define S_IFMT  0x0 // type of file
 #define S_IFBLK 0x1 // block special
 #define S_IFCHR 0x2 // character special
-#define S_IFIFO 0x3 // FIFO special 
+#define S_IFIFO 0x3 // FIFO special
 #define S_IFREG 0x4 // regular
 #define S_IFDIR 0x5 // directory
 #define S_IFLNK 0x6 // symbolic link
