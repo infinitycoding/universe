@@ -450,7 +450,7 @@ void sys_chdir(struct cpu_state **cpu)
     {
         if(S_ISDIR(nwd->stat))
         {
-            if(vfs_access(nwd, R_OK, current_thread->process->uid, current_thread->process->gid == 0))
+            if(vfs_access(nwd, R_OK, current_thread->process->uid, current_thread->process->gid) == 0)
             {
                 current_thread->process->cwd = nwd;
                 (*cpu)->CPU_ARG0 = _SUCCESS;
