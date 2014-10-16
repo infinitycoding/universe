@@ -6,5 +6,6 @@ title Universe
     module /drivers/system.pf
     module /ultrashell.elf
     module /test.elf
+	module /ls
     boot
 
