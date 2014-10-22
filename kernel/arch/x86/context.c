@@ -26,6 +26,7 @@
  */
 
 #include <arch_context.h>
+#include <arch_paging.h>
 #include <cpu.h>
 #include <pmm.h>
 #include <string.h>
@@ -92,10 +93,8 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
 			size += ((argc+1)*sizeof(char *)+argc*sizeof(char)); //char * array + NULL entry + NULL terminators
 			if(size)
 			{
-				size_t pages = size/4096;
-				if(size%4096)
-					pages++;
-				
+				size_t pages = NUM_PAGES(size);
+
 				paddr_t vars = pmm_alloc_page_range(pages);
 				user_argv = (vaddr_t *)vmm_automap_user_range(&context->memory, vars, pages, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
 				vaddr_t *kenrel_argv = (vaddr_t *) vmm_automap_kernel_range(current_context, vars, pages, VMM_PRESENT | VMM_WRITABLE);
@@ -130,10 +129,8 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
 			
 			if(size)
 			{
-				size_t pages = size/4096;
-				if(size%4096)
-					pages++;
-				
+				size_t pages = NUM_PAGES(size);
+
 				paddr_t vars = pmm_alloc_page_range(pages);
 				user_environ = (vaddr_t *)vmm_automap_user_range(&context->memory, vars, pages, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
 				vaddr_t *kenrel_envp = (vaddr_t *) vmm_automap_kernel_range(current_context, vars, pages, VMM_PRESENT | VMM_WRITABLE);
