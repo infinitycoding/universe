@@ -33,19 +33,18 @@
 
 #include <gdt.h>
 
-
-
-struct process_state *kernel_state;
-struct thread_state *current_thread;
-list_t *running_threads;
+// global stuff
+struct process_state *kernel_state = NULL;	// kernel init thread state
+struct thread_state *current_thread = NULL; // current thread state
+list_t *running_threads;					// threads to be scheduled
+list_t *process_list = NULL;				// list of all processes created
+list_t *zombie_list = NULL;					// list of zomibe pids
+pid_t pid_counter = 1;						// counter to generate next pid
 
 iterator_t thread_iterator;
 
-extern list_t *process_list;
-extern list_t *zombie_list;
-
 /**
- * Initiate the scheduler module
+ * @brief	Initiate the scheduler module
  */
 void INIT_SCHEDULER(void)
 {
@@ -53,6 +52,7 @@ void INIT_SCHEDULER(void)
     process_list = list_create();
     zombie_list = list_create();
     thread_iterator = iterator_create(running_threads);
+
     // create kernel process
     kernel_state = process_create("Kernel INIT", PROCESS_ACTIVE, NULL, 0, 0, NULL);
     current_thread = kernel_thread_create(NULL, NULL, NULL);
@@ -67,6 +67,11 @@ void INIT_SCHEDULER(void)
     enable_irqs();
 }
 
+/**
+ * @brief			performs context switches
+ * @param thread	pointer to the thread state to switch to
+ * @return			new cpu state
+ */
 struct cpu_state *task_switch(struct thread_state *thread)
 {
     struct cpu_state *cpu = thread->context.state;
@@ -79,8 +84,9 @@ struct cpu_state *task_switch(struct thread_state *thread)
 }
 
 /**
- * performs context switches
- * @param process pointer to the process state
+ * @brief		selects the next thread and calls a context switch
+ * @param cpu	current cpu state
+ * @return		new cpu state
  */
 struct cpu_state *task_schedule(struct cpu_state *cpu)
 {
@@ -128,3 +134,4 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
 
     return cpu;
 }
+

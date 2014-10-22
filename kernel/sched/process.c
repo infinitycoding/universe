@@ -33,21 +33,21 @@
 #include <math.h>
 #include <vfs/fd.h>
 
-
+// defined in sched/scheduler.c
 extern struct process_state *kernel_state;
 extern struct thread_state *current_thread;
 extern list_t *running_threads;
 extern iterator_t thread_iterator;
+
+extern list_t *process_list;
+extern list_t *zombie_list;
+extern pid_t pid_counter;
+
+// defined in vfs/vfs.c
 extern vfs_inode_t *root;
 
-
-list_t *process_list = 0;
-list_t *zombie_list = 0;
-pid_t pid_counter = 1;
-
-
 /**
- * @breif Prints a thread-list.
+ * @brief Prints a thread-list.
  * @param The thread list
  */
 void dump_thread_list(list_t *threads)
@@ -66,14 +66,24 @@ void dump_thread_list(list_t *threads)
 /**
  * @brief creates a process
  * @param name      name of the process (max. 255 characters)
- * @param desc      description of the process (max. 255 characters)
  * @param flags     process flags (activ, freezed, zombies)
- * @param parent    pointer to the parent process struct (NULL: Kernel Init = parent)
+ * @param parent    pointer to the parent process struct (NULL: parent = Kernel Init)
  * @return          The new process-state
  */
-struct process_state *process_create(const char *name, uint16_t flags,struct process_state *parent, uid_t uid, gid_t gid,struct pipeset *set)
+struct process_state *process_create(const char *name, uint16_t flags, struct process_state *parent, uid_t uid, gid_t gid, struct pipeset *set)
 {
+    list_lock(process_list);
+
+    // allocate memory
     struct process_state *state = malloc(sizeof(struct process_state));
+
+    // set IDs
+    state->uid = uid;
+    state->gid = gid;
+    if (list_is_empty(zombie_list))
+        state->pid = pid_counter++;
+    else
+        state->pid = (pid_t) list_pop_front(zombie_list);
 
     // copy name string
     int string_len = min(strlen(name), 255);
@@ -81,53 +91,51 @@ struct process_state *process_create(const char *name, uint16_t flags,struct pro
     strncpy(state->name, name, string_len);
     state->name[string_len + 1] = '\0';
 
-    state->flags = flags;
-    state->files = list_create();
-    state->heap_top = 0;
-    state->heap_lower_limit = 0;
-    state->heap_upper_limit = 0;
-
-    state->main_thread = NULL;
-
-    // if parent is not set the working directory is the root dir
-    if(parent != NULL)
-        state->cwd = parent->cwd;
-    else
-        state->cwd = root;
-
-    state->children = list_create();
-    state->zombie_tids = list_create();
-    state->threads = list_create();
-    state->ports = list_create();
-    state->tid_counter = 1;
-    state->uid = uid;
-    state->gid = gid;
-
+    // take parent
+    // if parent is NULL, use kernel init
     if (parent == NULL)
         state->parent = kernel_state;
     else
         state->parent = parent;
 
-    if (list_is_empty(zombie_list))
-        state->pid = pid_counter++;
+    // take working directory of parent
+    if(parent == NULL)
+        state->cwd = root;
     else
-        state->pid = (pid_t) list_pop_front(zombie_list);
+        state->cwd = parent->cwd;
 
+    // create lists of files & ports
+    state->files = list_create();
+    state->ports = list_create();
 
-    list_lock(process_list);
-    if(state->pid != 1)
+    // threads
+    state->main_thread = NULL;
+    state->threads = list_create();
+    state->zombie_tids = list_create();
+    state->tid_counter = 1;
+
+    // child processes
+    state->children = list_create();
+    /* this needs explanation
+    if(state->pid > 1)
     {
         struct child *new_child = malloc(sizeof(struct child));
         new_child->process = state;
         new_child->status = 0;
         list_push_front(state->parent->children, new_child);
     }
+    */
 
-    list_push_front(process_list, state);
-    list_unlock(process_list);
+    // flags
+    state->flags = flags;
 
+    // memory stuff
+    state->heap_top = 0;
+    state->heap_lower_limit = 0;
+    state->heap_upper_limit = 0;
 
-    /* create stream files*/
+    // create stream files
+    // if pipeset is avaiable, use it
     vfs_inode_t *stdin;
     vfs_inode_t *stdout;
     vfs_inode_t *stderr;
@@ -143,7 +151,6 @@ struct process_state *process_create(const char *name, uint16_t flags,struct pro
         stdout = set->stdout;
         stderr = set->stderr;
     }
-
 
     struct fd *desc0 = malloc(sizeof(struct fd));
     desc0->id = 0;
@@ -178,14 +185,18 @@ struct process_state *process_create(const char *name, uint16_t flags,struct pro
     desc2->write_inode = stderr;
     list_push_back(state->files, desc2);
 
+    // add to process list
+    list_push_front(process_list, state);
+
+    list_unlock(process_list);
 
     return state;
 }
 
 
 /**
- * @brief kills a process
- * @param process pointer to the process state
+ * @brief	kills a process
+ * @param	process pointer to the process state
  */
 void process_kill(struct process_state *process)
 {
@@ -193,6 +204,7 @@ void process_kill(struct process_state *process)
 
     send_killed_process(process);
 
+    // kill all threads
     while(!list_is_empty(process->threads))
     {
         struct thread_state *thread = list_pop_front(process->threads);
@@ -205,6 +217,7 @@ void process_kill(struct process_state *process)
             thread_kill_sub(thread);
     }
 
+    // kill all children
     list_lock(process->children);
     while(!list_is_empty(process->children))
     {
@@ -215,6 +228,7 @@ void process_kill(struct process_state *process)
     }
     free(process->children);
 
+    // remove process from parents children list
     list_lock(process->parent->children);
     iterator_t parents_children_it = iterator_create(process->parent->children);
 
@@ -223,15 +237,16 @@ void process_kill(struct process_state *process)
         struct child *current_child = list_get_current(&parents_children_it);
         if(current_child->process == process)
         {
-            current_child->process = 0;
+            list_remove(&parents_children_it);
+            free(current_child);
             break;
         }
         list_next(&parents_children_it);
     }
 
     list_unlock(process->parent->children);
-    list_destroy(process->ports);
-    list_destroy(process->zombie_tids);
+
+    // remove from global process list
     list_lock(process_list);
 
     iterator_t process_it = iterator_create(process_list);
@@ -247,6 +262,10 @@ void process_kill(struct process_state *process)
     }
     list_unlock(process_list);
 
+
+    // free process data
+    list_destroy(process->ports);
+    list_destroy(process->zombie_tids);
     free(process->name);
 
     if(!(process->flags & PROCESS_ZOMBIE) )
@@ -259,69 +278,80 @@ void process_kill(struct process_state *process)
 
 
 /**
- *  @brief Suspends a process
- *  @param 0 pointer to the process state
- *  @return void
+ *  @brief			Suspends a process
+ *  @param process	pointer to the process state
  */
-void process_suspend(struct process_state *object)
+void process_suspend(struct process_state *process)
 {
-    if(list_is_empty(object->threads))
-        return;
-
-    iterator_t it = iterator_create(object->threads);
-    list_set_first(&it);
-    while(!list_is_last(&it))
+    // suspend threads
+    if(! list_is_empty(process->threads))
     {
-        struct thread_state *thread = (struct thread_state *)list_get_current(&it);
-        if(thread->flags & THREAD_ACTIV)
-            thread_suspend(thread);
+        iterator_t it = iterator_create(process->threads);
+        list_set_first(&it);
 
-        list_next(&it);
+        while(! list_is_last(&it))
+        {
+            struct thread_state *thread = (struct thread_state *) list_get_current(&it);
+            if(thread->flags & THREAD_ACTIV)
+                thread_suspend(thread);
+
+            list_next(&it);
+        }
     }
 
-    object->flags &= ~PROCESS_ACTIVE;
+    // set flag
+    process->flags &= ~PROCESS_ACTIVE;
 }
 
 /**
- * Wakes up a process
- * @param 0 pointer to the process state
- * @return void
+ * @brief			Wakes up a process
+ * @param process	pointer to the process state
  **/
-void process_wakeup(struct process_state *object)
+void process_wakeup(struct process_state *process)
 {
-    struct process_state *process = object;
-    iterator_t it = iterator_create(process->threads);
-    list_set_first(&it);
-    while(!list_is_empty(process->threads) && !list_is_last(&it))
+    // wakeup threads
+    if(! list_is_empty(process->threads))
     {
-        struct thread_state *thread = (struct thread_state *)list_get_current(&it);
-        if(!(thread->flags & THREAD_ACTIV))
-            thread_wakeup(thread);
-        list_next(&it);
+        iterator_t it = iterator_create(process->threads);
+        list_set_first(&it);
+
+        while(! list_is_last(&it))
+        {
+            struct thread_state *thread = (struct thread_state *) list_get_current(&it);
+            if(! (thread->flags & THREAD_ACTIV))
+                thread_wakeup(thread);
+
+            list_next(&it);
+        }
     }
-    object->flags |= PROCESS_ACTIVE;
+
+    // set flag
+    process->flags |= PROCESS_ACTIVE;
 }
 
-
-
-
 /**
- * @brief finds a process by ID
- * @param pid Process ID
- * @return process state pointer or NULL if the process does not exist
+ * @brief		finds a process by (Proccess-)ID
+ * @param pid	Process ID
+ * @return		process state pointer or NULL if the process does not exist
  */
 struct process_state *process_find(pid_t pid)
 {
-    iterator_t process_it = iterator_create(process_list);
-    while(!list_is_empty(process_list) && !list_is_last(&process_it))
+    if(! list_is_empty(process_list))
     {
-        if(((struct process_state *)list_get_current(&process_it))->pid == pid)
-        {
-            return (struct process_state *)list_get_current(&process_it);
-        }
-        list_next(&process_it);
-    }
-    return 0;
-}
+        iterator_t process_it = iterator_create(process_list);
+        list_set_first(&process_it);
 
+        while(! list_is_last(&process_it))
+        {
+            struct process_state *state = (struct process_state *) list_get_current(&process_it);
+            if(state->pid == pid)
+            {
+                return state;
+            }
+            list_next(&process_it);
+        }
+    }
+
+    return NULL;
+}
 

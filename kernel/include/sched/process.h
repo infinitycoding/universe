@@ -58,20 +58,33 @@ struct env_var
 
 struct process_state
 {
+    // identifiers
     pid_t pid;
     uid_t uid;
     gid_t gid;
     char *name;
-    struct process_state* parent;
+
+    // parent
+    struct process_state *parent;
+
+    // files & ports
     vfs_inode_t *cwd;
     list_t *files;
     list_t *ports;
-    list_t *threads;
-    tid_t tid_counter;
+
+    // threads
     struct thread_state *main_thread;
+    list_t *threads;
     list_t *zombie_tids;
+    tid_t tid_counter;
+
+    // child processes
     list_t *children;
+
+    // flags
     uint16_t flags;
+
+    // memory stuff
     uint32_t heap_top;
     uint32_t heap_lower_limit;
     uint32_t heap_upper_limit;
