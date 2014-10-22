@@ -18,7 +18,10 @@
 
 /**
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
+ *
+ *  reviewed by Micha at 22.10.2014
  */
+
 #include <sys/errorcode.h>
 #include <sched/process.h>
 #include <sched/thread.h>
@@ -195,8 +198,8 @@ struct process_state *process_create(const char *name, uint16_t flags, struct pr
 
 
 /**
- * @brief	kills a process
- * @param	process pointer to the process state
+ * @brief			kills a process
+ * @param process	pointer to the process state
  */
 void process_kill(struct process_state *process)
 {
@@ -292,7 +295,7 @@ void process_suspend(struct process_state *process)
         while(! list_is_last(&it))
         {
             struct thread_state *thread = (struct thread_state *) list_get_current(&it);
-            if(thread->flags & THREAD_ACTIV)
+            if(thread->flags & THREAD_ACTIVE)
                 thread_suspend(thread);
 
             list_next(&it);
@@ -318,7 +321,7 @@ void process_wakeup(struct process_state *process)
         while(! list_is_last(&it))
         {
             struct thread_state *thread = (struct thread_state *) list_get_current(&it);
-            if(! (thread->flags & THREAD_ACTIV))
+            if(! (thread->flags & THREAD_ACTIVE))
                 thread_wakeup(thread);
 
             list_next(&it);

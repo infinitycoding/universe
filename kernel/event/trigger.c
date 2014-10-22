@@ -278,9 +278,9 @@ int handle_interupts(struct cpu_state **cpu)
             if(trg->callback)
                 trg->callback(cpu);
 
-            if(trg->object && ! (((struct thread_state *)trg->object)->flags & THREAD_ACTIV))
+            if(trg->object && ! (((struct thread_state *)trg->object)->flags & THREAD_ACTIVE))
             {
-                ((struct thread_state *)trg->object)->flags |= THREAD_ACTIV;
+                ((struct thread_state *)trg->object)->flags |= THREAD_ACTIVE;
                 list_insert_after(&it,trg->object);
                 ((struct thread_state *)trg->object)->ticks = 10;
                 current_thread->ticks = 0;

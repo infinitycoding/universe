@@ -19,7 +19,7 @@
 /**
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  *	@author Michael Sippel <micha@infinitycoding.de>
-*/
+ */
 
 #include <sched/scheduler.h>
 
@@ -36,7 +36,7 @@
 // global stuff
 struct process_state *kernel_state = NULL;	// kernel init thread state
 struct thread_state *current_thread = NULL; // current thread state
-list_t *running_threads;					// threads to be scheduled
+list_t *running_threads = NULL;				// threads to be scheduled
 list_t *process_list = NULL;				// list of all processes created
 list_t *zombie_list = NULL;					// list of zomibe pids
 pid_t pid_counter = 1;						// counter to generate next pid

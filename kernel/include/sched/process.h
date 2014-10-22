@@ -21,6 +21,8 @@
 
 /**
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
+ *
+ *  reviewed by Micha at 22.10.2014
  */
 
 #include <mm/paging.h>
@@ -96,11 +98,14 @@ struct child
     struct process_state *process;
 };
 
-struct process_state *process_create(const char *name, uint16_t flags,struct process_state *parent, uid_t uid, gid_t gid,struct pipeset *set);
-void process_kill(struct process_state *process);
-struct process_state *process_find(pid_t id);
 void dump_thread_list(list_t *threads);
 
-void process_suspend(struct process_state *object);
-void process_wakeup(struct process_state *object);
+struct process_state *process_create(const char *name, uint16_t flags, struct process_state *parent, uid_t uid, gid_t gid, struct pipeset *set);
+struct process_state *process_find(pid_t id);
+
+void process_kill(struct process_state *process);
+void process_suspend(struct process_state *process);
+void process_wakeup(struct process_state *process);
+
 #endif
+
