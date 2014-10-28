@@ -43,7 +43,7 @@
  *  @param return_adress (usermode only) The adress to wich the thread should return when it's work is done.
  *  @param argv Argument sting array
  *  @param environ String array of enviroent varrables. (Terminated by a NULL pointer)
- *  @retur NULL if an error occured or the same addres as context
+ *  @return NULL if an error occured or the same addres as context
  */
 struct cpu_state *arch_create_thread_context(struct arch_thread_context *context, privilege_t prev, vaddr_t entry,vaddr_t return_adress, char **argv, char **environ)
 {
@@ -67,7 +67,6 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
     uint32_t *stack;
     if(prev == KERNELMODE)
     {
-
         new_state->cs = 0x08;
         new_state->ds = 0x10;
         new_state->es = 0x10;
@@ -78,39 +77,41 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
         *--stack = (uint32_t) environ;
         *--stack = (uint32_t) argv;
         *--stack = (uint32_t) argc;
-
     }
     else
     {
         vaddr_t *user_argv = NULL;
         if(argv != NULL)
         {
-            size_t i,size = 0;
-            for(i = 0; i < argc; i++)
+            size_t size = sizeof(char*);
+            int i = 0;
+            while(argv[i] != NULL)
             {
-                size += strlen(argv[argc]);
+                size += sizeof(char*) + strlen(argv[i]) + 1;
+                i++;
             }
-            size += ((argc+1)*sizeof(char *)+argc*sizeof(char)); //char * array + NULL entry + NULL terminators
-            if(size)
+
+            if(size > 0)
             {
                 size_t pages = NUM_PAGES(size);
 
                 paddr_t vars = pmm_alloc_page_range(pages);
                 user_argv = (vaddr_t *)vmm_automap_user_range(&context->memory, vars, pages, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
-                vaddr_t *kenrel_argv = (vaddr_t *) vmm_automap_kernel_range(current_context, vars, pages, VMM_PRESENT | VMM_WRITABLE);
+                vaddr_t *kernel_argv = (vaddr_t *) vmm_automap_kernel_range(current_context, vars, pages, VMM_PRESENT | VMM_WRITABLE);
                 vaddr_t vbase =(vaddr_t)( user_argv+((argc+1)*sizeof(char *)));
 
-                char *user_strs = (char*) (kenrel_argv+(argc+1)*sizeof(char *));
+                char *user_strs = (char*) (kernel_argv+(argc+1)*sizeof(char *));
                 for(i = 0; i < argc; i++)
                 {
-                    kenrel_argv[i] = vbase;
-                    strcpy(user_strs,argv[i]);
-                    user_strs+= strlen(argv[i])+sizeof(char);
+                    kernel_argv[i] = vbase;
+                    strcpy(user_strs, argv[i]);
+
+                    user_strs += strlen(argv[i])+sizeof(char);
                     vbase += strlen(argv[i])+sizeof(char);
                 }
-                kenrel_argv[i] = 0;
+                kernel_argv[i] = 0;
 
-                vmm_unmap(current_context, (vaddr_t)user_argv);
+                vmm_unmap(current_context, (vaddr_t) kernel_argv);
             }
         }
 
@@ -118,16 +119,14 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
         if(environ != NULL)
         {
             size_t envc = 0;
-            size_t size = 0;
-
+            size_t size = sizeof(char*);
             while(environ[envc] != NULL)
             {
-                size += strlen(environ[envc]);
+                size += sizeof(char*) + strlen(environ[envc]) + 1;
                 envc++;
             }
-            size += ((envc+1)*sizeof(char *)+envc*sizeof(char)); //char * array + NULL entry + NULL terminators
 
-            if(size)
+            if(size > 0)
             {
                 size_t pages = NUM_PAGES(size);
 
@@ -141,13 +140,14 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
                 for(i = 0; i < envc; i++)
                 {
                     kenrel_envp[i] = vbase;
-                    strcpy(user_strs,environ[i]);
-                    user_strs+= strlen(environ[i])+sizeof(char);
+                    strcpy(user_strs, environ[i]);
+
+                    user_strs += strlen(environ[i])+sizeof(char);
                     vbase += strlen(environ[i])+sizeof(char);
                 }
                 kenrel_envp[i] = 0;
 
-                vmm_unmap(current_context, (vaddr_t)kenrel_envp);
+                vmm_unmap(current_context, (vaddr_t) kenrel_envp);
             }
         }
 
