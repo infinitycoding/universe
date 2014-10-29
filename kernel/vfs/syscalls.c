@@ -530,9 +530,9 @@ void sys_seek(struct cpu_state **cpu)
             break;
         case SEEK_END: // relative from end
             if(file->read_inode != NULL)
-				file->read_pos = file->read_inode->length - off;
+                file->read_pos = file->read_inode->length - off;
             if(file->write_inode != NULL)
-            	file->write_pos = file->write_inode->length - off;
+                file->write_pos = file->write_inode->length - off;
             break;
         default: // ???
             (*cpu)->CPU_ARG0 = _FAILURE;

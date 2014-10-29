@@ -116,7 +116,7 @@ struct thread_state *thread_clone(struct process_state *process, struct thread_s
     // allocate memory
     struct thread_state *new_thread = malloc(sizeof(struct thread_state));
 
-	// process stuff
+    // process stuff
     new_thread->process = process;
     if(list_is_empty(process->zombie_tids))
         new_thread->tid = process->tid_counter++;
@@ -126,7 +126,7 @@ struct thread_state *thread_clone(struct process_state *process, struct thread_s
     if(process->main_thread == NULL)
         process->main_thread = new_thread;
 
-	// flags
+    // flags
     new_thread->ticks = 10;
     new_thread->flags = THREAD_ACTIVE;
 
@@ -140,7 +140,7 @@ struct thread_state *thread_clone(struct process_state *process, struct thread_s
         prev = USERMODE;
 
 
-	// context
+    // context
     new_thread->return_value = NULL;
 
     vmm_create_context(&new_thread->context.memory);
@@ -149,10 +149,10 @@ struct thread_state *thread_clone(struct process_state *process, struct thread_s
 
     arch_create_thread_context(&new_thread->context, prev, (vaddr_t) 0, (vaddr_t) 0, 0, 0);
 
-	// copy kernelstack
+    // copy kernelstack
     memcpy((void*) new_thread->context.kernel_mode_stack, (void*) src_thread->context.kernel_mode_stack, 0x1000);
 
-	// copy userstack
+    // copy userstack
     if(prev == USERMODE)
     {
         paddr_t src_paddr = src_thread->context.program_stack;
@@ -162,8 +162,8 @@ struct thread_state *thread_clone(struct process_state *process, struct thread_s
 
         memcpy(dest_stack, src_stack, 0x1000);
 
-		vmm_unmap(current_context, src_stack);
-		vmm_unmap(current_context, dest_stack);
+        vmm_unmap(current_context, src_stack);
+        vmm_unmap(current_context, dest_stack);
     }
 
     if(process->heap_top == 0)

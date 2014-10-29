@@ -154,36 +154,35 @@ void arch_sync_pts(arch_vmm_context_t *dest, arch_vmm_context_t *src, int index_
  */
 void arch_fork_context(arch_vmm_context_t *src, arch_vmm_context_t *dest)
 {
-	if(src != NULL && dest != NULL)
-	{
-		if(src->entries != NULL && dest->entries != NULL)
-		{
-			int i;
-			for(i = 0; i < 1024; i++)
-			{
-				if(src->entries[i] & VMM_PRESENT)
-				{
-					int flags = src->entries[i] & 0xfff;
+    if(src != NULL && dest != NULL)
+    {
+        if(src->entries != NULL && dest->entries != NULL)
+        {
+            int i;
+            for(i = 0; i < 1024; i++)
+            {
+                if(src->entries[i] & VMM_PRESENT)
+                {
+                    int flags = src->entries[i] & 0xfff;
 
-				    pt_t *pt_src = (pt_t *) pt_get(src, i);
-				    pt_t *pt_dest = (pt_t *) pt_create(dest, i, flags);
+                    pt_t *pt_src = (pt_t *) pt_get(src, i);
+                    pt_t *pt_dest = (pt_t *) pt_create(dest, i, flags);
 
-					if(pt_src == NULL || pt_dest == NULL)
-					{
-						printf("aaaah");while(1);
-					}
+                    if(pt_src == NULL || pt_dest == NULL)
+                    {
+                        printf("aaaah");
+                        while(1);
+                    }
 
-					//printf("%d: copy %x to %x\n", i, pt_src, pt_dest);
-				    memcpy(pt_dest, pt_src, 0x1000);
-					
-					if(src != &current_context->arch_context)
-						vmm_unmap(current_context, pt_src);
-					vmm_unmap(current_context, pt_dest);
-				}
-			}
-			
-		}	
-	}
+                    memcpy(pt_dest, pt_src, 0x1000);
+
+                    if(src != &current_context->arch_context)
+                        vmm_unmap(current_context, pt_src);
+                    vmm_unmap(current_context, pt_dest);
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -244,7 +243,12 @@ pt_t pt_get(arch_vmm_context_t *context, int index)
  */
 pt_t pt_create(arch_vmm_context_t *context, int index, uint8_t flags)
 {
-    pt_t pt = (pt_t) pmm_alloc_page_limit(0);
+    pt_t pt;
+    if(current_context == NULL)
+        pt = (pt_t) pmm_alloc_page_limit(0);
+    else
+        pt = pmm_alloc_page();
+
     context->entries[index] = (pde_t) pt | flags | VMM_PRESENT;
 
     pt = pt_get(context, index);
@@ -344,11 +348,11 @@ int arch_unmap(arch_vmm_context_t *context, vaddr_t frame)
     {
         pt_destroy(context, PDE_INDEX(frame));
     }
-	else
-	{
-		if(context != &current_context->arch_context)
-			vmm_unmap(current_context, pt);
-	}
+    else
+    {
+        if(context != &current_context->arch_context)
+            vmm_unmap(current_context, pt);
+    }
 
     return 0;
 }
@@ -407,8 +411,8 @@ vaddr_t arch_vaddr_find(arch_vmm_context_t *context, int num, vaddr_t limit_low,
             }
 
             pt_index = 0;
-			if(context != &current_context->arch_context)
-				vmm_unmap(current_context, pt);
+            if(context != &current_context->arch_context)
+                vmm_unmap(current_context, pt);
         }
         else
         {
@@ -489,7 +493,7 @@ void page_fault_handler(struct cpu_state **cpu_p)
     char message[512];
 
     uint32_t addr;
-    asm ("mov %%cr2, %0" : "=r" (addr));
+    asm volatile("mov %%cr2, %0" : "=r" (addr));
 
     sprintf(message, "Page fault in %s space:\nError %s address %#010X: %s.\nEIP: %#010X\n Process: %s\n", ((cpu->error & 4) ? "user" : "kernel"),
             ((cpu->error & 2) ? "writing to" : "reading at"), addr, ((cpu->error & 1) ? "Access denied" : "Nonpaged area"), cpu->eip,current_thread->process->name);

@@ -51,7 +51,7 @@ struct thread_state *load_elf_thread_from_file(vfs_inode_t *inode, struct proces
 {
     void *image = malloc(inode->length);
     vfs_read(inode, 0, image, inode->length);
-	
+
     struct thread_state *state = load_elf_thread(image, proc, argv, environ);
     free(image);
 
