@@ -518,7 +518,6 @@ void sys_seek(struct cpu_state **cpu)
 
     struct fd *file = get_fd(current_thread->process, fd);
 
-    file->flags |= O_APPEND;
     switch(whence)
     {
         case SEEK_SET: // absolute
@@ -530,8 +529,10 @@ void sys_seek(struct cpu_state **cpu)
             file->write_pos += off;
             break;
         case SEEK_END: // relative from end
-            file->read_pos = file->read_inode->length - off;
-            file->write_pos = file->write_inode->length - off;
+            if(file->read_inode != NULL)
+				file->read_pos = file->read_inode->length - off;
+            if(file->write_inode != NULL)
+            	file->write_pos = file->write_inode->length - off;
             break;
         default: // ???
             (*cpu)->CPU_ARG0 = _FAILURE;

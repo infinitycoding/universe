@@ -154,16 +154,35 @@ void arch_sync_pts(arch_vmm_context_t *dest, arch_vmm_context_t *src, int index_
  */
 void arch_fork_context(arch_vmm_context_t *src, arch_vmm_context_t *dest)
 {
-    int i;
-    for(i = 0; i < 1024; i++)
-    {
-        if(src->entries[i] & VMM_PRESENT)
-        {
-            pt_t *pt_src = (pt_t *) pt_get(src, i, VMM_PRESENT | VMM_WRITABLE);
-            pt_t *pt_dest = (pt_t *) pt_create(dest, i, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
-            memcpy(pt_dest, pt_src, 4096);
-        }
-    }
+	if(src != NULL && dest != NULL)
+	{
+		if(src->entries != NULL && dest->entries != NULL)
+		{
+			int i;
+			for(i = 0; i < 1024; i++)
+			{
+				if(src->entries[i] & VMM_PRESENT)
+				{
+					int flags = src->entries[i] & 0xfff;
+
+				    pt_t *pt_src = (pt_t *) pt_get(src, i, VMM_PRESENT);
+				    pt_t *pt_dest = (pt_t *) pt_create(dest, i, flags);
+
+					if(pt_src == NULL || pt_dest == NULL)
+					{
+						printf("aaaah");while(1);
+					}
+
+				    memcpy(pt_dest, pt_src, 0x1000);
+					
+					if(src != &current_context->arch_context)
+						vmm_unmap(current_context, pt_src);
+					vmm_unmap(current_context, pt_dest);
+				}
+			}
+			
+		}	
+	}
 }
 
 /**
@@ -324,6 +343,11 @@ int arch_unmap(arch_vmm_context_t *context, vaddr_t frame)
     {
         pt_destroy(context, PDE_INDEX(frame));
     }
+	else
+	{
+		if(context != &current_context->arch_context)
+			vmm_unmap(current_context, pt);
+	}
 
     return 0;
 }
@@ -380,7 +404,10 @@ vaddr_t arch_vaddr_find(arch_vmm_context_t *context, int num, vaddr_t limit_low,
                     vaddr = (uintptr_t)NULL;
                 }
             }
+
             pt_index = 0;
+			if(context != &current_context->arch_context)
+				vmm_unmap(current_context, pt);
         }
         else
         {
@@ -410,6 +437,7 @@ int arch_vmm_is_present(arch_vmm_context_t *context, vaddr_t vaddr)
         pt_t *pt = (pt_t *)pt_get(context, pd_index, 0);
         return ((uint32_t)pt[pt_index] & VMM_PRESENT) ? 1 : 0;
     }
+
     return 0;
 }
 
@@ -428,7 +456,7 @@ paddr_t arch_vaddr2paddr(arch_vmm_context_t *context, vaddr_t vaddr)
 
     if(context->entries[pd_index] & VMM_PRESENT)
     {
-        pt_t *pt = (pt_t *)pt_get(context, pd_index, 0);
+        pt_t *pt = (pt_t *) pt_get(context, pd_index, 0);
         return (paddr_t) pt[pt_index] & ~0xfff;
     }
     return 0;

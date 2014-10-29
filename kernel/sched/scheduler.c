@@ -78,8 +78,6 @@ struct cpu_state *task_switch(struct thread_state *thread)
     set_kernelstack(cpu+1);
     vmm_switch_context(&thread->context.memory);
 
-    //printf("now %d in %s\n", thread->tid, thread->process->name);
-
     return cpu;
 }
 
