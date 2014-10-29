@@ -87,7 +87,7 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     // heap
     if(process->heap_top == NULL)
     {
-        process->heap_top = arch_vaddr_find(&new_thread->context.memory.arch_context, 1, MEMORY_LAYOUT_USER_HEAP_START, MEMORY_LAYOUT_USER_HEAP_END, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
+        process->heap_top = arch_vaddr_find(&new_thread->context.memory.arch_context, 1, MEMORY_LAYOUT_USER_HEAP_START, MEMORY_LAYOUT_USER_HEAP_END);
         vmm_map(&new_thread->context.memory, pmm_alloc_page(), process->heap_top, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
         process->heap_lower_limit = process->heap_top;
         process->heap_upper_limit = (uint32_t) MEMORY_LAYOUT_STACK_TOP - 0x1000;
@@ -169,7 +169,7 @@ struct thread_state *thread_clone(struct process_state *process, struct thread_s
     if(process->heap_top == 0)
     {
         // what the fuck?
-        process->heap_top = arch_vaddr_find(&new_thread->context.memory.arch_context, 1, MEMORY_LAYOUT_USER_HEAP_START, MEMORY_LAYOUT_USER_HEAP_END, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
+        process->heap_top = arch_vaddr_find(&new_thread->context.memory.arch_context, 1, MEMORY_LAYOUT_USER_HEAP_START, MEMORY_LAYOUT_USER_HEAP_END);
         vmm_map(&new_thread->context.memory, pmm_alloc_page(), process->heap_top, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
         process->heap_lower_limit = process->heap_top;
         process->heap_upper_limit = (uint32_t) MEMORY_LAYOUT_STACK_TOP - 0x1000;

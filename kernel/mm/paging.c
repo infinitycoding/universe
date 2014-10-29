@@ -170,7 +170,7 @@ vaddr_t vmm_automap_kernel(vmm_context_t *context, paddr_t pframe, uint8_t flags
 {
     vaddr_t vframe = arch_vaddr_find(&context->arch_context, 1,
                                      MEMORY_LAYOUT_RESERVED_AREA_END,
-                                     MEMORY_LAYOUT_KERNEL_HEAP_START, flags);
+                                     MEMORY_LAYOUT_KERNEL_HEAP_START);
     vmm_map(context, pframe, vframe, flags | VMM_PRESENT);
 
     return vframe;
@@ -191,7 +191,7 @@ vaddr_t vmm_automap_kernel(vmm_context_t *context, paddr_t pframe, uint8_t flags
 vaddr_t vmm_automap_kernel_range(vmm_context_t *context, paddr_t pframe, int pages, uint8_t flags)
 {
     int i;
-    vaddr_t vaddr_start = arch_vaddr_find(&context->arch_context, pages, MEMORY_LAYOUT_RESERVED_AREA_END, MEMORY_LAYOUT_KERNEL_HEAP_START, flags);
+    vaddr_t vaddr_start = arch_vaddr_find(&context->arch_context, pages, MEMORY_LAYOUT_RESERVED_AREA_END, MEMORY_LAYOUT_KERNEL_HEAP_START);
     for(i = 0; i < pages; i++)
     {
         paddr_t paddr = pframe + i*PAGE_SIZE;
@@ -216,7 +216,7 @@ vaddr_t vmm_automap_kernel_range(vmm_context_t *context, paddr_t pframe, int pag
 vaddr_t vmm_automap_user(vmm_context_t *context, paddr_t pframe, uint8_t flags)
 {
     vaddr_t vframe = arch_vaddr_find(&context->arch_context, 1,
-                                     0x0, MEMORY_LAYOUT_KERNEL_START, flags);
+                                     0x0, MEMORY_LAYOUT_KERNEL_START);
     vmm_map(context, pframe, vframe, flags | VMM_PRESENT);
 
     return vframe;
@@ -237,7 +237,7 @@ vaddr_t vmm_automap_user(vmm_context_t *context, paddr_t pframe, uint8_t flags)
 vaddr_t vmm_automap_user_range(vmm_context_t *context, paddr_t pframe, int pages, uint8_t flags)
 {
     int i;
-    vaddr_t vaddr_start = arch_vaddr_find(&context->arch_context, pages, 0x1000, MEMORY_LAYOUT_KERNEL_START, flags);
+    vaddr_t vaddr_start = arch_vaddr_find(&context->arch_context, pages, 0x1000, MEMORY_LAYOUT_KERNEL_START);
     for(i = 0; i < pages; i++)
     {
         paddr_t paddr = pframe + i*PAGE_SIZE;
@@ -252,7 +252,7 @@ void alloc_memory(struct cpu_state **cpu)
 {
     int pages = (*cpu)->CPU_ARG1;
 
-    uint32_t *dest = (uint32_t *)arch_vaddr_find(&current_context->arch_context, pages, MEMORY_LAYOUT_USER_HEAP_START, MEMORY_LAYOUT_USER_HEAP_END, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
+    uint32_t *dest = (uint32_t *)arch_vaddr_find(&current_context->arch_context, pages, MEMORY_LAYOUT_USER_HEAP_START, MEMORY_LAYOUT_USER_HEAP_END);
 
     int i;
     for(i = 0; i < pages; i++)
@@ -286,7 +286,7 @@ void sys_brk(struct cpu_state **cpu)
         if(req_memory%PAGE_SIZE)
             pages++;
 
-        heap_top = arch_vaddr_find(&current_context->arch_context, pages, MEMORY_LAYOUT_USER_HEAP_START, MEMORY_LAYOUT_USER_HEAP_END, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
+        heap_top = arch_vaddr_find(&current_context->arch_context, pages, MEMORY_LAYOUT_USER_HEAP_START, MEMORY_LAYOUT_USER_HEAP_END);
         int i;
         for(i = 0; i < pages; i++)
         {

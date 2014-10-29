@@ -67,12 +67,12 @@ void arch_vmm_create_context(arch_vmm_context_t *context);
 void arch_vmm_destroy_context(arch_vmm_context_t *context);
 void arch_sync_pts(arch_vmm_context_t *dest, arch_vmm_context_t *src, int index_low, int index_high);
 
-pt_t pt_get(arch_vmm_context_t *context, int index, uint8_t flags);
+pt_t pt_get(arch_vmm_context_t *context, int index);
 pt_t pt_create(arch_vmm_context_t *context, int index, uint8_t flags);
 void pt_destroy(arch_vmm_context_t *context, int index);
 int arch_map(arch_vmm_context_t *context, paddr_t pframe, vaddr_t vframe, uint8_t flags);
 int arch_unmap(arch_vmm_context_t *context, vaddr_t frame);
-vaddr_t arch_vaddr_find(arch_vmm_context_t *context, int num, vaddr_t limit_low, vaddr_t limit_high, int flags);
+vaddr_t arch_vaddr_find(arch_vmm_context_t *context, int num, vaddr_t limit_low, vaddr_t limit_high);
 paddr_t arch_vaddr2paddr(arch_vmm_context_t *context, vaddr_t vaddr);
 void arch_switch_context(arch_vmm_context_t *context);
 

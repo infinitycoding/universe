@@ -84,7 +84,7 @@ struct thread_state *load_elf_thread(void *image, struct process_state *proc, ch
         {
             int pages = NUM_PAGES(ph->mem_size);
             uintptr_t dest_start = (uintptr_t) arch_vaddr_find((arch_vmm_context_t*)current_context, pages,
-                                   MEMORY_LAYOUT_KERNEL_START, MEMORY_LAYOUT_KERNEL_END, VMM_WRITABLE);
+                                   MEMORY_LAYOUT_KERNEL_START, MEMORY_LAYOUT_KERNEL_END);
 
             // map pages
             for(j = 0; j < pages; j++)
