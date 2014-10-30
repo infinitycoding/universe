@@ -50,8 +50,6 @@ void arch_switch_context(arch_vmm_context_t *context);
 void arch_update_context(arch_vmm_context_t *context);
 int arch_map(arch_vmm_context_t *context, paddr_t pframe, vaddr_t vframe, uint8_t flags);
 int arch_unmap(arch_vmm_context_t *context, vaddr_t frame);
-vaddr_t arch_vaddr_find(arch_vmm_context_t *context, int num, vaddr_t limit_low, vaddr_t limit_high, int flags);
-paddr_t arch_vaddr2paddr(arch_vmm_context_t *context, vaddr_t vaddr);
 void arch_sync_pts(arch_vmm_context_t *src, arch_vmm_context_t *dest, int index_low, int index_high);
 void arch_fork_context(arch_vmm_context_t *src, arch_vmm_context_t *dest);
 void page_fault_handler(struct cpu_state **cpu_p);

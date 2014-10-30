@@ -154,14 +154,33 @@ void arch_sync_pts(arch_vmm_context_t *dest, arch_vmm_context_t *src, int index_
  */
 void arch_fork_context(arch_vmm_context_t *src, arch_vmm_context_t *dest)
 {
-    int i;
-    for(i = 0; i < 1024; i++)
+    if(src != NULL && dest != NULL)
     {
-        if(src->entries[i] & VMM_PRESENT)
+        if(src->entries != NULL && dest->entries != NULL)
         {
-            pt_t *pt_src = (pt_t *) pt_get(src, i, VMM_PRESENT | VMM_WRITABLE);
-            pt_t *pt_dest = (pt_t *) pt_create(dest, i, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
-            memcpy(pt_dest, pt_src, 4096);
+            int i;
+            for(i = 0; i < 1024; i++)
+            {
+                if(src->entries[i] & VMM_PRESENT)
+                {
+                    int flags = src->entries[i] & 0xfff;
+
+                    pt_t *pt_src = (pt_t *) pt_get(src, i);
+                    pt_t *pt_dest = (pt_t *) pt_create(dest, i, flags);
+
+                    if(pt_src == NULL || pt_dest == NULL)
+                    {
+                        printf("aaaah");
+                        while(1);
+                    }
+
+                    memcpy(pt_dest, pt_src, 0x1000);
+
+                    if(src != &current_context->arch_context)
+                        vmm_unmap(current_context, pt_src);
+                    vmm_unmap(current_context, pt_dest);
+                }
+            }
         }
     }
 }
@@ -189,7 +208,7 @@ void arch_update_context(arch_vmm_context_t *context)
  * @param flags flags
  * @return pagetable
  */
-pt_t pt_get(arch_vmm_context_t *context, int index, uint8_t flags)
+pt_t pt_get(arch_vmm_context_t *context, int index)
 {
     pt_t pt;
 
@@ -202,7 +221,7 @@ pt_t pt_get(arch_vmm_context_t *context, int index, uint8_t flags)
         else
         {
             pt = (pt_t) PT_PADDR(index);
-            pt = (pt_t) vmm_automap_kernel(current_context, (paddr_t) pt, flags);
+            pt = (pt_t) vmm_automap_kernel(current_context, (paddr_t) pt, VMM_PRESENT | VMM_WRITABLE);
         }
     }
     else
@@ -224,10 +243,15 @@ pt_t pt_get(arch_vmm_context_t *context, int index, uint8_t flags)
  */
 pt_t pt_create(arch_vmm_context_t *context, int index, uint8_t flags)
 {
-    pt_t pt = (pt_t) pmm_alloc_page_limit(0);
+    pt_t pt;
+    if(current_context == NULL)
+        pt = (pt_t) pmm_alloc_page_limit(0);
+    else
+        pt = pmm_alloc_page();
+
     context->entries[index] = (pde_t) pt | flags | VMM_PRESENT;
 
-    pt = pt_get(context, index, flags | VMM_PRESENT);
+    pt = pt_get(context, index);
     memset(pt, 0, 4096);
 
     return pt;
@@ -273,11 +297,11 @@ int arch_map(arch_vmm_context_t *context, paddr_t pframe, vaddr_t vframe, uint8_
 
     if (pde & VMM_PRESENT)
     {
-        pt = pt_get(context, pd_index, flags | VMM_PRESENT);
+        pt = pt_get(context, pd_index);
     }
     else
     {
-        pt = pt_create(context, pd_index, flags | VMM_PRESENT);
+        pt = pt_create(context, pd_index, VMM_PRESENT | flags);
     }
 
     pt[pt_index] = (pte_t)(pframe & ~0xFFF) | VMM_PRESENT | (flags & 0xFFF);
@@ -307,7 +331,7 @@ int arch_map(arch_vmm_context_t *context, paddr_t pframe, vaddr_t vframe, uint8_
  */
 int arch_unmap(arch_vmm_context_t *context, vaddr_t frame)
 {
-    pt_t pt = pt_get(context, PDE_INDEX(frame), VMM_WRITABLE);
+    pt_t pt = pt_get(context, PDE_INDEX(frame));
     pt[PTE_INDEX(frame)] = 0;
 
     int pt_emty = 1, i;
@@ -323,6 +347,11 @@ int arch_unmap(arch_vmm_context_t *context, vaddr_t frame)
     if(pt_emty)
     {
         pt_destroy(context, PDE_INDEX(frame));
+    }
+    else
+    {
+        if(context != &current_context->arch_context)
+            vmm_unmap(current_context, pt);
     }
 
     return 0;
@@ -340,7 +369,7 @@ int arch_unmap(arch_vmm_context_t *context, vaddr_t frame)
  * @param flags paging flags for temporary mappings
  * @return virtual start adress
  */
-vaddr_t arch_vaddr_find(arch_vmm_context_t *context, int num, vaddr_t limit_low, vaddr_t limit_high, int flags)
+vaddr_t arch_vaddr_find(arch_vmm_context_t *context, int num, vaddr_t limit_low, vaddr_t limit_high)
 {
 #define PAGES_FOUND(l) \
 	  if(vaddr == (vaddr_t)NULL) { \
@@ -365,7 +394,7 @@ vaddr_t arch_vaddr_find(arch_vmm_context_t *context, int num, vaddr_t limit_low,
     {
         if(context->entries[pd_index] & VMM_PRESENT)
         {
-            pt = pt_get(context, pd_index, flags);
+            pt = pt_get(context, pd_index);
 
             uint32_t pt_end = (pd_index == pd_index_end) ? pt_index_end : PT_LENGTH; // last pd entry
             for(; pt_index < pt_end; pt_index++)
@@ -380,7 +409,10 @@ vaddr_t arch_vaddr_find(arch_vmm_context_t *context, int num, vaddr_t limit_low,
                     vaddr = (uintptr_t)NULL;
                 }
             }
+
             pt_index = 0;
+            if(context != &current_context->arch_context)
+                vmm_unmap(current_context, pt);
         }
         else
         {
@@ -407,9 +439,10 @@ int arch_vmm_is_present(arch_vmm_context_t *context, vaddr_t vaddr)
 
     if(context->entries[pd_index] & VMM_PRESENT)
     {
-        pt_t *pt = (pt_t *)pt_get(context, pd_index, 0);
+        pt_t *pt = (pt_t *)pt_get(context, pd_index);
         return ((uint32_t)pt[pt_index] & VMM_PRESENT) ? 1 : 0;
     }
+
     return 0;
 }
 
@@ -428,7 +461,7 @@ paddr_t arch_vaddr2paddr(arch_vmm_context_t *context, vaddr_t vaddr)
 
     if(context->entries[pd_index] & VMM_PRESENT)
     {
-        pt_t *pt = (pt_t *)pt_get(context, pd_index, 0);
+        pt_t *pt = (pt_t *) pt_get(context, pd_index);
         return (paddr_t) pt[pt_index] & ~0xfff;
     }
     return 0;
@@ -460,7 +493,7 @@ void page_fault_handler(struct cpu_state **cpu_p)
     char message[512];
 
     uint32_t addr;
-    asm ("mov %%cr2, %0" : "=r" (addr));
+    asm volatile("mov %%cr2, %0" : "=r" (addr));
 
     sprintf(message, "Page fault in %s space:\nError %s address %#010X: %s.\nEIP: %#010X\n Process: %s\n", ((cpu->error & 4) ? "user" : "kernel"),
             ((cpu->error & 2) ? "writing to" : "reading at"), addr, ((cpu->error & 1) ? "Access denied" : "Nonpaged area"), cpu->eip,current_thread->process->name);

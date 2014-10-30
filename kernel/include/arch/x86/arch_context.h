@@ -29,8 +29,8 @@
 struct arch_thread_context
 {
     struct cpu_state *state;
-    vaddr_t kernel_mode_stack;
-    vaddr_t program_stack;
+    vaddr_t kernel_mode_stack; // virtual adress
+    vaddr_t program_stack; // physical adress
     vmm_context_t memory;
 } arch_thread_context;
 

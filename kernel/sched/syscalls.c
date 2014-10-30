@@ -70,7 +70,7 @@ void sys_exit(struct cpu_state **cpu)
     }
     send_killed_process(current_thread->process);
     process_kill(current_thread->process);
-    *cpu = task_schedule(*cpu);
+    *cpu = (struct cpu_state *)task_schedule(*cpu);
 }
 
 /**
