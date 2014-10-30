@@ -557,19 +557,14 @@ void sys_getcwd(struct cpu_state **cpu)
     char *buffer = (char *)(*cpu)->CPU_ARG1;
     int buffersize = (int)(*cpu)->CPU_ARG2;
     int currentend = 0;
-    int cwdsize = 1;				// the final size of the final '\0'
+    int cwdsize = 0;				// the final size of the final '\0'
 
     vfs_inode_t *inode = current_thread->process->cwd;
 
-    if(inode == root)
-        cwdsize++;
-
-    while(inode != root)
-    {
-        cwdsize += strlen(inode->name);		// add the lenght of the directory name
-        cwdsize++;				// add the length of the '/' between the directorys
-        inode = inode->parent;			// next directory
-    }
+	while(inode != root) {
+		cwdsize += strlen((char*)inode->name) + 1;
+		inode = inode->parent;
+	}
 
     if(buffer == NULL)
     {
@@ -583,20 +578,26 @@ void sys_getcwd(struct cpu_state **cpu)
         return;
     }
 
-    currentend = cwdsize - 1;		// because first element is buffer[0] (instead of buffer[1])
-    buffer[currentend--] = '\0';
-    inode = current_thread->process->cwd;
+	memset(buffer, 0, buffersize);
+	if(cwdsize > 0)
+	{
+		buffer += cwdsize+1;
+		*--buffer = '\0';
 
-    if(inode == root)
-        buffer[currentend] = '/';
-
-    while(inode != root)
-    {
-        currentend -= (strlen(inode->name) - 1);
-        strcpy(&buffer[currentend--], inode->name);
-        buffer[currentend--] = '/';
-        inode = inode->parent;
-    }
+		inode = current_thread->process->cwd;
+		while(inode != root)
+		{
+			int len = strlen((char*)inode->name);
+			buffer -= len;
+			memcpy(buffer, inode->name, len);
+			*--buffer = '/';
+			inode = inode->parent;
+		}
+	}
+	else
+	{
+		strcpy(buffer,"/");
+	}
 
     (*cpu)->CPU_ARG0 =(unsigned int) buffer;
     return;
