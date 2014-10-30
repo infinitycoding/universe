@@ -9,7 +9,14 @@ Thumbs.db
 #Kernel Ausführbare Dateien ignoriere
 *.elf
 user/ls/ls
+user/cat/cat
+user/ultrashell/ultrashell
+user/cp/cp
+
 build/ls
+buld/cp
+build/cat
+build/ultrashell
 
 # portierungen nicht mit nehmen
 bin/
