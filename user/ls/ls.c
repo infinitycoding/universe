@@ -125,8 +125,18 @@ int main(int argc, char **argv)
 	{	
 		dir = readdir(fdesc, dir);
 		
-		if(dir != NULL)		
+		if(dir != NULL)
+		{
+			if(dir->name[0] == '.')
+			{
+				if((dir->name[1] == '\0' || (dir->name[1] == '.' && dir->name[2] == '\0')) && !(active_flags & all))
+					continue;
+				else if(!(active_flags & all) || !(active_flags & almost_all))
+					continue;
+			}
+			
 			printf("%s ", dir->name);
+		}
 	}while(dir != NULL);
 	
 	printf("\n");
