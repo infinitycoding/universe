@@ -31,6 +31,8 @@
 #include <mm/paging.h>
 #include <memory_layout.h>
 
+#include <vfs/vfs.h>
+
 #include <gdt.h>
 
 // global stuff
@@ -42,6 +44,8 @@ list_t *zombie_list = NULL;					// list of zomibe pids
 pid_t pid_counter = 1;						// counter to generate next pid
 
 iterator_t thread_iterator;
+vfs_inode_t *proc_dir_inode = NULL;
+extern vfs_inode_t *root;
 
 /**
  * @brief	Initiate the scheduler module
@@ -52,6 +56,9 @@ void INIT_SCHEDULER(void)
     process_list = list_create();
     zombie_list = list_create();
     thread_iterator = iterator_create(running_threads);
+
+	// create "/proc" directory in vfs
+	proc_dir_inode = vfs_create_inode("proc", S_IFDIR | S_IRWXU | S_IRWXG | S_IRWXO, root, 0, 0);
 
     // create kernel process
     kernel_state = process_create("Kernel INIT", PROCESS_ACTIVE, NULL, 0, 0, NULL);

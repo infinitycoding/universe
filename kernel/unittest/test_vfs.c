@@ -26,7 +26,7 @@
 
 
 #define COUNT 100
-#define STEP (int)((float)COUNT/(float)10)
+#define STEP (int)((float)COUNT/(float)20)
 extern vfs_inode_t *root;
 
 bool test_vfs()

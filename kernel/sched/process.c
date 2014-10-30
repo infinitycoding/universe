@@ -34,6 +34,7 @@
 #include <event/trigger.h>
 #include <printf.h>
 #include <math.h>
+#include <vfs/vfs.h>
 #include <vfs/fd.h>
 
 // defined in sched/scheduler.c
@@ -46,8 +47,11 @@ extern list_t *process_list;
 extern list_t *zombie_list;
 extern pid_t pid_counter;
 
+extern vfs_inode_t *proc_dir_inode;
+
 // defined in vfs/vfs.c
 extern vfs_inode_t *root;
+
 
 /**
  * @brief Prints a thread-list.
@@ -187,6 +191,12 @@ struct process_state *process_create(const char *name, uint16_t flags, struct pr
     desc2->read_inode = NULL;
     desc2->write_inode = stderr;
     list_push_back(state->files, desc2);
+
+	// create directory /proc/<pid>/ and /proc/<pid>/socket/
+	char str[64];
+	itoa(state->pid, &str, 10);
+	state->proc_inode = vfs_create_inode(str, S_IFDIR | S_IRWXU | S_IRWXG | S_IRWXO, proc_dir_inode, 0, 0);
+	state->socket_inode = vfs_create_inode("socket", S_IFDIR | S_IRUSR | S_IWUSR | S_IROTH, state->proc_inode, 0, 0);
 
     // add to process list
     list_push_front(process_list, state);

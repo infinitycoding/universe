@@ -98,6 +98,11 @@ vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_
         inode->buffer->num_writers = 1;
         inode->buffer->num_blocks = 0;
         inode->buffer->blocks = list_create();
+
+		if(S_ISDIR(inode->stat))
+			inode->buffer->block_size = sizeof(vfs_dentry_t);
+		else
+			inode->buffer->block_size = 0x1000;
     }
 
     // write inode into parents entries
@@ -105,7 +110,7 @@ vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_
     {
         inode->parent = parent;
         vfs_dentry_t *entry = vfs_create_dir_entry(inode);
-        vfs_write(parent, parent->length, entry, sizeof(vfs_dentry_t));
+        vfs_add_dir_entry(inode->parent, entry);
     }
 
     // write "." and ".." entries
@@ -149,6 +154,63 @@ vfs_dentry_t* vfs_create_dir_entry(vfs_inode_t *entry_inode)
     return dir_ent;
 }
 
+void vfs_add_dir_entry(vfs_inode_t *dir, vfs_dentry_t *entry)
+{
+	if(! S_ISDIR(dir->stat))
+		return;
+
+    vfs_buffer_info_t *info = dir->buffer;
+
+	vfs_buffer_block_t *block = malloc(sizeof(vfs_buffer_block_t));
+	block->base = entry;
+	block->block_id = info->num_blocks++;
+	list_push_back(info->blocks, block);
+}
+
+void vfs_remove_dir_entry(vfs_inode_t *dir, vfs_inode_t *inode)
+{
+	if(! S_ISDIR(dir->stat))
+		return;
+
+    vfs_buffer_info_t *info = dir->buffer;
+    iterator_t it = iterator_create(info->blocks);
+    int i;
+    for(i = 0; i < info->num_blocks; i++)
+	{
+		vfs_buffer_block_t *block = it.current->element;
+		vfs_dentry_t *dentry = block->base;
+		
+		if(dentry->inode == inode)
+		{
+			list_remove(&it);
+		}
+
+        list_next(&it);
+	}
+}
+
+vfs_buffer_block_t *vfs_get_buffer_block(vfs_buffer_info_t *info, uint32_t id)
+{
+	if(! list_is_empty(info->blocks))
+	{
+    	iterator_t it = iterator_create(info->blocks);
+		list_set_first(&it);
+
+		int i;
+		for(i = 0; i < info->num_blocks; i++)
+		{
+			vfs_buffer_block_t *block = (vfs_buffer_block_t*) it.current->element;
+
+			if(block->block_id == id)
+				return block;
+
+			list_next(&it);
+		}
+	}
+
+	return NULL;
+}
+
 /**
  * write into a vfs-inode
  *
@@ -169,63 +231,40 @@ int vfs_write(vfs_inode_t *inode, int off, void *buffer, int bytes)
         return 0;
     }
 
-    // calculate block indices
-    int block_id = off / VFS_BLOCK_SIZE;
-    int block_off= off % VFS_BLOCK_SIZE;
-
-    // search first block
     vfs_buffer_info_t *info = inode->buffer;
     vfs_buffer_block_t *block = NULL;
-    iterator_t it = iterator_create(info->blocks);
 
-    int i,found = 0;
-    for(i = 0; i < info->num_blocks; i++)
-    {
-        block = (vfs_buffer_block_t*) it.current->element;
-        if(block->block_id == block_id)
-        {
-            found = 1;
-            break;
-        }
+    // calculate block indices
+    int block_id  = off / info->block_size;
+    int block_off = off % info->block_size;
 
-        list_next(&it);
-    }
+    // search first block
+	block = vfs_get_buffer_block(info, block_id);
 
     uint8_t *data = (uint8_t*) buffer;
     int index = block_off;
 
     // go through all bytes...
+    int i;
     for(i = 0; i < bytes; i++)
     {
         // if the block ends, go to the next
-        if(index >= VFS_BLOCK_SIZE)
+        if(index >= info->block_size)
         {
             block_id++;
-            if(block_id >= info->num_blocks)
-            {
-                found = 0;
-            }
-            else
-            {
-                list_next(&it);
-                block = (vfs_buffer_block_t*) it.current->element;
-
-                found = 1;
-                index = 0;
-            }
+            block = vfs_get_buffer_block(info, block_id);
+            index = 0;
         }
 
         // if nothing found, create a new block
-        if(! found)
+        if(block == NULL)
         {
             block = malloc(sizeof(vfs_buffer_block_t));
-            block->base = malloc(VFS_BLOCK_SIZE);
+            block->base = malloc(info->block_size);
             block->block_id = info->num_blocks++;
             list_push_back(info->blocks, block);
 
             block_id = block->block_id;
-
-            found = 1;
             index = 0;
         }
 
@@ -234,9 +273,9 @@ int vfs_write(vfs_inode_t *inode, int off, void *buffer, int bytes)
     }
 
     // increase length
-    if( (off + bytes) > inode->length)
+    if( (off + i) > inode->length)
     {
-        inode->length = off + bytes;
+        inode->length = off + i;
         inode->stat.st_size = inode->length;
     }
 
@@ -249,7 +288,7 @@ int vfs_write(vfs_inode_t *inode, int off, void *buffer, int bytes)
         launch_pipe_handlers(info);
     }
 
-    return bytes;
+    return i;
 }
 
 /**
@@ -272,53 +311,36 @@ int vfs_read(vfs_inode_t *inode, int offset, void *buffer, int bytes)
 
     if(inode->length >= offset)
     {
-        int block_id = offset / PAGE_SIZE;
-        int block_off= offset % PAGE_SIZE;
-
-        // search first block
         vfs_buffer_info_t *info = inode->buffer;
         vfs_buffer_block_t *block = NULL;
         iterator_t it = iterator_create(info->blocks);
 
-        int i;
-        for(i = 0; i < info->num_blocks; i++)
-        {
-            block = (vfs_buffer_block_t*) it.current->element;
-            if(block->block_id == block_id)
-            {
-                break;
-            }
+        int block_id  = offset / info->block_size;
+        int block_off = offset % info->block_size;
 
-            list_next(&it);
-        }
+        // search first block
+        block = vfs_get_buffer_block(info, block_id);
 
         uint8_t *data = (uint8_t*) buffer;
         int index = block_off;
 
         // go through all bytes...
+		int i;
         for(i = 0; i < bytes; i++)
         {
             // if the block ends, go to the next
-            if(index >= VFS_BLOCK_SIZE)
+            if(index >= info->block_size)
             {
                 block_id++;
-                if(block_id >= info->num_blocks)
-                {
-                    break;
-                }
-                else
-                {
-                    list_next(&it);
-                    block = (vfs_buffer_block_t*) it.current->element;
+                index = 0;
+        		block = vfs_get_buffer_block(info, block_id);
 
-                    index = 0;
-                }
+                if(block == NULL)
+                    break;
             }
 
             if(inode->length <= (offset+i))
-            {
                 break;
-            }
 
             // copy data
             data[i] = block->base[index++];
@@ -440,20 +462,24 @@ vfs_inode_t *vfs_lookup_path(char *path)
 		vfs_inode_t *real = parent;
 		GET_INODE(real);
 
-        int num = real->length / sizeof(vfs_dentry_t);
-        int found = 0;
-        int i;
-        for(i = 0; i < num; i++)
-        {
-            vfs_dentry_t entry;
-            vfs_read(parent, i*sizeof(vfs_dentry_t), &entry, sizeof(vfs_dentry_t));
-            if(strcmp(str, entry.inode->name) == 0)
-            {
-                parent = entry.inode;
-                found = 1;
-                break;
-            }
-        }
+		vfs_buffer_info_t *info = real->buffer;
+		iterator_t it = iterator_create(info->blocks);
+		int i;
+		int found = 0;
+		for(i = 0; i < info->num_blocks; i++)
+		{
+			vfs_buffer_block_t *block = it.current->element;
+			vfs_dentry_t *dentry = (vfs_dentry_t*) block->base;
+
+			if(strcmp(str, dentry->inode->name) == 0)
+		    {
+		       parent = dentry->inode;
+		       found = 1;
+		       break;
+		    }
+
+		    list_next(&it);
+		}
 
         if(!found)
         {
@@ -506,19 +532,23 @@ vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid)
 		vfs_inode_t *real = parent;
 		GET_INODE(real);
 
-        int num = real->length / sizeof(vfs_dentry_t);
-        int found = 0;
-        int i;
-        for(i = 0; i < num; i++)
-        {
-            vfs_dentry_t entry;
-            vfs_read(parent, i*sizeof(vfs_dentry_t), &entry, sizeof(vfs_dentry_t));
-            if(strcmp(str, entry.inode->name) == 0)
+		vfs_buffer_info_t *info = real->buffer;
+		iterator_t it = iterator_create(info->blocks);
+		int i;
+		int found = 0;
+		for(i = 0; i < info->num_blocks; i++)
+		{
+			vfs_buffer_block_t *block = it.current->element;
+			vfs_dentry_t *dentry = (vfs_dentry_t*) block->base;
+
+            if(strcmp(str, dentry->inode->name) == 0)
             {
-                parent = entry.inode;
+                parent = dentry->inode;
                 found = 1;
                 break;
             }
+
+		    list_next(&it);
         }
 
         char *new_str = strtok(NULL, delimiter);

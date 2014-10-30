@@ -73,6 +73,8 @@ struct process_state
     vfs_inode_t *cwd;
     list_t *files;
     list_t *ports;
+	vfs_inode_t *proc_inode;
+	vfs_inode_t *socket_inode;
 
     // threads
     struct thread_state *main_thread;

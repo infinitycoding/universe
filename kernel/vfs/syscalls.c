@@ -240,6 +240,11 @@ void sys_read(struct cpu_state **cpu)
         if(desc->permission & VFS_PERMISSION_READ && desc->read_inode != NULL)
         {
             vfs_inode_t *inode = desc->read_inode;
+			if(S_ISDIR(inode->stat))
+			{
+				(*cpu)->CPU_ARG0 = _NO_PERMISSION;
+				return;
+			}
             vfs_buffer_info_t *info = inode->buffer;
 
             int ret = vfs_read(inode, desc->read_pos, buf, len);
@@ -302,6 +307,11 @@ void sys_write(struct cpu_state **cpu)
         if(desc->permission & VFS_PERMISSION_WRITE && desc->write_inode != NULL)
         {
             vfs_inode_t *inode = desc->write_inode;
+			if(S_ISDIR(inode->stat))
+			{
+				(*cpu)->CPU_ARG0 = _NO_PERMISSION;
+				return;
+			}
 
             int ret = vfs_write(inode, desc->write_pos, buf, len);
             (*cpu)->CPU_ARG0 = ret;
@@ -458,20 +468,26 @@ void sys_chdir(struct cpu_state **cpu)
 void sys_getdents(struct cpu_state **cpu)
 {
     int fd = (*cpu)->CPU_ARG1;
-    //int count = (*cpu)->CPU_ARG2;		// count is currently unused, so i commented it out
+    dirent_t *dentry = (dirent_t *)(*cpu)->CPU_ARG2;
 
     vfs_inode_t *parent = get_fd(current_thread->process, fd)->read_inode;
+	GET_INODE(parent);
+
     if(vfs_access(parent, R_OK, current_thread->process->uid, current_thread->process->gid) == 0)
     {
-        dirent_t *dentry = (dirent_t *)(*cpu)->CPU_ARG2;
+		if(! S_ISDIR(parent->stat))
+		{
+        	(*cpu)->CPU_ARG0 = _NO_PERMISSION;
+			return;
+		}
 
-        vfs_dentry_t *entries = malloc(parent->length);
-        vfs_read(parent, 0, entries, parent->length);
-        int num = parent->length / sizeof(vfs_dentry_t);
+		vfs_buffer_info_t *info = parent->buffer;
 
-        if(current_thread->getdents_pos < num && (fd == current_thread->getdents_old_fd || current_thread->getdents_old_fd == -1))
+        if(current_thread->getdents_pos < info->num_blocks && (fd == current_thread->getdents_old_fd || current_thread->getdents_old_fd == -1))
         {
-            vfs_inode_t *ino = entries[current_thread->getdents_pos++].inode;
+			vfs_buffer_block_t *block = vfs_get_buffer_block(info, current_thread->getdents_pos++);
+            vfs_dentry_t *entry = block->base;
+			vfs_inode_t *ino = entry->inode;
 
             strcpy(dentry->name, ino->name);
             memcpy(&dentry->stat, &ino->stat, sizeof(struct stat));

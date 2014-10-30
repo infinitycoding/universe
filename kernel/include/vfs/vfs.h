@@ -53,8 +53,6 @@
 #define VFS_PERMISSION_READ 1
 #define VFS_PERMISSION_WRITE 2
 
-#define VFS_BLOCK_SIZE 4096
-
 typedef struct vfs_buffer_info
 {
     unsigned int num_readers;
@@ -65,6 +63,7 @@ typedef struct vfs_buffer_info
 
     list_t *blocks;
     int num_blocks;
+	int block_size;
 } vfs_buffer_info_t;
 
 typedef struct vfs_buffer_block
@@ -124,6 +123,7 @@ void vfs_debug_output(vfs_inode_t *start);
 void vfs_debug_output_all();
 #endif
 
+// Syscalls
 void sys_open(struct cpu_state **cpu);
 void sys_pipe(struct cpu_state **cpu);
 void sys_mknod(struct cpu_state **cpu);
