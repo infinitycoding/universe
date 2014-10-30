@@ -123,11 +123,11 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
         kernel_thread_create(INIT_HYPERVISOR,(char **) argv, NULL);
     }
 
-    vfs_inode_t *testnode = vfs_lookup_path("/ultrashell.elf");
+    vfs_inode_t *testnode = vfs_lookup_path("/ultrashell");
 
     if(testnode == NULL)
     {
-        printf("ultrashell.elf not in vfs\n");
+        printf("ultrashell not in vfs\n");
     }
     else
     {

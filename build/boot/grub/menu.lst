@@ -2,10 +2,13 @@ timeout 10
 
 title Universe
     kernel /kernel32.elf
+    module /boot/grub/menu.lst
     module /drivers/keyboard.elf
     module /drivers/system.pf
-    module /ultrashell.elf
-    module /test.elf
-	module /ls
+    module /ultrashell
+    module /test
+    module /ls
+    module /cat
+    module /cp
     boot
 

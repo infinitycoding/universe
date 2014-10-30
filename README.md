@@ -10,14 +10,27 @@ Licenses:
 
 If you find any kind of bug please report it to info@infinitycoding.de
 
+Dependencies:
+========
+* gcc
+* nasm
+* qemu(only for testing)
+* cdrkit(genisoimage)
+* make
+
+
 How to compile:
 ========
 
-make dependencies
-
-make all
+````
+	make dependencies
+	make all
+````
 
 run in qemu vm:
+========
 
-make qemu
+````
+	make qemu
+````
 
