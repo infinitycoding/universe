@@ -331,34 +331,18 @@ void sys_create(struct cpu_state **cpu)
     char *name = (char *)(*cpu)->CPU_ARG1;
     int mode = (*cpu)->CPU_ARG2;
 
-    // FIXME: only works in root
-    vfs_inode_t *parent = root; // FIXME TODO
-    if(parent != NULL)
+    vfs_inode_t *inode = vfs_create_path(name, mode, current_thread->process->uid, current_thread->process->gid);
+
+    if(inode != NULL)
     {
-        if(vfs_access(parent, W_OK, current_thread->process->uid, current_thread->process->gid) == 0)
-        {
-            vfs_inode_t *inode = vfs_create_inode(name, mode, parent, current_thread->process->uid, current_thread->process->gid);
+        struct fd *desc = create_fd(current_thread->process);
+        desc->mode = mode;
+        desc->flags = O_RDWR;
+        desc->permission = VFS_PERMISSION_READ | VFS_PERMISSION_WRITE;
+        desc->read_inode = inode;
+        desc->write_inode = inode;
 
-            if(inode != NULL)
-            {
-                struct fd *desc = create_fd(current_thread->process);
-                desc->mode = mode;
-                desc->flags = O_RDWR;
-                desc->permission = VFS_PERMISSION_READ | VFS_PERMISSION_WRITE;
-                desc->read_inode = inode;
-                desc->write_inode = inode;
-
-                (*cpu)->CPU_ARG0 = desc->id;
-            }
-            else
-            {
-                (*cpu)->CPU_ARG0 = _FAILURE;
-            }
-        }
-        else
-        {
-            (*cpu)->CPU_ARG0 = _NO_PERMISSION;
-        }
+        (*cpu)->CPU_ARG0 = desc->id;
     }
     else
     {
@@ -391,11 +375,10 @@ void sys_link(struct cpu_state **cpu)
         if(vfs_access(src_inode, R_OK, current_thread->process->uid, current_thread->process->gid == 0) &&
                 vfs_access(dest_parent, W_OK, current_thread->process->uid, current_thread->process->gid == 0))
         {
-            vfs_inode_t *dest_inode = vfs_create_inode(dest_path, src_inode->stat.st_mode, dest_parent, current_thread->process->uid, current_thread->process->gid);
+            vfs_inode_t *dest_inode = vfs_create_inode(dest_path, src_inode->stat.st_mode | S_IFLNK, dest_parent, current_thread->process->uid, current_thread->process->gid);
 
             if(dest_inode != NULL)
             {
-                dest_inode->type = VFS_LINK;
                 dest_inode->buffer = (void *)dest_inode;
 
                 (*cpu)->CPU_ARG0 = _SUCCESS;
@@ -448,7 +431,8 @@ void sys_chdir(struct cpu_state **cpu)
     vfs_inode_t *nwd = vfs_lookup_path(path);
     if(nwd != NULL)
     {
-        if(S_ISDIR(nwd->stat))
+		GET_INODE(nwd);
+        if(nwd != NULL && S_ISDIR(nwd->stat))
         {
             if(vfs_access(nwd, R_OK, current_thread->process->uid, current_thread->process->gid) == 0)
             {
@@ -473,8 +457,6 @@ void sys_chdir(struct cpu_state **cpu)
 
 void sys_getdents(struct cpu_state **cpu)
 {
-    static int pos = 0;
-    static int old_fd = -1;
     int fd = (*cpu)->CPU_ARG1;
     //int count = (*cpu)->CPU_ARG2;		// count is currently unused, so i commented it out
 
@@ -487,9 +469,9 @@ void sys_getdents(struct cpu_state **cpu)
         vfs_read(parent, 0, entries, parent->length);
         int num = parent->length / sizeof(vfs_dentry_t);
 
-        if(pos < num && (fd == old_fd || old_fd == -1))
+        if(current_thread->getdents_pos < num && (fd == current_thread->getdents_old_fd || current_thread->getdents_old_fd == -1))
         {
-            vfs_inode_t *ino = entries[pos++].inode;
+            vfs_inode_t *ino = entries[current_thread->getdents_pos++].inode;
 
             strcpy(dentry->name, ino->name);
             memcpy(&dentry->stat, &ino->stat, sizeof(struct stat));
@@ -498,11 +480,11 @@ void sys_getdents(struct cpu_state **cpu)
         }
         else
         {
-            pos = 0;
+            current_thread->getdents_pos = 0;
             (*cpu)->CPU_ARG0 = (uint32_t) NULL;
         }
 
-        old_fd = fd;
+        current_thread->getdents_old_fd = fd;
     }
     else
     {
@@ -547,7 +529,7 @@ void sys_mkdir(struct cpu_state **cpu)
     char *path = (char *)(*cpu)->CPU_ARG1;
     int mode = (int)(*cpu)->CPU_ARG2;
 
-    vfs_create_path(path, mode, current_thread->process->uid, current_thread->process->gid);
+    vfs_create_path(path, mode | S_IFDIR, current_thread->process->uid, current_thread->process->gid);
 
     (*cpu)->CPU_ARG0 = 0;
 

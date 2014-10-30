@@ -27,25 +27,28 @@
 #include <sys/unistd.h>
 #include <sys/types.h>
 
-#define S_IFMT  0x0 // type of file
-#define S_IFBLK 0x1 // block special
-#define S_IFCHR 0x2 // character special
-#define S_IFIFO 0x3 // FIFO special
-#define S_IFREG 0x4 // regular
-#define S_IFDIR 0x5 // directory
-#define S_IFLNK 0x6 // symbolic link
+#define S_IFMT  0x01 // type of file
+#define S_IFBLK 0x02 // block special
+#define S_IFCHR 0x04 // character special
+#define S_IFIFO 0x08 // FIFO special
+#define S_IFREG 0x10 // regular
+#define S_IFDIR 0x20 // directory
+#define S_IFLNK 0x40 // symbolic link
 
-#define S_MAO 0x6 // st_mode: access offset
+#define S_MAO 8 // st_mode: access offset
 
 #define S_IRUSR (0x001 << S_MAO) //user-read
 #define S_IWUSR (0x002 << S_MAO) // -write
 #define S_IXUSR (0x004 << S_MAO) // -execute
-#define S_IRGRP (0x008 << S_MAO) //group-read
-#define S_IWGRP (0x010 << S_MAO) // -write
-#define S_IXGRP (0x020 << S_MAO) // -execute
-#define S_IROTH (0x040 << S_MAO) //other-read
-#define S_IWOTH (0x080 << S_MAO) // -write
-#define S_IXOTH (0x100 << S_MAO) // -execute
+#define S_IRWXU (0x007 << S_MAO) // -rwx
+#define S_IRGRP (0x010 << S_MAO) //group-read
+#define S_IWGRP (0x020 << S_MAO) // -write
+#define S_IXGRP (0x040 << S_MAO) // -execute
+#define S_IRWXG (0x007 << S_MAO) // -rwx
+#define S_IROTH (0x100 << S_MAO) //other-read
+#define S_IWOTH (0x200 << S_MAO) // -write
+#define S_IXOTH (0x400 << S_MAO) // -execute
+#define S_IRWXO (0x007 << S_MAO) // -rwx
 
 // check
 #define S_ISBLK(x) (x.st_mode & S_IFBLK) ? 1 : 0

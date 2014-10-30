@@ -47,6 +47,10 @@ struct thread_state
 
     int return_value;
     struct arch_thread_context context;
+
+    // i put that here.. where else?
+    int getdents_pos;
+    int getdents_old_fd;
 };
 
 struct thread_state *thread_create(struct process_state *process, privilege_t prev, vaddr_t eip, char **argv, char **environ, vaddr_t return_address, vmm_context_t *context);

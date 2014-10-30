@@ -49,9 +49,9 @@ uint32_t nodes = 0;
  */
 void INIT_VFS(void)
 {
-    root = vfs_create_inode(NULL, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH, NULL, 0, 0);
+    root = vfs_create_inode(NULL, S_IFDIR | S_IRWXU | S_IRWXG | S_IRWXO, NULL, 0, 0);
 
-    vfs_inode_t *foo = vfs_create_inode("foo.txt", S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH, root, 0, 0);
+    vfs_inode_t *foo = vfs_create_inode("foo.txt", S_IRWXU | S_IRWXG | S_IRWXO, root, 0, 0);
     vfs_write(foo, 0, "Hallo Welt!\n", 13);
 }
 
@@ -76,14 +76,6 @@ vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_
     }
 
     inode->length = 0;
-    inode->type = VFS_REGULAR;
-
-    if(parent != NULL)
-    {
-        inode->parent = parent;
-        vfs_dentry_t *entry = vfs_create_dir_entry(inode);
-        vfs_write(parent, parent->length, entry, sizeof(vfs_dentry_t));
-    }
 
     inode->stat.st_mode = mode;
     inode->stat.st_ino = nodes++;
@@ -92,11 +84,39 @@ vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_
     update_time((struct time*)&inode->stat.st_atime);
     update_time((struct time*)&inode->stat.st_mtime);
 
-    inode->buffer = (vfs_buffer_info_t*) malloc(sizeof(vfs_buffer_info_t));
-    inode->buffer->num_readers = 1;
-    inode->buffer->num_writers = 1;
-    inode->buffer->num_blocks = 0;
-    inode->buffer->blocks = list_create();
+    if(mode & S_IFLNK)
+    {
+        inode->type = VFS_LINK;
+        inode->buffer = NULL;
+    }
+    else
+    {
+        inode->type = VFS_REGULAR;
+
+        inode->buffer = (vfs_buffer_info_t*) malloc(sizeof(vfs_buffer_info_t));
+        inode->buffer->num_readers = 1;
+        inode->buffer->num_writers = 1;
+        inode->buffer->num_blocks = 0;
+        inode->buffer->blocks = list_create();
+    }
+
+    // write inode into parents entries
+    if(parent != NULL)
+    {
+        inode->parent = parent;
+        vfs_dentry_t *entry = vfs_create_dir_entry(inode);
+        vfs_write(parent, parent->length, entry, sizeof(vfs_dentry_t));
+    }
+
+    // write "." and ".." entries
+    if(S_ISDIR(inode->stat))
+    {
+        vfs_inode_t *current = vfs_create_inode(".", S_IFLNK, inode, 0, 0);
+        current->buffer = inode;
+
+        vfs_inode_t *par = vfs_create_inode("..", S_IFLNK, inode, 0, 0);
+        par->buffer = parent;
+    }
 
     return inode;
 }
@@ -142,6 +162,12 @@ vfs_dentry_t* vfs_create_dir_entry(vfs_inode_t *entry_inode)
 int vfs_write(vfs_inode_t *inode, int off, void *buffer, int bytes)
 {
     GET_INODE(inode);
+
+    if(inode == NULL || inode->buffer == NULL)
+    {
+        printf("trying to write into uninitalized buffer.\n");
+        return 0;
+    }
 
     // calculate block indices
     int block_id = off / VFS_BLOCK_SIZE;
@@ -238,6 +264,12 @@ int vfs_read(vfs_inode_t *inode, int offset, void *buffer, int bytes)
 {
     GET_INODE(inode);
 
+    if(inode == NULL || inode->buffer == NULL)
+    {
+        printf("trying to read from uninitalized buffer.\n");
+        return 0;
+    }
+
     if(inode->length >= offset)
     {
         int block_id = offset / PAGE_SIZE;
@@ -308,6 +340,8 @@ int vfs_read(vfs_inode_t *inode, int offset, void *buffer, int bytes)
  */
 int vfs_stat(vfs_inode_t *node, struct stat *buffer)
 {
+	GET_INODE(node);
+
     uint8_t *node_stat = (uint8_t*) &node->stat;
     uint8_t *buf = (uint8_t*) buffer;
     int i = 0;
@@ -329,6 +363,8 @@ int vfs_stat(vfs_inode_t *node, struct stat *buffer)
  */
 int vfs_access(vfs_inode_t *node, mode_t modus, uid_t uid, gid_t gid)
 {
+	GET_INODE(node);
+
     if (node->stat.st_uid == uid)
     {
         if ((modus & R_OK) &&
@@ -401,7 +437,10 @@ vfs_inode_t *vfs_lookup_path(char *path)
     char *str = (char*) strtok(path, delimiter);
     while(str != NULL)
     {
-        int num = parent->length / sizeof(vfs_dentry_t);
+		vfs_inode_t *real = parent;
+		GET_INODE(real);
+
+        int num = real->length / sizeof(vfs_dentry_t);
         int found = 0;
         int i;
         for(i = 0; i < num; i++)
@@ -464,7 +503,10 @@ vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid)
     char *str = (char*) strtok(path, delimiter);
     while(str != NULL)
     {
-        int num = parent->length / sizeof(vfs_dentry_t);
+		vfs_inode_t *real = parent;
+		GET_INODE(real);
+
+        int num = real->length / sizeof(vfs_dentry_t);
         int found = 0;
         int i;
         for(i = 0; i < num; i++)
@@ -485,7 +527,7 @@ vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid)
             int n_mode = mode;
             if(new_str != NULL)
             {
-                mode |= S_IFDIR;
+                n_mode |= S_IFDIR;
             }
 
             if(vfs_access(parent, W_OK, uid, gid) == 0)
