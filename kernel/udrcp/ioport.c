@@ -23,7 +23,8 @@
 #include <printf.h>
 #include <udrcp/hypervisor.h>
 #include <udrcp/ioport.h>
-
+#include <io.h>
+#include <sched/thread.h>
 
 /**
  * @brief handles PORT_ALLOC call
@@ -41,11 +42,20 @@ void handle_port_alloc(struct driver *drv, pck_t *req)
         return;
     }
 
-    list_push_front(drv->ports,req->data);
+    portid_t port = (portid_t) *((unsigned int*)req->data);
+    if(alloc_port(&drv->process->main_thread->context, port))
+	{
+		list_push_front(drv->ports,req->data);
+		port_type p = hw_port;
+		respond(drv->pman, req->id, SUCCESS, sizeof(port_type), &p);
+	}
+	else
+	{
+		unsigned int resp = 0; 
+		respond(drv->pman, req->id, ERROR, sizeof(port_type), &resp );
+	}
+	
 
-    //todo: check if the port is already taken
-    port_type p = hw_port;
-    respond(drv->pman, req->id, SUCCESS, sizeof(port_type), &p);
 }
 
 
