@@ -12,11 +12,13 @@ user/ls/ls
 user/cat/cat
 user/ultrashell/ultrashell
 user/cp/cp
+user/test/test
 
 build/ls
-buld/cp
+build/cp
 build/cat
 build/ultrashell
+build/test
 
 # portierungen nicht mit nehmen
 bin/

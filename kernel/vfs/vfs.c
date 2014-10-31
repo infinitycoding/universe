@@ -160,6 +160,12 @@ void vfs_add_dir_entry(vfs_inode_t *dir, vfs_dentry_t *entry)
 		return;
 
     vfs_buffer_info_t *info = dir->buffer;
+	if(info == NULL)
+	{
+		printf("leerer puffer\n");
+		return;
+	}
+
 
 	vfs_buffer_block_t *block = malloc(sizeof(vfs_buffer_block_t));
 	block->base = entry;
@@ -173,6 +179,12 @@ void vfs_remove_dir_entry(vfs_inode_t *dir, vfs_inode_t *inode)
 		return;
 
     vfs_buffer_info_t *info = dir->buffer;
+	if(info == NULL)
+	{
+		printf("leerer puffer\n");
+		return;
+	}
+
     iterator_t it = iterator_create(info->blocks);
     int i;
     for(i = 0; i < info->num_blocks; i++)
@@ -554,11 +566,11 @@ vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid)
         char *new_str = strtok(NULL, delimiter);
         if(!found)
         {
-            int n_mode = mode;
+            int n_mode;
             if(new_str != NULL)
-            {
-                n_mode |= S_IFDIR;
-            }
+				n_mode = mode & (S_IRWXU | S_IRWXG | S_IRWXO) | S_IFDIR;
+			else
+				n_mode = mode;
 
             if(vfs_access(parent, W_OK, uid, gid) == 0)
             {

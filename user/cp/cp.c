@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
   }
   
   int src = open(argv[1], O_RDONLY, 0);
-  int dest = open(argv[2], O_WRONLY | O_CREAT, 0x1ff0);
+  int dest = open(argv[2], O_WRONLY | O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO);
   if(src < 0 || dest < 0) {
     printf("Error.\n");
     return -1;

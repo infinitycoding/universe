@@ -85,7 +85,7 @@ void sys_open(struct cpu_state **cpu)
         {
             // create inode
             inode = vfs_create_path(path, mode, current_thread->process->uid, current_thread->process->gid);
-            if(inode == NULL)
+			if(inode == NULL)
             {
                 (*cpu)->CPU_ARG0 = _NO_PERMISSION;
                 return;
@@ -240,19 +240,26 @@ void sys_read(struct cpu_state **cpu)
         if(desc->permission & VFS_PERMISSION_READ && desc->read_inode != NULL)
         {
             vfs_inode_t *inode = desc->read_inode;
-			if(S_ISDIR(inode->stat))
+			vfs_inode_t *real = inode;
+			GET_INODE(real);
+			if(S_ISDIR(real->stat))
 			{
 				(*cpu)->CPU_ARG0 = _NO_PERMISSION;
 				return;
 			}
-            vfs_buffer_info_t *info = inode->buffer;
+            vfs_buffer_info_t *info = real->buffer;
+			if(info == NULL)
+			{
+				(*cpu)->CPU_ARG0 = _FAILURE;
+				return;
+			}
 
             int ret = vfs_read(inode, desc->read_pos, buf, len);
 
             if(ret == len)
             {
                 desc->read_pos += len;
-                if(inode->type != VFS_PIPE)
+                if(real->type != VFS_PIPE)
                 {
                     desc->write_pos += len;
                 }
@@ -261,7 +268,7 @@ void sys_read(struct cpu_state **cpu)
             }
             else
             {
-                if(inode->type == VFS_PIPE)
+                if(real->type == VFS_PIPE)
                 {
                     add_trigger(WAIT_EVENT, info->event_id, 0, current_thread, sys_read);
                     thread_suspend(current_thread);
@@ -307,7 +314,9 @@ void sys_write(struct cpu_state **cpu)
         if(desc->permission & VFS_PERMISSION_WRITE && desc->write_inode != NULL)
         {
             vfs_inode_t *inode = desc->write_inode;
-			if(S_ISDIR(inode->stat))
+			vfs_inode_t *real = inode;
+			GET_INODE(real);
+			if(S_ISDIR(real->stat))
 			{
 				(*cpu)->CPU_ARG0 = _NO_PERMISSION;
 				return;
@@ -319,7 +328,7 @@ void sys_write(struct cpu_state **cpu)
             if(ret > 0)
             {
                 desc->write_pos += len;
-                if(inode->type != VFS_PIPE)
+                if(real->type != VFS_PIPE)
                 {
                     desc->read_pos += len;
                 }

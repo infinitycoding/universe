@@ -84,7 +84,7 @@ bool test_vfs_api(void)
 bool test_create_file(const char *name)
 {
     int f = 0;
-    f = open(name, O_CREAT, 0x7ff);
+    f = open(name, O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO);
     
     if(f<0)
 	{
