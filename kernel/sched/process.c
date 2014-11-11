@@ -275,6 +275,8 @@ void process_kill(struct process_state *process)
     }
     list_unlock(process_list);
 
+	// remove vfs inode
+	vfs_remove_dir_entry(proc_dir_inode, process->proc_inode);
 
     // free process data
     list_destroy(process->ports);

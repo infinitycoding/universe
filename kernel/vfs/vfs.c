@@ -166,7 +166,6 @@ void vfs_add_dir_entry(vfs_inode_t *dir, vfs_dentry_t *entry)
 		return;
 	}
 
-
 	vfs_buffer_block_t *block = malloc(sizeof(vfs_buffer_block_t));
 	block->base = entry;
 	block->block_id = info->num_blocks++;
@@ -195,6 +194,7 @@ void vfs_remove_dir_entry(vfs_inode_t *dir, vfs_inode_t *inode)
 		if(dentry->inode == inode)
 		{
 			list_remove(&it);
+			info->num_blocks--;
 		}
 
         list_next(&it);
