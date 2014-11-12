@@ -25,13 +25,16 @@
 
 #include <cpu.h>
 #include <mm/paging.h>
+#include <tss.h>
+
 
 struct arch_thread_context
 {
-    struct cpu_state *state;
-    vaddr_t kernel_mode_stack; // virtual adress
-    vaddr_t program_stack; // physical adress
-    vmm_context_t memory;
+    struct cpu_state 	*state;
+    vaddr_t 			kernel_mode_stack; 	// virtual adress
+    vaddr_t 			program_stack; 		// physical adress
+    vmm_context_t 		memory;				// memory context
+	iopb 				ports;				//port context
 } arch_thread_context;
 
 struct cpu_state *arch_create_thread_context(struct arch_thread_context *context, privilege_t prev, vaddr_t entry,vaddr_t return_adress, char **argv, char **environ);

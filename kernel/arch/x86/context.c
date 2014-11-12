@@ -55,7 +55,7 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
 
     memset(new_state, 0, sizeof(struct cpu_state));
     new_state->eip = entry;
-    new_state->eflags = 0x202;
+    new_state->eflags = 0x00000202;
 
     size_t argc = 0;
     if(argv != NULL)
@@ -170,6 +170,10 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
 
         new_state->cs = 0x1b;
         new_state->ss = 0x23;
+		
+		int i;
+		for(i = 0; i < IO_BITMAP_LENGTH / 32;i++)
+			context->ports.iobmp[i] = 0xFFFFFFFF;
     }
 
     return new_state;

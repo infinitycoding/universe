@@ -24,6 +24,9 @@
 
 #include <gdt.h>
 #include <tss.h>
+#include <stddef.h>
+
+
 
 static struct gdt_entry GDT[7]; //nulldesc,Datadesc0,Codedesc0,Datadesc3,Codedesc3,TSS,Callgate 6 descs +1 opt.
 static struct gdtpt gdtp;
@@ -67,6 +70,11 @@ void set_kernelstack(void *stack)
     tss.esp0 = (uint32_t)stack;
 }
 
+void set_iobmp(struct arch_thread_context *context)
+{
+	memcpy(tss.iobmp, context->ports.iobmp, sizeof(tss.iobmp));
+}
+
 /**
  * @brief INIT function for the GDT module.
  */
@@ -99,6 +107,13 @@ void INIT_GDT(void)
         ".1:;"
     );
 
-    // load the TSS
+	
+    //initiate the i/o bitmap
+	tss.iobmp_offset = ((uint16_t)&tss.iobmp)-((uint16_t)&tss); // calculate real adressoffset
+	int i;
+	for(i=0; i<2048; i++)
+ 		tss.iobmp[i]=0xFFFFFFFF;
+	
+	// load the TSS
     asm volatile("ltr %%ax" : : "a" (5 << 3));
 }

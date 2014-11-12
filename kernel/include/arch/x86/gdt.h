@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <arch_context.h>
 
 
 struct gdt_entry
@@ -46,5 +47,5 @@ void set_GDT_entry(int entry, uint32_t base, uint32_t size, uint8_t acess, int8_
 void load_gdt(uint16_t last_entry);
 void INIT_GDT(void);
 void set_kernelstack(void *stack);
-
+void set_iobmp(struct arch_thread_context *context);
 #endif

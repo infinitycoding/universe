@@ -24,8 +24,9 @@
  */
 
 #include <stdint.h>
+#include <arch_context.h>
 
-
+typedef uint16_t portid_t;
 
 static inline uint8_t inb(uint16_t port)
 {
@@ -62,6 +63,12 @@ static inline void outl(uint16_t port, uint32_t value)
 {
     asm volatile("outl %1, %0" : : "Nd" (port), "a" (value));
 }
+
+int check_port(portid_t port);
+int check_port_access(struct arch_thread_context *context, portid_t port);
+int alloc_port(struct arch_thread_context *context, portid_t port);
+void free_port(struct arch_thread_context *context, portid_t port);
+
 
 #endif
 
