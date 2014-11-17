@@ -371,9 +371,9 @@ void sys_create(struct cpu_state **cpu)
 
 void sys_socket(struct cpu_state **cpu)
 {
-    int domain = (*cpu)->CPU_ARG1;
-    int type = (*cpu)->CPU_ARG2;
-    int protocol = (*cpu)->CPU_ARG3;
+    //int domain = (*cpu)->CPU_ARG1;
+    //int type = (*cpu)->CPU_ARG2;
+    //int protocol = (*cpu)->CPU_ARG3;
 
     struct fd *desc = create_fd(current_thread->process);
     (*cpu)->CPU_ARG0 = desc->id;
@@ -495,7 +495,7 @@ void sys_getdents(struct cpu_state **cpu)
         if(current_thread->getdents_pos < info->num_blocks && (fd == current_thread->getdents_old_fd || current_thread->getdents_old_fd == -1))
         {
 			vfs_buffer_block_t *block = vfs_get_buffer_block(info, current_thread->getdents_pos++);
-            vfs_dentry_t *entry = block->base;
+            vfs_dentry_t *entry = (vfs_dentry_t *)block->base;
 			vfs_inode_t *ino = entry->inode;
 
             strcpy(dentry->name, ino->name);
@@ -565,7 +565,7 @@ void sys_getcwd(struct cpu_state **cpu)
 {
     char *buffer = (char *)(*cpu)->CPU_ARG1;
     int buffersize = (int)(*cpu)->CPU_ARG2;
-    int currentend = 0;
+    //int currentend = 0;
     int cwdsize = 0;				// the final size of the final '\0'
 
     vfs_inode_t *inode = current_thread->process->cwd;

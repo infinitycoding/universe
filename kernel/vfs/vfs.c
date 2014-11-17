@@ -325,7 +325,7 @@ int vfs_read(vfs_inode_t *inode, int offset, void *buffer, int bytes)
     {
         vfs_buffer_info_t *info = inode->buffer;
         vfs_buffer_block_t *block = NULL;
-        iterator_t it = iterator_create(info->blocks);
+        //iterator_t it = iterator_create(info->blocks);
 
         int block_id  = offset / info->block_size;
         int block_off = offset % info->block_size;

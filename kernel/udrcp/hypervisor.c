@@ -117,7 +117,6 @@ int INIT_HYPERVISOR(int argc, char **argv, char **environ)
 
         //printf("host: recieved package %d    size:%d    type:%x\n",pck->id,pck->size,pck->type);
         struct int_relation *r;
-        int ret;
         switch(pck->type)
         {
             case RESET_CON:

@@ -77,7 +77,7 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     new_thread->getdents_old_fd = -1;
 
     // context
-    new_thread->return_value = NULL;
+    new_thread->return_value = 0;
 
     if(context != NULL)
         memcpy(&new_thread->context.memory.arch_context, &context->arch_context, sizeof(arch_vmm_context_t));
@@ -88,7 +88,7 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     arch_create_thread_context(&new_thread->context, prev, eip, (vaddr_t) return_address, argv, environ);
 
     // heap
-    if(process->heap_top == NULL)
+    if(process->heap_top == 0)
     {
         process->heap_top = arch_vaddr_find(&new_thread->context.memory.arch_context, 1, MEMORY_LAYOUT_USER_HEAP_START, MEMORY_LAYOUT_USER_HEAP_END);
         vmm_map(&new_thread->context.memory, pmm_alloc_page(), process->heap_top, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
@@ -144,7 +144,7 @@ struct thread_state *thread_clone(struct process_state *process, struct thread_s
 
 
     // context
-    new_thread->return_value = NULL;
+    new_thread->return_value = 0;
 
     vmm_create_context(&new_thread->context.memory);
     arch_fork_context(&src_thread->context.memory.arch_context, &new_thread->context.memory.arch_context);
@@ -165,8 +165,8 @@ struct thread_state *thread_clone(struct process_state *process, struct thread_s
 
         memcpy(dest_stack, src_stack, 0x1000);
 
-        vmm_unmap(current_context, src_stack);
-        vmm_unmap(current_context, dest_stack);
+        vmm_unmap(current_context, (vaddr_t) src_stack);
+        vmm_unmap(current_context, (vaddr_t) dest_stack);
     }
 
     if(process->heap_top == 0)

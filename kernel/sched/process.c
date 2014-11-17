@@ -36,6 +36,7 @@
 #include <math.h>
 #include <vfs/vfs.h>
 #include <vfs/fd.h>
+#include <atoi.h>
 
 // defined in sched/scheduler.c
 extern struct process_state *kernel_state;
@@ -194,7 +195,7 @@ struct process_state *process_create(const char *name, uint16_t flags, struct pr
 
 	// create directory /proc/<pid>/ and /proc/<pid>/socket/
 	char str[64];
-	itoa(state->pid, &str, 10);
+	itoa(state->pid, str, 10);
 	state->proc_inode = vfs_create_inode(str, S_IFDIR | S_IRWXU | S_IRWXG | S_IRWXO, proc_dir_inode, 0, 0);
 	state->socket_inode = vfs_create_inode("socket", S_IFDIR | S_IRUSR | S_IWUSR | S_IROTH, state->proc_inode, 0, 0);
 

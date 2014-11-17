@@ -25,7 +25,7 @@
 #include <gdt.h>
 #include <tss.h>
 #include <stddef.h>
-
+#include <string.h>
 
 
 static struct gdt_entry GDT[7]; //nulldesc,Datadesc0,Codedesc0,Datadesc3,Codedesc3,TSS,Callgate 6 descs +1 opt.
@@ -109,7 +109,7 @@ void INIT_GDT(void)
 
 	
     //initiate the i/o bitmap
-	tss.iobmp_offset = ((uint16_t)&tss.iobmp)-((uint16_t)&tss); // calculate real adressoffset
+	tss.iobmp_offset =(uint32_t)(((uint32_t)&tss.iobmp) - ((uint32_t)&tss)); // calculate real adressoffset
 	int i;
 	for(i=0; i<2048; i++)
  		tss.iobmp[i]=0xFFFFFFFF;

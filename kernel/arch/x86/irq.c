@@ -31,6 +31,7 @@
 #include <sched/scheduler.h>
 #include <drivers/pci.h>
 #include <drivers/clock.h>
+#include <event/trigger.h>
 
 
 static struct IDT_Entry IDT[256]; ///@var define the interrupt decriptor table

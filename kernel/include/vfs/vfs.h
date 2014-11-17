@@ -118,6 +118,10 @@ int vfs_stat(vfs_inode_t *inode, struct stat *buffer);
 int vfs_access(vfs_inode_t *inode, mode_t modus, uid_t uid, gid_t gid);
 vfs_inode_t *vfs_lookup_path(char *path);
 vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid);
+vfs_buffer_block_t *vfs_get_buffer_block(vfs_buffer_info_t *info, uint32_t id);
+void vfs_add_dir_entry(vfs_inode_t *dir, vfs_dentry_t *entry);
+void vfs_remove_dir_entry(vfs_inode_t *dir, vfs_inode_t *inode);
+
 #ifdef VFS_DEBUG
 void vfs_debug_output(vfs_inode_t *start);
 void vfs_debug_output_all();

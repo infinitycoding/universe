@@ -177,8 +177,8 @@ void arch_fork_context(arch_vmm_context_t *src, arch_vmm_context_t *dest)
                     memcpy(pt_dest, pt_src, 0x1000);
 
                     if(src != &current_context->arch_context)
-                        vmm_unmap(current_context, pt_src);
-                    vmm_unmap(current_context, pt_dest);
+                        vmm_unmap(current_context, (vaddr_t) pt_src);
+                    vmm_unmap(current_context, (vaddr_t) pt_dest);
                 }
             }
         }
@@ -247,7 +247,7 @@ pt_t pt_create(arch_vmm_context_t *context, int index, uint8_t flags)
     if(current_context == NULL)
         pt = (pt_t) pmm_alloc_page_limit(0);
     else
-        pt = pmm_alloc_page();
+        pt = (pt_t)pmm_alloc_page();
 
     context->entries[index] = (pde_t) pt | flags | VMM_PRESENT;
 
@@ -351,7 +351,7 @@ int arch_unmap(arch_vmm_context_t *context, vaddr_t frame)
     else
     {
         if(context != &current_context->arch_context)
-            vmm_unmap(current_context, pt);
+            vmm_unmap(current_context, (vaddr_t) pt);
     }
 
     return 0;
@@ -412,7 +412,7 @@ vaddr_t arch_vaddr_find(arch_vmm_context_t *context, int num, vaddr_t limit_low,
 
             pt_index = 0;
             if(context != &current_context->arch_context)
-                vmm_unmap(current_context, pt);
+                vmm_unmap(current_context, (vaddr_t)pt);
         }
         else
         {
