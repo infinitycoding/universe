@@ -142,13 +142,17 @@ void sys_getdents(struct cpu_state **cpu);
 void sys_seek(struct cpu_state **cpu);
 void sys_mkdir(struct cpu_state **cpu);
 void sys_getcwd(struct cpu_state **cpu);
-void launch_pipe_handlers(vfs_buffer_info_t *pipe);
-void set_pipe_trigger(struct cpu_state **cpu);
 void sys_stat(struct cpu_state **cpu);
 void sys_fstat(struct cpu_state **cpu);
 void sys_chmod(struct cpu_state **cpu);
 void sys_lchown(struct cpu_state **cpu);
 void sys_rename(struct cpu_state **cpu);
+
+void launch_pipe_handlers(vfs_buffer_info_t *pipe);
+void set_pipe_trigger(struct cpu_state **cpu);
+void usys_open_port(struct cpu_state **cpu);
+void usys_close_port(struct cpu_state **cpu);
+
 
 #endif
 

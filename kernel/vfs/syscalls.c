@@ -779,3 +779,23 @@ void sys_lchown(struct cpu_state **cpu)
     (*cpu)->CPU_ARG0 = _SUCCESS;
 }
 
+
+void usys_open_port(struct cpu_state **cpu)
+{
+    int port_nr = (char *)(*cpu)->CPU_ARG1;
+
+	char str[8];
+	sprintf(&str, "%d", port_nr);
+
+	printf("pid %d opens port %s\n", current_thread->process->pid, str);
+
+	vfs_create_inode(str, S_IRWXU | S_IRWXG | S_IRWXO | S_IFDIR, current_thread->process->socket_inode,  current_thread->process->uid, current_thread->process->gid);
+
+    (*cpu)->CPU_ARG0 = _SUCCESS;
+}
+
+void usys_close_port(struct cpu_state **cpu)
+{
+    (*cpu)->CPU_ARG0 = _SUCCESS;
+}
+
