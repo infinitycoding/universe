@@ -52,6 +52,8 @@ struct element
 };
 
 typedef struct element element;
+typedef struct element column;
+typedef struct element row;
 
 typedef struct 
 {
@@ -68,8 +70,8 @@ typedef struct
 }graphIndex;
 
 
-graph *createGraph();
-int destroyGraph(graph *g);
+graph *graphCreate();
+int graphDestroy(graph *g);
 
 graphIndex *graphIndexCreate(graph *g, seekEdge s);
 graphIndex *graphIndexSetPosition(graphIndex *i, element *e);
@@ -77,15 +79,15 @@ graphIndex *graphIndexSetEdge(graphIndex *i, seekEdge s);
 void graphIndexDestroy(graphIndex *i);
 
 
-element *createElement();
+element *elementCreate();
 
-element *indexGetCurrent(graphIndex *i);
+element *graphIndexGetCurrent(graphIndex *i);
 
-const char *getElementAttribute(element *e, const char *attr);
-element *setElementAttribute(element *e, const char *attr, const char *val);
+const char *elementGetAttribute(element *e, const char *attr);
+element *elementSetAttribute(element *e, const char *attr, const char *val);
 
-const char *getGraphAttribute(graph *g, const char *attr);
-graph *setGraphAttribute(graph *g, const char *attr, const char *val);
+const char *graphGetAttribute(graph *g, const char *attr);
+graph *graphSetAttribute(graph *g, const char *attr, const char *val);
 
 
 
@@ -94,10 +96,10 @@ graphIndex *graphIndexMovDown(graphIndex *i);
 graphIndex *graphIndexMovLeft(graphIndex *i);
 graphIndex *graphIndexMovRight(graphIndex *i);
 
-int isLeftEdge(graphIndex *i);
-int isRightEdge(graphIndex *i);
-int isUpperEdge(graphIndex *i);
-int isLowerEdge(graphIndex *i);
+int graphIsLeftEdge(graphIndex *i);
+int graphIsRightEdge(graphIndex *i);
+int graphIsUpperEdge(graphIndex *i);
+int graphIsLowerEdge(graphIndex *i);
 
 graphIndex *graphInsertLeft(graphIndex* i,element *e);
 graphIndex *graphInsertRight(graphIndex* i,element *e);
@@ -105,20 +107,15 @@ graphIndex *graphInsertAbove(graphIndex* i,element *e);
 graphIndex *graphInsertBelow(graphIndex* i,element *e);
 
 
-void pushLeft(graphIndex *i, element *e);
-void pushRight(graphIndex *i, element *e);
-void pushUp(graphIndex *i,element *l);
-void pushDown(graphIndex *i,element *l);
+void graphPushLeft(graphIndex *i, element *e);
+void graphPushRight(graphIndex *i, element *e);
+void graphPushUp(graphIndex *i,element *e);
+void graphPushDown(graphIndex *i,element *e);
 
-element *popLeft(graphIndex *i);
-element *popRight(graphIndex *i);
-element *popUp(graphIndex *i);
-element *popDown(graphIndex *i);
+column *graphPopLeft(graphIndex *i);
+column *graphPopRight(graphIndex *i);
+row *graphPopUp(graphIndex *i);
+row *graphPopDown(graphIndex *i);
 
-
-
-
-int writeGraph(graph *g, const char *file);
-graph *readGraph(const char *file);
 
 #endif

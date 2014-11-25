@@ -1,4 +1,5 @@
 #include <graph.h>
+
 #include <string.h>
 #include <stdlib.h>
 
@@ -31,7 +32,7 @@ attribute *createAtributeList()
 	return newAttrib;
 }
 
-int destroyList(attribute *list)
+int listDestroy(attribute *list)
 {
 	if(list == NULL)
 		return 0;
@@ -57,7 +58,7 @@ int destroyList(attribute *list)
 }
 
 
-const char *getListAttribute(attribute *list, const char *key)
+const char *listGetAttribute(attribute *list, const char *key)
 {
 	if(key == NULL || list == NULL)
 		return NULL;
@@ -76,7 +77,7 @@ const char *getListAttribute(attribute *list, const char *key)
 	return NULL;
 }
 
-int setListAttribute(attribute *list, const char *key,const char *val)
+int listSetAttribute(attribute *list, const char *key,const char *val)
 {
 	if(key == NULL || val== NULL || list == NULL)
 		return 0;
@@ -120,17 +121,17 @@ int setListAttribute(attribute *list, const char *key,const char *val)
 
 
 
-graph *createGraph()
+graph *graphCreate()
 {
 	graph *g = malloc(sizeof(graph));
 	g->attributes = createAtributeList();
-	g->rootLayer = createElement();
+	g->rootLayer = elementCreate();
 	g->rootLayer->dummy = 1;
 	
-	element *leftEdge = createElement();
-	element *rightEdge = createElement();
-	element *upperEdge = createElement();
-	element *lowerEdge = createElement();
+	element *leftEdge = elementCreate();
+	element *rightEdge = elementCreate();
+	element *upperEdge = elementCreate();
+	element *lowerEdge = elementCreate();
 	
 	g->rootLayer->left = leftEdge;
 	leftEdge->right = g->rootLayer;
@@ -172,22 +173,22 @@ graphIndex *graphIndexSetEdge(graphIndex *i, seekEdge s)
 	switch(s)
 	{
 		case LEFT_EDGE:
-			while(!isLeftEdge(i))
+			while(!graphIsLeftEdge(i))
 				graphIndexMovLeft(i);
 		break;
 		
 		case RIGHT_EDGE:
-			while(!isLeftEdge(i))
+			while(!graphIsLeftEdge(i))
 				graphIndexMovLeft(i);
 		break;
 		
 		case UPPER_EDGE:
-			while(!isUpperEdge(i))
+			while(!graphIsUpperEdge(i))
 				graphIndexMovUp(i);
 		break;
 		
 		case LOWER_EDGE:
-			while(!isLowerEdge(i))
+			while(!graphIsLowerEdge(i))
 				graphIndexMovDown(i);
 		break;
 		
@@ -204,7 +205,7 @@ void graphIndexDestroy(graphIndex *i)
 		free(i);
 }
 
-element *createElement()
+element *elementCreate()
 {
 	element *e = calloc(1,sizeof(element));
 	e->attributes = createAtributeList();
@@ -212,7 +213,7 @@ element *createElement()
 }
 
 
-element *indexGetCurrent(graphIndex *i)
+element *graphIndexGetCurrent(graphIndex *i)
 {
 	if(i->currentElement->dummy)
 		return NULL;
@@ -221,31 +222,31 @@ element *indexGetCurrent(graphIndex *i)
 }
 
 
-const char *getGraphAttribute(graph *g, const char *attr)
+const char *graphGetAttribute(graph *g, const char *attr)
 {
 	// todo: do error handling
-	return getListAttribute(g->attributes, attr);
+	return listGetAttribute(g->attributes, attr);
 }
 
 
-graph *setGraphAttribute(graph *g, const char *attr, const char *val)
+graph *graphSetAttribute(graph *g, const char *attr, const char *val)
 {
-	if(setListAttribute(g->attributes, attr, val))
+	if(listSetAttribute(g->attributes, attr, val))
 		return g;
 	// todo error handling
 	return NULL;
 }
 
 
-const char *getElementAttribute(element *e, const char *attr)
+const char *elementGetAttribute(element *e, const char *attr)
 {
 	// todo: do error handling
-	return getListAttribute(e->attributes, attr);
+	return listGetAttribute(e->attributes, attr);
 }
 
-element *setElementAttribute(element *e, const char *attr, const char *val)
+element *elementSetAttribute(element *e, const char *attr, const char *val)
 {
-	if(setListAttribute(e->attributes, attr, val))
+	if(listSetAttribute(e->attributes, attr, val))
 		return e;
 	// todo error handling
 	return NULL;
@@ -304,7 +305,7 @@ graphIndex *graphIndexMovRight(graphIndex *i)
 }
 
 
-int isLeftEdge(graphIndex *i)
+int graphIsLeftEdge(graphIndex *i)
 {
 	if(i->currentElement->left == NULL)
 		return 1;
@@ -312,21 +313,21 @@ int isLeftEdge(graphIndex *i)
 }
 
 
-int isRightEdge(graphIndex *i)
+int graphIsRightEdge(graphIndex *i)
 {
 	if(i->currentElement->right == NULL)
 		return 1;
 	return 0;
 }
 
-int isUpperEdge(graphIndex *i)
+int graphIsUpperEdge(graphIndex *i)
 {
 	if(i->currentElement->up == NULL)
 		return 1;
 	return 0;
 }
 
-int isLowerEdge(graphIndex *i)
+int graphIsLowerEdge(graphIndex *i)
 {
 	if(i->currentElement->down == NULL)
 		return 1;
@@ -335,14 +336,14 @@ int isLowerEdge(graphIndex *i)
 
 graphIndex *graphInsertLeft(graphIndex* i, element *e)
 {
-	if(isLeftEdge(i) || e == NULL)
+	if(graphIsLeftEdge(i) || e == NULL)
 		return NULL;
 	
 	e->right = i->currentElement;
 	e->left = i->currentElement->left;
-	e->up = createElement();
+	e->up = elementCreate();
 	e->up->down = e;
-	e->down = createElement();
+	e->down = elementCreate();
 	e->down->up = e;
 	
 	i->currentElement->left = e;
@@ -353,14 +354,14 @@ graphIndex *graphInsertLeft(graphIndex* i, element *e)
 
 graphIndex *graphInsertRight(graphIndex* i, element *e)
 {
-	if(isRightEdge(i) || e == NULL)
+	if(graphIsRightEdge(i) || e == NULL)
 		return NULL;
 	
 	e->left = i->currentElement;
 	e->right = i->currentElement->right;
-	e->up = createElement();
+	e->up = elementCreate();
 	e->up->down = e;
-	e->down = createElement();
+	e->down = elementCreate();
 	e->down->up = e;
 	
 	i->currentElement->right = e;
@@ -372,14 +373,14 @@ graphIndex *graphInsertRight(graphIndex* i, element *e)
 
 graphIndex *graphInsertAbove(graphIndex* i, element *e)
 {
-	if(isUpperEdge(i) || e == NULL)
+	if(graphIsUpperEdge(i) || e == NULL)
 		return NULL;
 	
 	e->down = i->currentElement;
 	e->up = i->currentElement->up;
-	e->left = createElement();
+	e->left = elementCreate();
 	e->left->right = e;
-	e->right = createElement();
+	e->right = elementCreate();
 	e->right->left = e;
 	
 	i->currentElement->up = e;
@@ -390,14 +391,14 @@ graphIndex *graphInsertAbove(graphIndex* i, element *e)
 
 graphIndex *graphInsertBelow(graphIndex* i, element *e)
 {
-	if(isUpperEdge(i) || e == NULL)
+	if(graphIsUpperEdge(i) || e == NULL)
 		return NULL;
 	
 	e->up = i->currentElement;
 	e->down = i->currentElement->down;
-	e->left = createElement();
+	e->left = elementCreate();
 	e->left->right = e;
-	e->right = createElement();
+	e->right = elementCreate();
 	e->right->left = e;
 	
 	i->currentElement->down = e;
@@ -406,6 +407,140 @@ graphIndex *graphInsertBelow(graphIndex* i, element *e)
 	return i;
 }
 
+void graphPushLeft(graphIndex *i, element *e)
+{
+	graphIndex *tmp = graphIndexCreate(i->grph, LEFT_EDGE);
+	graphIndexSetPosition(tmp, i->currentElement);
+	graphIndexSetEdge(tmp, LEFT_EDGE);
+	graphInsertRight(tmp, e);
+	graphIndexDestroy(tmp);
+}
 
+
+void graphPushRight(graphIndex *i, element *e)
+{
+	graphIndex *tmp = graphIndexCreate(i->grph, LEFT_EDGE);
+	graphIndexSetPosition(tmp, i->currentElement);
+	graphIndexSetEdge(tmp, RIGHT_EDGE);
+	graphInsertLeft(tmp, e);
+	graphIndexDestroy(tmp);
+}
+
+void graphPushUp(graphIndex *i,element *e)
+{
+	graphIndex *tmp = graphIndexCreate(i->grph, LEFT_EDGE);
+	graphIndexSetPosition(tmp, i->currentElement);
+	graphIndexSetEdge(tmp, UPPER_EDGE);
+	graphInsertBelow(tmp, e);
+	graphIndexDestroy(tmp);	
+}
+
+void graphPushDown(graphIndex *i,element *e)
+{
+	graphIndex *tmp = graphIndexCreate(i->grph, LEFT_EDGE);
+	graphIndexSetPosition(tmp, i->currentElement);
+	graphIndexSetEdge(tmp, LOWER_EDGE);
+	graphInsertAbove(tmp, e);
+	graphIndexDestroy(tmp);	
+}
+
+
+
+column *graphPopLeft(graphIndex *i)
+{
+	graphIndex *tmp = graphIndexCreate(i->grph, LEFT_EDGE);
+	graphIndexSetPosition(tmp, i->currentElement);
+	graphIndexSetEdge(tmp, LEFT_EDGE);
+	graphIndexMovRight(tmp);
+	if(graphIndexGetCurrent(tmp)->right == NULL)
+	{
+		graphIndexDestroy(tmp);
+		return NULL;
+	}
+	
+	tmp->currentElement->left->right = tmp->currentElement->right;
+	tmp->currentElement->right->left = tmp->currentElement->left;
+	
+	tmp->currentElement->left = NULL;
+	tmp->currentElement->right = NULL;
+	
+	column *c = graphIndexGetCurrent(tmp);
+	graphIndexDestroy(tmp);
+	
+	return c;
+}
+
+column *graphPopRight(graphIndex *i)
+{
+	graphIndex *tmp = graphIndexCreate(i->grph, LEFT_EDGE);
+	graphIndexSetPosition(tmp, i->currentElement);
+	graphIndexSetEdge(tmp, RIGHT_EDGE);
+	graphIndexMovLeft(tmp);
+	if(graphIndexGetCurrent(tmp)->left == NULL)
+	{
+		graphIndexDestroy(tmp);
+		return NULL;
+	}
+	
+	tmp->currentElement->left->right = tmp->currentElement->right;
+	tmp->currentElement->right->left = tmp->currentElement->left;
+
+	
+	tmp->currentElement->left = NULL;
+	tmp->currentElement->right = NULL;
+	
+	column *c = graphIndexGetCurrent(tmp);
+	graphIndexDestroy(tmp);
+	
+	return c;
+}
+
+row *graphPopUp(graphIndex *i)
+{
+	graphIndex *tmp = graphIndexCreate(i->grph, LEFT_EDGE);
+	graphIndexSetPosition(tmp, i->currentElement);
+	graphIndexSetEdge(tmp, UPPER_EDGE);
+	graphIndexMovDown(tmp);
+	if(graphIndexGetCurrent(tmp)->down == NULL)
+	{
+		graphIndexDestroy(tmp);
+		return NULL;
+	}
+
+	tmp->currentElement->up->down = tmp->currentElement->down;
+	tmp->currentElement->down->up = tmp->currentElement->up;
+	
+	tmp->currentElement->up = NULL;
+	tmp->currentElement->down = NULL;
+	
+	column *c = graphIndexGetCurrent(tmp);
+	graphIndexDestroy(tmp);
+	
+	return c;
+}
+
+row *graphPopDown(graphIndex *i)
+{
+	graphIndex *tmp = graphIndexCreate(i->grph, LEFT_EDGE);
+	graphIndexSetPosition(tmp, i->currentElement);
+	graphIndexSetEdge(tmp, LOWER_EDGE);
+	graphIndexMovUp(tmp);
+	if(graphIndexGetCurrent(tmp)->up == NULL)
+	{
+		graphIndexDestroy(tmp);
+		return NULL;
+	}
+
+	tmp->currentElement->up->down = tmp->currentElement->down;
+	tmp->currentElement->down->up = tmp->currentElement->up;
+	
+	tmp->currentElement->up = NULL;
+	tmp->currentElement->down = NULL;
+	
+	column *c = graphIndexGetCurrent(tmp);
+	graphIndexDestroy(tmp);
+	
+	return c;
+}
 
 

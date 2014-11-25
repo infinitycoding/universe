@@ -1,7 +1,9 @@
 #include "ls.h"
 #include <list.h>
+#include <stdio.h>
 #include <unistd.h>
-
+#include <string.h>
+#include <stdlib.h>
 
 #define RETURN_OK 0
 #define RETURN_MINOR_PROBLEMS 1

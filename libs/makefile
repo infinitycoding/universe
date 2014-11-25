@@ -4,11 +4,11 @@ all:
 	@$(MAKE) -C mercury
 	@$(MAKE) -C udrcp
 	#@$(MAKE) -C cdi
-	#@$(MAKE) -C pfp
+	@$(MAKE) -C pfp
 
 clean:
 	@$(MAKE) -C mercury clean
 	@$(MAKE) -C udrcp clean
-	#@$(MAKE) -C cdi clean
+	@$(MAKE) -C cdi clean
 	@$(MAKE) -C pfp clean
 
