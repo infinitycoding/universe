@@ -201,6 +201,37 @@ void vfs_remove_dir_entry(vfs_inode_t *dir, vfs_inode_t *inode)
 	}
 }
 
+vfs_dentry_t *vfs_get_dir_entry(vfs_inode_t *ino, const char *name)
+{
+	GET_INODE(ino);
+	if(S_ISDIR(ino->stat))
+	{
+		vfs_buffer_info_t *info = ino->buffer;
+
+		if(! list_is_empty(info->blocks))
+		{
+			iterator_t it = iterator_create(info->blocks);
+			list_set_first(&it);
+
+			int i;
+			for(i = 0; i < info->num_blocks; i++)
+			{
+				vfs_buffer_block_t *block = (vfs_buffer_block_t*) it.current->element;
+				vfs_dentry_t *dentry = (vfs_dentry_t*) block->base;
+
+				if(strcmp(name, dentry->inode->name) == 0)
+				{
+					return dentry;
+				}
+
+				list_next(&it);
+			}
+		}
+	}
+
+	return NULL;
+}
+
 vfs_buffer_block_t *vfs_get_buffer_block(vfs_buffer_info_t *info, uint32_t id)
 {
 	if(! list_is_empty(info->blocks))
@@ -574,7 +605,6 @@ vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid)
 
             if(vfs_access(parent, W_OK, uid, gid) == 0)
             {
-				printf("create %s\n", str);
                 parent = vfs_create_inode(str, n_mode, parent, uid, gid);
             }
             else

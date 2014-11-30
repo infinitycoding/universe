@@ -554,7 +554,6 @@ void sys_mkdir(struct cpu_state **cpu)
     char *path = (char *)(*cpu)->CPU_ARG1;
     int mode = (int)(*cpu)->CPU_ARG2;
 
-printf("mkdir %s\n", path);
     vfs_create_path(path, mode | S_IFDIR, current_thread->process->uid, current_thread->process->gid);
 
     (*cpu)->CPU_ARG0 = _SUCCESS;

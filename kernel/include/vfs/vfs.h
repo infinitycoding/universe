@@ -111,7 +111,12 @@ typedef struct dirent
 void INIT_VFS(void);
 vfs_inode_t *vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_t uid, gid_t gid);
 vfs_inode_t *vfs_create_pipe(uid_t uid, gid_t gid);
+
 vfs_dentry_t *vfs_create_dir_entry(vfs_inode_t *entry_inode);
+vfs_dentry_t *vfs_get_dir_entry(vfs_inode_t *ino, const char *name);
+void vfs_add_dir_entry(vfs_inode_t *dir, vfs_dentry_t *entry);
+void vfs_remove_dir_entry(vfs_inode_t *dir, vfs_inode_t *inode);
+
 int vfs_write(vfs_inode_t *inode, int offset, void *buffer, int bytes);
 int vfs_read (vfs_inode_t *inode, int offset, void *buffer, int bytes);
 int vfs_stat(vfs_inode_t *inode, struct stat *buffer);
@@ -119,8 +124,7 @@ int vfs_access(vfs_inode_t *inode, mode_t modus, uid_t uid, gid_t gid);
 vfs_inode_t *vfs_lookup_path(char *path);
 vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid);
 vfs_buffer_block_t *vfs_get_buffer_block(vfs_buffer_info_t *info, uint32_t id);
-void vfs_add_dir_entry(vfs_inode_t *dir, vfs_dentry_t *entry);
-void vfs_remove_dir_entry(vfs_inode_t *dir, vfs_inode_t *inode);
+
 
 #ifdef VFS_DEBUG
 void vfs_debug_output(vfs_inode_t *start);
