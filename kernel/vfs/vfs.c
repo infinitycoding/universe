@@ -574,6 +574,7 @@ vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid)
 
             if(vfs_access(parent, W_OK, uid, gid) == 0)
             {
+				printf("create %s\n", str);
                 parent = vfs_create_inode(str, n_mode, parent, uid, gid);
             }
             else

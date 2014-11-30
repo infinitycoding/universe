@@ -150,8 +150,7 @@ void sys_rename(struct cpu_state **cpu);
 
 void launch_pipe_handlers(vfs_buffer_info_t *pipe);
 void set_pipe_trigger(struct cpu_state **cpu);
-void usys_open_port(struct cpu_state **cpu);
-void usys_close_port(struct cpu_state **cpu);
+void usys_connect(struct cpu_state **cpu);
 
 
 #endif

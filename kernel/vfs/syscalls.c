@@ -554,9 +554,10 @@ void sys_mkdir(struct cpu_state **cpu)
     char *path = (char *)(*cpu)->CPU_ARG1;
     int mode = (int)(*cpu)->CPU_ARG2;
 
+printf("mkdir %s\n", path);
     vfs_create_path(path, mode | S_IFDIR, current_thread->process->uid, current_thread->process->gid);
 
-    (*cpu)->CPU_ARG0 = 0;
+    (*cpu)->CPU_ARG0 = _SUCCESS;
 
     return;
 }
@@ -743,7 +744,6 @@ void sys_rename(struct cpu_state **cpu)
     (*cpu)->CPU_ARG0 = _SUCCESS;
 }
 
-
 void sys_lchown(struct cpu_state **cpu)
 {
     char *file = (char *)(*cpu)->CPU_ARG1;
@@ -780,22 +780,13 @@ void sys_lchown(struct cpu_state **cpu)
 }
 
 
-void usys_open_port(struct cpu_state **cpu)
+void usys_connect(struct cpu_state **cpu)
 {
-    int port_nr = (char *)(*cpu)->CPU_ARG1;
+	int pid = (int) (*cpu)->CPU_ARG1;
+	int port = (int) (*cpu)->CPU_ARG2;
 
-	char str[8];
-	sprintf(&str, "%d", port_nr);
+	
 
-	printf("pid %d opens port %s\n", current_thread->process->pid, str);
-
-	vfs_create_inode(str, S_IRWXU | S_IRWXG | S_IRWXO | S_IFDIR, current_thread->process->socket_inode,  current_thread->process->uid, current_thread->process->gid);
-
-    (*cpu)->CPU_ARG0 = _SUCCESS;
-}
-
-void usys_close_port(struct cpu_state **cpu)
-{
     (*cpu)->CPU_ARG0 = _SUCCESS;
 }
 
