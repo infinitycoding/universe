@@ -20,6 +20,9 @@ build/cat
 build/ultrashell
 build/test
 
+libs/pfp/test/host_test
+libs/pfp/test/test
+
 # portierungen nicht mit nehmen
 bin/
 cc/
