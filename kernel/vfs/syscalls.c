@@ -784,8 +784,33 @@ void usys_connect(struct cpu_state **cpu)
 	int pid = (int) (*cpu)->CPU_ARG1;
 	int port = (int) (*cpu)->CPU_ARG2;
 
-	
+	char pstr[16];
+	sprintf(pstr, "%d", port);
 
-    (*cpu)->CPU_ARG0 = _SUCCESS;
+	struct process_state *proc = process_find(pid);
+	vfs_dentry_t *dentry = vfs_get_dir_entry(proc->socket_inode, pstr);
+
+	if(dentry != NULL && dentry->inode != NULL)
+	{
+		char rstr[64], wstr[64];
+		sprintf(rstr, "%d.in", current_thread->process->pid);
+		sprintf(wstr, "%d.out", current_thread->process->pid);
+
+		vfs_inode_t *r_in = vfs_create_inode(rstr, 0, dentry->inode, 0, 0);
+		vfs_inode_t *w_in = vfs_create_inode(wstr, 0, dentry->inode, 0, 0);
+
+    	struct fd *desc = create_fd(current_thread->process);
+        desc->mode = 0;
+        desc->flags = O_RDWR;
+        desc->permission = VFS_PERMISSION_READ | VFS_PERMISSION_WRITE;
+        desc->read_inode = r_in;
+        desc->write_inode = w_in;
+
+        (*cpu)->CPU_ARG0 = desc->id;
+	}
+	else
+	{
+		(*cpu)->CPU_ARG0 = _FAILURE;
+	}
 }
 
