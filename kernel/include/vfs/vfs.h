@@ -151,6 +151,7 @@ void sys_fstat(struct cpu_state **cpu);
 void sys_chmod(struct cpu_state **cpu);
 void sys_lchown(struct cpu_state **cpu);
 void sys_rename(struct cpu_state **cpu);
+void sys_access(struct cpu_state **cpu);
 
 void launch_pipe_handlers(vfs_buffer_info_t *pipe);
 void set_pipe_trigger(struct cpu_state **cpu);

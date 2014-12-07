@@ -32,7 +32,6 @@
 #include <gdt.h>
 #include <idt.h>
 #include <io.h>
-#include <cpuid.h>
 #include <logo.h>
 #include <sched/scheduler.h>
 #include <mm/heap.h>
@@ -90,8 +89,6 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     print_time(&t); //crashes on a real computer and on virtual box
     printf("\n");
     printf("Timestamp:%d\n\n",unix_time(&t));
-    INIT_CPUID();
-    printf("\n");
     // mapping strings
     int i;
     struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;

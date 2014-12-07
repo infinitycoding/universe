@@ -18,7 +18,6 @@
 
 
 /**
- *  @file /arch/x86/cpuid.c
  *  @brief This file contaions functions for CPU and CPU feature identification.
  *  @todo Standardize these functions for multiple proceccor architectures.
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
@@ -26,8 +25,8 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <printf.h>
-#include <cpuid.h>
+#include <stdio.h>
+#include "cpuid.h"
 
 
 static char* vendorID[]=
@@ -47,8 +46,7 @@ static char* cpu_manufactorys[]=
 };  ///@var ID strings of X86 manufactories
 
 
-static char* scall[]= {"Callgate", "Sysenter", "Syscall"};
-static char* architecture[]= {"I386","AMD64", "IA32", "IA64"};
+static char* architecture[]= {"I386","x86_64", "IA32", "IA64"};
 
 
 
@@ -88,12 +86,12 @@ int identify_cpu(struct cpu_properties *cpu)
     if (eflags == ref)
         //cpuid is not supported
     {
-        cpu->cpuid_support = false;
+        cpu->cpuid_support = 0;
         return 1;
     }
 
     //cpuid is supported
-    cpu->cpuid_support = true;
+    cpu->cpuid_support = 1;
 
     //create struct for processor registers
     struct cpuid_regs reg;
@@ -141,7 +139,7 @@ int identify_cpu(struct cpu_properties *cpu)
         cpuid(0x80000001, &reg);
         if((( reg.edx & (1 << 29) ) >> 29) && cpu->flagblock1 & PAE )
         {
-            cpu->LM = true;
+            cpu->LM = 1;
         }
     }
 
@@ -158,21 +156,6 @@ int identify_cpu(struct cpu_properties *cpu)
             cpu->architecture = AMD64;
         else
             cpu->architecture = I386;
-    }
-
-
-    //Detect Dynamic Syscall
-    if (cpu->flagblock1 & SEP && cpu->manufactory == 2)
-    {
-        cpu->dsysc = sysenter;
-    }
-    else if (cpu->flagblock1 & SEP && cpu->manufactory < 2 && cpu->max_spec_func > 0x80000000)
-    {
-        cpuid(0x80000001,&reg);
-        if (reg.edx & 0x1000)
-        {
-            cpu->dsysc = syscall;
-        }
     }
 
     //get extended BrandID
@@ -223,15 +206,23 @@ int identify_cpu(struct cpu_properties *cpu)
  */
 void CPU_info(struct cpu_properties *cpu)
 {
-    if (cpu->cpuid_support==true)
+    if (cpu->cpuid_support==1)
     {
+		printf("Architecture: %s\n",architecture[cpu->architecture]);
+		
+		printf("CPU op-mode(s): 32-bit");
+		if(cpu->architecture == AMD64)
+			printf(", 64-bit\n");
+		else
+			printf("\n");
+		
+		printf("Byte order: Little Endian\n");
+		
+		printf("CPU(s): %d\n",cpu->logic_cores);
+		
+		
         printf("CPU Manufactory: %s\n",cpu_manufactorys[cpu->manufactory]);
-        printf("Architecture: %s\n",architecture[cpu->architecture]);
-        printf("CPU Model: %s\n",cpu->cpu_type);
-        printf("Family: %d  Model: %d  Stepping: %d\n",cpu->family,cpu->model,cpu->stepping);
-        printf("Logical CPUs: %d\n",cpu->logic_cores);
-        printf("FB0: %#08x  FB1: %#08x\n",cpu->flagblock0, cpu->flagblock1);
-        printf("Dynamic Syscall: %s\n",scall[cpu->dsysc]);
+        printf("Family: %d\n  Model: %d\n Name: %s\n Stepping: %d\n",cpu->family,cpu->model,cpu->cpu_type,cpu->stepping);
 
         if(cpu->flagblock1 & CLFLSH)
         {
@@ -256,8 +247,9 @@ void CPU_info(struct cpu_properties *cpu)
  * @brief Creates structures containing CPU Informations
  * @return void
  */
-void INIT_CPUID(void)
+int main(void)
 {
     identify_cpu((struct cpu_properties *)&current_CPU);
     CPU_info((struct cpu_properties *)&current_CPU);
+	return 0;
 }

@@ -26,13 +26,6 @@
 
 typedef enum
 {
-    callgate = 0,
-    sysenter = 1,
-    syscall = 2,
-} dynamic_syscall;
-
-typedef enum
-{
     I386 = 0,
     AMD64 = 1,
     IA32 = 2,
@@ -109,7 +102,7 @@ typedef enum
 //128 bytes
 struct cpu_properties
 {
-    bool cpuid_support;
+    int  cpuid_support;
     uint32_t manufactory;
     uint32_t max_std_func;
     uint32_t max_spec_func;
@@ -122,10 +115,9 @@ struct cpu_properties
     uint8_t brandID;
     uint8_t clflush;
     uint8_t logic_cores;
-    bool LM;
+    int LM;
 
 
-    dynamic_syscall dsysc;
     uint16_t ext_brandID;
 
     uint8_t APIC_ID;

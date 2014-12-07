@@ -759,7 +759,7 @@ void sys_lchown(struct cpu_state **cpu)
         return;
     }
     // Check permissions
-    if(node->stat.st_uid != current_thread->process->uid)
+    if(node->stat.st_uid != current_thread->process->uid || current_thread->process->uid == 0)
     {
         (*cpu)->CPU_ARG0 = _NO_PERMISSION;
         return;
@@ -776,6 +776,28 @@ void sys_lchown(struct cpu_state **cpu)
     node->stat.st_uid = (uid_t) (*cpu)->CPU_ARG2;
     node->stat.st_gid = (gid_t) (*cpu)->CPU_ARG3;
     (*cpu)->CPU_ARG0 = _SUCCESS;
+}
+
+
+void sys_access(struct cpu_state **cpu)
+{
+	char *file = (char *) (*cpu)->CPU_ARG1;
+	mode_t mode = (mode_t) (*cpu)->CPU_ARG2;
+	
+	if(file == NULL)
+	{
+		(*cpu)->CPU_ARG0 = _FAILURE;
+		return;
+	}
+	
+	vfs_inode_t *node = vfs_lookup_path(file);
+    if(node == NULL)
+    {
+        (*cpu)->CPU_ARG0 = _FAILURE;
+        return;
+    }
+	
+	(*cpu)->CPU_ARG0 = vfs_access(node, mode, current_thread->process->uid, current_thread->process->gid);
 }
 
 
