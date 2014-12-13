@@ -53,7 +53,9 @@
 #define CRTC_MODE_CONTROL 		0x17
 #define CRTC_LINE_COMPARE 		0x18
 
+
 void crtc_write(uint8_t index, uint8_t value);
 uint8_t crtc_read(uint8_t index);
+
 
 #endif

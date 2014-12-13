@@ -22,8 +22,8 @@
  *  @author Michael Sippel <michamimosa@gmail.com>
  */
 
-#include <drivers/cmos.h>
-#include <drivers/clock.h>
+#include <cmos.h>
+#include <clock.h>
 #include <mm/heap.h>
 #include <io.h>
 #include <bcd.h>

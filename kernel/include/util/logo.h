@@ -24,6 +24,8 @@
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
+#include <video.h>
+
 static const char *__logo = "\
                                                                                \n\
            UUUUUUUU     UUUUUUUU NNNNNNNN        NNNNNNNN IIIIIIIIII           \n\

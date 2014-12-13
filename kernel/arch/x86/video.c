@@ -20,10 +20,9 @@
  *  @author Tom Slawik <tom.slawik@gmail.com>
  */
 
-#include <drivers/crtc.h>
-#include <drivers/video.h>
+#include <crtc.h>
+#include <video.h>
 #include <string.h>
-#include <io.h>
 
 static int lines = 25;
 static int columns = 80;

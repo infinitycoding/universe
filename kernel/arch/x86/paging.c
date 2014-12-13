@@ -23,16 +23,20 @@
  * @author Michael Sippel <micha@infinitycoding.de>
  */
 
-#include <cpu.h>
-#include <idt.h>
-#include <mm/paging.h>
+
 #include <printf.h>
-#include <pmm.h>
-#include <drivers/video.h>
-#include <memory_layout.h>
 #include <string.h>
 #include <panic.h>
+
+#include <memory_layout.h>
+#include <mm/paging.h>
+
 #include <sched/thread.h>
+
+#include <cpu.h>
+#include <idt.h>
+#include <pmm.h>
+
 
 static inline void paging_flush_tlb(vaddr_t addr);
 extern struct thread_state *current_thread;

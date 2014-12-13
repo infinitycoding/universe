@@ -20,21 +20,28 @@
 	@author Michael Sippel <micha@infinitycoding.com>
 */
 
-#include <stdint.h>
-#include <string.h>
-#include <sched/scheduler.h>
-#include <mm/heap.h>
-#include <printf.h>
-#include <sys/unistd.h>
+
 #include <vfs/vfs.h>
 #include <vfs/fd.h>
+
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <memory_layout.h>
+#include <sys/unistd.h>
+
+#include <printf.h>
+#include <stdint.h>
+#include <string.h>
+
+#include <mm/heap.h>
 #include <mm/paging.h>
+#include <memory_layout.h>
+
 #include <sched/thread.h>
+#include <sched/scheduler.h>
+
+#include <clock.h>
 #include <event/trigger.h>
-#include <drivers/clock.h>
+
 
 extern struct thread_state *current_thread;
 

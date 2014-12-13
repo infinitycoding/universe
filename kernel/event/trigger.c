@@ -25,10 +25,14 @@
 
 
 #include <event/trigger.h>
+
 #include <list.h>
-#include <mm/heap.h>
-#include <sched/scheduler.h>
+
 #include <idt.h>
+#include <mm/heap.h>
+
+#include <sched/scheduler.h>
+
 
 // process structures
 extern struct thread_state *current_thread;

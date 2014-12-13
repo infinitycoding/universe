@@ -29,8 +29,7 @@
 #include <printf.h>
 #include <syscall.h>
 #include <sched/scheduler.h>
-#include <drivers/pci.h>
-#include <drivers/clock.h>
+#include <clock.h>
 #include <event/trigger.h>
 
 

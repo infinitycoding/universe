@@ -20,7 +20,7 @@
  *  @author Tom Slawik <tom.slawik@gmail.com>
  */
 
-#include <drivers/crtc.h>
+#include <crtc.h>
 #include <io.h>
 
 void crtc_write(uint8_t index, uint8_t value)

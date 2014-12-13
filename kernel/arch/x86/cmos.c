@@ -23,7 +23,7 @@
  */
 
 #include <io.h>
-#include <drivers/cmos.h>
+#include <cmos.h>
 
 /**
  * @brief Reads the Values from Complementary Metal Oxide Semiconductor.

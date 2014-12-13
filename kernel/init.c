@@ -23,30 +23,40 @@
  * @author Tom Slawik <tom.slawik@gmail.com>
  */
 
-#include <stdint.h>
+
+//abstract
 #include <printf.h>
-#include <sys/multiboot.h>
+#include <logo.h>
 #include <panic.h>
+
+#include <sys/multiboot.h>
+
+//memory
+#include "memory_layout.h"
 #include <pmm.h>
 #include <mm/paging.h>
+#include <mm/heap.h>
+
+//descriptor tables
 #include <gdt.h>
 #include <idt.h>
-#include <io.h>
-#include <logo.h>
-#include <sched/scheduler.h>
-#include <mm/heap.h>
-#include <vfs/vfs.h>
-#include <event/trigger.h>
-#include <drivers/clock.h>
-#include <drivers/cmos.h>
-#include <drivers/video.h>
-#include <drivers/pci.h>
+
+//scheduling
 #include <sched/elf.h>
-#include <mutex.h>
-#include "memory_layout.h"
+#include <sched/scheduler.h>
+
+//vfs
+#include <vfs/vfs.h>
+#include <vfs/module.h>
+
+//event and timing
+#include <clock.h>
+#include <event/trigger.h>
+
+//udrcp
 #include <udrcp/hypervisor.h>
 #include <udrcp/pfp.h>
-#include <vfs/module.h>
+
 
 /**
 * Initalize the Kernel
@@ -77,16 +87,15 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     INIT_CLOCK(500);
     INIT_SCHEDULER();
     //print Logo and loading message
-    clear_screen();
     print_logo(YELLOW);
     puts("Universe wird gestartet...\n");
     // count free memory and display it
     uint32_t pages = pmm_count_free_pages();
     printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
-    //print current time
+	
+    //print current timestamp
     struct time t;
     update_time(&t);
-    print_time(&t); //crashes on a real computer and on virtual box
     printf("\n");
     printf("Timestamp:%d\n\n",unix_time(&t));
     // mapping strings
