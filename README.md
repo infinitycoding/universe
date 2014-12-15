@@ -12,11 +12,11 @@ If you find any kind of bug please report it to info@infinitycoding.de
 
 Dependencies:
 ========
-* gcc
-* nasm
-* qemu(only for testing)
-* cdrkit(genisoimage)
-* make
+* gcc   	            (only for compiling)
+* nasm  	            (only for compiling)
+* qemu		            (only for testing)
+* cdrkit/genisoimage	(only for compiling)
+* make					(only for compiling)
 
 
 How to compile:
