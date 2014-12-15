@@ -23,9 +23,10 @@
 #include <crtc.h>
 #include <video.h>
 #include <string.h>
+#include <io.h>
 
-static int lines = 25;
-static int columns = 80;
+#define lines  25
+#define columns  80
 
 static int x = 0;
 static int y = 0;
@@ -147,6 +148,10 @@ void gotoxy(uint8_t _x, uint8_t _y)
         video_mem[2 * offset + 1] = color;
     }
 
-    crtc_write(CRTC_CURSOR_LOCATION_HIGH, (uint8_t)(offset >> 8));
-    crtc_write(CRTC_CURSOR_LOCATION_LOW, (uint8_t)offset);
+    
+    outb(CRTC_INDEX_PORT, CRTC_CURSOR_LOCATION_HIGH);
+    outb(CRTC_DATA_PORT, (uint8_t)(offset >> 8));
+	
+	outb(CRTC_INDEX_PORT, CRTC_CURSOR_LOCATION_LOW);
+    outb(CRTC_DATA_PORT, (uint8_t)offset);
 }
