@@ -75,7 +75,6 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     {
         panic("Incompatible Bootloader");
     }
-    set_color(WHITE | BLACK << 4);
     //Init Kernelmodules
     INIT_PMM(mb_info);
     INIT_PAGING(mb_info);
@@ -88,6 +87,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     INIT_SCHEDULER();
     //print Logo and loading message
     print_logo(YELLOW);
+	set_color(WHITE | (BLACK << 4));
     puts("Universe wird gestartet...\n");
     // count free memory and display it
     uint32_t pages = pmm_count_free_pages();

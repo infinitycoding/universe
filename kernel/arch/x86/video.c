@@ -31,7 +31,7 @@
 static int x = 0;
 static int y = 0;
 
-static color_t color = CYAN | BLACK << 4;
+color_t cga_color = WHITE | (BLACK << 4);
 static char *video_mem = (char *)0xc00b8000;
 
 int putchar(int c)
@@ -63,7 +63,7 @@ int putchar(int c)
     }
 
     video_mem[2 * (y * columns + x)] = c;
-    video_mem[2 * (y * columns + x) + 1] = color;
+    video_mem[2 * (y * columns + x) + 1] = cga_color;
 
     gotoxy(++x, y);
 
@@ -111,12 +111,12 @@ void clear_screen(void)
 
 void set_color(color_t _color)
 {
-    color = _color;
+    cga_color = _color;
 }
 
 color_t get_color(void)
 {
-    return color;
+    return cga_color;
 }
 
 void gotoxy(uint8_t _x, uint8_t _y)
@@ -133,7 +133,7 @@ void gotoxy(uint8_t _x, uint8_t _y)
             if(i%2==0)
                 video_mem[2 * lines * columns + i] = 0;
             else
-                video_mem[2 * lines * columns + i] = color;
+                video_mem[2 * lines * columns + i] = cga_color;
         }
 
         --_y;
@@ -145,7 +145,7 @@ void gotoxy(uint8_t _x, uint8_t _y)
 
     if (video_mem[2 * offset] == 0)
     {
-        video_mem[2 * offset + 1] = color;
+        video_mem[2 * offset + 1] = cga_color;
     }
 
     
