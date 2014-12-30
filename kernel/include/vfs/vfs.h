@@ -105,6 +105,13 @@ typedef struct dirent
     struct stat stat;
 } dirent_t;
 
+typedef struct socket_request
+{
+	int id;
+	int pid;
+	int port;
+} socket_request_t;
+
 // solve a link
 #define GET_INODE(i) if(i->type == VFS_LINK) i = (vfs_inode_t*) i->buffer;
 
@@ -155,8 +162,10 @@ void sys_access(struct cpu_state **cpu);
 
 void launch_pipe_handlers(vfs_buffer_info_t *pipe);
 void set_pipe_trigger(struct cpu_state **cpu);
-void usys_connect(struct cpu_state **cpu);
 
+void usys_connect(struct cpu_state **cpu);
+void usys_readport(struct cpu_state **cpu);
+void usys_accept(struct cpu_state **cpu);
 
 #endif
 

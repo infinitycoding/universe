@@ -73,6 +73,9 @@ struct process_state
     vfs_inode_t *cwd;
     list_t *files;
     list_t *ports;
+
+	list_t *socket_requests;
+	uint32_t socket_event_id;
 	vfs_inode_t *proc_inode;
 	vfs_inode_t *socket_inode;
 
