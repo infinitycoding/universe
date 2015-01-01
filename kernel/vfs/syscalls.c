@@ -807,15 +807,78 @@ void sys_access(struct cpu_state **cpu)
 }
 
 
+
+socket_request_t *get_socket_request(struct process_state *proc, int id)
+{
+	iterator_t it = iterator_create(proc->socket_requests);
+    while(!list_is_empty(proc->socket_requests) && !list_is_last(&it))
+    {
+        socket_request_t *r = list_get_current(&it);
+        if(r->id == id)
+        {
+			return r;
+        }
+        else
+        {
+            list_next(&it);
+        }
+    }
+}
+
 void usys_connect(struct cpu_state **cpu)
 {
 	int pid = (int) (*cpu)->CPU_ARG1;
 	int port = (int) (*cpu)->CPU_ARG2;
 
-	char pstr[16];
-	sprintf(pstr, "%d", port);
+	socket_request_t *req = (socket_request_t*) malloc(sizeof(socket_request_t));
+	req->pid = pid;
+	req->port = port;
+	req->id = list_length(current_thread->process->socket_requests);
 
-	struct process_state *proc = process_find(pid);
+	list_push_back(current_thread->process->socket_requests, req);
+
+    send_event(current_thread->process->socket_event_id);
+    current_thread->process->socket_event_id = get_new_event_ID();
+
+	(*cpu)->CPU_ARG0 = req->id;
+}
+
+void usys_readport(struct cpu_state **cpu)
+{
+	iterator_t it = iterator_create(current_thread->process->socket_requests);
+	
+	list_set_first(&it);
+	socket_request_t *req = list_get_current(&it);
+
+	if(req != NULL)
+	{
+		list_remove(&it);
+		(*cpu)->CPU_ARG0 = req->id;
+	}
+	else
+	{
+		add_trigger(WAIT_EVENT, current_thread->process->socket_event_id, 0, current_thread, usys_readport);
+		thread_suspend(current_thread);
+		*cpu = (struct cpu_state *)task_schedule(*cpu);
+	}
+}
+
+void usys_accept(struct cpu_state **cpu)
+{
+	int id = (*cpu)->CPU_ARG1;
+
+	socket_request_t *req = get_socket_request(current_thread->process, id);
+
+	if(req == NULL)
+	{
+		(*cpu)->CPU_ARG0 = _FAILURE;
+		return;
+	}
+
+	char pstr[16];
+	sprintf(pstr, "%d", req->port);
+
+	struct process_state *proc = process_find(req->pid);
 	vfs_dentry_t *dentry = vfs_get_dir_entry(proc->socket_inode, pstr);
 
 	if(dentry != NULL && dentry->inode != NULL)
@@ -841,4 +904,5 @@ void usys_connect(struct cpu_state **cpu)
 		(*cpu)->CPU_ARG0 = _FAILURE;
 	}
 }
+
 

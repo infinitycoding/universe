@@ -198,6 +198,8 @@ struct process_state *process_create(const char *name, uint16_t flags, struct pr
 	itoa(state->pid, str, 10);
 	state->proc_inode = vfs_create_inode(str, S_IFDIR | S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH, proc_dir_inode, 0, 0);
 	state->socket_inode = vfs_create_inode("socket", S_IFDIR | S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH, state->proc_inode, 0, 0);
+	state->socket_requests = list_create();
+	state->socket_event_id = get_new_event_ID();
 
     // add to process list
     list_push_front(process_list, state);
