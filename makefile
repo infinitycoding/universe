@@ -28,6 +28,9 @@ QEMU = qemu-system-i386 -cdrom cdrom.iso -net nic,model=rtl8139 -net user
 ASM = nasm
 
 else ifeq ($(ARCH),arm)
+CC = arm-universe-eabi-gcc
+LD = arm-universe-eabi-ld
+ASM = arm-universe-eabi-as
 QEMU = qemu-system-arm -cpu arm1176 -M versatilepb -m 256M -nographic -kernel universe.bin
 endif
 
@@ -66,6 +69,7 @@ style:
 
 update:
 	git pull origin master
+	git submodule update
 
 clean:
 	@$(MAKE) -C kernel clean
@@ -78,10 +82,10 @@ dependencies:
 	git submodule init
 	git submodule update
 	if [ ! -f $(HOST_PREFIX)/bin/$(ARCH)-universe-gcc ]; then \
+		$(MAKE) -C cc HOST_PREFIX="$(HOST_PREFIX)" TARGET_ARCH="$(ARCH)"; \
 		cd cc; \
-		make all; HOST_PREFIX="$(HOST_PREFIX)" TARGET_ARCH="$(ARCH)"\
 		sudo make install; \
-		cd ..; \
+		cd .. ; \
 	fi
 
 

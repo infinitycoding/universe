@@ -7,7 +7,7 @@ GCC = gcc-4.7.3
 GNU = ftp://ftp.gnu.org/gnu
 BUILD = build
 
-GCC_FLAGS = --disable-nls --enable-languages=c --disable-headers --enable-multilib --enable-multilib --without-docdir
+GCC_FLAGS = --disable-nls --enable-languages=c,c++ --disable-headers --enable-multilib --enable-multilib --without-docdir
 BINUTILS_FLAGS = -disable-nls  CFLAGS="-w"
 
 ifndef ${HOST_PREFIX}
@@ -16,12 +16,13 @@ ifndef ${HOST_PREFIX}
 endif
 
 ifndef ${TARGET_ARCH}
-	TARGET_ARCH=i686-universe
+	TARGET_ARCH=i686
 	export TARGET_ARCH
 endif
 
 
-ifeq (${TARGET_ARCH},"arm-universe-eabi")
+ifeq (${TARGET_ARCH},arm)
+	TARGET_SUFFIX=-eabi
 	GCC_FLAGS += --disable-libssp
 endif
 
@@ -41,7 +42,7 @@ configure_binutils: download
 		cp -rT binutils_adapted $(BINUTILS); \
 		mkdir -p $(BUILD)/$(BINUTILS); \
 		cd $(BUILD)/$(BINUTILS); \
-		../../$(BINUTILS)/configure --prefix=${HOST_PREFIX} --target=${TARGET_ARCH} $(BINUTILS_FLAGS); \
+		../../$(BINUTILS)/configure --prefix=${HOST_PREFIX} --target=${TARGET_ARCH}-universe$(TARGET_SUFFIX) $(BINUTILS_FLAGS); \
 		cd ../..; \
 	fi;\
 
@@ -57,7 +58,7 @@ configure_gcc: download binutils
 		PATH=${PATH}:`pwd`/../../$(TARGET)/bin; \
 		mkdir -p $(BUILD)/$(GCC); \
 		cd $(BUILD)/$(GCC) ;\
-		../../$(GCC)/configure --prefix=${HOST_PREFIX} --target=${TARGET_ARCH} $(GCC_FLAGS) ; \
+		../../$(GCC)/configure --prefix=${HOST_PREFIX} --target=${TARGET_ARCH}-universe$(TARGET_SUFFIX) $(GCC_FLAGS) ; \
 		cd ../..; \
 	fi;\
 
@@ -69,7 +70,7 @@ install:
 	$(MAKE) -C $(BUILD)/$(BINUTILS) install
 	$(MAKE) -C $(BUILD)/$(GCC) install-gcc
 	$(MAKE) -C $(BUILD)/$(GCC) install-target-libgcc
-	ln -s /usr/bin/${TARGET_ARCH}-gcc /usr/bin/${TARGET_ARCH}-cc
+	ln -s /usr/bin/${TARGET_ARCH}-universe$(TARGET_SUFFIX)-gcc /usr/bin/${TARGET_ARCH}-universe$(TARGET_SUFFIX)-cc
 
 clean:
 	rm -rf $(BUILD)
