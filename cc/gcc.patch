@@ -1,6 +1,6 @@
-diff -ru ./config.sub ../gcc-4.7.3_a/config.sub
---- ./config.sub	2014-06-07 17:07:33.711897000 +0200
-+++ ../gcc-4.7.3_a/config.sub	2014-06-07 17:04:06.858556356 +0200
+diff -ru gcc-4.7.3/config.sub gcc_adapted/config.sub
+--- gcc-4.7.3/config.sub	2015-01-03 16:55:55.389796157 +0100
++++ gcc_adapted/config.sub	2015-01-04 16:44:04.921099247 +0100
 @@ -1383,6 +1383,9 @@
  	-linux*)
  		os=`echo $os | sed -e 's|linux|linux-gnu|'`
@@ -11,10 +11,10 @@ diff -ru ./config.sub ../gcc-4.7.3_a/config.sub
  	-sunos5*)
  		os=`echo $os | sed -e 's|sunos5|solaris2|'`
  		;;
-Only in ../gcc-4.7.3_a: config.sub~
-diff -ru ./gcc/config.gcc ../gcc-4.7.3_a/gcc/config.gcc
---- ./gcc/config.gcc	2014-06-07 17:06:36.641895000 +0200
-+++ ../gcc-4.7.3_a/gcc/config.gcc	2014-06-07 17:03:55.655222578 +0200
+Only in gcc_adapted/gcc/config: universe.h
+diff -ru gcc-4.7.3/gcc/config.gcc gcc_adapted/gcc/config.gcc
+--- gcc-4.7.3/gcc/config.gcc	2015-01-03 16:56:03.293129282 +0100
++++ gcc_adapted/gcc/config.gcc	2015-01-04 16:53:24.324289790 +0100
 @@ -526,6 +526,12 @@
  
  # Common parts for widely ported systems.
@@ -28,7 +28,18 @@ diff -ru ./gcc/config.gcc ../gcc-4.7.3_a/gcc/config.gcc
  *-*-darwin*)
    tmake_file="t-darwin ${cpu_type}/t-darwin"
    tm_file="${tm_file} darwin.h"
-@@ -1245,6 +1251,11 @@
+@@ -934,6 +940,10 @@
+ 	tm_file="dbxelf.h elfos.h newlib-stdint.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h"
+ 	tmake_file="arm/t-arm arm/t-arm-elf"
+ 	;;
++arm*-*-universe-*)
++	tm_file="dbxelf.h elfos.h newlib-stdint.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h universe.h"
++	tmake_file="arm/t-arm arm/t-arm-elf"
++	;;
+ arm*-wince-pe*)
+ 	tm_file="arm/semi.h arm/aout.h arm/arm.h arm/coff.h dbxcoff.h arm/pe.h arm/wince-pe.h"
+ 	tmake_file="arm/t-arm arm/t-wince-pe"
+@@ -1245,6 +1255,11 @@
  	gas=yes
  	gnu_ld=yes
  	;;
@@ -40,12 +51,21 @@ diff -ru ./gcc/config.gcc ../gcc-4.7.3_a/gcc/config.gcc
  i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i[34567]86-*-gnu* | i[34567]86-*-kopensolaris*-gnu)
  			# Intel 80386's running GNU/*
  			# with ELF format using glibc 2
-Only in ../gcc-4.7.3_a/gcc: config.gcc~
-Only in ../gcc-4.7.3_a: gcc-4.7.3
-diff -ru ./libgcc/config.host ../gcc-4.7.3_a/libgcc/config.host
---- ./libgcc/config.host	2014-06-07 17:07:34.578564000 +0200
-+++ ../gcc-4.7.3_a/libgcc/config.host	2014-06-07 18:19:31.995402279 +0200
-@@ -1138,6 +1138,10 @@
+diff -ru gcc-4.7.3/libgcc/config.host gcc_adapted/libgcc/config.host
+--- gcc-4.7.3/libgcc/config.host	2015-01-03 16:55:55.553129486 +0100
++++ gcc_adapted/libgcc/config.host	2015-01-04 16:57:23.937616788 +0100
+@@ -379,6 +379,10 @@
+ 	tmake_file="$tmake_file arm/t-arm arm/t-elf t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
+ 	extra_parts="$extra_parts crti.o crtn.o"
+ 	;;
++arm*-*-universe-*)
++	tmake_file="$tmake_file arm/t-arm arm/t-elf t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
++	extra_parts="crtbegin.o crtend.o"
++	;;
+ arm*-wince-pe*)
+ 	tmake_file="$tmake_file arm/t-arm arm/t-wince-pe"
+ 	;;
+@@ -1138,6 +1142,10 @@
  m32c-*-elf*|m32c-*-rtems*)
  	tmake_file="$tmake_file m32c/t-m32c"
   	;;
@@ -56,4 +76,3 @@ diff -ru ./libgcc/config.host ../gcc-4.7.3_a/libgcc/config.host
  mep*-*-*)
  	tmake_file="mep/t-mep t-fdpbit"
  	extra_parts="crtbegin.o crtend.o"
-Only in ../gcc-4.7.3_a/libgcc: config.host~

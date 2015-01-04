@@ -1,6 +1,6 @@
 diff -ru binutils-2.24/bfd/config.bfd binutils_adapted/bfd/config.bfd
---- binutils-2.24/bfd/config.bfd 2013-11-04 16:33:37.000000000 +0100
-+++ binutils_adapted/bfd/config.bfd 2014-05-07 21:54:24.613675603 +0200
+--- binutils-2.24/bfd/config.bfd	2015-01-03 16:55:44.896463101 +0100
++++ binutils_adapted/bfd/config.bfd	2015-01-04 15:37:54.297601764 +0100
 @@ -162,6 +162,7 @@
  
  # START OF targmatch.h
@@ -9,6 +9,15 @@ diff -ru binutils-2.24/bfd/config.bfd binutils_adapted/bfd/config.bfd
    aarch64-*-elf)
      targ_defvec=bfd_elf64_littleaarch64_vec
      targ_selvecs="bfd_elf64_bigaarch64_vec bfd_elf32_littleaarch64_vec bfd_elf32_bigaarch64_vec bfd_elf32_littlearm_vec bfd_elf32_bigarm_vec"
+@@ -331,7 +332,7 @@
+     targ_defvec=bfd_elf32_littlearm_vec
+     targ_selvecs=bfd_elf32_bigarm_vec
+     ;;
+-  arm-*-elf | arm-*-freebsd* | arm*-*-linux-* | arm*-*-conix* | \
++  arm-*-elf | arm-*-freebsd* | arm*-*-linux-* | arm*-*-conix* | arm*-*-universe-* | \
+   arm*-*-uclinux* | arm-*-kfreebsd*-gnu | \
+   arm*-*-eabi* )
+     targ_defvec=bfd_elf32_littlearm_vec
 @@ -684,6 +685,11 @@
      want64=true
      ;;
@@ -22,8 +31,8 @@ diff -ru binutils-2.24/bfd/config.bfd binutils_adapted/bfd/config.bfd
      targ_defvec=bfd_elf32_i386_vec
      targ_selvecs="i386lynx_coff_vec i386lynx_aout_vec"
 diff -ru binutils-2.24/config.sub binutils_adapted/config.sub
---- binutils-2.24/config.sub	2013-11-26 12:37:33.000000000 +0100
-+++ binutils_adapted/config.sub	2014-05-07 21:54:24.610342269 +0200
+--- binutils-2.24/config.sub	2015-01-03 16:55:44.846463102 +0100
++++ binutils_adapted/config.sub	2015-01-04 15:36:56.670936621 +0100
 @@ -1406,6 +1406,9 @@
  	-linux*)
  		os=`echo $os | sed -e 's|linux|linux-gnu|'`
@@ -35,19 +44,29 @@ diff -ru binutils-2.24/config.sub binutils_adapted/config.sub
  		os=`echo $os | sed -e 's|sunos5|solaris2|'`
  		;;
 diff -ru binutils-2.24/gas/configure.tgt binutils_adapted/gas/configure.tgt
---- binutils-2.24/gas/configure.tgt	2013-11-04 16:33:37.000000000 +0100
-+++ binutils_adapted/gas/configure.tgt	2014-05-07 21:54:24.613675603 +0200
-@@ -116,6 +116,7 @@
- generic_target=${cpu_type}-$vendor-$os
- # Note: This table is alpha-sorted, please try to keep it that way.
- case ${generic_target} in
+--- binutils-2.24/gas/configure.tgt	2015-01-03 16:55:45.239796426 +0100
++++ binutils_adapted/gas/configure.tgt	2015-01-04 15:46:27.254032401 +0100
+@@ -150,6 +150,9 @@
+ 					fmt=coff em=wince-pe ;;
+   arm-*-pe)				fmt=coff em=pe ;;
+   arm-*-riscix*)			fmt=aout em=riscix ;;
++  arm-*-universe-*eabi*)	fmt=elf  em=armlinuxeabi;;
++  arm-*-universe-*)			fmt=elf;;
++  
+ 
+   avr-*-*)				fmt=elf bfd_gas=yes ;;
+ 
+@@ -270,6 +273,7 @@
+   i386-*-chaos)				fmt=elf ;;
+   i386-*-rdos*)				fmt=elf ;;
+   i386-*-darwin*)			fmt=macho ;;
 +  i386-*-universe*)			fmt=elf ;;
-   aarch64*-*-elf)			fmt=elf;;
-   aarch64*-*-linux*)			fmt=elf em=linux ;;
+ 
+   i860-*-*)				fmt=elf endian=little ;;
  
 diff -ru binutils-2.24/ld/Makefile.in binutils_adapted/ld/Makefile.in
---- binutils-2.24/ld/Makefile.in	2013-11-26 12:37:33.000000000 +0100
-+++ binutils_adapted/ld/Makefile.in	2014-05-07 21:54:24.613675603 +0200
+--- binutils-2.24/ld/Makefile.in	2015-01-03 16:55:46.599796390 +0100
++++ binutils_adapted/ld/Makefile.in	2015-01-04 16:06:06.197713463 +0100
 @@ -54,6 +54,7 @@
  host_triplet = @host@
  target_triplet = @target@
@@ -56,15 +75,27 @@ diff -ru binutils-2.24/ld/Makefile.in binutils_adapted/ld/Makefile.in
  
  # Automake 1.9 will only build info files in the objdir if they are
  # mentioned in DISTCLEANFILES.  It doesn't have to be unconditional,
-@@ -571,6 +572,7 @@
+@@ -571,6 +572,8 @@
  	eelf32xstormy16.c \
  	eelf32xtensa.c \
  	eelf_i386.c \
++	universe_arm.c \
 +	universe_i386.c \
  	eelf_i386_be.c \
  	eelf_i386_chaos.c \
  	eelf_i386_fbsd.c \
-@@ -2752,6 +2754,8 @@
+@@ -2213,6 +2216,10 @@
+   $(ELF_DEPS) $(srcdir)/emultempl/armelf.em \
+   $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
+ 	${GENSCRIPTS} armelf "$(tdir_armelf)"
++euniverse_arm.c: $(srcdir)/emulparams/universe_arm.sh \
++  $(ELF_DEPS) $(srcdir)/emultempl/armelf.em \
++  $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
++	${GENSCRIPTS} universe_arm "$(tdir_universe_arm)"
+ earmelf_fbsd.c: $(srcdir)/emulparams/armelf_fbsd.sh \
+   $(srcdir)/emulparams/armelf.sh \
+   $(ELF_DEPS) $(srcdir)/emultempl/armelf.em \
+@@ -2752,6 +2759,8 @@
  eelf_i386.c: $(srcdir)/emulparams/elf_i386.sh \
    $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
  	${GENSCRIPTS} elf_i386 "$(tdir_elf_i386)"
@@ -74,8 +105,8 @@ diff -ru binutils-2.24/ld/Makefile.in binutils_adapted/ld/Makefile.in
    $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
  	${GENSCRIPTS} elf_i386_be "$(tdir_elf_i386_be)"
 diff -ru binutils-2.24/ld/configure.tgt binutils_adapted/ld/configure.tgt
---- binutils-2.24/ld/configure.tgt	2013-11-26 12:37:33.000000000 +0100
-+++ binutils_adapted/ld/configure.tgt	2014-05-07 21:54:24.613675603 +0200
+--- binutils-2.24/ld/configure.tgt	2015-01-03 16:55:46.579796390 +0100
++++ binutils_adapted/ld/configure.tgt	2015-01-04 16:08:09.131043546 +0100
 @@ -45,6 +45,7 @@
  # architecture variants should be kept together even if their names
  # break the alpha sorting.
@@ -84,5 +115,13 @@ diff -ru binutils-2.24/ld/configure.tgt binutils_adapted/ld/configure.tgt
  aarch64_be-*-elf)	targ_emul=aarch64elfb
  			targ_extra_emuls="aarch64elf aarch64elf32 aarch64elf32b armelfb armelf" ;;
  aarch64-*-elf)		targ_emul=aarch64elf
+@@ -137,6 +138,7 @@
+ 			;;
+ arm-*-vxworks)		targ_emul=armelf_vxworks ;;
+ arm*-*-conix*)		targ_emul=armelf ;;
++arm-*-universe-* | arm-*-universe-*eabi*)	targ_emul=armelf ;;
+ avr-*-*)		targ_emul=avr2
+ 			targ_extra_emuls="avr1 avr25 avr3 avr31 avr35 avr4 avr5 avr51 avr6 avrxmega1 avrxmega2 avrxmega3 avrxmega4 avrxmega5 avrxmega6 avrxmega7"
+ 			;;
+Only in binutils_adapted/ld/emulparams: universe_arm.sh
 Only in binutils_adapted/ld/emulparams: universe_i386.sh
-
