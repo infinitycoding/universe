@@ -20,7 +20,7 @@
  *  @file /arch/x86/io.c
  *  @brief Functions for allocation port access for usermode processes.
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
- */ 
+ */
 
 #include <io.h>
 #include <tss.h>
@@ -29,24 +29,24 @@ uint32_t global_iobmp[IO_BITMAP_LENGTH / 32] = {0};
 // 1 = taken, 0 = free (not like x86 io bitmap)
 
 /**
- * @brief Checks if the port is already taken 
+ * @brief Checks if the port is already taken
  * @param port	The port id
  * @return 1 if the port is available; 0 if the port is already taken
  */
 int check_port(portid_t port)
 {
-	return !(global_iobmp[port/32] & (1<< (port & 31)));
+    return !(global_iobmp[port/32] & (1<< (port & 31)));
 }
 
 /**
- * @brief Checks if the acces to a port is granted in context.  
+ * @brief Checks if the acces to a port is granted in context.
  * @param context 	Thread context which should be checked
  * @param port 		The port id
  * @return 1 if access is granted; 0 if access is denied
  */
 int check_port_access(struct arch_thread_context *context, portid_t port)
 {
-	return !(context->ports.iobmp[port/32] & (1<< (port & 31)));
+    return !(context->ports.iobmp[port/32] & (1<< (port & 31)));
 }
 
 /**
@@ -57,24 +57,24 @@ int check_port_access(struct arch_thread_context *context, portid_t port)
  */
 int alloc_port(struct arch_thread_context *context, portid_t port)
 {
-	if(check_port(port))
-	{
-		global_iobmp[port/32] |=  1<< (port & 31);
-		context->ports.iobmp[port/32] &= ~(1<< (port & 31));
-	}
-	return check_port_access(context, port); // if the port has already been allocated, it will return 1 again
+    if(check_port(port))
+    {
+        global_iobmp[port/32] |=  1<< (port & 31);
+        context->ports.iobmp[port/32] &= ~(1<< (port & 31));
+    }
+    return check_port_access(context, port); // if the port has already been allocated, it will return 1 again
 }
 
 /**
- * @brief Removes the access rights for a port from context 
+ * @brief Removes the access rights for a port from context
  * @param context 	Thread context which should loose access
  * @param port 		The port id
  */
 void free_port(struct arch_thread_context *context, portid_t port)
 {
-	if(check_port_access(context,port))
-	{
-		context->ports.iobmp[port/32] |= 1<<(port & 31);
-		global_iobmp[port/32] &= ~(1<< (port & 31));
-	}
+    if(check_port_access(context,port))
+    {
+        context->ports.iobmp[port/32] |= 1<<(port & 31);
+        global_iobmp[port/32] &= ~(1<< (port & 31));
+    }
 }

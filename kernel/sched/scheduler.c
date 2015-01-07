@@ -57,8 +57,8 @@ void INIT_SCHEDULER(void)
     zombie_list = list_create();
     thread_iterator = iterator_create(running_threads);
 
-	// create "/proc" directory in vfs
-	proc_dir_inode = vfs_create_inode("proc", S_IFDIR | S_IRWXU | S_IRWXG | S_IRWXO, root, 0, 0);
+    // create "/proc" directory in vfs
+    proc_dir_inode = vfs_create_inode("proc", S_IFDIR | S_IRWXU | S_IRWXG | S_IRWXO, root, 0, 0);
 
     // create kernel process
     kernel_state = process_create("Kernel INIT", PROCESS_ACTIVE, NULL, 0, 0, NULL);
@@ -84,7 +84,7 @@ struct cpu_state *task_switch(struct thread_state *thread)
     struct cpu_state *cpu = thread->context.state;
     set_kernelstack(cpu+1);
     vmm_switch_context(&thread->context.memory);
-	set_iobmp(&thread->context);
+    set_iobmp(&thread->context);
     return cpu;
 }
 

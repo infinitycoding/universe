@@ -44,17 +44,17 @@ void handle_port_alloc(struct driver *drv, pck_t *req)
 
     portid_t port = (portid_t) *((unsigned int*)req->data);
     if(alloc_port(&drv->process->main_thread->context, port))
-	{
-		list_push_front(drv->ports,req->data);
-		port_type p = hw_port;
-		respond(drv->pman, req->id, SUCCESS, sizeof(port_type), &p);
-	}
-	else
-	{
-		unsigned int resp = 0; 
-		respond(drv->pman, req->id, ERROR, sizeof(port_type), &resp );
-	}
-	
+    {
+        list_push_front(drv->ports,req->data);
+        port_type p = hw_port;
+        respond(drv->pman, req->id, SUCCESS, sizeof(port_type), &p);
+    }
+    else
+    {
+        unsigned int resp = 0;
+        respond(drv->pman, req->id, ERROR, sizeof(port_type), &resp );
+    }
+
 
 }
 

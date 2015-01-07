@@ -91,7 +91,7 @@ void sys_open(struct cpu_state **cpu)
         {
             // create inode
             inode = vfs_create_path(path, mode, current_thread->process->uid, current_thread->process->gid);
-			if(inode == NULL)
+            if(inode == NULL)
             {
                 (*cpu)->CPU_ARG0 = _NO_PERMISSION;
                 return;
@@ -246,19 +246,19 @@ void sys_read(struct cpu_state **cpu)
         if(desc->permission & VFS_PERMISSION_READ && desc->read_inode != NULL)
         {
             vfs_inode_t *inode = desc->read_inode;
-			vfs_inode_t *real = inode;
-			GET_INODE(real);
-			if(S_ISDIR(real->stat))
-			{
-				(*cpu)->CPU_ARG0 = _NO_PERMISSION;
-				return;
-			}
+            vfs_inode_t *real = inode;
+            GET_INODE(real);
+            if(S_ISDIR(real->stat))
+            {
+                (*cpu)->CPU_ARG0 = _NO_PERMISSION;
+                return;
+            }
             vfs_buffer_info_t *info = real->buffer;
-			if(info == NULL)
-			{
-				(*cpu)->CPU_ARG0 = _FAILURE;
-				return;
-			}
+            if(info == NULL)
+            {
+                (*cpu)->CPU_ARG0 = _FAILURE;
+                return;
+            }
 
             int ret = vfs_read(inode, desc->read_pos, buf, len);
 
@@ -320,13 +320,13 @@ void sys_write(struct cpu_state **cpu)
         if(desc->permission & VFS_PERMISSION_WRITE && desc->write_inode != NULL)
         {
             vfs_inode_t *inode = desc->write_inode;
-			vfs_inode_t *real = inode;
-			GET_INODE(real);
-			if(S_ISDIR(real->stat))
-			{
-				(*cpu)->CPU_ARG0 = _NO_PERMISSION;
-				return;
-			}
+            vfs_inode_t *real = inode;
+            GET_INODE(real);
+            if(S_ISDIR(real->stat))
+            {
+                (*cpu)->CPU_ARG0 = _NO_PERMISSION;
+                return;
+            }
 
             int ret = vfs_write(inode, desc->write_pos, buf, len);
             (*cpu)->CPU_ARG0 = ret;
@@ -456,7 +456,7 @@ void sys_chdir(struct cpu_state **cpu)
     vfs_inode_t *nwd = vfs_lookup_path(path);
     if(nwd != NULL)
     {
-		GET_INODE(nwd);
+        GET_INODE(nwd);
         if(nwd != NULL && S_ISDIR(nwd->stat))
         {
             if(vfs_access(nwd, R_OK, current_thread->process->uid, current_thread->process->gid) == 0)
@@ -486,23 +486,23 @@ void sys_getdents(struct cpu_state **cpu)
     dirent_t *dentry = (dirent_t *)(*cpu)->CPU_ARG2;
 
     vfs_inode_t *parent = get_fd(current_thread->process, fd)->read_inode;
-	GET_INODE(parent);
+    GET_INODE(parent);
 
     if(vfs_access(parent, R_OK, current_thread->process->uid, current_thread->process->gid) == 0)
     {
-		if(! S_ISDIR(parent->stat))
-		{
-        	(*cpu)->CPU_ARG0 = _NO_PERMISSION;
-			return;
-		}
+        if(! S_ISDIR(parent->stat))
+        {
+            (*cpu)->CPU_ARG0 = _NO_PERMISSION;
+            return;
+        }
 
-		vfs_buffer_info_t *info = parent->buffer;
+        vfs_buffer_info_t *info = parent->buffer;
 
         if(current_thread->getdents_pos < info->num_blocks && (fd == current_thread->getdents_old_fd || current_thread->getdents_old_fd == -1))
         {
-			vfs_buffer_block_t *block = vfs_get_buffer_block(info, current_thread->getdents_pos++);
+            vfs_buffer_block_t *block = vfs_get_buffer_block(info, current_thread->getdents_pos++);
             vfs_dentry_t *entry = (vfs_dentry_t *)block->base;
-			vfs_inode_t *ino = entry->inode;
+            vfs_inode_t *ino = entry->inode;
 
             strcpy(dentry->name, ino->name);
             memcpy(&dentry->stat, &ino->stat, sizeof(struct stat));
@@ -576,10 +576,11 @@ void sys_getcwd(struct cpu_state **cpu)
 
     vfs_inode_t *inode = current_thread->process->cwd;
 
-	while(inode != root) {
-		cwdsize += strlen((char*)inode->name) + 1;
-		inode = inode->parent;
-	}
+    while(inode != root)
+    {
+        cwdsize += strlen((char*)inode->name) + 1;
+        inode = inode->parent;
+    }
 
     if(buffer == NULL)
     {
@@ -593,26 +594,26 @@ void sys_getcwd(struct cpu_state **cpu)
         return;
     }
 
-	memset(buffer, 0, buffersize);
-	if(cwdsize > 0)
-	{
-		buffer += cwdsize+1;
-		*--buffer = '\0';
+    memset(buffer, 0, buffersize);
+    if(cwdsize > 0)
+    {
+        buffer += cwdsize+1;
+        *--buffer = '\0';
 
-		inode = current_thread->process->cwd;
-		while(inode != root)
-		{
-			int len = strlen((char*)inode->name);
-			buffer -= len;
-			memcpy(buffer, inode->name, len);
-			*--buffer = '/';
-			inode = inode->parent;
-		}
-	}
-	else
-	{
-		strcpy(buffer,"/");
-	}
+        inode = current_thread->process->cwd;
+        while(inode != root)
+        {
+            int len = strlen((char*)inode->name);
+            buffer -= len;
+            memcpy(buffer, inode->name, len);
+            *--buffer = '/';
+            inode = inode->parent;
+        }
+    }
+    else
+    {
+        strcpy(buffer,"/");
+    }
 
     (*cpu)->CPU_ARG0 =(unsigned int) buffer;
     return;
@@ -787,36 +788,36 @@ void sys_lchown(struct cpu_state **cpu)
 
 void sys_access(struct cpu_state **cpu)
 {
-	char *file = (char *) (*cpu)->CPU_ARG1;
-	mode_t mode = (mode_t) (*cpu)->CPU_ARG2;
-	
-	if(file == NULL)
-	{
-		(*cpu)->CPU_ARG0 = _FAILURE;
-		return;
-	}
-	
-	vfs_inode_t *node = vfs_lookup_path(file);
+    char *file = (char *) (*cpu)->CPU_ARG1;
+    mode_t mode = (mode_t) (*cpu)->CPU_ARG2;
+
+    if(file == NULL)
+    {
+        (*cpu)->CPU_ARG0 = _FAILURE;
+        return;
+    }
+
+    vfs_inode_t *node = vfs_lookup_path(file);
     if(node == NULL)
     {
         (*cpu)->CPU_ARG0 = _FAILURE;
         return;
     }
-	
-	(*cpu)->CPU_ARG0 = vfs_access(node, mode, current_thread->process->uid, current_thread->process->gid);
+
+    (*cpu)->CPU_ARG0 = vfs_access(node, mode, current_thread->process->uid, current_thread->process->gid);
 }
 
 
 
 socket_request_t *get_socket_request(struct process_state *proc, int id)
 {
-	iterator_t it = iterator_create(proc->socket_requests);
+    iterator_t it = iterator_create(proc->socket_requests);
     while(!list_is_empty(proc->socket_requests) && !list_is_last(&it))
     {
         socket_request_t *r = list_get_current(&it);
         if(r->id == id)
         {
-			return r;
+            return r;
         }
         else
         {
@@ -827,70 +828,70 @@ socket_request_t *get_socket_request(struct process_state *proc, int id)
 
 void usys_connect(struct cpu_state **cpu)
 {
-	int pid = (int) (*cpu)->CPU_ARG1;
-	int port = (int) (*cpu)->CPU_ARG2;
+    int pid = (int) (*cpu)->CPU_ARG1;
+    int port = (int) (*cpu)->CPU_ARG2;
 
-	socket_request_t *req = (socket_request_t*) malloc(sizeof(socket_request_t));
-	req->pid = pid;
-	req->port = port;
-	req->id = list_length(current_thread->process->socket_requests);
+    socket_request_t *req = (socket_request_t*) malloc(sizeof(socket_request_t));
+    req->pid = pid;
+    req->port = port;
+    req->id = list_length(current_thread->process->socket_requests);
 
-	list_push_back(current_thread->process->socket_requests, req);
+    list_push_back(current_thread->process->socket_requests, req);
 
     send_event(current_thread->process->socket_event_id);
     current_thread->process->socket_event_id = get_new_event_ID();
 
-	(*cpu)->CPU_ARG0 = req->id;
+    (*cpu)->CPU_ARG0 = req->id;
 }
 
 void usys_readport(struct cpu_state **cpu)
 {
-	iterator_t it = iterator_create(current_thread->process->socket_requests);
-	
-	list_set_first(&it);
-	socket_request_t *req = list_get_current(&it);
+    iterator_t it = iterator_create(current_thread->process->socket_requests);
 
-	if(req != NULL)
-	{
-		list_remove(&it);
-		(*cpu)->CPU_ARG0 = req->id;
-	}
-	else
-	{
-		add_trigger(WAIT_EVENT, current_thread->process->socket_event_id, 0, current_thread, usys_readport);
-		thread_suspend(current_thread);
-		*cpu = (struct cpu_state *)task_schedule(*cpu);
-	}
+    list_set_first(&it);
+    socket_request_t *req = list_get_current(&it);
+
+    if(req != NULL)
+    {
+        list_remove(&it);
+        (*cpu)->CPU_ARG0 = req->id;
+    }
+    else
+    {
+        add_trigger(WAIT_EVENT, current_thread->process->socket_event_id, 0, current_thread, usys_readport);
+        thread_suspend(current_thread);
+        *cpu = (struct cpu_state *)task_schedule(*cpu);
+    }
 }
 
 void usys_accept(struct cpu_state **cpu)
 {
-	int id = (*cpu)->CPU_ARG1;
+    int id = (*cpu)->CPU_ARG1;
 
-	socket_request_t *req = get_socket_request(current_thread->process, id);
+    socket_request_t *req = get_socket_request(current_thread->process, id);
 
-	if(req == NULL)
-	{
-		(*cpu)->CPU_ARG0 = _FAILURE;
-		return;
-	}
+    if(req == NULL)
+    {
+        (*cpu)->CPU_ARG0 = _FAILURE;
+        return;
+    }
 
-	char pstr[16];
-	sprintf(pstr, "%d", req->port);
+    char pstr[16];
+    sprintf(pstr, "%d", req->port);
 
-	struct process_state *proc = process_find(req->pid);
-	vfs_dentry_t *dentry = vfs_get_dir_entry(proc->socket_inode, pstr);
+    struct process_state *proc = process_find(req->pid);
+    vfs_dentry_t *dentry = vfs_get_dir_entry(proc->socket_inode, pstr);
 
-	if(dentry != NULL && dentry->inode != NULL)
-	{
-		char rstr[64], wstr[64];
-		sprintf(rstr, "%d.in", current_thread->process->pid);
-		sprintf(wstr, "%d.out", current_thread->process->pid);
+    if(dentry != NULL && dentry->inode != NULL)
+    {
+        char rstr[64], wstr[64];
+        sprintf(rstr, "%d.in", current_thread->process->pid);
+        sprintf(wstr, "%d.out", current_thread->process->pid);
 
-		vfs_inode_t *r_in = vfs_create_inode(rstr, 0, dentry->inode, 0, 0);
-		vfs_inode_t *w_in = vfs_create_inode(wstr, 0, dentry->inode, 0, 0);
+        vfs_inode_t *r_in = vfs_create_inode(rstr, 0, dentry->inode, 0, 0);
+        vfs_inode_t *w_in = vfs_create_inode(wstr, 0, dentry->inode, 0, 0);
 
-    	struct fd *desc = create_fd(current_thread->process);
+        struct fd *desc = create_fd(current_thread->process);
         desc->mode = 0;
         desc->flags = O_RDWR;
         desc->permission = VFS_PERMISSION_READ | VFS_PERMISSION_WRITE;
@@ -898,11 +899,11 @@ void usys_accept(struct cpu_state **cpu)
         desc->write_inode = w_in;
 
         (*cpu)->CPU_ARG0 = desc->id;
-	}
-	else
-	{
-		(*cpu)->CPU_ARG0 = _FAILURE;
-	}
+    }
+    else
+    {
+        (*cpu)->CPU_ARG0 = _FAILURE;
+    }
 }
 
 

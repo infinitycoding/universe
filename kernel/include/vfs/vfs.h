@@ -63,7 +63,7 @@ typedef struct vfs_buffer_info
 
     list_t *blocks;
     int num_blocks;
-	int block_size;
+    int block_size;
 } vfs_buffer_info_t;
 
 typedef struct vfs_buffer_block
@@ -107,9 +107,9 @@ typedef struct dirent
 
 typedef struct socket_request
 {
-	int id;
-	int pid;
-	int port;
+    int id;
+    int pid;
+    int port;
 } socket_request_t;
 
 // solve a link

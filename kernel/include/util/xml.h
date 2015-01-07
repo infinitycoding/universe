@@ -19,38 +19,38 @@
 
      You should have received a copy of the GNU General Public License
      along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
- */ 
+ */
 
 /**
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
- */ 
+ */
 
 typedef struct
 {
-	char *name;
-	char *value;
-}xml_param;
+    char *name;
+    char *value;
+} xml_param;
 
 struct xml_node
 {
-	char *name;
-	char *text;
-	list_t *params;
-	list_t *subnodes;
-	struct xml_node *parent;
+    char *name;
+    char *text;
+    list_t *params;
+    list_t *subnodes;
+    struct xml_node *parent;
 };
 
 typedef struct xml_node xml_node;
 
 typedef enum
 {
-	STATUS_TEXT = 0,
-	STATUS_TAG_NAME = 1,
-	STATUS_TAG_SPACE =  2,
-	STATUS_PARAM_NAME = 3,
-	STATUS_PARAM_VALUE = 4,
-	STATUS_TAG_END = 5
-}parser_status_t;
+    STATUS_TEXT = 0,
+    STATUS_TAG_NAME = 1,
+    STATUS_TAG_SPACE =  2,
+    STATUS_PARAM_NAME = 3,
+    STATUS_PARAM_VALUE = 4,
+    STATUS_TAG_END = 5
+} parser_status_t;
 
 
 

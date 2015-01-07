@@ -72,7 +72,7 @@ void set_kernelstack(void *stack)
 
 void set_iobmp(struct arch_thread_context *context)
 {
-	memcpy(tss.iobmp, context->ports.iobmp, sizeof(tss.iobmp));
+    memcpy(tss.iobmp, context->ports.iobmp, sizeof(tss.iobmp));
 }
 
 /**
@@ -107,13 +107,13 @@ void INIT_GDT(void)
         ".1:;"
     );
 
-	
+
     //initiate the i/o bitmap
-	tss.iobmp_offset =(uint32_t)(((uint32_t)&tss.iobmp) - ((uint32_t)&tss)); // calculate real adressoffset
-	int i;
-	for(i=0; i<2048; i++)
- 		tss.iobmp[i]=0xFFFFFFFF;
-	
-	// load the TSS
+    tss.iobmp_offset =(uint32_t)(((uint32_t)&tss.iobmp) - ((uint32_t)&tss)); // calculate real adressoffset
+    int i;
+    for(i=0; i<2048; i++)
+        tss.iobmp[i]=0xFFFFFFFF;
+
+    // load the TSS
     asm volatile("ltr %%ax" : : "a" (5 << 3));
 }

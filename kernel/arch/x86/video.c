@@ -148,10 +148,10 @@ void gotoxy(uint8_t _x, uint8_t _y)
         video_mem[2 * offset + 1] = cga_color;
     }
 
-    
+
     outb(CRTC_INDEX_PORT, CRTC_CURSOR_LOCATION_HIGH);
     outb(CRTC_DATA_PORT, (uint8_t)(offset >> 8));
-	
-	outb(CRTC_INDEX_PORT, CRTC_CURSOR_LOCATION_LOW);
+
+    outb(CRTC_INDEX_PORT, CRTC_CURSOR_LOCATION_LOW);
     outb(CRTC_DATA_PORT, (uint8_t)offset);
 }

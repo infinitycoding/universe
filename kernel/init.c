@@ -87,12 +87,12 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     INIT_SCHEDULER();
     //print Logo and loading message
     print_logo(YELLOW);
-	set_color(WHITE | (BLACK << 4));
+    set_color(WHITE | (BLACK << 4));
     puts("Universe wird gestartet...\n");
     // count free memory and display it
     uint32_t pages = pmm_count_free_pages();
     printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
-	
+
     //print current timestamp
     struct time t;
     update_time(&t);

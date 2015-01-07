@@ -155,6 +155,27 @@ void *list_pop_front(list_t *list)
     return element;
 }
 
+void* list_get_by_int(list_t *list, uintptr_t off, int value)
+{
+    struct list_node *node = list->head->next;
+    struct list_node *head = list->head;
+    void *element = NULL;
+
+    while (node != head)
+    {
+        int val1 = *((int*) ((uintptr_t) node->element + off));
+        if(val1 == value)
+        {
+            element = node->element;
+            break;
+        }
+
+        node = node->next;
+    }
+
+    return element;
+}
+
 /**
  *  @brief Counts the number of elements in the given list.
  *  @brief list the list

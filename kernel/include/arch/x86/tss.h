@@ -29,8 +29,8 @@
 
 typedef struct
 {
-	uint32_t iobmp[IO_BITMAP_LENGTH / 32];
-}iopb;
+    uint32_t iobmp[IO_BITMAP_LENGTH / 32];
+} iopb;
 
 typedef struct tss_s
 {
@@ -59,9 +59,9 @@ typedef struct tss_s
     uint32_t fs;
     uint32_t gs;
     uint32_t ldt;
-	uint16_t reserved;
+    uint16_t reserved;
     uint32_t iobmp_offset;
-	uint32_t iobmp[IO_BITMAP_LENGTH / 32];
+    uint32_t iobmp[IO_BITMAP_LENGTH / 32];
 } __attribute__((packed)) tss_s;
 
 #endif

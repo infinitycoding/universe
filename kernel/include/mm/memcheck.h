@@ -41,7 +41,7 @@ static int g_nFreeCnt    = 0;
                , size                                                       \
               );                                                            \
         g_nMallocCnt++;                                                     \
- 
+
 
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 /* Secure realloc */
@@ -53,7 +53,7 @@ static int g_nFreeCnt    = 0;
                , size                                                       \
               );                                                            \
         g_nReallocCnt++;                                                    \
- 
+
 
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 /* Secure calloc */
@@ -65,7 +65,7 @@ static int g_nFreeCnt    = 0;
                , size                                                      \
               );                                                           \
         g_nCallocCnt++;                                                    \
- 
+
 
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 /* Secure free*/

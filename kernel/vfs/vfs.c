@@ -106,10 +106,10 @@ vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_
         inode->buffer->num_blocks = 0;
         inode->buffer->blocks = list_create();
 
-		if(S_ISDIR(inode->stat))
-			inode->buffer->block_size = sizeof(vfs_dentry_t);
-		else
-			inode->buffer->block_size = 0x1000;
+        if(S_ISDIR(inode->stat))
+            inode->buffer->block_size = sizeof(vfs_dentry_t);
+        else
+            inode->buffer->block_size = 0x1000;
     }
 
     // write inode into parents entries
@@ -163,102 +163,102 @@ vfs_dentry_t* vfs_create_dir_entry(vfs_inode_t *entry_inode)
 
 void vfs_add_dir_entry(vfs_inode_t *dir, vfs_dentry_t *entry)
 {
-	if(! S_ISDIR(dir->stat))
-		return;
+    if(! S_ISDIR(dir->stat))
+        return;
 
     vfs_buffer_info_t *info = dir->buffer;
-	if(info == NULL)
-	{
-		printf("leerer puffer\n");
-		return;
-	}
+    if(info == NULL)
+    {
+        printf("leerer puffer\n");
+        return;
+    }
 
-	vfs_buffer_block_t *block = malloc(sizeof(vfs_buffer_block_t));
-	block->base = entry;
-	block->block_id = info->num_blocks++;
-	list_push_back(info->blocks, block);
+    vfs_buffer_block_t *block = malloc(sizeof(vfs_buffer_block_t));
+    block->base = entry;
+    block->block_id = info->num_blocks++;
+    list_push_back(info->blocks, block);
 }
 
 void vfs_remove_dir_entry(vfs_inode_t *dir, vfs_inode_t *inode)
 {
-	if(! S_ISDIR(dir->stat))
-		return;
+    if(! S_ISDIR(dir->stat))
+        return;
 
     vfs_buffer_info_t *info = dir->buffer;
-	if(info == NULL)
-	{
-		printf("leerer puffer\n");
-		return;
-	}
+    if(info == NULL)
+    {
+        printf("leerer puffer\n");
+        return;
+    }
 
     iterator_t it = iterator_create(info->blocks);
     int i;
     for(i = 0; i < info->num_blocks; i++)
-	{
-		vfs_buffer_block_t *block = it.current->element;
-		vfs_dentry_t *dentry = block->base;
-		
-		if(dentry->inode == inode)
-		{
-			list_remove(&it);
-			info->num_blocks--;
-		}
+    {
+        vfs_buffer_block_t *block = it.current->element;
+        vfs_dentry_t *dentry = block->base;
+
+        if(dentry->inode == inode)
+        {
+            list_remove(&it);
+            info->num_blocks--;
+        }
 
         list_next(&it);
-	}
+    }
 }
 
 vfs_dentry_t *vfs_get_dir_entry(vfs_inode_t *ino, const char *name)
 {
-	GET_INODE(ino);
-	if(S_ISDIR(ino->stat))
-	{
-		vfs_buffer_info_t *info = ino->buffer;
+    GET_INODE(ino);
+    if(S_ISDIR(ino->stat))
+    {
+        vfs_buffer_info_t *info = ino->buffer;
 
-		if(! list_is_empty(info->blocks))
-		{
-			iterator_t it = iterator_create(info->blocks);
-			list_set_first(&it);
+        if(! list_is_empty(info->blocks))
+        {
+            iterator_t it = iterator_create(info->blocks);
+            list_set_first(&it);
 
-			int i;
-			for(i = 0; i < info->num_blocks; i++)
-			{
-				vfs_buffer_block_t *block = (vfs_buffer_block_t*) it.current->element;
-				vfs_dentry_t *dentry = (vfs_dentry_t*) block->base;
+            int i;
+            for(i = 0; i < info->num_blocks; i++)
+            {
+                vfs_buffer_block_t *block = (vfs_buffer_block_t*) it.current->element;
+                vfs_dentry_t *dentry = (vfs_dentry_t*) block->base;
 
-				if(strcmp(name, dentry->inode->name) == 0)
-				{
-					return dentry;
-				}
+                if(strcmp(name, dentry->inode->name) == 0)
+                {
+                    return dentry;
+                }
 
-				list_next(&it);
-			}
-		}
-	}
+                list_next(&it);
+            }
+        }
+    }
 
-	return NULL;
+    return NULL;
 }
 
 vfs_buffer_block_t *vfs_get_buffer_block(vfs_buffer_info_t *info, uint32_t id)
 {
-	if(! list_is_empty(info->blocks))
-	{
-    	iterator_t it = iterator_create(info->blocks);
-		list_set_first(&it);
+    if(! list_is_empty(info->blocks))
+    {
+        iterator_t it = iterator_create(info->blocks);
+        list_set_first(&it);
 
-		int i;
-		for(i = 0; i < info->num_blocks; i++)
-		{
-			vfs_buffer_block_t *block = (vfs_buffer_block_t*) it.current->element;
+        int i;
+        for(i = 0; i < info->num_blocks; i++)
+        {
+            vfs_buffer_block_t *block = (vfs_buffer_block_t*) it.current->element;
 
-			if(block->block_id == id)
-				return block;
+            if(block->block_id == id)
+                return block;
 
-			list_next(&it);
-		}
-	}
+            list_next(&it);
+        }
+    }
 
-	return NULL;
+    return NULL;
 }
 
 /**
@@ -289,7 +289,7 @@ int vfs_write(vfs_inode_t *inode, int off, void *buffer, int bytes)
     int block_off = off % info->block_size;
 
     // search first block
-	block = vfs_get_buffer_block(info, block_id);
+    block = vfs_get_buffer_block(info, block_id);
 
     uint8_t *data = (uint8_t*) buffer;
     int index = block_off;
@@ -375,7 +375,7 @@ int vfs_read(vfs_inode_t *inode, int offset, void *buffer, int bytes)
         int index = block_off;
 
         // go through all bytes...
-		int i;
+        int i;
         for(i = 0; i < bytes; i++)
         {
             // if the block ends, go to the next
@@ -383,7 +383,7 @@ int vfs_read(vfs_inode_t *inode, int offset, void *buffer, int bytes)
             {
                 block_id++;
                 index = 0;
-        		block = vfs_get_buffer_block(info, block_id);
+                block = vfs_get_buffer_block(info, block_id);
 
                 if(block == NULL)
                     break;
@@ -412,7 +412,7 @@ int vfs_read(vfs_inode_t *inode, int offset, void *buffer, int bytes)
  */
 int vfs_stat(vfs_inode_t *node, struct stat *buffer)
 {
-	GET_INODE(node);
+    GET_INODE(node);
 
     uint8_t *node_stat = (uint8_t*) &node->stat;
     uint8_t *buf = (uint8_t*) buffer;
@@ -435,7 +435,7 @@ int vfs_stat(vfs_inode_t *node, struct stat *buffer)
  */
 int vfs_access(vfs_inode_t *node, mode_t modus, uid_t uid, gid_t gid)
 {
-	GET_INODE(node);
+    GET_INODE(node);
 
     if (node->stat.st_uid == uid)
     {
@@ -509,27 +509,27 @@ vfs_inode_t *vfs_lookup_path(char *path)
     char *str = (char*) strtok(path, delimiter);
     while(str != NULL)
     {
-		vfs_inode_t *real = parent;
-		GET_INODE(real);
+        vfs_inode_t *real = parent;
+        GET_INODE(real);
 
-		vfs_buffer_info_t *info = real->buffer;
-		iterator_t it = iterator_create(info->blocks);
-		int i;
-		int found = 0;
-		for(i = 0; i < info->num_blocks; i++)
-		{
-			vfs_buffer_block_t *block = it.current->element;
-			vfs_dentry_t *dentry = (vfs_dentry_t*) block->base;
+        vfs_buffer_info_t *info = real->buffer;
+        iterator_t it = iterator_create(info->blocks);
+        int i;
+        int found = 0;
+        for(i = 0; i < info->num_blocks; i++)
+        {
+            vfs_buffer_block_t *block = it.current->element;
+            vfs_dentry_t *dentry = (vfs_dentry_t*) block->base;
 
-			if(strcmp(str, dentry->inode->name) == 0)
-		    {
-		       parent = dentry->inode;
-		       found = 1;
-		       break;
-		    }
+            if(strcmp(str, dentry->inode->name) == 0)
+            {
+                parent = dentry->inode;
+                found = 1;
+                break;
+            }
 
-		    list_next(&it);
-		}
+            list_next(&it);
+        }
 
         if(!found)
         {
@@ -579,17 +579,17 @@ vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid)
     char *str = (char*) strtok(path, delimiter);
     while(str != NULL)
     {
-		vfs_inode_t *real = parent;
-		GET_INODE(real);
+        vfs_inode_t *real = parent;
+        GET_INODE(real);
 
-		vfs_buffer_info_t *info = real->buffer;
-		iterator_t it = iterator_create(info->blocks);
-		int i;
-		int found = 0;
-		for(i = 0; i < info->num_blocks; i++)
-		{
-			vfs_buffer_block_t *block = it.current->element;
-			vfs_dentry_t *dentry = (vfs_dentry_t*) block->base;
+        vfs_buffer_info_t *info = real->buffer;
+        iterator_t it = iterator_create(info->blocks);
+        int i;
+        int found = 0;
+        for(i = 0; i < info->num_blocks; i++)
+        {
+            vfs_buffer_block_t *block = it.current->element;
+            vfs_dentry_t *dentry = (vfs_dentry_t*) block->base;
 
             if(strcmp(str, dentry->inode->name) == 0)
             {
@@ -598,7 +598,7 @@ vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid)
                 break;
             }
 
-		    list_next(&it);
+            list_next(&it);
         }
 
         char *new_str = strtok(NULL, delimiter);
@@ -606,9 +606,9 @@ vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid)
         {
             int n_mode;
             if(new_str != NULL)
-				n_mode = mode & (S_IRWXU | S_IRWXG | S_IRWXO) | S_IFDIR;
-			else
-				n_mode = mode;
+                n_mode = mode & (S_IRWXU | S_IRWXG | S_IRWXO) | S_IFDIR;
+            else
+                n_mode = mode;
 
             if(vfs_access(parent, W_OK, uid, gid) == 0)
             {
