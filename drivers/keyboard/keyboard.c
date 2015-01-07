@@ -44,14 +44,14 @@ void kbd_irq_handler(void);
 
 /**
  * Initalize the Keyboard
- *
+ *STDOUT_FILENO
  * @param void
  * @return void
  */
 int main(void)
 {
 
-    pckmgr *conn = new_pckmgr(stdin, stdout, stderr);
+    pckmgr *conn = new_pckmgr(STDIN_FILENO, STDIN_FILENO, STDERR_FILENO);
     if(!subsystem_connect(conn,UHOST_DEFAULT_SYNCHRON))
     {
         udrcp_error(conn,"could not connect to host\n");

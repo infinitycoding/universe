@@ -210,7 +210,7 @@ int free_shm(shm_mem_t *mem)
             break;
 
         default:
-            write(stderr,"error: unsupported response\n",28);
+            write(STDERR_FILENO,"error: unsupported response\n",28);
             exit(1);
             break;
         };
@@ -246,7 +246,7 @@ int free_pma(pma_mem_t *mem)
             break;
 
         default:
-            write(stderr,"error: unsupported response\n",28);
+            write(STDERR_FILENO,"error: unsupported response\n",28);
             exit(1);
             break;
         };

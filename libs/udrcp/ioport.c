@@ -126,7 +126,7 @@ int port_free(port_t *p)
             break;
 
         default:
-            write(stderr,"error: unsupported response\n",28);
+            write(STDERR_FILENO,"error: unsupported response\n",28);
             exit(1);
             break;
         };
@@ -189,7 +189,7 @@ unsigned char inb(port_t *p)
         break;
 
     default:
-        write(stderr,"error: a unsupported port-type is used\n",40);
+        write(STDERR_FILENO,"error: a unsupported port-type is used\n",40);
         exit(1);
         break;
 
@@ -219,7 +219,7 @@ unsigned short inw(port_t *p)
         break;
 
     default:
-        write(stderr,"error: a unsupported port-type is used\n",40);
+        write(STDERR_FILENO,"error: a unsupported port-type is used\n",40);
         exit(1);
         break;
 
@@ -249,7 +249,7 @@ unsigned long inl(port_t *p)
         break;
 
     default:
-        write(stderr,"error: a unsupported port-type is used\n",40);
+        write(STDERR_FILENO,"error: a unsupported port-type is used\n",40);
         exit(1);
         break;
 
@@ -312,7 +312,7 @@ void outb(port_t *p, unsigned char v)
         break;
 
     default:
-        write(stderr,"error: a unsupported port-type is used\n",40);
+        write(STDERR_FILENO,"error: a unsupported port-type is used\n",40);
         exit(1);
         break;
     };
@@ -337,7 +337,7 @@ void outw(port_t *p, unsigned short v)
         break;
 
     default:
-        write(stderr,"error: a unsupported port-type is used\n",40);
+        write(STDERR_FILENO,"error: a unsupported port-type is used\n",40);
         exit(1);
         break;
     };
@@ -362,7 +362,7 @@ void outl(port_t *p, unsigned long v)
         break;
 
     default:
-        write(stderr,"error: a unsupported port-type is used\n",40);
+        write(STDERR_FILENO,"error: a unsupported port-type is used\n",40);
         exit(1);
         break;
     };
