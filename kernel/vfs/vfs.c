@@ -31,6 +31,7 @@
 #include <printf.h>
 #include <stdint.h>
 #include <string.h>
+#include <stddef.h>
 
 #include <mm/heap.h>
 #include <mm/paging.h>
@@ -241,24 +242,7 @@ vfs_dentry_t *vfs_get_dir_entry(vfs_inode_t *ino, const char *name)
 
 vfs_buffer_block_t *vfs_get_buffer_block(vfs_buffer_info_t *info, uint32_t id)
 {
-    if(! list_is_empty(info->blocks))
-    {
-        iterator_t it = iterator_create(info->blocks);
-        list_set_first(&it);
-
-        int i;
-        for(i = 0; i < info->num_blocks; i++)
-        {
-            vfs_buffer_block_t *block = (vfs_buffer_block_t*) it.current->element;
-
-            if(block->block_id == id)
-                return block;
-
-            list_next(&it);
-        }
-    }
-
-    return NULL;
+    return (vfs_buffer_block_t*) list_get_by_int(info->blocks, offsetof(vfs_buffer_block_t, block_id), id);
 }
 
 /**

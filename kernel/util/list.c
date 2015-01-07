@@ -166,15 +166,34 @@ void* list_get_by_int(list_t *list, uintptr_t off, int value)
         int val1 = *((int*) ((uintptr_t) node->element + off));
         if(val1 == value)
         {
-            element = node->element;
-            break;
+            return node->element;
         }
 
         node = node->next;
     }
 
-    return element;
+    return NULL;
 }
+
+struct list_node* list_get_node_by_int(list_t *list, uintptr_t off, int value)
+{
+    struct list_node *node = list->head->next;
+    struct list_node *head = list->head;
+
+    while (node != head)
+    {
+        int val1 = *((int*) ((uintptr_t) node->element + off));
+        if(val1 == value)
+        {
+            return node;
+        }
+
+        node = node->next;
+    }
+
+    return NULL;
+}
+
 
 /**
  *  @brief Counts the number of elements in the given list.

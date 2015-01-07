@@ -30,6 +30,7 @@
 #include <printf.h>
 #include <stdint.h>
 #include <string.h>
+#include <stddef.h>
 
 #include <memory_layout.h>
 #include <mm/paging.h>
@@ -49,21 +50,7 @@ extern vfs_inode_t *root;
 // Systemcalls
 struct fd *get_fd(struct process_state *process, int fd)
 {
-    iterator_t it = iterator_create(process->files);
-    while(!list_is_empty(process->files) && !list_is_last(&it))
-    {
-        struct fd *desc = list_get_current(&it);
-        if(desc->id == fd)
-        {
-            return desc;
-        }
-        else
-        {
-            list_next(&it);
-        }
-    }
-
-    return NULL;
+    return (struct fd*) list_get_by_int(process->files, offsetof(struct fd, id), fd);
 }
 
 struct fd *create_fd(struct process_state *process)
@@ -811,19 +798,21 @@ void sys_access(struct cpu_state **cpu)
 
 socket_request_t *get_socket_request(struct process_state *proc, int id)
 {
-    iterator_t it = iterator_create(proc->socket_requests);
-    while(!list_is_empty(proc->socket_requests) && !list_is_last(&it))
-    {
-        socket_request_t *r = list_get_current(&it);
-        if(r->id == id)
-        {
-            return r;
-        }
-        else
-        {
-            list_next(&it);
-        }
-    }
+    return (socket_request_t*) list_get_by_int(proc->socket_requests, offsetof(socket_request_t, id), id);
+}
+
+void port_accepted(struct cpu_state **cpu)
+{
+    socket_request_t *req = (socket_request_t*) (*cpu)->CPU_ARG0;
+
+    struct fd *desc = create_fd(current_thread->process);
+    desc->mode = 0;
+    desc->flags = O_RDWR;
+    desc->permission = VFS_PERMISSION_READ | VFS_PERMISSION_WRITE;
+    desc->read_inode = req->inodes[0];
+    desc->write_inode = req->inodes[1];
+
+    (*cpu)->CPU_ARG0 = desc->id;
 }
 
 void usys_connect(struct cpu_state **cpu)
@@ -835,29 +824,29 @@ void usys_connect(struct cpu_state **cpu)
     req->pid = pid;
     req->port = port;
     req->id = list_length(current_thread->process->socket_requests);
+    req->event_id = get_new_event_ID();
+
+    (*cpu)->CPU_ARG0 = (uint32_t) req;
 
     list_push_back(current_thread->process->socket_requests, req);
 
-    send_event(current_thread->process->socket_event_id);
-    current_thread->process->socket_event_id = get_new_event_ID();
+    add_trigger(WAIT_EVENT, req->event_id, 0, current_thread, port_accepted);
+    thread_suspend(current_thread);
+    *cpu = (struct cpu_state *)task_schedule(*cpu);
 
-    (*cpu)->CPU_ARG0 = req->id;
+    send_event(current_thread->process->socket_event_id);
 }
 
 void usys_readport(struct cpu_state **cpu)
 {
-    iterator_t it = iterator_create(current_thread->process->socket_requests);
-
-    list_set_first(&it);
-    socket_request_t *req = list_get_current(&it);
-
-    if(req != NULL)
+    if(! list_is_empty(current_thread->process->socket_requests))
     {
-        list_remove(&it);
+        socket_request_t *req = (socket_request_t*) current_thread->process->socket_requests->head->next->element;
         (*cpu)->CPU_ARG0 = req->id;
     }
     else
     {
+        current_thread->process->socket_event_id = get_new_event_ID();
         add_trigger(WAIT_EVENT, current_thread->process->socket_event_id, 0, current_thread, usys_readport);
         thread_suspend(current_thread);
         *cpu = (struct cpu_state *)task_schedule(*cpu);
@@ -868,13 +857,15 @@ void usys_accept(struct cpu_state **cpu)
 {
     int id = (*cpu)->CPU_ARG1;
 
-    socket_request_t *req = get_socket_request(current_thread->process, id);
-
-    if(req == NULL)
+    struct list_node *node = list_get_node_by_int(current_thread->process->socket_requests, offsetof(socket_request_t, id), id);
+    if(node == NULL)
     {
         (*cpu)->CPU_ARG0 = _FAILURE;
         return;
     }
+
+    socket_request_t *req = (socket_request_t*) node->element;
+    list_remove_node(node);
 
     char pstr[16];
     sprintf(pstr, "%d", req->port);
@@ -885,8 +876,8 @@ void usys_accept(struct cpu_state **cpu)
     if(dentry != NULL && dentry->inode != NULL)
     {
         char rstr[64], wstr[64];
-        sprintf(rstr, "%d.in", current_thread->process->pid);
-        sprintf(wstr, "%d.out", current_thread->process->pid);
+        sprintf(rstr, "%d_%d.in", req->id, current_thread->process->pid);
+        sprintf(wstr, "%d_%d.out", req->id, current_thread->process->pid);
 
         vfs_inode_t *r_in = vfs_create_inode(rstr, 0, dentry->inode, 0, 0);
         vfs_inode_t *w_in = vfs_create_inode(wstr, 0, dentry->inode, 0, 0);
@@ -899,6 +890,10 @@ void usys_accept(struct cpu_state **cpu)
         desc->write_inode = w_in;
 
         (*cpu)->CPU_ARG0 = desc->id;
+
+        req->inodes[0] = w_in;
+        req->inodes[1] = r_in;
+        send_event(req->event_id);
     }
     else
     {

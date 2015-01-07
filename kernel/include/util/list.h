@@ -55,6 +55,7 @@ list_t*	list_push_front(list_t *list, void *element);
 void*	list_pop_back(list_t *list);
 void*	list_pop_front(list_t *list);
 void*   list_get_by_int(list_t *list, uintptr_t off, int value);
+struct list_node*   list_get_node_by_int(list_t *list, uintptr_t off, int value);
 void*	list_remove_node(struct list_node *node);
 int		list_length(list_t *list);
 bool	     list_is_empty(list_t *list);
