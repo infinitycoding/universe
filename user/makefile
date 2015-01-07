@@ -1,6 +1,7 @@
 
 all:
 	@$(MAKE) -C test
+	@$(MAKE) -C testsrv
 	@$(MAKE) -C ultrashell
 	@$(MAKE) -C ls
 	@$(MAKE) -C lscpu
@@ -9,6 +10,7 @@ all:
 
 clean:
 	@$(MAKE) -C test clean
+	@$(MAKE) -C testsrv clean
 	@$(MAKE) -C ultrashell clean
 	@$(MAKE) -C ls clean
 	@$(MAKE) -C lscpu clean

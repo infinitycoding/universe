@@ -7,6 +7,7 @@ title Universe
     module /drivers/system.pf
     module /ultrashell
     module /test
+	module /testsrv
     module /ls
     module /lscpu
     module /cat

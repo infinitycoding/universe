@@ -13,6 +13,7 @@ user/cat/cat
 user/ultrashell/ultrashell
 user/cp/cp
 user/test/test
+user/testsrv/testsrv
 user/lscpu/lscpu
 
 build/ls
@@ -20,6 +21,7 @@ build/cp
 build/cat
 build/ultrashell
 build/test
+build/testsrv
 build/lscpu
 
 libs/pfp/test/host_test
