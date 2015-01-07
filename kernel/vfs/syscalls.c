@@ -820,34 +820,34 @@ void usys_connect(struct cpu_state **cpu)
     int pid = (int) (*cpu)->CPU_ARG1;
     int port = (int) (*cpu)->CPU_ARG2;
 
-    socket_request_t *req = (socket_request_t*) malloc(sizeof(socket_request_t));
-    req->pid = pid;
-    req->port = port;
-    req->id = list_length(current_thread->process->socket_requests);
-    req->event_id = get_new_event_ID();
+    struct process_state *proc = process_find(pid);
 
+    socket_request_t *req = (socket_request_t*) malloc(sizeof(socket_request_t));
+    req->pid = current_thread->process->pid;
+    req->port = port;
+    req->id = list_length(proc->socket_requests);
+    req->event_id = add_event_trigger(0, current_thread, port_accepted);
+
+    list_push_back(proc->socket_requests, req);
     (*cpu)->CPU_ARG0 = (uint32_t) req;
 
-    list_push_back(current_thread->process->socket_requests, req);
-
-    add_trigger(WAIT_EVENT, req->event_id, 0, current_thread, port_accepted);
     thread_suspend(current_thread);
     *cpu = (struct cpu_state *)task_schedule(*cpu);
 
-    send_event(current_thread->process->socket_event_id);
+    send_event(proc->socket_event_id);
 }
 
 void usys_readport(struct cpu_state **cpu)
 {
+    int port = (int) (*cpu)->CPU_ARG1;
     if(! list_is_empty(current_thread->process->socket_requests))
     {
-        socket_request_t *req = (socket_request_t*) current_thread->process->socket_requests->head->next->element;
+        socket_request_t *req = (socket_request_t*) list_get_by_int(current_thread->process->socket_requests, offsetof(socket_request_t, port), port);
         (*cpu)->CPU_ARG0 = req->id;
     }
     else
     {
-        current_thread->process->socket_event_id = get_new_event_ID();
-        add_trigger(WAIT_EVENT, current_thread->process->socket_event_id, 0, current_thread, usys_readport);
+        current_thread->process->socket_event_id = add_event_trigger(0, current_thread, usys_readport);
         thread_suspend(current_thread);
         *cpu = (struct cpu_state *)task_schedule(*cpu);
     }
@@ -870,14 +870,13 @@ void usys_accept(struct cpu_state **cpu)
     char pstr[16];
     sprintf(pstr, "%d", req->port);
 
-    struct process_state *proc = process_find(req->pid);
-    vfs_dentry_t *dentry = vfs_get_dir_entry(proc->socket_inode, pstr);
+    vfs_dentry_t *dentry = vfs_get_dir_entry(current_thread->process->socket_inode, pstr);
 
     if(dentry != NULL && dentry->inode != NULL)
     {
         char rstr[64], wstr[64];
-        sprintf(rstr, "%d_%d.in", req->id, current_thread->process->pid);
-        sprintf(wstr, "%d_%d.out", req->id, current_thread->process->pid);
+        sprintf(rstr, "%d.in", req->pid);
+        sprintf(wstr, "%d.out", req->pid);
 
         vfs_inode_t *r_in = vfs_create_inode(rstr, 0, dentry->inode, 0, 0);
         vfs_inode_t *w_in = vfs_create_inode(wstr, 0, dentry->inode, 0, 0);
@@ -893,6 +892,7 @@ void usys_accept(struct cpu_state **cpu)
 
         req->inodes[0] = w_in;
         req->inodes[1] = r_in;
+
         send_event(req->event_id);
     }
     else

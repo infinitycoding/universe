@@ -12,5 +12,6 @@ int main(int argc, char **argv)
 
 		printf("gotten request %d\n", req_id);
 		uaccept(req_id);
+		printf("accepted.\n");
 	}
 }
