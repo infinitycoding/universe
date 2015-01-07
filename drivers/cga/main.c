@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 
 
 
-    pckmgr *conn = new_pckmgr(stdin, stdout, stderr);
+    pckmgr *conn = new_pckmgr(STDIN_FILENO, STDOUT_FILENO, STDERR_FILENO);
     if(!subsystem_connect(conn,UHOST_DEFAULT_SYNCHRON))
     {
         udrcp_error(conn,"could not connect to host\n");
