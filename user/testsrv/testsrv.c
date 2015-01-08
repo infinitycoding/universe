@@ -11,7 +11,9 @@ int main(int argc, char **argv)
 		int req_id = uread_port(5);
 
 		printf("gotten request %d\n", req_id);
-		uaccept(req_id);
-		printf("accepted.\n");
+		int fd = uaccept(req_id);
+		printf("accepted. (%d)\n", fd);
+
+		write(fd, "Hello from testsrv", 19);
 	}
 }

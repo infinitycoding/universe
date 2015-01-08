@@ -13,6 +13,10 @@ int main(int argc, char **argv)
 	int sock = uconnect(2, 5);
 	printf("..connected .. %d\n", sock);
 
+	char str[19];
+	read(sock, &str, 19);
+	printf("read \"%s\"\n", str);
+
 	return 0;
     /*linux_syscall(SYS_RENAME,(uint32_t) "foo.txt",(uint32_t) "bar.txt", 0, 0, 0);
 
