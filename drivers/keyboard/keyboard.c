@@ -50,14 +50,12 @@ void kbd_irq_handler(void);
  */
 int main(void)
 {
-
-    pckmgr *conn = new_pckmgr(STDIN_FILENO, STDIN_FILENO, STDERR_FILENO);
+    pckmgr *conn = new_pckmgr(STDIN_FILENO, STDOUT_FILENO, STDERR_FILENO);
     if(!subsystem_connect(conn,UHOST_DEFAULT_SYNCHRON))
     {
         udrcp_error(conn,"could not connect to host\n");
         return -1;
     }
-
 
     kbc_stat = port_alloc(conn,0x64);
     kbc_io = port_alloc(conn,0x60);
@@ -72,7 +70,6 @@ int main(void)
   	// Puffer leeren
   	while (inb(kbc_stat) & 0x1)
   		inb(kbc_io);
-
 
   	while (inb(kbc_stat) & 0x2);
   	outb(kbc_io, 0xF4);
