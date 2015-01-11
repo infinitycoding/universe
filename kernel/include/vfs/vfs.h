@@ -61,9 +61,10 @@ typedef struct vfs_inode
     uint32_t type;
     uint32_t length;
     struct stat stat;
-    block_buffer_info_t *buffer;
-
     struct vfs_inode *parent;
+
+    block_buffer_info_t *read_buffer;
+    block_buffer_info_t *write_buffer;
 } vfs_inode_t;
 
 typedef struct vfs_pipe_trigger
@@ -99,7 +100,7 @@ typedef struct socket_request
 } socket_request_t;
 
 // solve a link
-#define GET_INODE(i) if(i->type == VFS_LINK) i = (vfs_inode_t*) i->buffer;
+#define GET_INODE(i) if(i->type == VFS_LINK) i = (vfs_inode_t*) i->read_buffer;
 
 void INIT_VFS(void);
 vfs_inode_t *vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_t uid, gid_t gid);
@@ -112,7 +113,6 @@ void vfs_remove_dir_entry(vfs_inode_t *dir, vfs_inode_t *inode);
 
 int vfs_write(vfs_inode_t *inode, int offset, void *buffer, int bytes);
 int vfs_read (vfs_inode_t *inode, int offset, void *buffer, int bytes);
-int vfs_stat(vfs_inode_t *inode, struct stat *buffer);
 int vfs_access(vfs_inode_t *inode, mode_t modus, uid_t uid, gid_t gid);
 vfs_inode_t *vfs_lookup_path(char *path);
 vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid);
@@ -145,7 +145,7 @@ void sys_lchown(struct cpu_state **cpu);
 void sys_rename(struct cpu_state **cpu);
 void sys_access(struct cpu_state **cpu);
 
-void launch_pipe_handlers(vfs_buffer_info_t *pipe);
+//void launch_pipe_handlers(vfs_buffer_info_t *pipe);
 void set_pipe_trigger(struct cpu_state **cpu);
 
 void usys_connect(struct cpu_state **cpu);

@@ -58,8 +58,8 @@ void sys_mknod(struct cpu_state **cpu)
     {
         if(S_ISFIFO(inode->stat))
         {
-            inode->buffer->event_id = get_new_event_ID();
-            inode->buffer->handlers = list_create();
+            //inode->buffer->event_id = get_new_event_ID();
+            //inode->buffer->handlers = list_create();
             inode->type = VFS_PIPE;
         }
 

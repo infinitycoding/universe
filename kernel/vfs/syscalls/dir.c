@@ -94,11 +94,11 @@ void sys_getdents(struct cpu_state **cpu)
             return;
         }
 
-        vfs_buffer_info_t *info = parent->buffer;
+        block_buffer_info_t *info = parent->read_buffer;
 
-        if(current_thread->getdents_pos < info->num_blocks && (fd == current_thread->getdents_old_fd || current_thread->getdents_old_fd == -1))
+        if(current_thread->getdents_pos < list_length(info->blocks) && (fd == current_thread->getdents_old_fd || current_thread->getdents_old_fd == -1))
         {
-            vfs_buffer_block_t *block = vfs_get_buffer_block(info, current_thread->getdents_pos++);
+            buffer_block_t *block = buffer_block_get(info, current_thread->getdents_pos++);
             vfs_dentry_t *entry = (vfs_dentry_t *)block->base;
             vfs_inode_t *ino = entry->inode;
 

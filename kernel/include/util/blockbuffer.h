@@ -20,7 +20,7 @@
  */
 
 /**
- *  @author Michael Sippel <michamimosa@gmail.com>
+ *  @author Michael Sippel <micha@infinitycoding.de>
  */
 #include <stdint.h>
 #include <list.h>
@@ -29,6 +29,7 @@ typedef struct block_buffer_info
 {
     list_t *blocks;
     size_t block_size;
+    unsigned int block_counter;
 } block_buffer_info_t;
 
 typedef struct buffer_block
@@ -40,6 +41,7 @@ typedef struct buffer_block
 block_buffer_info_t *block_buffer_create(size_t block_size);
 buffer_block_t *buffer_block_get(block_buffer_info_t *info, unsigned int id);
 buffer_block_t *buffer_block_create(block_buffer_info_t *info, unsigned int id);
+buffer_block_t *buffer_block_remove(block_buffer_info_t *info, unsigned int id);
 int block_buffer_write(block_buffer_info_t *info, uintptr_t offset, uint8_t *data, size_t bytes);
 int block_buffer_read (block_buffer_info_t *info, uintptr_t offset, uint8_t *data, size_t bytes);
 

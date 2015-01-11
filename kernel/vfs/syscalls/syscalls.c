@@ -95,7 +95,8 @@ void sys_stat(struct cpu_state **cpu)
         return;
     }
 
-    (*cpu)->CPU_ARG0 = vfs_stat(node,(struct stat *)(*cpu)->CPU_ARG2);
+    memcpy((void *)(*cpu)->CPU_ARG2, (void*) &node->stat, sizeof(struct stat));
+    (*cpu)->CPU_ARG0 = 0;
 }
 
 
@@ -113,7 +114,8 @@ void sys_fstat(struct cpu_state **cpu)
         struct fd *file = list_get_current(&file_it);
         if(file->id == (*cpu)->CPU_ARG1)
         {
-            (*cpu)->CPU_ARG0 = vfs_stat(file->read_inode, (struct stat *)(*cpu)->CPU_ARG2);
+            memcpy((void *)(*cpu)->CPU_ARG2, (void*) &file->read_inode->stat, sizeof(struct stat));
+            (*cpu)->CPU_ARG0 = 0;
             return;
         }
         list_next(&file_it);

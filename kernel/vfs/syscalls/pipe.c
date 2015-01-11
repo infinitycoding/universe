@@ -135,14 +135,14 @@ void set_pipe_trigger(struct cpu_state **cpu)
 
     if(desc->permission & VFS_PERMISSION_READ)
     {
-        vfs_buffer_info_t *pipe = inode->buffer;
+        block_buffer_info_t *pipe = inode->read_buffer;
 
         vfs_pipe_trigger_t *trigger = malloc(sizeof(vfs_pipe_trigger_t));
         trigger->eip = (*cpu)->CPU_ARG2;
         trigger->argc = (*cpu)->CPU_ARG3;
         trigger->argv = (char**)(*cpu)->CPU_ARG4;
         trigger->environ = (char**)(*cpu)->CPU_ARG5;
-        list_push_back(pipe->handlers, (void*) trigger);
+//        list_push_back(pipe->handlers, (void*) trigger);
 
         (*cpu)->CPU_ARG0 = _SUCCESS;
     }

@@ -32,12 +32,14 @@
  * @param block_size Size of one block
  * @return pointer to object
  */
-block_buffer_info_t *blockbuffer_create(size_t block_size)
+block_buffer_info_t *block_buffer_create(size_t block_size)
 {
     block_buffer_info_t *buffer = (block_buffer_info_t*) malloc(sizeof(block_buffer_info_t));
 
     buffer->blocks = list_create();
     buffer->block_size = block_size;
+
+    buffer->block_counter = 0;
 
     return buffer;
 }
@@ -72,7 +74,25 @@ buffer_block_t *buffer_block_create(block_buffer_info_t *info, unsigned int id)
         block->base = malloc(info->block_size);
         block->id = id;
         list_push_back(info->blocks, block);
+
+        info->block_counter++;
     }
+
+    return block;
+}
+
+/**
+ * Remove a block from a blockbuffer
+ *
+ * @param info the buffer object
+ * @param id identifier of the block to remove
+ *
+ * @return removed block
+ */
+buffer_block_t *buffer_block_remove(block_buffer_info_t *info, unsigned int id)
+{
+    struct list_node *node = list_get_node_by_int(info->blocks, offsetof(buffer_block_t, id), id);
+    buffer_block_t *block = list_remove_node(node);
 
     return block;
 }
