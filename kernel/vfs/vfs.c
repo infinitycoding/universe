@@ -137,10 +137,10 @@ vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_
 vfs_inode_t *vfs_create_pipe(uid_t uid, gid_t gid)
 {
     vfs_inode_t *inode = vfs_create_inode(NULL, 0, NULL, uid, gid);
-    /*
-        inode->buffer->event_id = get_new_event_ID();
-        inode->buffer->handlers = list_create();
-    */
+
+    inode->event_id = get_new_event_ID();
+    inode->handlers = list_create();
+
     inode->type = VFS_PIPE;
 
     return inode;
@@ -263,16 +263,16 @@ int vfs_write(vfs_inode_t *inode, int offset, void *buffer, int bytes)
         inode->length = offset + len;
         inode->stat.st_size = inode->length;
     }
-    /*
-        // pipes send an event signal
-        if(inode->type == VFS_PIPE)
-        {
-            send_event(info->event_id);
-            info->event_id = get_new_event_ID();
 
-            launch_pipe_handlers(info);
-        }
-    */
+    // pipes send an event signal
+    if(inode->type == VFS_PIPE)
+    {
+        send_event(inode->event_id);
+        inode->event_id = get_new_event_ID();
+
+        launch_pipe_handlers(inode);
+    }
+
     return len;
 }
 
@@ -294,7 +294,11 @@ int vfs_read(vfs_inode_t *inode, int offset, void *buffer, int bytes)
         return 0;
     }
 
-    return block_buffer_read(inode->read_buffer, offset, (uint8_t*) buffer, bytes);
+	int b = bytes;
+	if( (offset + bytes) > inode->length)
+		b = inode->length - offset;
+
+    return block_buffer_read(inode->read_buffer, offset, (uint8_t*) buffer, b);
 }
 
 /**
@@ -535,8 +539,8 @@ void vfs_debug_output(vfs_inode_t *start)
     free(entries);
 }
 #endif
-/*
-void launch_pipe_handlers(block_buffer_info_t *pipe)
+
+void launch_pipe_handlers(vfs_inode_t *pipe)
 {
     struct list_node *node = pipe->handlers->head->next;
     struct list_node *head = pipe->handlers->head;
@@ -549,4 +553,4 @@ void launch_pipe_handlers(block_buffer_info_t *pipe)
         node = node->next;
     }
 }
-*/
+

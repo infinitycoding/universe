@@ -51,15 +51,15 @@ void sys_mknod(struct cpu_state **cpu)
     char *path = (char *) (*cpu)->CPU_ARG1;
     int mode =(int) (*cpu)->CPU_ARG2;
     //int dev = (int)(*cpu)->CPU_ARG3; // unused
-
+    
     vfs_inode_t *inode = vfs_create_path(path, mode, current_thread->process->uid, current_thread->process->gid);
 
     if(inode != NULL)
     {
         if(S_ISFIFO(inode->stat))
         {
-            //inode->buffer->event_id = get_new_event_ID();
-            //inode->buffer->handlers = list_create();
+            inode->event_id = get_new_event_ID();
+            inode->handlers = list_create();
             inode->type = VFS_PIPE;
         }
 

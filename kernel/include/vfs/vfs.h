@@ -65,6 +65,9 @@ typedef struct vfs_inode
 
     block_buffer_info_t *read_buffer;
     block_buffer_info_t *write_buffer;
+
+    uint32_t event_id;
+    list_t *handlers;
 } vfs_inode_t;
 
 typedef struct vfs_pipe_trigger
@@ -145,7 +148,7 @@ void sys_lchown(struct cpu_state **cpu);
 void sys_rename(struct cpu_state **cpu);
 void sys_access(struct cpu_state **cpu);
 
-//void launch_pipe_handlers(vfs_buffer_info_t *pipe);
+void launch_pipe_handlers(vfs_inode_t *pipe);
 void set_pipe_trigger(struct cpu_state **cpu);
 
 void usys_connect(struct cpu_state **cpu);

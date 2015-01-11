@@ -133,11 +133,11 @@ void usys_accept(struct cpu_state **cpu)
 
         vfs_inode_t *r_in = vfs_create_inode(rstr, 0, dentry->inode, 0, 0);
         vfs_inode_t *w_in = vfs_create_inode(wstr, 0, dentry->inode, 0, 0);
-        //r_in->buffer->event_id = get_new_event_ID();
-        //r_in->buffer->handlers = list_create();
+        r_in->event_id = get_new_event_ID();
+        r_in->handlers = list_create();
         r_in->type = VFS_PIPE;
-        //w_in->buffer->event_id = get_new_event_ID();
-        //w_in->buffer->handlers = list_create();
+        w_in->event_id = get_new_event_ID();
+        w_in->handlers = list_create();
         w_in->type = VFS_PIPE;
 
         struct fd *desc = create_fd(current_thread->process);

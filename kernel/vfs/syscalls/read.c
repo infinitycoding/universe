@@ -88,7 +88,7 @@ void sys_read(struct cpu_state **cpu)
             {
                 if(real->type == VFS_PIPE)
                 {
-                    //add_trigger(WAIT_EVENT, info->event_id, 0, current_thread, sys_read);
+                    add_trigger(WAIT_EVENT, inode->event_id, 0, current_thread, sys_read);
                     thread_suspend(current_thread);
                     *cpu = (struct cpu_state *)task_schedule(*cpu);
                 }
