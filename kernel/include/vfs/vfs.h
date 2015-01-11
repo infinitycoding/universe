@@ -31,6 +31,8 @@
 #include <cpu.h>
 #include <list.h>
 
+#include <blockbuffer.h>
+
 #define VFS_DEBUG
 
 #define SEEK_SET 0x1
@@ -53,32 +55,13 @@
 #define VFS_PERMISSION_READ 1
 #define VFS_PERMISSION_WRITE 2
 
-typedef struct vfs_buffer_info
-{
-    unsigned int num_readers;
-    unsigned int num_writers;
-
-    uint32_t event_id;
-    list_t *handlers;
-
-    list_t *blocks;
-    int num_blocks;
-    int block_size;
-} vfs_buffer_info_t;
-
-typedef struct vfs_buffer_block
-{
-    uint8_t *base;
-    uint32_t block_id;
-} vfs_buffer_block_t;
-
 typedef struct vfs_inode
 {
     char *name;
     uint32_t type;
     uint32_t length;
     struct stat stat;
-    struct vfs_buffer_info *buffer;
+    block_buffer_info_t *buffer;
 
     struct vfs_inode *parent;
 } vfs_inode_t;
@@ -133,7 +116,6 @@ int vfs_stat(vfs_inode_t *inode, struct stat *buffer);
 int vfs_access(vfs_inode_t *inode, mode_t modus, uid_t uid, gid_t gid);
 vfs_inode_t *vfs_lookup_path(char *path);
 vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid);
-vfs_buffer_block_t *vfs_get_buffer_block(vfs_buffer_info_t *info, uint32_t id);
 
 
 #ifdef VFS_DEBUG

@@ -102,8 +102,6 @@ vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_
         inode->type = VFS_REGULAR;
 
         inode->buffer = (vfs_buffer_info_t*) malloc(sizeof(vfs_buffer_info_t));
-        inode->buffer->num_readers = 1;
-        inode->buffer->num_writers = 1;
         inode->buffer->num_blocks = 0;
         inode->buffer->blocks = list_create();
 
@@ -238,11 +236,6 @@ vfs_dentry_t *vfs_get_dir_entry(vfs_inode_t *ino, const char *name)
     }
 
     return NULL;
-}
-
-vfs_buffer_block_t *vfs_get_buffer_block(vfs_buffer_info_t *info, uint32_t id)
-{
-    return (vfs_buffer_block_t*) list_get_by_int(info->blocks, offsetof(vfs_buffer_block_t, block_id), id);
 }
 
 /**
