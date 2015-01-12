@@ -82,7 +82,7 @@ void INIT_PREV(void)
  * @param base Physical base address of the segment (or virtual address of the TSS if type = TSS_DESC)
  * @param size Size of the segment in Bytes (max. 1M addressable) or in 4K blocks if GRAN4K is set (max. 4G addressable)
  * @param prev Previleg level of the memory segment
- * @param type The Descriptor type 
+ * @param type The Descriptor type
  * @param flags Descriptor flags
  */
 void gdt_set_entry(struct gdt_entry *gdt, uint16_t entry, paddr_t base, size_t size, privilege_t prev, gdt_seg_type type, gdt_flag_type flags)

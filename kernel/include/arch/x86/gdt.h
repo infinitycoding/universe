@@ -34,7 +34,7 @@ typedef enum
     TSS_DESC    = 9,
     DATA_DESC   = 16,
     CODE_DESC   = 24
-}gdt_seg_type;
+} gdt_seg_type;
 
 typedef enum
 {
@@ -42,14 +42,14 @@ typedef enum
     LONGMODE    = 32,
     BITS32      = 64,
     GRAN4K      = 128,
-    
+
     ACCESSED    = 256,
     WRITEABLE   = 512,
     READABLE    = 512,
     DIRECTION   = 1024,
     CONFORMING  = 1024,
     PRESENT     = 32768
-}gdt_flag_type;
+} gdt_flag_type;
 
 
 struct gdt_entry
