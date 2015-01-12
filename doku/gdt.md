@@ -35,14 +35,14 @@ Only the thread state (IO BMP, Memory context and CPU state) will be swapped.
 The whole memorymanagement is done 
 
 
-|-|Current GDT Layout:|
-|-|-------------------|
-|0|     Null Desc.    |
-|1| Kernel Code Desc. |
-|2| Kernel Data Desc. |
-|3|  User Code Desc.  |
-|4|  User Data Desc.  |
-|5|     TSS Desc.     |
+ | - | Current GDT Layout: | 
+ | - | ------------------- | 
+ | 0 |      Null Desc.     | 
+ | 1 |  Kernel Code Desc.  | 
+ | 2 |  Kernel Data Desc.  | 
+ | 3 |   User Code Desc.   | 
+ | 4 |   User Data Desc.   | 
+ | 5 |      TSS Desc.      | 
 
 
 
