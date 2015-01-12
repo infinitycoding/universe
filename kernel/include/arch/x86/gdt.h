@@ -27,6 +27,31 @@
 #include <arch_context.h>
 
 
+typedef enum
+{
+    NULL_DESC   = 0,
+    GATE_DESC   = 0,
+    TSS_DESC    = 9,
+    DATA_DESC   = 16,
+    CODE_DESC   = 24
+}gdt_seg_type;
+
+typedef enum
+{
+    AVAILABLE   = 16,
+    LONGMODE    = 32,
+    BITS32      = 64,
+    GRAN4K      = 128,
+    
+    ACCESSED    = 256,
+    WRITEABLE   = 512,
+    READABLE    = 512,
+    DIRECTION   = 1024,
+    CONFORMING  = 1024,
+    PRESENT     = 32768
+}gdt_flag_type;
+
+
 struct gdt_entry
 {
     uint16_t limit_low;
@@ -43,9 +68,10 @@ struct gdtpt
     void* base;
 } __attribute__((packed));
 
-void set_GDT_entry(int entry, uint32_t base, uint32_t size, uint8_t acess, int8_t flags);
-void load_gdt(uint16_t last_entry);
-void INIT_GDT(void);
+void INIT_PREV();
+void gdt_set_entry(struct gdt_entry *gdt, uint16_t entry, paddr_t base, size_t size, privilege_t prev,gdt_seg_type type, gdt_flag_type flags);;
+void gdt_load(struct gdt_entry *gdt, uint16_t last_entry);
+
 void set_kernelstack(void *stack);
 void set_iobmp(struct arch_thread_context *context);
 #endif

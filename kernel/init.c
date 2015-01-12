@@ -76,10 +76,10 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
         panic("Incompatible Bootloader");
     }
     //Init Kernelmodules
+    INIT_PREV();
     INIT_PMM(mb_info);
     INIT_PAGING(mb_info);
     INIT_HEAP();
-    INIT_GDT();
     INIT_IDT();
     INIT_VFS();
     INIT_TRIGGER();

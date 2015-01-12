@@ -18,7 +18,7 @@
 
 /**
  *  @file /arch/x86/gdt.c
- *  @brief Modul for setting the X86 Global Descriptor Table (GDT).
+ *  @brief Modul for x86 memory segment/previleg level system
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
@@ -28,72 +28,29 @@
 #include <string.h>
 
 
-static struct gdt_entry GDT[7]; //nulldesc,Datadesc0,Codedesc0,Datadesc3,Codedesc3,TSS,Callgate 6 descs +1 opt.
-static struct gdtpt gdtp;
+static struct gdt_entry GDT[6]; //nulldesc,Datadesc0,Codedesc0,Datadesc3,Codedesc3,TSS
 tss_s tss = { .ss0 = 0x10 };
 
 /**
- *  @brief sets gdt entry
- *  @param entry 	GDT Index
- *  @param base 	Linear segment base address
- *  @param size 	Segment size (Limit)
- *  @param access 	Access Settings
- *  @param flags	Flags
+ * @brief INIT function for x86 segment/previleg level system
  */
-void set_GDT_entry(int entry, uint32_t base, uint32_t size, uint8_t access, int8_t flags)
-{
-    GDT[entry].limit_low = (uint16_t)size;
-    GDT[entry].Base_low = (uint16_t)base;
-    GDT[entry].Base_middle = (uint8_t)(base >> 16);
-    GDT[entry].Access = access;
-    GDT[entry].limit_Flags= (uint8_t)((flags << 4) | (size >> 16));
-    GDT[entry].base_high = (uint8_t)(base >> 24);
-}
-
-/**
- *  @brief Load GDT into register
- *  @param last_entry last entry
- */
-void load_gdt(uint16_t last_entry)
-{
-    gdtp.limit = ((last_entry + 1) * 8) - 1;
-    gdtp.base = GDT;
-    asm volatile("lgdt %0"::"m" (gdtp));
-}
-
-/**
- * @brief set the kernel stack for syscalls
- * @param adress of the kernel stack
- */
-void set_kernelstack(void *stack)
-{
-    tss.esp0 = (uint32_t)stack;
-}
-
-void set_iobmp(struct arch_thread_context *context)
-{
-    memcpy(tss.iobmp, context->ports.iobmp, sizeof(tss.iobmp));
-}
-
-/**
- * @brief INIT function for the GDT module.
- */
-void INIT_GDT(void)
+void INIT_PREV(void)
 {
     //NULL Descriptor
-    set_GDT_entry(0,0,0,0,0);
+    gdt_set_entry(GDT, 0, 0, 0, 0, NULL_DESC, 0);
 
     //Ring 0 Descriptors
-    set_GDT_entry(1,0,0xFFFFF,0x9A,0xC);
-    set_GDT_entry(2,0,0xFFFFF,0x92,0xC);
+    gdt_set_entry(GDT, 1, 0, 0xFFFFF, KERNELMODE, CODE_DESC, BITS32 | GRAN4K | READABLE | PRESENT);
+    gdt_set_entry(GDT, 2, 0, 0xFFFFF, KERNELMODE, DATA_DESC, BITS32 | GRAN4K | WRITEABLE | PRESENT);
 
     //Ring 3 Descriptors
-    set_GDT_entry(3,0,0xFFFFF,0xFA,0xC);
-    set_GDT_entry(4,0,0xFFFFF,0xF2,0xC);
-    set_GDT_entry(5, (uint32_t) &tss, sizeof(tss), 0x89, 0x8); //qemu does not support TSS-Desc on position 7... weired hardware stuff
+    gdt_set_entry(GDT, 3, 0, 0xFFFFF, USERMODE, CODE_DESC, BITS32 | GRAN4K | READABLE | PRESENT);
+    gdt_set_entry(GDT, 4, 0, 0xFFFFF, USERMODE, DATA_DESC, BITS32 | GRAN4K | WRITEABLE | PRESENT);
 
+    //TSS descriptor
+    gdt_set_entry(GDT, 5, (paddr_t)&tss, sizeof(tss), KERNELMODE, TSS_DESC, GRAN4K | PRESENT);
     //load the new table
-    load_gdt(5);
+    gdt_load(GDT,5);
 
     //jump into the new segments
     asm volatile(
@@ -110,10 +67,62 @@ void INIT_GDT(void)
 
     //initiate the i/o bitmap
     tss.iobmp_offset =(uint32_t)(((uint32_t)&tss.iobmp) - ((uint32_t)&tss)); // calculate real adressoffset
-    int i;
+    size_t i;
     for(i=0; i<2048; i++)
         tss.iobmp[i]=0xFFFFFFFF;
 
     // load the TSS
     asm volatile("ltr %%ax" : : "a" (5 << 3));
+}
+
+/**
+ * @brief Sets a entry in gdt
+ * @param gdt Pointer to the gdt in which the descriptor should be set
+ * @param entry The entry number within the GDT
+ * @param base Physical base address of the segment (or virtual address of the TSS if type = TSS_DESC)
+ * @param size Size of the segment in Bytes (max. 1M addressable) or in 4K blocks if GRAN4K is set (max. 4G addressable)
+ * @param prev Previleg level of the memory segment
+ * @param type The Descriptor type 
+ * @param flags Descriptor flags
+ */
+void gdt_set_entry(struct gdt_entry *gdt, uint16_t entry, paddr_t base, size_t size, privilege_t prev, gdt_seg_type type, gdt_flag_type flags)
+{
+    gdt[entry].limit_low =      (uint16_t) size;
+    gdt[entry].Base_low =       (uint16_t) base;
+    gdt[entry].Base_middle =    (uint8_t) (base >> 16);
+    gdt[entry].Access =         (uint8_t) (flags >> 8) | (prev << 5) |type;
+    gdt[entry].limit_Flags=     (uint8_t)  flags | (uint8_t)(size >> 16);
+    gdt[entry].base_high =      (uint8_t) (base >> 24);
+}
+
+
+/**
+ *  @brief Load GDT into register
+ *  @param gdt GDT to be loaded
+ *  @param last_entry last set GDT entry
+ */
+void gdt_load(struct gdt_entry *gdt, uint16_t last_entry)
+{
+    struct gdtpt gdtp;
+    gdtp.limit = ((last_entry + 1) * 8) - 1;
+    gdtp.base = gdt;
+    asm volatile("lgdt %0"::"m" (gdtp));
+}
+
+/**
+ * @brief set the kernel stack for syscalls
+ * @param adress of the kernel stack
+ */
+void set_kernelstack(void *stack)
+{
+    tss.esp0 = (uint32_t)stack;
+}
+
+/**
+ * @brief sets the IO Access bitmap of context
+ * @param context the thread context which acces bitmap should be set as current
+ */
+void set_iobmp(struct arch_thread_context *context)
+{
+    memcpy(tss.iobmp, context->ports.iobmp, sizeof(tss.iobmp));
 }
