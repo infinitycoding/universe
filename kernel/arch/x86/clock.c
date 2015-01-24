@@ -93,17 +93,17 @@ void sync_sys_clock()
  */
 void update_time(struct time *time)
 {
-    time->second =       BCD_DECODE(cmos_read_byte(0x00));
-    time->alarm_sec =    BCD_DECODE(cmos_read_byte(0x01));
-    time->minute =       BCD_DECODE(cmos_read_byte(0x02));
-    time->alarm_min =    BCD_DECODE(cmos_read_byte(0x03));
-    time->hour =         BCD_DECODE(cmos_read_byte(0x04));
-    time->alarm_hour =   BCD_DECODE(cmos_read_byte(0x05));
-    time->week_day =     BCD_DECODE(cmos_read_byte(0x06)) - 1;
-    time->day_in_month = BCD_DECODE(cmos_read_byte(0x07));
-    time->month =        BCD_DECODE(cmos_read_byte(0x08));
-    time->year =         BCD_DECODE(cmos_read_byte(0x09));
-    time->century =      BCD_DECODE(cmos_read_byte(0x32));
+    time->second =       bcd_decode(cmos_read_byte(0x00));
+    time->alarm_sec =    bcd_decode(cmos_read_byte(0x01));
+    time->minute =       bcd_decode(cmos_read_byte(0x02));
+    time->alarm_min =    bcd_decode(cmos_read_byte(0x03));
+    time->hour =         bcd_decode(cmos_read_byte(0x04));
+    time->alarm_hour =   bcd_decode(cmos_read_byte(0x05));
+    time->week_day =     bcd_decode(cmos_read_byte(0x06)) - 1;
+    time->day_in_month = bcd_decode(cmos_read_byte(0x07));
+    time->month =        bcd_decode(cmos_read_byte(0x08));
+    time->year =         bcd_decode(cmos_read_byte(0x09));
+    time->century =      bcd_decode(cmos_read_byte(0x32));
 }
 
 /**
@@ -112,16 +112,15 @@ void update_time(struct time *time)
  */
 void change_time(struct time *time)
 {
-    char bcd_str[2];
-    cmos_write_byte(0x00, BCD_ENCODE(bcd_str, time->second));
-    cmos_write_byte(0x01, BCD_ENCODE(bcd_str, time->alarm_sec));
-    cmos_write_byte(0x02, BCD_ENCODE(bcd_str, time->minute));
-    cmos_write_byte(0x03, BCD_ENCODE(bcd_str, time->alarm_min));
-    cmos_write_byte(0x04, BCD_ENCODE(bcd_str, time->hour));
-    cmos_write_byte(0x05, BCD_ENCODE(bcd_str, time->alarm_hour));
-    cmos_write_byte(0x06, BCD_ENCODE(bcd_str, time->week_day));
-    cmos_write_byte(0x07, BCD_ENCODE(bcd_str, time->day_in_month));
-    cmos_write_byte(0x08, BCD_ENCODE(bcd_str, time->month));
-    cmos_write_byte(0x09, BCD_ENCODE(bcd_str, time->year));
-    cmos_write_byte(0x32, BCD_ENCODE(bcd_str, time->century));
+    cmos_write_byte(0x00, (uint8_t)bcd_encode(time->second));
+    cmos_write_byte(0x01, (uint8_t)bcd_encode(time->alarm_sec));
+    cmos_write_byte(0x02, (uint8_t)bcd_encode(time->minute));
+    cmos_write_byte(0x03, (uint8_t)bcd_encode(time->alarm_min));
+    cmos_write_byte(0x04, (uint8_t)bcd_encode(time->hour));
+    cmos_write_byte(0x05, (uint8_t)bcd_encode(time->alarm_hour));
+    cmos_write_byte(0x06, (uint8_t)bcd_encode(time->week_day));
+    cmos_write_byte(0x07, (uint8_t)bcd_encode(time->day_in_month));
+    cmos_write_byte(0x08, (uint8_t)bcd_encode(time->month));
+    cmos_write_byte(0x09, (uint8_t)bcd_encode(time->year));
+    cmos_write_byte(0x32, (uint8_t)bcd_encode(time->century));
 }

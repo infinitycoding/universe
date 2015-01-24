@@ -20,18 +20,10 @@
  */
 
 /**
- *  @author Tom Slawik <tom.slawik@gmail.com>
+ *  @author Simon Diepold <simon.diepold@infinitycoding.de>
  */
 
-#include <printf.h>
-
-// WARNING: ONLY values up to 99
-#define BCD_DECODE(x) ((0b1111 & x) + (10 * (((0b1111 << 4) & x) >> 4)))
-
-static inline uint8_t BCD_ENCODE(char *bcd_str, int x)
-{
-    sprintf(bcd_str, "%d", x);
-    return (uint8_t)bcd_str;
-}
+uint8_t bcd_decode(uint8_t digits);
+uint16_t bcd_encode(uint8_t value);
 
 #endif
