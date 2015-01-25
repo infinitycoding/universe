@@ -20,7 +20,7 @@
  *  @author Simon Diepold <simon.diepold@infinitycoding.de>
  */
 
-
+#include <stdint.h>
 
 /**
  * @brief Decodes two binary coded digits into one binary number.

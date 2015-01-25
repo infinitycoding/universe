@@ -26,6 +26,17 @@
 
 #include <sys/types.h>
 
+
+#define CMOS_TIMER_FREQ_REG 0xA
+#define CMOS_TIMER_SETTING	0xB
+#define CMOS_SRC_REG		0xC
+#define CMOS_VALIDITY_REG	0xD
+#define CMOS_POST_REG 		0xE 		//POST = Power On Self-Test
+#define CMOS_SHUTDOWN_REG 	0xF
+
+#define CMOS_ADDRESS_PORT 0x70
+#define CMOS_DATA_PORT    0x71
+
 struct cmos_register
 {
     uint8_t register_a;

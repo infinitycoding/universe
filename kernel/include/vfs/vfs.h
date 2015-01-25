@@ -96,7 +96,7 @@ typedef struct socket_request
 {
     int id;
     int pid;
-    int port;
+    char *port;
     uint32_t event_id;
 
     vfs_inode_t *inodes[2];

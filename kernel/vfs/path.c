@@ -85,7 +85,7 @@ vfs_inode_t *vfs_lookup_path(char *path)
         iterator_t it = iterator_create(info->blocks);
 
         int found = 0;
-        while(! list_is_last(&it) && ! list_is_empty(&it))
+        while(! list_is_last(&it) && ! list_is_empty(info->blocks))
         {
             buffer_block_t *block = it.current->element;
             vfs_dentry_t *dentry = (vfs_dentry_t*) block->base;
@@ -155,7 +155,7 @@ vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid)
         iterator_t it = iterator_create(info->blocks);
 
         int found = 0;
-        while(! list_is_last(&it) && ! list_is_empty(&it))
+        while(! list_is_last(&it) && ! list_is_empty(info->blocks))
         {
             buffer_block_t *block = it.current->element;
             vfs_dentry_t *dentry = (vfs_dentry_t*) block->base;

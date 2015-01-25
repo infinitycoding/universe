@@ -91,7 +91,7 @@ void vfs_remove_dir_entry(vfs_inode_t *dir, vfs_inode_t *inode)
     iterator_t it = iterator_create(info->blocks);
     list_set_first(&it);
 
-    while(! list_is_last(&it) && ! list_is_empty(&it))
+    while(! list_is_last(&it) && ! list_is_empty(info->blocks))
     {
         buffer_block_t *block = (buffer_block_t*) it.current->element;
         vfs_dentry_t *dentry = (vfs_dentry_t*) block->base;
@@ -116,7 +116,7 @@ vfs_dentry_t *vfs_get_dir_entry(vfs_inode_t *ino, const char *name)
         iterator_t it = iterator_create(info->blocks);
         list_set_first(&it);
 
-        while(! list_is_last(&it) && ! list_is_empty(&it))
+        while(! list_is_last(&it) && ! list_is_empty(info->blocks))
         {
             buffer_block_t *block = (buffer_block_t*) it.current->element;
             vfs_dentry_t *dentry = (vfs_dentry_t*) block->base;

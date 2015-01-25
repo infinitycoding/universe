@@ -71,13 +71,14 @@ void usys_connect(struct cpu_state **cpu)
     static int req_id_counter = 1;
 
     int pid = (int) (*cpu)->CPU_ARG1;
-    int port = (int) (*cpu)->CPU_ARG2;
+    char *port = (char *) (*cpu)->CPU_ARG2;
 
     struct process_state *proc = process_find(pid);
 
     socket_request_t *req = (socket_request_t*) malloc(sizeof(socket_request_t));
     req->pid = current_thread->process->pid;
-    req->port = port;
+    req->port = malloc(strlen(port)+1);
+    strcpy(req->port,port);
     req->id = req_id_counter++;
     req->event_id = add_event_trigger(0, current_thread, port_accepted);
 
@@ -92,11 +93,27 @@ void usys_connect(struct cpu_state **cpu)
 
 void usys_readport(struct cpu_state **cpu)
 {
-    int port = (int) (*cpu)->CPU_ARG1;
+    char *port = (char *) (*cpu)->CPU_ARG1;
     if(! list_is_empty(current_thread->process->socket_requests))
     {
-        socket_request_t *req = (socket_request_t*) list_get_by_int(current_thread->process->socket_requests, offsetof(socket_request_t, port), port);
-        (*cpu)->CPU_ARG0 = req->id;
+        iterator_t i = iterator_create(current_thread->process->socket_requests);
+        socket_request_t *req;
+        while(!list_is_last(&i))
+        {
+            req = (socket_request_t*) list_get_current(&i);
+            if(strcmp(req->port,port)== 0)
+                break;
+        }
+        if(strcmp(req->port,port)== 0)
+        {    
+            (*cpu)->CPU_ARG0 = req->id;
+        }
+        else
+        {
+            current_thread->process->socket_event_id = add_event_trigger(0, current_thread, usys_readport);
+            thread_suspend(current_thread);
+            *cpu = (struct cpu_state *)task_schedule(*cpu);
+        }
     }
     else
     {
@@ -120,10 +137,9 @@ void usys_accept(struct cpu_state **cpu)
     socket_request_t *req = (socket_request_t*) node->element;
     list_remove_node(node);
 
-    char pstr[16];
-    sprintf(pstr, "%d", req->port);
+    printf("%s\n",req->port);
 
-    vfs_dentry_t *dentry = vfs_get_dir_entry(current_thread->process->socket_inode, pstr);
+    vfs_dentry_t *dentry = vfs_get_dir_entry(current_thread->process->socket_inode, req->port);
 
     if(dentry != NULL && dentry->inode != NULL)
     {
@@ -156,6 +172,7 @@ void usys_accept(struct cpu_state **cpu)
     }
     else
     {
+        printf("else\n");
         (*cpu)->CPU_ARG0 = _FAILURE;
     }
 }

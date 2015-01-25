@@ -10,7 +10,7 @@ char file[] = "/ultrashell.elf";
 int main(int argc, char **argv)
 {
 	printf("connecting to pid 2 on port 5..\n");
-	int sock = uconnect(2, 5);
+	int sock = uconnect(2, "5");
 	printf("..connected .. %d\n", sock);
 
 	char str[19];

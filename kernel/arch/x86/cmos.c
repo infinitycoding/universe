@@ -18,7 +18,7 @@
 
 /**
  *  @file /drivers/cmos/cmos.c
- *  @brief Kernel driver for x86 computer CMOS RAM.
+ *  @brief Kernel driver for x86 computer CMOS RAM [BIOS DATA]
  *  @author Michael Sippel <michamimosa@gmail.com>
  */
 
@@ -32,10 +32,10 @@
  */
 void get_cmos_data(struct cmos_data *cmos)
 {
-    cmos->registers.register_a = cmos_read_byte(0x0A);
-    cmos->registers.register_b = cmos_read_byte(0x0B);
-    cmos->registers.register_c = cmos_read_byte(0x0C);
-    cmos->registers.register_d = cmos_read_byte(0x0D);
+    cmos->registers.register_a = cmos_read_byte(CMOS_TIMER_FREQ_REG);
+    cmos->registers.register_b = cmos_read_byte(CMOS_TIMER_SETTING);
+    cmos->registers.register_c = cmos_read_byte(CMOS_SRC_REG);
+    cmos->registers.register_d = cmos_read_byte(CMOS_VALIDITY_REG);
 
     cmos->hardware.post_diagnostig_status_byte = cmos_read_byte(0x0E);
     cmos->hardware.shutdown_status_byte =        cmos_read_byte(0x0F);
@@ -64,9 +64,9 @@ void get_cmos_data(struct cmos_data *cmos)
  */
 uint8_t cmos_read_byte(uint8_t offset)
 {
-    uint8_t tmp = inb(0x70);
-    outb(0x70, (tmp & 0x80) | (offset & 0x7F));
-    return inb(0x71);
+    uint8_t tmp = inb(CMOS_ADDRESS_PORT);
+    outb(CMOS_ADDRESS_PORT, (tmp & 0x80) | (offset & 0x7F));
+    return inb(CMOS_DATA_PORT);
 }
 
 /**
@@ -77,8 +77,8 @@ uint8_t cmos_read_byte(uint8_t offset)
  */
 void cmos_write_byte(uint8_t offset, uint8_t value)
 {
-    uint8_t tmp = inb(0x70);
-    outb(0x70, (tmp & 0x80) | (offset & 0x7F));
-    outb(0x71, value);
+    uint8_t tmp = inb(CMOS_ADDRESS_PORT);
+    outb(CMOS_ADDRESS_PORT, (tmp & 0x80) | (offset & 0x7F));
+    outb(CMOS_DATA_PORT, value);
 }
 

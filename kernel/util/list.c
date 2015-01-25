@@ -159,7 +159,6 @@ void* list_get_by_int(list_t *list, uintptr_t off, int value)
 {
     struct list_node *node = list->head->next;
     struct list_node *head = list->head;
-    void *element = NULL;
 
     while (node != head)
     {
