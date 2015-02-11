@@ -155,6 +155,9 @@ void usys_connect(struct cpu_state **cpu);
 void usys_readport(struct cpu_state **cpu);
 void usys_accept(struct cpu_state **cpu);
 
+int port_fetch(char *port);
+struct fd *port_accept(int id);
+
 
 #endif
 

@@ -74,7 +74,7 @@ typedef unsigned int pcktype_t;
 #define INTSIG      5
 
 
-
+#define HYPERVISOR 1
 
 typedef struct
 {

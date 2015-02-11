@@ -26,24 +26,20 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <universe.h>
 #include <stdio.h>
 
 
 /**
  * @brief Creates an ner Package manager.
- * @param in the input pipe
- * @param out the putput pipe
- * @param err the error-log pipe/file
+
  * @return a new package manager
  */
-pckmgr *new_pckmgr(int in, int out, int err)
+pckmgr *new_pckmgr()
 {
     pckmgr *mgr = malloc(sizeof(pckmgr));
     mgr->counter = 0;
     mgr->used_ids = list_create();
-    mgr->in = in;
-    mgr->out = out;
-    mgr->err = err;
     mgr->recieved_pcks = list_create();
     return mgr;
 }
@@ -127,8 +123,8 @@ pckid_t send_package(pckmgr *mgr, pcktype_t type, size_t size, void *data)
     header->id = id;
     header->size = size+12;
     header->type = type;
-    write(mgr->out,header,sizeof(pckhead_t));
-    write(mgr->out,data,size);
+    write(mgr->fd,header,sizeof(pckhead_t));
+    write(mgr->fd,data,size);
     free(header);
     return id;
 }
@@ -147,8 +143,8 @@ void respond(pckmgr *mgr, pckid_t id, pcktype_t type, size_t size, void *data)
     header->id = id;
     header->size = size+12;
     header->type = type;
-    write(mgr->out,header,sizeof(pckhead_t));
-    write(mgr->out,data,size);
+    write(mgr->fd,header,sizeof(pckhead_t));
+    write(mgr->fd,data,size);
     free(header);
 }
 
@@ -159,16 +155,19 @@ void respond(pckmgr *mgr, pckid_t id, pcktype_t type, size_t size, void *data)
  * @param protocol_version the protocoll version string
  * @return true if sucess, false if the connection failed
  */
-int subsystem_connect(pckmgr *mgr, char *protocol_version)
+int subsystem_connect(pckmgr *mgr, int process,char *port, int logfile, char *protocol_version)
 {
+    mgr->log = logfile;
+    mgr->fd = uconnect(process,port);
     send_package(mgr, RESET_CON, 0, NULL);
+    
     pckid_t ping_id = send_package(mgr, PING, strlen(protocol_version), protocol_version);
     pckhead_t *pck_header = malloc(sizeof(pckhead_t));
-    read(mgr->in,pck_header,sizeof(pckhead_t));
+    read(mgr->fd,pck_header,sizeof(pckhead_t));
     if(pck_header->id == ping_id && pck_header->type == PONG)
     {
         mgr->version = malloc(pck_header->size);
-        read(mgr->in,mgr->version,pck_header->size-sizeof(pckhead_t));
+        read(mgr->fd,mgr->version,pck_header->size-sizeof(pckhead_t));
     }
     else
     {
@@ -190,12 +189,12 @@ int subsystem_connect(pckmgr *mgr, char *protocol_version)
 pck_t *poll_next(pckmgr *mgr)
 {
     pck_t *pck = malloc(sizeof(pck_t));
-    read(mgr->in,pck,sizeof(pckhead_t));
+    read(mgr->fd,pck,sizeof(pckhead_t));
     if(pck->size > 12)
     {
         pck->size -= 12;
         pck->data = malloc(pck->size);
-        read(mgr->in,pck->data,pck->size);
+        read(mgr->fd,pck->data,pck->size);
     }
     else
         pck->data = NULL;
@@ -369,7 +368,7 @@ int udrcp_error(pckmgr *mgr,const char *format,...)
     va_start (args, format);
     vsprintf (buffer,format, args);
     va_end (args);
-    return write(mgr->err,buffer,strlen(buffer));
+    return write(mgr->log,buffer,strlen(buffer));
 }
 
 

@@ -39,12 +39,10 @@
 #include <mm/paging.h>
 #include <sys/multiboot.h>
 #include <vfs/vfs.h>
+#include <vfs/fd.h>
 #include <pmm.h>
 
-
-
 //#define DEBUG
-
 
 list_t *subdrivers;
 list_t *interrupts;
@@ -67,55 +65,54 @@ int INIT_HYPERVISOR(int argc, char **argv, char **environ)
 {
     subdrivers = list_create();
     interrupts = list_create();
-    struct section *current_section = (struct section *)argv[0];
     pckmgr *pman;
-    printf("hypervisor subsystems:\n");
-    iterator_t i = iterator_create(current_section->subtree);
-    while(!list_is_last(&i))
+    
+    vfs_create_path("/proc/1/socket/udrcp", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP , 0, 0);
+    
+    vfs_create_path("/var/log/drivers/", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP , 0, 0);
+    
+    vfs_inode_t *logfolder = vfs_create_path("/var/log/hypervisor/", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP , 0, 0);
+    vfs_inode_t *errorfile = vfs_create_inode("hypervisor.error", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, logfolder, 0, 0);
+    vfs_inode_t *logfile   = vfs_create_inode("hypervisor.log", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, logfolder, 0, 0);
+    
+    printf("Hypervisor\n");
+    while(1)
     {
-        char *path = ((struct pnode *)list_get_current(&i))->file;
-        vfs_inode_t *driver_inode = vfs_lookup_path(path);
-
-        if(driver_inode != NULL)
-        {
-            printf("load %s\n", path);
-            pman = new_pckmgr(vfs_create_pipe(0, 0), vfs_create_pipe(0, 0), vfs_create_pipe(0, 0));
+        int req = port_fetch("udrcp");
+        
+        if(req)
+        {  
+            
+            struct fd *sock = port_accept(req);
+            
+            pman = new_pckmgr(sock->write_inode, sock->read_inode, errorfile);
+            
 
             struct driver *new_driver = malloc(sizeof(struct driver));
             new_driver->pman = pman;
-            new_driver->process = load_elf_from_file(driver_inode, 0, 0, &pman->pset, NULL, NULL);
+            new_driver->process = process_find(atoi(sock->read_inode->name));
             new_driver->ports = list_create();
             new_driver->memory = list_create();
             list_push_front(subdrivers,new_driver);
         }
-        list_next(&i);
-    }
-    printf("\n");
-    //Poll packages
-    if(list_is_empty(subdrivers))
-    {
-        printf("could not load any subsystem!\n");
-        while(1);
-    }
-
-    iterator_t subdriver_it = iterator_create(subdrivers);
-
-    /** NOTE: current implementation is based on polling. Switch to pipetrigger as fast as possible**/
-
-    while(1)
-    {
+    
+        if(!list_is_empty(subdrivers))
+        {
+        iterator_t subdriver_it= iterator_create(subdrivers);
+        
+        while(!list_is_last(&subdriver_it))
+        {
         struct driver *current_driver = list_get_current(&subdriver_it);
         pman = current_driver->pman;
         pck_t *pck = fetch_pipe(pman);
         if(!pck)
         {
             list_next(&subdriver_it);
-            if(list_is_last(&subdriver_it))
-                list_set_first(&subdriver_it);
             continue;
         }
-
-        //printf("host: recieved package %d    size:%d    type:%x\n",pck->id,pck->size,pck->type);
+#ifdef DEBUG
+        printf("host: recieved package %d    size:%d    type:%x\n",pck->id,pck->size,pck->type);
+#endif
         struct int_relation *r;
         switch(pck->type)
         {
@@ -142,7 +139,7 @@ int INIT_HYPERVISOR(int argc, char **argv, char **environ)
             case INT_REQ:
 #ifdef DEBUG
                 printf("host: setting up interrupt signal 0x%x\n",*((unsigned int*)pck->data));
-#endif // DEBUG
+#endif
                 r = malloc(sizeof(struct int_relation));
                 r->intnr = *((unsigned int*)pck->data);
                 r->drv = pman;
@@ -171,6 +168,10 @@ int INIT_HYPERVISOR(int argc, char **argv, char **environ)
                 break;
 
         };
+        
+    }
+    list_set_first(&subdriver_it);
+    }
 
 
     }

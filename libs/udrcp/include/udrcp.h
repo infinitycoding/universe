@@ -72,7 +72,7 @@ typedef unsigned int pcktype_t;
 #define INTSIG      5
 
 
-
+#define HYPERVISOR 1
 
 typedef struct
 {
@@ -95,23 +95,22 @@ typedef struct
     unsigned int counter;
     list_t *used_ids;
     //pipes
-    int in;
-    int out;
-    int err;
+    int fd;
+    int log;
     list_t *recieved_pcks;
     char *version;
     int connection_state;
 } pckmgr;
 
 
-pckmgr *new_pckmgr(int in, int out, int err);
+pckmgr *new_pckmgr();
 pckid_t gen_pckid(pckmgr *mgr);
 void reset_conn(pckmgr *mgr);
 int free_pckid(pckmgr *mgr, pckid_t id);
 void free_pck(pck_t *package);
 pckid_t send_package(pckmgr *mgr, pcktype_t type, size_t size, void *data);
 void respond(pckmgr *mgr,pckid_t id,pcktype_t type, size_t size, void *data);
-int subsystem_connect(pckmgr *mgr, char *protocol_version);
+int subsystem_connect(pckmgr *mgr, int process,char *port, int logfile, char *protocol_version);
 
 pck_t *poll_next(pckmgr *mgr);
 void poll_queue(pckmgr *mgr);

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
+#include <unistd.h>
 #include <vfs_api.h>
 #include <universe.h>
 
@@ -9,13 +9,16 @@ char file[] = "/ultrashell.elf";
 
 int main(int argc, char **argv)
 {
-	printf("connecting to pid 2 on port 5..\n");
-	int sock = uconnect(2, "5");
-	printf("..connected .. %d\n", sock);
+    int f = open("/dev/cga",O_WRONLY,0);
+    char str[] = "Hello!\nWorld!";
+    write(f,str,strlen(str));
+	//printf("connecting to pid 2 on port 5..\n");
+	//int sock = uconnect(2, "5");
+	//printf("..connected .. %d\n", sock);
 
-	char str[19];
-	read(sock, &str, 19);
-	printf("read \"%s\"\n", str);
+	//char str[19];
+	//read(sock, &str, 19);
+	//printf("read \"%s\"\n", str);
 
 	return 0;
     /*linux_syscall(SYS_RENAME,(uint32_t) "foo.txt",(uint32_t) "bar.txt", 0, 0, 0);

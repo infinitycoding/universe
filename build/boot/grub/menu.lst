@@ -4,6 +4,7 @@ title Universe
     kernel /kernel32.elf
     module /boot/grub/menu.lst
     module /drivers/keyboard.elf
+    module /drivers/cga.elf
     module /drivers/system.pf
     module /ultrashell
     module /test

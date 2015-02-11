@@ -32,12 +32,14 @@
 int main(int argc, char *argv[])
 {
     /*! driver internal variables*/
-    //color_t color = WHITE | BLACK << 4;
+    color_t color = WHITE | BLACK << 4;
 
 
 
-    pckmgr *conn = new_pckmgr(STDIN_FILENO, STDOUT_FILENO, STDERR_FILENO);
-    if(!subsystem_connect(conn,UHOST_DEFAULT_SYNCHRON))
+    pckmgr *conn = new_pckmgr();
+    int logfile = open("/var/log/driver/cga.log", O_WRONLY, 0);
+    
+    if(!subsystem_connect(conn,HYPERVISOR,"udrcp",logfile,UHOST_DEFAULT_SYNCHRON))
     {
         udrcp_error(conn,"could not connect to host\n");
         return -1;
@@ -58,6 +60,19 @@ int main(int argc, char *argv[])
     crtc->data = port_alloc(conn, CRTC_DATA_PORT);
     if(!crtc->index || !crtc->data)
         udrcp_error(conn,"Warning: no CRTC available\n");
+    
+    mkfifo("/dev/cga", S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH);
+    
+    int input = open("/dev/cga",O_RDONLY,0);
+    
+    while(1)
+    {
+      char inchar;
+      read(input, &inchar, sizeof(char));
+      putchar(crtc,cga, inchar,color);
+        
+    }
+    
     
 
 

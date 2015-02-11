@@ -61,3 +61,6 @@
         ...
         }
 ````
+
+ * Each module Has to be documented in a seperate file in the documentation folder.
+   if the module is hardware dependent, the hardware has to discribed aswell.

@@ -14,7 +14,7 @@ have to be loaded to the GDT-Register (GDTR). It's also necessary to perform a j
 The code and data segments are used to set a address space ontop of the physical memory.
 The data segment decribes the address space in which data is addressed and the code segment
 for addressing executable code.The address space begins with the address 0 and is mapped to the given physical
-base address and ends add the base+size*granularity(4K or 4M). The segments also seperate previleg levels.
+base address and ends add the base+size\*granularity(4K or 4M). The segments also seperate previleg levels.
 A programm that is running in a usermode codesegment has less rights then in a kernelmode segment.
 For example it can't change GDT,IDT or CPU mode without creating a execption. 
 

@@ -66,8 +66,9 @@ void sound(unsigned int frequency, unsigned int duration)
 
 int main(void)
 {
-    pckmgr *conn = new_pckmgr(STDIN_FILENO, STDOUT_FILENO, STDERR_FILENO);
-    if(!subsystem_connect(conn,UHOST_DEFAULT_SYNCHRON))
+    int logfile = open("/var/log/driver/mbspeaker.log", O_WRONLY, 0);
+    pckmgr *conn = new_pckmgr();
+    if(!subsystem_connect(conn,HYPERVISOR,"udrcp",logfile,UHOST_DEFAULT_SYNCHRON))
     {
         udrcp_error(conn,"could not connect to host\n");
         return -1;
