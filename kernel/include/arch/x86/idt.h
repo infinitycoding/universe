@@ -25,71 +25,65 @@
 
 #include <stdint.h>
 #include <cpu.h>
+#include <pic.h>
 
-/*
-	TODO: Define INTs here
-*/
 
-enum INT_NUM
-{
-    INT_PAGE_FAULT = 0x0E
-};
 
-#define IRQ_OFFSET 32
+//iinterrupt service routines, defined in isr.asm
+extern struct cpu_state *isr_0(struct cpu_state *cpu);
+extern struct cpu_state *isr_1(struct cpu_state *cpu);
+extern struct cpu_state *isr_2(struct cpu_state *cpu);
+extern struct cpu_state *isr_3(struct cpu_state *cpu);
+extern struct cpu_state *isr_4(struct cpu_state *cpu);
+extern struct cpu_state *isr_5(struct cpu_state *cpu);
+extern struct cpu_state *isr_6(struct cpu_state *cpu);
+extern struct cpu_state *isr_7(struct cpu_state *cpu);
+extern struct cpu_state *isr_8(struct cpu_state *cpu);
+extern struct cpu_state *isr_9(struct cpu_state *cpu);
+extern struct cpu_state *isr_10(struct cpu_state *cpu);
+extern struct cpu_state *isr_11(struct cpu_state *cpu);
+extern struct cpu_state *isr_12(struct cpu_state *cpu);
+extern struct cpu_state *isr_13(struct cpu_state *cpu);
+extern struct cpu_state *isr_14(struct cpu_state *cpu);
+extern struct cpu_state *isr_15(struct cpu_state *cpu);
+extern struct cpu_state *isr_16(struct cpu_state *cpu);
+extern struct cpu_state *isr_17(struct cpu_state *cpu);
+extern struct cpu_state *isr_18(struct cpu_state *cpu);
+extern struct cpu_state *isr_19(struct cpu_state *cpu);
+extern struct cpu_state *isr_20(struct cpu_state *cpu);
+extern struct cpu_state *isr_21(struct cpu_state *cpu);
+extern struct cpu_state *isr_22(struct cpu_state *cpu);
+extern struct cpu_state *isr_23(struct cpu_state *cpu);
+extern struct cpu_state *isr_24(struct cpu_state *cpu);
+extern struct cpu_state *isr_25(struct cpu_state *cpu);
+extern struct cpu_state *isr_26(struct cpu_state *cpu);
+extern struct cpu_state *isr_27(struct cpu_state *cpu);
+extern struct cpu_state *isr_28(struct cpu_state *cpu);
+extern struct cpu_state *isr_29(struct cpu_state *cpu);
+extern struct cpu_state *isr_30(struct cpu_state *cpu);
+extern struct cpu_state *isr_31(struct cpu_state *cpu);
+extern struct cpu_state *isr_32(struct cpu_state *cpu);
+extern struct cpu_state *isr_33(struct cpu_state *cpu);
+extern struct cpu_state *isr_34(struct cpu_state *cpu);
+extern struct cpu_state *isr_34(struct cpu_state *cpu);
+extern struct cpu_state *isr_35(struct cpu_state *cpu);
+extern struct cpu_state *isr_36(struct cpu_state *cpu);
+extern struct cpu_state *isr_37(struct cpu_state *cpu);
+extern struct cpu_state *isr_38(struct cpu_state *cpu);
+extern struct cpu_state *isr_39(struct cpu_state *cpu);
+extern struct cpu_state *isr_40(struct cpu_state *cpu);
+extern struct cpu_state *isr_41(struct cpu_state *cpu);
+extern struct cpu_state *isr_42(struct cpu_state *cpu);
+extern struct cpu_state *isr_43(struct cpu_state *cpu);
+extern struct cpu_state *isr_44(struct cpu_state *cpu);
+extern struct cpu_state *isr_45(struct cpu_state *cpu);
+extern struct cpu_state *isr_46(struct cpu_state *cpu);
+extern struct cpu_state *isr_47(struct cpu_state *cpu);
 
-extern void isr_0(void);
-extern void isr_1(void);
-extern void isr_2(void);
-extern void isr_3(void);
-extern void isr_4(void);
-extern void isr_5(void);
-extern void isr_6(void);
-extern void isr_7(void);
-extern void isr_8(void);
-extern void isr_9(void);
-extern void isr_10(void);
-extern void isr_11(void);
-extern void isr_12(void);
-extern void isr_13(void);
-extern void isr_14(void);
-extern void isr_15(void);
-extern void isr_16(void);
-extern void isr_17(void);
-extern void isr_18(void);
-extern void isr_19(void);
-extern void isr_20(void);
-extern void isr_21(void);
-extern void isr_22(void);
-extern void isr_23(void);
-extern void isr_24(void);
-extern void isr_25(void);
-extern void isr_26(void);
-extern void isr_27(void);
-extern void isr_28(void);
-extern void isr_29(void);
-extern void isr_30(void);
-extern void isr_31(void);
-extern void isr_32(void);
-extern void isr_33(void);
-extern void isr_34(void);
-extern void isr_35(void);
-extern void isr_36(void);
-extern void isr_37(void);
-extern void isr_38(void);
-extern void isr_39(void);
-extern void isr_40(void);
-extern void isr_41(void);
-extern void isr_42(void);
-extern void isr_43(void);
-extern void isr_44(void);
-extern void isr_45(void);
-extern void isr_46(void);
-extern void isr_47(void);
 
-extern void isr_112(void);
-extern void isr_128(void);
-extern void isr_default(void);
-extern void isr_pci(void);
+extern struct cpu_state *isr_112(struct cpu_state *cpu);
+extern struct cpu_state *isr_128(struct cpu_state *cpu);
+extern struct cpu_state *isr_default(struct cpu_state *cpu);
 
 #define INTERRUPT_GATE 0x06
 #define TRAP_GATE 0x07
@@ -114,12 +108,10 @@ struct idtpt
     void* base;
 } __attribute__((packed));
 
-typedef uint32_t intr_t;
 
 
-void lidt(uint16_t irq);
-void EOI(int irq);
-void Set_IDT_Entry(int i, uint32_t offset, uint16_t selector, uint8_t type, int dpl);
+void lidt(irqnum_t irq);
+void Set_IDT_Entry(irqnum_t i,struct cpu_state *(*isr)(struct cpu_state *cpu), uint16_t selector, uint8_t type,privilege_t dpl);
 
 struct cpu_state* irq_handler(struct cpu_state* cpu);
 

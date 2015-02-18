@@ -138,13 +138,6 @@ ISR 112
 ISR 128
 
 
-Global isr_pci
-isr_pci:
-push dword 0
-push dword 50
-jmp isr_save
-
-
 extern irq_handler
 isr_save:
 push eax

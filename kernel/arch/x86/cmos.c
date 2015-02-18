@@ -26,38 +26,6 @@
 #include <cmos.h>
 
 /**
- * @brief Reads the Values from Complementary Metal Oxide Semiconductor.
- * @param buffer
- * @return void
- */
-void get_cmos_data(struct cmos_data *cmos)
-{
-    cmos->registers.register_a = cmos_read_byte(CMOS_TIMER_FREQ_REG);
-    cmos->registers.register_b = cmos_read_byte(CMOS_TIMER_SETTING);
-    cmos->registers.register_c = cmos_read_byte(CMOS_SRC_REG);
-    cmos->registers.register_d = cmos_read_byte(CMOS_VALIDITY_REG);
-
-    cmos->hardware.post_diagnostig_status_byte = cmos_read_byte(0x0E);
-    cmos->hardware.shutdown_status_byte =        cmos_read_byte(0x0F);
-    cmos->hardware.floppy_disk_type =            cmos_read_byte(0x10);
-    cmos->hardware.hd_type =                     cmos_read_byte(0x12);
-    cmos->hardware.device_byte =                 cmos_read_byte(0x14);
-
-    cmos->hardware.basememory_size_low =         cmos_read_byte(0x15);
-    cmos->hardware.basememory_size_high =        cmos_read_byte(0x16);
-    cmos->hardware.expandablememory_size_low =   cmos_read_byte(0x17);
-    cmos->hardware.expandablememory_size_high =  cmos_read_byte(0x18);
-    cmos->hardware.extension_byte_hd1 =          cmos_read_byte(0x19);
-    cmos->hardware.extension_byte_hd2 =          cmos_read_byte(0x1A);
-
-    cmos->hardware.cmos_magic_low =              cmos_read_byte(0x2E);
-    cmos->hardware.cmos_magic_high =             cmos_read_byte(0x2F);
-
-    cmos->hardware.extendedmemory_low =          cmos_read_byte(0x30);
-    cmos->hardware.extendedmenory_high =         cmos_read_byte(0x31);
-}
-
-/**
  * @brief Reads a byte from CMOS.
  * @param offset Offset in the CMOS
  * @return Read value from CMOS

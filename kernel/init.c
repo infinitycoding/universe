@@ -40,6 +40,7 @@
 //descriptor tables
 #include <gdt.h>
 #include <idt.h>
+#include <pic.h>
 
 //scheduling
 #include <sched/elf.h>
@@ -80,6 +81,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     INIT_PMM(mb_info);
     INIT_PAGING(mb_info);
     INIT_HEAP();
+    INIT_PIC();
     INIT_IDT();
     INIT_VFS();
     INIT_TRIGGER();

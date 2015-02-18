@@ -28,7 +28,6 @@
 #include <io.h>
 #include <bcd.h>
 
-struct cmos_data *cmos;
 
 int timer_freq = 0;
 struct time *startup;
@@ -77,8 +76,6 @@ void INIT_PIT(int freq)
  */
 void INIT_RTC(void)
 {
-    cmos = malloc(sizeof(struct cmos_data));
-    get_cmos_data(cmos);
     update_time(startup);
 }
 
