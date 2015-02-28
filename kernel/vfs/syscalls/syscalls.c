@@ -54,30 +54,30 @@ void sys_seek(struct cpu_state **cpu)
     int off = (*cpu)->CPU_ARG2;
     int whence = (*cpu)->CPU_ARG3;
 
-    struct fd *file = get_fd(current_thread->process, fd);
+    file_descriptor_t *file = get_fd(current_thread->process, fd);
 
     switch(whence)
     {
         case SEEK_SET: // absolute
-            file->read_pos = off;
-            file->write_pos = off;
+            file->read_descriptor->position = off;
+            file->write_descriptor->position = off;
             break;
         case SEEK_CUR: // relative from current position
-            file->read_pos += off;
-            file->write_pos += off;
+            file->read_descriptor->position += off;
+            file->write_descriptor->position += off;
             break;
         case SEEK_END: // relative from end
-            if(file->read_inode != NULL)
-                file->read_pos = file->read_inode->length - off;
-            if(file->write_inode != NULL)
-                file->write_pos = file->write_inode->length - off;
+            if(file->read_descriptor->inode != NULL)
+                file->read_descriptor->position = file->read_descriptor->inode->length - off;
+            if(file->write_descriptor->inode != NULL)
+                file->write_descriptor->position = file->write_descriptor->inode->length - off;
             break;
         default: // ???
             (*cpu)->CPU_ARG0 = _FAILURE;
             return;
     }
 
-    (*cpu)->CPU_ARG0 = file->read_pos;
+    (*cpu)->CPU_ARG0 = file->read_descriptor->position;
 }
 
 void sys_stat(struct cpu_state **cpu)
@@ -111,10 +111,10 @@ void sys_fstat(struct cpu_state **cpu)
     iterator_t file_it = iterator_create(current_thread->process->files);
     while(!list_is_empty(current_thread->process->files) && !list_is_last(&file_it))
     {
-        struct fd *file = list_get_current(&file_it);
+        file_descriptor_t *file = list_get_current(&file_it);
         if(file->id == (*cpu)->CPU_ARG1)
         {
-            memcpy((void *)(*cpu)->CPU_ARG2, (void*) &file->read_inode->stat, sizeof(struct stat));
+            memcpy((void *)(*cpu)->CPU_ARG2, (void*) &file->read_descriptor->inode->stat, sizeof(struct stat));
             (*cpu)->CPU_ARG0 = 0;
             return;
         }

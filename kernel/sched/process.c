@@ -160,38 +160,26 @@ struct process_state *process_create(const char *name, uint16_t flags, struct pr
         stderr = set->stderr;
     }
 
-    struct fd *desc0 = malloc(sizeof(struct fd));
+    file_descriptor_t *desc0 = create_fd(state);
     desc0->id = 0;
     desc0->mode = 0x7ff;
     desc0->flags = O_RDONLY;
     desc0->permission = VFS_PERMISSION_READ;
-    desc0->read_pos = 0;
-    desc0->write_pos = 0;
-    desc0->read_inode = stdin;
-    desc0->write_inode = NULL;
-    list_push_back(state->files, desc0);
+    desc0->read_descriptor->inode = stdin;
 
-    struct fd *desc1 = malloc(sizeof(struct fd));
+    file_descriptor_t *desc1 = create_fd(state);
     desc1->id = 1;
     desc1->mode = 0x7ff;
     desc1->flags = O_WRONLY;
     desc1->permission = VFS_PERMISSION_WRITE;
-    desc1->read_pos = 0;
-    desc1->write_pos = 0;
-    desc1->read_inode = NULL;
-    desc1->write_inode = stdout;
-    list_push_back(state->files, desc1);
+    desc1->write_descriptor->inode = stdout;
 
-    struct fd *desc2 = malloc(sizeof(struct fd));
+    file_descriptor_t  *desc2 = create_fd(state);
     desc2->id = 2;
     desc2->mode = 0x7ff;
     desc2->flags = O_WRONLY;
     desc2->permission = VFS_PERMISSION_WRITE;
-    desc2->read_pos = 0;
-    desc2->write_pos = 0;
-    desc2->read_inode = NULL;
-    desc2->write_inode = stderr;
-    list_push_back(state->files, desc2);
+    desc2->write_descriptor->inode = stderr;
 
     // create directory /proc/<pid>/ and /proc/<pid>/socket/
     char str[64];

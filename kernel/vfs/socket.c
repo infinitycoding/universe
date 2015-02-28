@@ -60,7 +60,7 @@ int port_fetch(char *port)
                 return req->id;
             }
             list_next(&i);
-        }   
+        }
     }
     return 0;
 }
@@ -69,18 +69,18 @@ struct fd *port_accept(int id)
 {
     struct list_node *node = list_get_node_by_int(current_thread->process->socket_requests, offsetof(socket_request_t, id), id);
     if(node == NULL)
-     {
+    {
         return NULL;
     }
 
     socket_request_t *req = (socket_request_t*) node->element;
     list_remove_node(node);
 
-    
+
 
     vfs_dentry_t *dentry = vfs_get_dir_entry(current_thread->process->socket_inode, req->port);
 
-    
+
     if(dentry != NULL && dentry->inode != NULL)
     {
         char rstr[64], wstr[64];
@@ -96,12 +96,12 @@ struct fd *port_accept(int id)
         w_in->handlers = list_create();
         w_in->type = VFS_PIPE;
 
-        struct fd *desc = create_fd(current_thread->process);
+        file_descriptor_t *desc = create_fd(current_thread->process);
         desc->mode = 0;
         desc->flags = O_RDWR;
         desc->permission = VFS_PERMISSION_READ | VFS_PERMISSION_WRITE;
-        desc->read_inode = r_in;
-        desc->write_inode = w_in;
+        desc->read_descriptor->inode = r_in;
+        desc->write_descriptor->inode = w_in;
 
         req->inodes[0] = w_in;
         req->inodes[1] = r_in;
@@ -112,3 +112,4 @@ struct fd *port_accept(int id)
     else
         return NULL;
 }
+

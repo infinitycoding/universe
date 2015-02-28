@@ -63,13 +63,12 @@ void sys_write(struct cpu_state **cpu)
         return;
     }
 
-    struct fd *desc = get_fd(current_thread->process, fd);
+    file_descriptor_t *desc = get_fd(current_thread->process, fd);
     if(desc != NULL)
     {
-        if(desc->permission & VFS_PERMISSION_WRITE && desc->write_inode != NULL)
+        if(desc->permission & VFS_PERMISSION_WRITE && desc->write_descriptor->inode != NULL)
         {
-            vfs_inode_t *inode = desc->write_inode;
-            vfs_inode_t *real = inode;
+            vfs_inode_t *real = desc->write_descriptor->inode;
             GET_INODE(real);
             if(S_ISDIR(real->stat))
             {
@@ -77,17 +76,8 @@ void sys_write(struct cpu_state **cpu)
                 return;
             }
 
-            int ret = vfs_write(inode, desc->write_pos, buf, len);
+            int ret = vfs_write_descriptor(desc->write_descriptor, buf, len);
             (*cpu)->CPU_ARG0 = ret;
-
-            if(ret > 0)
-            {
-                desc->write_pos += len;
-                if(real->type != VFS_PIPE)
-                {
-                    desc->read_pos += len;
-                }
-            }
         }
         else
         {

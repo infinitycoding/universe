@@ -175,8 +175,8 @@ pck_t *pck_poll(pckmgr *mgr, pckid_t id)
 pck_t *fetch_pipe(pckmgr *mgr)
 {
     if(mgr->pset.stdout->length)
-    if((mgr->pset.stdout->length - mgr->stdout_seeker) < sizeof(pckhead_t))
-        return NULL;
+        if((mgr->pset.stdout->length - mgr->stdout_seeker) < sizeof(pckhead_t))
+            return NULL;
     return poll_next(mgr);
 }
 

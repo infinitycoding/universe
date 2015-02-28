@@ -83,7 +83,7 @@ void sys_getdents(struct cpu_state **cpu)
     int fd = (*cpu)->CPU_ARG1;
     dirent_t *dentry = (dirent_t *)(*cpu)->CPU_ARG2;
 
-    vfs_inode_t *parent = get_fd(current_thread->process, fd)->read_inode;
+    vfs_inode_t *parent = get_fd(current_thread->process, fd)->read_descriptor->inode;
     GET_INODE(parent);
 
     if(vfs_access(parent, R_OK, current_thread->process->uid, current_thread->process->gid) == 0)

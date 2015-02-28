@@ -98,21 +98,20 @@ void sys_pipe(struct cpu_state **cpu)
     vfs_inode_t *inode = vfs_create_pipe(current_thread->process->uid, current_thread->process->gid);
 
     // create read channel
-    struct fd *desc0 = create_fd(current_thread->process);
+    file_descriptor_t *desc0 = create_fd(current_thread->process);
     id[0] = desc0->id;
     desc0->mode = O_APPEND;
     desc0->flags = O_RDONLY;
     desc0->permission =  VFS_PERMISSION_READ;
-    desc0->read_inode = inode;
+    desc0->read_descriptor->inode = inode;
 
     // create write channel
-    struct fd *desc1 = create_fd(current_thread->process);
+    file_descriptor_t *desc1 = create_fd(current_thread->process);
     id[1] = desc1->id;
     desc1->mode = O_APPEND;
     desc1->flags = O_WRONLY;
     desc1->permission = VFS_PERMISSION_WRITE;
-    desc1->write_inode = inode;
-    list_push_back(current_thread->process->files, desc1);
+    desc1->write_descriptor->inode = inode;
 
     //printf("kernel: piieeepe %d %d\n", desc0->id, desc1->id);
 
@@ -130,8 +129,8 @@ void sys_pipe(struct cpu_state **cpu)
 void set_pipe_trigger(struct cpu_state **cpu)
 {
     int fd = (*cpu)->CPU_ARG1;
-    struct fd *desc = get_fd(current_thread->process, fd);
-    vfs_inode_t *inode = desc->read_inode;
+    file_descriptor_t *desc = get_fd(current_thread->process, fd);
+    vfs_inode_t *inode = desc->read_descriptor->inode;
 
     if(desc->permission & VFS_PERMISSION_READ)
     {

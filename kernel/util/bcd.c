@@ -38,7 +38,7 @@ uint8_t bcd_decode(uint8_t digits)
 
 
 /**
- * @breif Encodes the binary input value into BCD format 
+ * @breif Encodes the binary input value into BCD format
  * @param value the value to be encoded
  * @return the BCD encoded value
  */

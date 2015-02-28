@@ -46,17 +46,20 @@
 extern struct thread_state *current_thread;
 extern vfs_inode_t *root;
 
-struct fd *get_fd(struct process_state *process, int fd)
+file_descriptor_t *get_fd(struct process_state *process, int fd)
 {
-    return (struct fd*) list_get_by_int(process->files, offsetof(struct fd, id), fd);
+    return (file_descriptor_t*) list_get_by_int(process->files, offsetof(file_descriptor_t, id), fd);
 }
 
-struct fd *create_fd(struct process_state *process)
+file_descriptor_t *create_fd(struct process_state *process)
 {
-    struct fd *desc = malloc(sizeof(struct fd));
+    file_descriptor_t *desc = malloc(sizeof(file_descriptor_t ));
 
-    memset(desc, 0, sizeof(struct fd));
+    memset(desc, 0, sizeof(file_descriptor_t ));
     desc->id = list_length(process->files);
+
+    desc->read_descriptor = vfs_create_inode_descriptor(NULL);
+    desc->write_descriptor = vfs_create_inode_descriptor(NULL);
 
     list_push_back(process->files, desc);
 
@@ -110,26 +113,26 @@ void sys_open(struct cpu_state **cpu)
         }
     }
 
-    struct fd *desc = create_fd(current_thread->process);
+    file_descriptor_t *desc = create_fd(current_thread->process);
     desc->mode = mode;
     desc->flags = oflags;
 
     if(oflags & O_APPEND)
     {
-        desc->read_pos = inode->length;
-        desc->write_pos = inode->length;
+        desc->read_descriptor->position = inode->length;
+        desc->write_descriptor->position = inode->length;
     }
 
     if( (oflags & O_RDONLY || oflags & O_RDWR) && vfs_access(inode, R_OK, current_thread->process->uid, current_thread->process->gid) == 0)
     {
         desc->permission |= VFS_PERMISSION_READ;
-        desc->read_inode = inode;
+        desc->read_descriptor->inode = inode;
     }
 
     if( (oflags & O_WRONLY || oflags & O_RDWR) && vfs_access(inode, W_OK, current_thread->process->uid, current_thread->process->gid) == 0)
     {
         desc->permission |= VFS_PERMISSION_WRITE;
-        desc->write_inode = inode;
+        desc->write_descriptor->inode = inode;
     }
 
     (*cpu)->CPU_ARG0 = desc->id;
@@ -143,7 +146,7 @@ void sys_close(struct cpu_state **cpu)
     int i;
     for(i = 0; i < list_length(current_thread->process->files); i++)
     {
-        struct fd *desc = node->element;
+        file_descriptor_t *desc = node->element;
         if(desc->id == fd)
         {
             list_remove_node(node);

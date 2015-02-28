@@ -4,21 +4,29 @@
 
 #include <sched/process.h>
 
-struct fd
+typedef struct vfs_inode_descriptor
+{
+    vfs_inode_t *inode;
+    int position;
+} vfs_inode_descriptor_t;
+
+typedef struct file_descriptor
 {
     unsigned int id;
     mode_t mode;
     int flags;
     int permission;
 
-    vfs_inode_t *read_inode;
-    vfs_inode_t *write_inode;
-    int read_pos;
-    int write_pos;
-};
+    vfs_inode_descriptor_t *read_descriptor;
+    vfs_inode_descriptor_t *write_descriptor;
+} file_descriptor_t;
 
-struct fd *get_fd(struct process_state *process, int fd);
-struct fd *create_fd(struct process_state *process);
+file_descriptor_t *get_fd(struct process_state *process, int fd);
+file_descriptor_t *create_fd(struct process_state *process);
+
+vfs_inode_descriptor_t *vfs_create_inode_descriptor(vfs_inode_t *inode);
+size_t vfs_read_descriptor(vfs_inode_descriptor_t *desc, void *buffer, size_t length);
+size_t vfs_write_descriptor(vfs_inode_descriptor_t *desc, void *buffer, size_t length);
 
 #endif
 

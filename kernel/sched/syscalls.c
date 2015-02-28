@@ -92,9 +92,9 @@ void sys_fork(struct cpu_state **cpu)
     struct list_node *head = current_thread->process->files->head;
     while(node != head)
     {
-        struct fd *dest = malloc(sizeof(struct fd));
-        struct fd *src  = (struct fd*) node->element;
-        memcpy(dest, src, sizeof(struct fd));
+        file_descriptor_t *dest = malloc(sizeof(file_descriptor_t));
+        file_descriptor_t *src  = (file_descriptor_t*) node->element;
+        memcpy(dest, src, sizeof(file_descriptor_t));
         list_push_back(new_process->files, dest);
 
         node = node->next;

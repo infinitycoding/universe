@@ -52,12 +52,12 @@ void sys_read(struct cpu_state **cpu)
     void *buf = (void*) (*cpu)->CPU_ARG2;
     size_t len = (*cpu)->CPU_ARG3;
 
-    struct fd *desc = get_fd(current_thread->process, fd);
+    file_descriptor_t *desc = get_fd(current_thread->process, fd);
     if(desc != NULL)
     {
-        if(desc->permission & VFS_PERMISSION_READ && desc->read_inode != NULL)
+        if(desc->permission & VFS_PERMISSION_READ && desc->read_descriptor->inode != NULL)
         {
-            vfs_inode_t *inode = desc->read_inode;
+            vfs_inode_t *inode = desc->read_descriptor->inode;
             vfs_inode_t *real = inode;
             GET_INODE(real);
             if(S_ISDIR(real->stat))
@@ -72,22 +72,18 @@ void sys_read(struct cpu_state **cpu)
                 return;
             }
 
-            int ret = vfs_read(inode, desc->read_pos, buf, len);
+            int ret = vfs_read_descriptor(desc->read_descriptor, buf, len);
 
             if(ret == len)
             {
-                desc->read_pos += len;
-                if(real->type != VFS_PIPE)
-                {
-                    desc->write_pos += len;
-                }
-
                 (*cpu)->CPU_ARG0 = len;
             }
             else
             {
                 if(real->type == VFS_PIPE)
                 {
+                    printf("read from %s..sleep\n", real->name);
+
                     add_trigger(WAIT_EVENT, inode->event_id, 0, current_thread, sys_read);
                     thread_suspend(current_thread);
                     *cpu = (struct cpu_state *)task_schedule(*cpu);

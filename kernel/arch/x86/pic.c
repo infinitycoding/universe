@@ -34,7 +34,7 @@ void EOI(irqnum_t irq)
 {
     outb(PIC_MASTER_CMD, PIC_EOI);
     if (irq >= 8)
-      outb(PIC_SLAVE_CMD, PIC_EOI);
+        outb(PIC_SLAVE_CMD, PIC_EOI);
 }
 
 

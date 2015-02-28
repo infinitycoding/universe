@@ -80,12 +80,12 @@ void sys_create(struct cpu_state **cpu)
 
     if(inode != NULL)
     {
-        struct fd *desc = create_fd(current_thread->process);
+        file_descriptor_t *desc = create_fd(current_thread->process);
         desc->mode = mode;
         desc->flags = O_RDWR;
         desc->permission = VFS_PERMISSION_READ | VFS_PERMISSION_WRITE;
-        desc->read_inode = inode;
-        desc->write_inode = inode;
+        desc->read_descriptor->inode = inode;
+        desc->write_descriptor->inode = inode;
 
         (*cpu)->CPU_ARG0 = desc->id;
     }
