@@ -36,6 +36,9 @@ void sys_dup(struct cpu_state **cpu)
     file_descriptor_t *oldfd = get_fd(current_thread->process, oldfd_id);
     file_descriptor_t *newfd = create_fd(current_thread->process);
 
+    newfd->permission = oldfd->permission;
+    newfd->mode = oldfd->mode;
+    newfd->flags = oldfd->flags;
     newfd->read_descriptor = oldfd->read_descriptor;
     newfd->write_descriptor = oldfd->write_descriptor;
 
@@ -58,6 +61,9 @@ void sys_dup2(struct cpu_state **cpu)
         {
             list_remove_node(node);
 
+            newfd->permission = oldfd->permission;
+            newfd->mode = oldfd->mode;
+            newfd->flags = oldfd->flags;
             newfd->read_descriptor = oldfd->read_descriptor;
             newfd->write_descriptor = oldfd->write_descriptor;
 

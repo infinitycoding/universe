@@ -50,7 +50,6 @@ void kbd_irq_handler(void);
  */
 int main(void)
 {
-    
     int logfile = open("/var/log/drivers/keyboard.log", O_WRONLY, 0);
     
     pckmgr *conn = new_pckmgr();
