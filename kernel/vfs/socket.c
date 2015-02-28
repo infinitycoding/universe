@@ -65,7 +65,7 @@ int port_fetch(char *port)
     return 0;
 }
 
-struct fd *port_accept(int id)
+file_descriptor_t *port_accept(int id)
 {
     struct list_node *node = list_get_node_by_int(current_thread->process->socket_requests, offsetof(socket_request_t, id), id);
     if(node == NULL)

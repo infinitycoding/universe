@@ -147,6 +147,8 @@ void sys_chmod(struct cpu_state **cpu);
 void sys_lchown(struct cpu_state **cpu);
 void sys_rename(struct cpu_state **cpu);
 void sys_access(struct cpu_state **cpu);
+void sys_dup(struct cpu_state **cpu);
+void sys_dup2(struct cpu_state **cpu);
 
 void launch_pipe_handlers(vfs_inode_t *pipe);
 void set_pipe_trigger(struct cpu_state **cpu);
@@ -156,8 +158,7 @@ void usys_readport(struct cpu_state **cpu);
 void usys_accept(struct cpu_state **cpu);
 
 int port_fetch(char *port);
-struct fd *port_accept(int id);
-
+struct file_descriptor *port_accept(int id);
 
 #endif
 

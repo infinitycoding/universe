@@ -22,6 +22,7 @@
 
 #include <vfs/fd.h>
 #include <vfs/vfs.h>
+#include <mm/heap.h>
 
 vfs_inode_descriptor_t* vfs_create_inode_descriptor(vfs_inode_t *inode)
 {
