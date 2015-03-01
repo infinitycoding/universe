@@ -92,21 +92,11 @@ typedef struct dirent
     struct stat stat;
 } dirent_t;
 
-typedef struct socket_request
-{
-    int id;
-    int pid;
-    char *port;
-    uint32_t event_id;
-
-    vfs_inode_t *inodes[2];
-} socket_request_t;
-
 // solve a link
 #define GET_INODE(i) if(i->type == VFS_LINK) i = (vfs_inode_t*) i->read_buffer;
 
 void INIT_VFS(void);
-vfs_inode_t *vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_t uid, gid_t gid);
+vfs_inode_t *vfs_create_inode(const char *name, mode_t mode, vfs_inode_t *parent, uid_t uid, gid_t gid);
 vfs_inode_t *vfs_create_pipe(uid_t uid, gid_t gid);
 
 vfs_dentry_t *vfs_create_dir_entry(vfs_inode_t *entry_inode);
@@ -152,13 +142,6 @@ void sys_dup2(struct cpu_state **cpu);
 
 void launch_pipe_handlers(vfs_inode_t *pipe);
 void set_pipe_trigger(struct cpu_state **cpu);
-
-void usys_connect(struct cpu_state **cpu);
-void usys_readport(struct cpu_state **cpu);
-void usys_accept(struct cpu_state **cpu);
-
-int port_fetch(char *port);
-struct file_descriptor *port_accept(int id);
 
 #endif
 

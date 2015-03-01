@@ -53,7 +53,7 @@
  *
  * @return pointer to the new node
  */
-vfs_inode_t* vfs_create_inode(char *name, mode_t mode, vfs_inode_t *parent, uid_t uid, gid_t gid)
+vfs_inode_t* vfs_create_inode(const char *name, mode_t mode, vfs_inode_t *parent, uid_t uid, gid_t gid)
 {
     static uint32_t nodes = 0;
 

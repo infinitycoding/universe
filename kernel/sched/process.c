@@ -139,8 +139,8 @@ struct process_state *process_create(const char *name, uint16_t flags, struct pr
 
     // memory stuff
     state->heap_top = 0;
-    state->heap_lower_limit = 0;
-    state->heap_upper_limit = 0;
+    state->heap_lower_limit = MEMORY_LAYOUT_USER_HEAP_START;
+    state->heap_upper_limit = MEMORY_LAYOUT_USER_HEAP_END;
 
     // create stream files
     // if pipeset is avaiable, use it

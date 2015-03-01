@@ -271,20 +271,21 @@ void sys_brk(struct cpu_state **cpu)
 {
     uint32_t new_bss_top = (*cpu)->CPU_ARG1;
     uint32_t heap_top = current_thread->process->heap_top;
+
     if(new_bss_top == 0)
     {
         (*cpu)->CPU_ARG0 = heap_top;
+        return;
     }
     else if(new_bss_top > current_thread->process->heap_upper_limit || new_bss_top < current_thread->process->heap_lower_limit)
     {
         (*cpu)->CPU_ARG0 = 0;
+        return;
     }
-    else if(new_bss_top > (heap_top|0x00000FFF))
+    else if(new_bss_top > heap_top)
     {
-        int req_memory = new_bss_top-((heap_top|0x00000FFF));
-        int pages = 1+(req_memory/PAGE_SIZE);
-        if(req_memory%PAGE_SIZE)
-            pages++;
+        int req_memory = new_bss_top - heap_top;
+        int pages = NUM_PAGES(req_memory);
 
         heap_top = arch_vaddr_find(&current_context->arch_context, pages, MEMORY_LAYOUT_USER_HEAP_START, MEMORY_LAYOUT_USER_HEAP_END);
         int i;
@@ -297,7 +298,7 @@ void sys_brk(struct cpu_state **cpu)
 
         heap_top += req_memory;
     }
-    else if(new_bss_top < (heap_top^0xFFFFF000))
+    else if(new_bss_top < heap_top)
     {
         //todo Free
     }
@@ -308,3 +309,4 @@ void sys_brk(struct cpu_state **cpu)
     current_thread->process->heap_top = heap_top;
     (*cpu)->CPU_ARG0 = heap_top;
 }
+

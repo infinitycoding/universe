@@ -26,6 +26,7 @@
 #include <syscall.h>
 #include <vfs/vfs.h>
 #include <vfs/user.h>
+#include <vfs/socket.h>
 #include <printf.h>
 
 

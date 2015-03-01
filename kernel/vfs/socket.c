@@ -22,6 +22,7 @@
 
 #include <vfs/vfs.h>
 #include <vfs/fd.h>
+#include <vfs/socket.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>

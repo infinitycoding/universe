@@ -9,9 +9,16 @@ char file[] = "/ultrashell.elf";
 
 int main(int argc, char **argv)
 {
-    int f = open("/dev/cga",O_WRONLY,0);
-    char str[] = "Hello!\nWorld!";
-    write(f,str,strlen(str));
+	//sbrk(0x1000);
+	void *memory = sbrk(90);
+
+	printf("memory: %x\n", memory);
+
+    //FILE *f = fopen("/dev/cga", 'w');
+    //char str[] = "Hello!\nWorld!";
+    //fwrite(str,strlen(str), 1, f);
+
+	return 0;
 	//printf("connecting to pid 2 on port 5..\n");
 	//int sock = uconnect(2, "5");
 	//printf("..connected .. %d\n", sock);
