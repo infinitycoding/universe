@@ -9,7 +9,7 @@ char file[] = "/ultrashell.elf";
 
 int main(int argc, char **argv)
 {
-	//sbrk(0x1000);
+	sbrk(0x4010);
 	void *memory = sbrk(90);
 
 	printf("memory: %x\n", memory);

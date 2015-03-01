@@ -138,7 +138,7 @@ struct process_state *process_create(const char *name, uint16_t flags, struct pr
     state->flags = flags;
 
     // memory stuff
-    state->heap_top = 0;
+    state->heap_top = MEMORY_LAYOUT_USER_HEAP_START;
     state->heap_lower_limit = MEMORY_LAYOUT_USER_HEAP_START;
     state->heap_upper_limit = MEMORY_LAYOUT_USER_HEAP_END;
 
