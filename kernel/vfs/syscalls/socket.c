@@ -61,8 +61,13 @@ void port_accepted(struct cpu_state **cpu)
     desc->mode = 0;
     desc->flags = O_RDWR;
     desc->permission = VFS_PERMISSION_READ | VFS_PERMISSION_WRITE;
-    desc->read_descriptor->inode = req->inodes[0];
-    desc->write_descriptor->inode = req->inodes[1];
+    desc->read_descriptor->inode = req->inode;
+    desc->read_descriptor->read_buffer = 0;
+    desc->read_descriptor->write_buffer = 1;
+
+    desc->write_descriptor->inode = req->inode;
+    desc->write_descriptor->read_buffer = 0;
+    desc->write_descriptor->write_buffer = 1;
 
     (*cpu)->CPU_ARG0 = desc->id;
 }
@@ -95,30 +100,11 @@ void usys_connect(struct cpu_state **cpu)
 void usys_readport(struct cpu_state **cpu)
 {
     char *port = (char *) (*cpu)->CPU_ARG1;
-    if(! list_is_empty(current_thread->process->socket_requests))
+
+    socket_request_t *request = port_fetch(current_thread->process, port);
+    if(request != NULL)
     {
-        iterator_t i = iterator_create(current_thread->process->socket_requests);
-        list_set_first(&i);
-
-        socket_request_t *req;
-        while(!list_is_last(&i) && !list_is_empty(current_thread->process->socket_requests))
-        {
-            req = (socket_request_t*) list_get_current(&i);
-            //if(strcmp(req->port,port)== 0)
-            //    break;
-
-            list_next(&i);
-        }
-        //if(strcmp(req->port,port)== 0)
-        //{
-        //    (*cpu)->CPU_ARG0 = req->id;
-        //}
-        //else
-        //{
-        current_thread->process->socket_event_id = add_event_trigger(0, current_thread, usys_readport);
-        thread_suspend(current_thread);
-        *cpu = (struct cpu_state *)task_schedule(*cpu);
-        //}
+        (*cpu)->CPU_ARG0 = request->id;
     }
     else
     {
@@ -132,54 +118,13 @@ void usys_accept(struct cpu_state **cpu)
 {
     int id = (*cpu)->CPU_ARG1;
 
-    struct list_node *node = list_get_node_by_int(current_thread->process->socket_requests, offsetof(socket_request_t, id), id);
-    if(node == NULL)
-    {
-        (*cpu)->CPU_ARG0 = _FAILURE;
-        return;
-    }
+    socket_request_t *request = get_socket_request(current_thread->process, id);
+    port_accept(current_thread->process, request);
 
-    socket_request_t *req = (socket_request_t*) node->element;
-    list_remove_node(node);
-
-    printf("%s\n",req->port);
-
-    vfs_dentry_t *dentry = vfs_get_dir_entry(current_thread->process->socket_inode, req->port);
-
-    if(dentry != NULL && dentry->inode != NULL)
-    {
-        char rstr[64], wstr[64];
-        sprintf(rstr, "%d.in", req->pid);
-        sprintf(wstr, "%d.out", req->pid);
-
-        vfs_inode_t *r_in = vfs_create_inode(rstr, 0, dentry->inode, 0, 0);
-        vfs_inode_t *w_in = vfs_create_inode(wstr, 0, dentry->inode, 0, 0);
-        r_in->event_id = get_new_event_ID();
-        r_in->handlers = list_create();
-        r_in->type = VFS_PIPE;
-        w_in->event_id = get_new_event_ID();
-        w_in->handlers = list_create();
-        w_in->type = VFS_PIPE;
-
-        file_descriptor_t *desc = create_fd(current_thread->process);
-        desc->mode = 0;
-        desc->flags = O_RDWR;
-        desc->permission = VFS_PERMISSION_READ | VFS_PERMISSION_WRITE;
-        desc->read_descriptor->inode = r_in;
-        desc->write_descriptor->inode = w_in;
-
-        (*cpu)->CPU_ARG0 = desc->id;
-
-        req->inodes[0] = w_in;
-        req->inodes[1] = r_in;
-
-        send_event(req->event_id);
-    }
+    if(request != NULL)
+        (*cpu)->CPU_ARG0 = _SUCCESS;
     else
-    {
-        printf("else\n");
         (*cpu)->CPU_ARG0 = _FAILURE;
-    }
 }
 
 

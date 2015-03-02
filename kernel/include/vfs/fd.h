@@ -8,6 +8,9 @@ typedef struct vfs_inode_descriptor
 {
     vfs_inode_t *inode;
     int position;
+
+    unsigned int read_buffer;
+    unsigned int write_buffer;
 } vfs_inode_descriptor_t;
 
 typedef struct file_descriptor

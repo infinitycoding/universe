@@ -121,7 +121,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     {
         void *argv[2];
         char *pf = (char *)malloc(pfnode->length+1);
-        vfs_read(pfnode, 0, pf, pfnode->length);
+        vfs_read(pfnode, 0, 0, pf, pfnode->length);
         pf[pfnode->length+1] = '\0';
         list_t *pipelines = pfp(pf);
         struct section *sec = list_pop_front(pipelines);

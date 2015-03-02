@@ -57,7 +57,7 @@ bool test_vfs()
             buffer[j] = 'a' + j%25;
         }
 
-        vfs_write(inodes[i], 0, buffer, 10000);
+        vfs_write(inodes[i], 1, 0, buffer, 10000);
 
         free(buffer);
 
@@ -73,7 +73,7 @@ bool test_vfs()
     for(i = 0; i < COUNT; i++)
     {
         char *buffer = malloc(10000);
-        vfs_read(inodes[i], 0, buffer, 10000);
+        vfs_read(inodes[i], 0, 0, buffer, 10000);
 
         for(j = 0; j < 10000; j++)
         {

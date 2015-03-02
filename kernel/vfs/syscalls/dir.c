@@ -94,7 +94,7 @@ void sys_getdents(struct cpu_state **cpu)
             return;
         }
 
-        block_buffer_info_t *info = parent->read_buffer;
+        block_buffer_info_t *info = parent->buffers[0];
 
         if(current_thread->getdents_pos < list_length(info->blocks) && (fd == current_thread->getdents_old_fd || current_thread->getdents_old_fd == -1))
         {

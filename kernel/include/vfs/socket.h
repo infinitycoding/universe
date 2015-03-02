@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include <cpu.h>
 #include <vfs/vfs.h>
+#include <vfs/fd.h>
 
 typedef struct socket_request
 {
@@ -34,7 +35,7 @@ typedef struct socket_request
     char *port;
     uint32_t event_id;
 
-    vfs_inode_t *inodes[2];
+    vfs_inode_t *inode;
 } socket_request_t;
 
 
@@ -42,8 +43,8 @@ void usys_connect(struct cpu_state **cpu);
 void usys_readport(struct cpu_state **cpu);
 void usys_accept(struct cpu_state **cpu);
 
-int port_fetch(char *port);
-struct file_descriptor *port_accept(int id);
+socket_request_t *port_fetch(struct process_state *process, const char *port);
+file_descriptor_t *port_accept(struct process_state *process, socket_request_t *request);
 
 #endif
 

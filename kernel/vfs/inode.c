@@ -78,8 +78,8 @@ vfs_inode_t* vfs_create_inode(const char *name, mode_t mode, vfs_inode_t *parent
     if(mode & S_IFLNK)
     {
         inode->type = VFS_LINK;
-        inode->read_buffer = NULL;
-        inode->write_buffer = NULL;
+        inode->buffers[0] = NULL;
+        inode->buffers[1] = NULL;
     }
     else
     {
@@ -92,8 +92,8 @@ vfs_inode_t* vfs_create_inode(const char *name, mode_t mode, vfs_inode_t *parent
         else
             buf = block_buffer_create(0x1000);
 
-        inode->read_buffer = buf;
-        inode->write_buffer = buf;
+        inode->buffers[0] = buf;
+        inode->buffers[1] = buf;
     }
 
     // write inode into parents entries
@@ -108,10 +108,10 @@ vfs_inode_t* vfs_create_inode(const char *name, mode_t mode, vfs_inode_t *parent
     if(S_ISDIR(inode->stat))
     {
         vfs_inode_t *current = vfs_create_inode(".", S_IFLNK, inode, 0, 0);
-        current->read_buffer = inode;
+        current->buffers[0] = inode;
 
         vfs_inode_t *par = vfs_create_inode("..", S_IFLNK, inode, 0, 0);
-        par->read_buffer = parent;
+        par->buffers[0] = parent;
     }
 
     return inode;
@@ -139,17 +139,17 @@ vfs_inode_t *vfs_create_pipe(uid_t uid, gid_t gid)
  *
  * @return number of written bytes
  */
-int vfs_write(vfs_inode_t *inode, int offset, void *buffer, int bytes)
+int vfs_write(vfs_inode_t *inode, unsigned int buffer, int offset, void *data, int bytes)
 {
     GET_INODE(inode);
 
-    if(inode == NULL || inode->write_buffer == NULL)
+    if(inode == NULL || inode->buffers[buffer] == NULL)
     {
         printf("trying to write into uninitalized buffer.\n");
         return 0;
     }
 
-    int len = block_buffer_write(inode->write_buffer, offset, (uint8_t*) buffer, bytes);
+    int len = block_buffer_write(inode->buffers[buffer], offset, (uint8_t*) data, bytes);
 
     // increase length
     if( (offset + len) > inode->length)
@@ -178,11 +178,11 @@ int vfs_write(vfs_inode_t *inode, int offset, void *buffer, int bytes)
  *
  * @return number of bytes
  */
-int vfs_read(vfs_inode_t *inode, int offset, void *buffer, int bytes)
+int vfs_read(vfs_inode_t *inode, unsigned int buffer, int offset, void *data, int bytes)
 {
     GET_INODE(inode);
 
-    if(inode == NULL || inode->read_buffer == NULL)
+    if(inode == NULL || inode->buffers[buffer] == NULL)
     {
         printf("trying to read from uninitalized buffer.\n");
         return 0;
@@ -192,7 +192,7 @@ int vfs_read(vfs_inode_t *inode, int offset, void *buffer, int bytes)
     if( (offset + bytes) > inode->length)
         b = inode->length - offset;
 
-    return block_buffer_read(inode->read_buffer, offset, (uint8_t*) buffer, b);
+    return block_buffer_read(inode->buffers[buffer], offset, (uint8_t*) data, b);
 }
 
 

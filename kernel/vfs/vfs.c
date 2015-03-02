@@ -58,7 +58,7 @@ void INIT_VFS(void)
     root = vfs_create_inode(NULL, S_IFDIR | S_IRWXU | S_IRWXG | S_IRWXO, NULL, 0, 0);
 
     vfs_inode_t *foo = vfs_create_inode("foo.txt", S_IRWXU | S_IRWXG | S_IRWXO, root, 0, 0);
-    vfs_write(foo, 0, "Hallo Welt!\n", 13);
+    vfs_write(foo, 1, 0, "Hallo Welt!\n", 13);
 }
 
 #ifdef VFS_DEBUG
@@ -73,7 +73,7 @@ void vfs_debug_output(vfs_inode_t *start)
 
     int num = start->length / sizeof(vfs_dentry_t);
     vfs_dentry_t *entries = malloc(start->length);
-    vfs_read(start, 0, entries, start->length);
+    vfs_read(start, 0, 0, entries, start->length);
 
     int i;
     for(i = 0; i < num; i++)

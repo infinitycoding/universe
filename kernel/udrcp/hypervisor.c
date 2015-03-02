@@ -34,18 +34,22 @@
 
 #include <sched/elf.h>
 #include <sched/process.h>
+#include <sched/scheduler.h>
 
 #include <mm/heap.h>
 #include <mm/paging.h>
 #include <sys/multiboot.h>
 #include <vfs/vfs.h>
 #include <vfs/fd.h>
+#include <vfs/socket.h>
 #include <pmm.h>
 
 //#define DEBUG
 
 list_t *subdrivers;
 list_t *interrupts;
+
+extern struct thread_state *current_thread;
 
 void subsystem_isr(struct cpu_state **cpu)
 {
@@ -78,15 +82,17 @@ int INIT_HYPERVISOR(int argc, char **argv, char **environ)
     printf("Hypervisor\n");
     while(1)
     {
-        int req = port_fetch("udrcp");
+        socket_request_t *req = port_fetch(current_thread->process, "udrcp");
 
-        if(req)
+        if(req != NULL)
         {
-
-            file_descriptor_t *sock = port_accept(req);
-
+            //		printf("got request:\n");
+            file_descriptor_t *sock = port_accept(current_thread->process, req);
             pman = new_pckmgr(sock->write_descriptor->inode, sock->read_descriptor->inode, errorfile);
 
+
+            //		printf("   sock->inode = %x = %x\n", req->inode, sock->read_descriptor->inode);
+            //		printf("   name: %s\n", req->inode->name);
 
             struct driver *new_driver = malloc(sizeof(struct driver));
             new_driver->pman = pman;

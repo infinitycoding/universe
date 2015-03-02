@@ -59,7 +59,7 @@ int main(void)
         return -1;
     }
     udrcp_error(conn," /dev/kbd created\n");
-
+	
     kbc_stat = port_alloc(conn,0x64,1);
     kbc_io = port_alloc(conn,0x60,1);
 

@@ -63,8 +63,7 @@ typedef struct vfs_inode
     struct stat stat;
     struct vfs_inode *parent;
 
-    block_buffer_info_t *read_buffer;
-    block_buffer_info_t *write_buffer;
+    block_buffer_info_t *buffers[2];
 
     uint32_t event_id;
     list_t *handlers;
@@ -93,7 +92,7 @@ typedef struct dirent
 } dirent_t;
 
 // solve a link
-#define GET_INODE(i) if(i->type == VFS_LINK) i = (vfs_inode_t*) i->read_buffer;
+#define GET_INODE(i) if(i->type == VFS_LINK) i = (vfs_inode_t*) i->buffers[0];
 
 void INIT_VFS(void);
 vfs_inode_t *vfs_create_inode(const char *name, mode_t mode, vfs_inode_t *parent, uid_t uid, gid_t gid);
@@ -104,8 +103,8 @@ vfs_dentry_t *vfs_get_dir_entry(vfs_inode_t *ino, const char *name);
 void vfs_add_dir_entry(vfs_inode_t *dir, vfs_dentry_t *entry);
 void vfs_remove_dir_entry(vfs_inode_t *dir, vfs_inode_t *inode);
 
-int vfs_write(vfs_inode_t *inode, int offset, void *buffer, int bytes);
-int vfs_read (vfs_inode_t *inode, int offset, void *buffer, int bytes);
+int vfs_write(vfs_inode_t *inode, unsigned int buffer, int offset, void *data, int bytes);
+int vfs_read (vfs_inode_t *inode, unsigned int buffer, int offset, void *data, int bytes);
 int vfs_access(vfs_inode_t *inode, mode_t modus, uid_t uid, gid_t gid);
 vfs_inode_t *vfs_lookup_path(char *path);
 vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid);

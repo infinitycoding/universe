@@ -81,7 +81,7 @@ vfs_inode_t *vfs_lookup_path(char *path)
         vfs_inode_t *real = parent;
         GET_INODE(real);
 
-        block_buffer_info_t *info = real->read_buffer;
+        block_buffer_info_t *info = real->buffers[0];
         iterator_t it = iterator_create(info->blocks);
 
         int found = 0;
@@ -151,7 +151,7 @@ vfs_inode_t *vfs_create_path(char *path, mode_t mode, uid_t uid, gid_t gid)
         vfs_inode_t *real = parent;
         GET_INODE(real);
 
-        block_buffer_info_t *info = real->write_buffer;
+        block_buffer_info_t *info = real->buffers[1];
         iterator_t it = iterator_create(info->blocks);
 
         int found = 0;

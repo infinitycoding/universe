@@ -45,72 +45,62 @@
 #include <event/trigger.h>
 
 
-extern struct thread_state *current_thread;
-
-int port_fetch(char *port)
+socket_request_t *port_fetch(struct process_state *process, const char *port)
 {
-    if(! list_is_empty(current_thread->process->socket_requests))
+    iterator_t i = iterator_create(process->socket_requests);
+    socket_request_t *req;
+
+    while(!list_is_last(&i))
     {
-        iterator_t i = iterator_create(current_thread->process->socket_requests);
-        socket_request_t *req;
-        while(!list_is_last(&i))
+        req = (socket_request_t*) list_get_current(&i);
+        if(strcmp(req->port,port) == 0)
         {
-            req = (socket_request_t*) list_get_current(&i);
-            if(strcmp(req->port,port)== 0)
-            {
-                return req->id;
-            }
-            list_next(&i);
+            return req;
         }
+        list_next(&i);
     }
-    return 0;
+
+    return NULL;
 }
 
-file_descriptor_t *port_accept(int id)
+file_descriptor_t *port_accept(struct process_state *process, socket_request_t *request)
 {
-    struct list_node *node = list_get_node_by_int(current_thread->process->socket_requests, offsetof(socket_request_t, id), id);
-    if(node == NULL)
-    {
-        return NULL;
-    }
-
-    socket_request_t *req = (socket_request_t*) node->element;
+    struct list_node *node = list_get_node_by_int(process->socket_requests, offsetof(socket_request_t, id), request->id);
     list_remove_node(node);
 
-
-
-    vfs_dentry_t *dentry = vfs_get_dir_entry(current_thread->process->socket_inode, req->port);
-
+    vfs_dentry_t *dentry = vfs_get_dir_entry(process->socket_inode, request->port);
 
     if(dentry != NULL && dentry->inode != NULL)
     {
-        char rstr[64], wstr[64];
-        sprintf(rstr, "%d.in", req->pid);
-        sprintf(wstr, "%d.out", req->pid);
+        char str[32];
+        sprintf(str, "%d", request->pid);
 
-        vfs_inode_t *r_in = vfs_create_inode(rstr, 0, dentry->inode, 0, 0);
-        vfs_inode_t *w_in = vfs_create_inode(wstr, 0, dentry->inode, 0, 0);
-        r_in->event_id = get_new_event_ID();
-        r_in->handlers = list_create();
-        r_in->type = VFS_PIPE;
-        w_in->event_id = get_new_event_ID();
-        w_in->handlers = list_create();
-        w_in->type = VFS_PIPE;
+        vfs_inode_t *inode = vfs_create_inode(str, 0, dentry->inode, 0, 0);
+        inode->buffers[1] = block_buffer_create(0x1000);
 
-        file_descriptor_t *desc = create_fd(current_thread->process);
-        desc->mode = 0;
+        inode->event_id = get_new_event_ID();
+        inode->handlers = list_create();
+        inode->type = VFS_PIPE;
+
+        file_descriptor_t *desc = create_fd(process);
         desc->flags = O_RDWR;
         desc->permission = VFS_PERMISSION_READ | VFS_PERMISSION_WRITE;
-        desc->read_descriptor->inode = r_in;
-        desc->write_descriptor->inode = w_in;
 
-        req->inodes[0] = w_in;
-        req->inodes[1] = r_in;
+        // invert buffers
+        desc->read_descriptor->inode = inode;
+        desc->read_descriptor->read_buffer = 1;
+        desc->read_descriptor->write_buffer = 0;
 
-        send_event(req->event_id);
+        desc->write_descriptor->inode = inode;
+        desc->write_descriptor->read_buffer = 1;
+        desc->write_descriptor->write_buffer = 0;
+
+        request->inode = inode;
+
+        send_event(request->event_id);
         return desc;
     }
-    else
-        return NULL;
+
+    return NULL;
 }
 

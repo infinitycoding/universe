@@ -65,12 +65,6 @@ void sys_read(struct cpu_state **cpu)
                 (*cpu)->CPU_ARG0 = _NO_PERMISSION;
                 return;
             }
-            block_buffer_info_t *info = real->read_buffer;
-            if(info == NULL)
-            {
-                (*cpu)->CPU_ARG0 = _FAILURE;
-                return;
-            }
 
             int ret = vfs_read_descriptor(desc->read_descriptor, buf, len);
 

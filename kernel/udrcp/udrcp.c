@@ -94,9 +94,9 @@ pckid_t send_package(pckmgr *mgr, pcktype_t type, size_t size, void *data)
     header->id = id;
     header->size = size+sizeof(pckhead_t);
     header->type = type;
-    vfs_write(mgr->pset.stdin,mgr->pset.stdin->length,header,sizeof(pckhead_t));
+    vfs_write(mgr->pset.stdin,0,mgr->pset.stdin->length,header,sizeof(pckhead_t));
     if(size)
-        vfs_write(mgr->pset.stdin,mgr->pset.stdin->length,data,size);
+        vfs_write(mgr->pset.stdin,0,mgr->pset.stdin->length,data,size);
     free(header);
     return id;
 }
@@ -108,9 +108,9 @@ void respond(pckmgr *mgr,pckid_t id,pcktype_t type, size_t size, void *data)
     header->id = id;
     header->size = size+12;
     header->type = type;
-    vfs_write(mgr->pset.stdin,mgr->pset.stdin->length,header,sizeof(pckhead_t));
+    vfs_write(mgr->pset.stdin,0,mgr->pset.stdin->length,header,sizeof(pckhead_t));
     if(size)
-        vfs_write(mgr->pset.stdin,mgr->pset.stdin->length,data,size);
+        vfs_write(mgr->pset.stdin,0,mgr->pset.stdin->length,data,size);
     free(header);
 }
 
@@ -118,14 +118,14 @@ pck_t *poll_next(pckmgr *mgr)
 {
     pck_t *pck = malloc(sizeof(pck_t));
     while((mgr->pset.stdout->length - mgr->stdout_seeker) < sizeof(pckhead_t));
-    vfs_read(mgr->pset.stdout,mgr->stdout_seeker,pck, sizeof(pckhead_t));
+    vfs_read(mgr->pset.stdout,1,mgr->stdout_seeker,pck, sizeof(pckhead_t));
     mgr->stdout_seeker += sizeof(pckhead_t);
     if(pck->size > 12)
     {
         int data_size = pck->size-12;
         pck->data = malloc(data_size);
         while((mgr->pset.stdout->length - mgr->stdout_seeker) < data_size);
-        vfs_read(mgr->pset.stdout,mgr->stdout_seeker, pck->data,data_size);
+        vfs_read(mgr->pset.stdout,1,mgr->stdout_seeker, pck->data,data_size);
         mgr->stdout_seeker += data_size;
     }
     else

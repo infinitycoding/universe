@@ -65,13 +65,13 @@ void vfs_add_dir_entry(vfs_inode_t *dir, vfs_dentry_t *entry)
     if(! S_ISDIR(dir->stat))
         return;
 
-    if(dir->write_buffer == NULL)
+    if(dir->buffers[1] == NULL)
     {
         printf("leerer puffer\n");
         return;
     }
 
-    buffer_block_t *block = buffer_block_create(dir->write_buffer, dir->write_buffer->block_counter);
+    buffer_block_t *block = buffer_block_create(dir->buffers[1], dir->buffers[1]->block_counter);
     block->base = entry;
 }
 
@@ -80,13 +80,13 @@ void vfs_remove_dir_entry(vfs_inode_t *dir, vfs_inode_t *inode)
     if(! S_ISDIR(dir->stat))
         return;
 
-    if(dir->write_buffer == NULL)
+    if(dir->buffers[1] == NULL)
     {
         printf("leerer puffer\n");
         return;
     }
 
-    block_buffer_info_t *info = inode->write_buffer;
+    block_buffer_info_t *info = inode->buffers[1];
 
     iterator_t it = iterator_create(info->blocks);
     list_set_first(&it);
@@ -111,7 +111,7 @@ vfs_dentry_t *vfs_get_dir_entry(vfs_inode_t *ino, const char *name)
     GET_INODE(ino);
     if(S_ISDIR(ino->stat))
     {
-        block_buffer_info_t *info = ino->read_buffer;
+        block_buffer_info_t *info = ino->buffers[0];
 
         iterator_t it = iterator_create(info->blocks);
         list_set_first(&it);

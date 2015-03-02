@@ -31,12 +31,15 @@ vfs_inode_descriptor_t* vfs_create_inode_descriptor(vfs_inode_t *inode)
     desc->inode = inode;
     desc->position = 0;
 
+    desc->read_buffer = 0;
+    desc->write_buffer = 1;
+
     return desc;
 }
 
 size_t vfs_write_descriptor(vfs_inode_descriptor_t *desc, void *buffer, size_t length)
 {
-    size_t n = vfs_write(desc->inode, desc->position, buffer, length);
+    size_t n = vfs_write(desc->inode, desc->write_buffer, desc->position, buffer, length);
     desc->position += n;
 
     return n;
@@ -44,7 +47,7 @@ size_t vfs_write_descriptor(vfs_inode_descriptor_t *desc, void *buffer, size_t l
 
 size_t vfs_read_descriptor(vfs_inode_descriptor_t *desc, void *buffer, size_t length)
 {
-    size_t n = vfs_read(desc->inode, desc->position, buffer, length);
+    size_t n = vfs_read(desc->inode, desc->read_buffer, desc->position, buffer, length);
     desc->position += n;
 
     return n;

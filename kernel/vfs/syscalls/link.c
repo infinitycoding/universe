@@ -66,8 +66,7 @@ void sys_link(struct cpu_state **cpu)
 
             if(dest_inode != NULL)
             {
-                dest_inode->read_buffer = (void *)dest_inode;
-                dest_inode->write_buffer = (void *)dest_inode;
+                dest_inode->buffers[0] = (void *)dest_inode;
 
                 (*cpu)->CPU_ARG0 = _SUCCESS;
             }
@@ -96,8 +95,7 @@ void sys_unlink(struct cpu_state **cpu)
     {
         if(vfs_access(link, W_OK, current_thread->process->uid, current_thread->process->gid == 0))
         {
-            link->read_buffer = NULL;
-            link->write_buffer = NULL;
+            link->buffers[0] = NULL;
             link->type = VFS_REGULAR;
 
             vfs_remove_dir_entry(link->parent, link);
