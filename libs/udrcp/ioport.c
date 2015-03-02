@@ -32,11 +32,12 @@
 // Todo: error handling for hosted ports
 
 
-port_t *port_alloc(pckmgr *mgr,unsigned int port_nr)
+port_t *port_alloc(pckmgr *mgr,unsigned int port_nr, size_t portsize)
 {
     port_req req;
     req.port = port_nr;
-    pckid_t id = send_package(mgr,PORT_ALLOC,sizeof(unsigned int),&req);
+    req.portsize = portsize;
+    pckid_t id = send_package(mgr,PORT_ALLOC,sizeof(port_req),&req);
     port_resp *resp;
     port_t *port;
     int retv;

@@ -41,6 +41,7 @@ typedef struct
 typedef struct
 {
     unsigned int port;
+    unsigned int portsize;
 } portpck_t;
 
 

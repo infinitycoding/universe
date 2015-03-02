@@ -56,8 +56,8 @@ int main(int argc, char *argv[])
 
     // CRTC stuff for courser handling
     struct crtc_handle *crtc = malloc(sizeof(struct crtc_handle));
-    crtc->index = port_alloc(conn, CRTC_INDEX_PORT);
-    crtc->data = port_alloc(conn, CRTC_DATA_PORT);
+    crtc->index = port_alloc(conn, CRTC_INDEX_PORT,1);
+    crtc->data = port_alloc(conn, CRTC_DATA_PORT,1);
     if(!crtc->index || !crtc->data)
         udrcp_error(conn,"Warning: no CRTC available\n");
     

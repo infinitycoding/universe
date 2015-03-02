@@ -51,10 +51,11 @@ typedef struct
 typedef struct
 {
     unsigned int port;
+    unsigned int portsize;
 } port_req;
 
 
-port_t *port_alloc(pckmgr *mgr,unsigned int port);
+port_t *port_alloc(pckmgr *mgr,unsigned int port, size_t portsize);
 int port_free(port_t *p);
 
 unsigned char inb(port_t *p);

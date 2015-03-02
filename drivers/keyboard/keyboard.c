@@ -51,18 +51,17 @@ void kbd_irq_handler(void);
 int main(void)
 {
     int logfile = open("/var/log/drivers/keyboard.log", O_WRONLY, 0);
-    
+
     pckmgr *conn = new_pckmgr();
     if(!subsystem_connect(conn,HYPERVISOR,"udrcp",logfile,UHOST_DEFAULT_SYNCHRON))
     {
-        printf("XYZ\n");
         udrcp_error(conn,"could not connect to host\n");
         return -1;
     }
     udrcp_error(conn," /dev/kbd created\n");
 
-    kbc_stat = port_alloc(conn,0x64);
-    kbc_io = port_alloc(conn,0x60);
+    kbc_stat = port_alloc(conn,0x64,1);
+    kbc_io = port_alloc(conn,0x60,1);
 
     if(!kbc_io || !kbc_stat)
     {

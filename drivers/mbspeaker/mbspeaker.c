@@ -74,21 +74,21 @@ int main(void)
         return -1;
     }
 
-    speaker_switch = port_alloc(conn,0x64);
+    speaker_switch = port_alloc(conn,0x64,1);
     if(!speaker_switch)
     {
         udrcp_error(conn,"could not allocate port 0x64");
         return -2;
     }
 
-    count_register = port_alloc(conn,0x42);
+    count_register = port_alloc(conn,0x42,1);
     if(!count_register)
     {
         udrcp_error(conn,"could not allocate port 0x42");
         return -2;
     }
 
-    init_register  = port_alloc(conn,0x43);
+    init_register  = port_alloc(conn,0x43,1);
     if(!init_register)
     {
         udrcp_error(conn,"could not allocate port 0x43");
