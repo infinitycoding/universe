@@ -23,30 +23,55 @@
  */
 
 #include <list.h>
+#include <stddef.h>
 #include <sys/types.h>
+#include <sched/process.h>
+#include <sched/thread.h>
+#include <memory_layout.h>
 #include <mm/heap.h>
+#include <mm/paging.h>
 #include <mm/shm.h>
 
 static list_t *shm_segments;
+
+extern struct thread_state *current_thread;
 
 void INIT_SHM(void)
 {
     shm_segments = list_create();
 }
 
-shm_segment_t *shm_create(unsigned int key, void *base, size_t size, uid_t uid, gid_t gid)
+shm_segment_t *shm_create(unsigned int key, size_t size, uid_t uid, gid_t gid)
 {
     shm_segment_t *segment = malloc(sizeof(shm_segment_t));
 
     segment->key = key;
-    segment->base = base;
     segment->size = size;
     segment->uid = uid;
     segment->gid = gid;
 
+    segment->master_process = NULL;
+
     list_push_back(shm_segments, segment);
 
     return segment;
+}
+
+shm_descriptor_t *shm_create_descriptor(struct process_state *process, shm_segment_t *segment)
+{
+    shm_descriptor_t *descriptor = malloc(sizeof(shm_descriptor_t));
+
+    descriptor->id = list_length(process->shm_descriptors);
+    descriptor->segment = segment;
+
+    list_push_back(process->shm_descriptors, descriptor);
+
+    return descriptor;
+}
+
+shm_descriptor_t *shm_get_descriptor(struct process_state *process, unsigned int id)
+{
+    return (shm_descriptor_t*) list_get_by_int(process->shm_descriptors, offsetof(shm_descriptor_t, id), id);
 }
 
 shm_segment_t *shm_get(unsigned int key)
@@ -67,8 +92,64 @@ shm_segment_t *shm_get(unsigned int key)
     return NULL;
 }
 
+void *shm_attach(struct process_state *process, shm_segment_t *segment, uintptr_t offset)
+{
+    if(offset >= segment->size)
+        return -1;
+
+    uintptr_t base = 0x0; /* TODO */
+    uintptr_t start = (base + offset) & PAGE_MASK;
+    size_t size = segment->size - offset;
+    size_t num_pages = NUM_PAGES(size);
+
+    int i;
+
+    if(segment->master_process == NULL)
+    {
+        segment->master_process = process;
+        segment->master_base = base;
+
+        for(i = 0; i < num_pages; i++)
+        {
+            vaddr_t vaddr = start + i * PAGE_SIZE;
+            paddr_t paddr = pmm_alloc_page();
+            vmm_map(&process->main_thread->context.memory, paddr, vaddr, VMM_PRESENT | VMM_USER);
+        }
+    }
+    else
+    {
+        for(i = 0; i < num_pages; i++)
+        {
+            vaddr_t vaddr = start + i * PAGE_SIZE;
+            vaddr_t master_vaddr = segment->master_base + i * PAGE_SIZE;
+            paddr_t paddr = arch_vaddr2paddr(&process->main_thread->context.memory, master_vaddr);
+
+            vmm_map(&process->main_thread->context.memory, paddr, vaddr, VMM_PRESENT | VMM_USER);
+        }
+    }
+
+    return start;
+}
+
 void sys_shm_get(struct cpu_state **cpu)
 {
+    unsigned int key = (*cpu)->CPU_ARG0;
+    size_t size = (*cpu)->CPU_ARG1;
+    int flags = (*cpu)->CPU_ARG2;
+
+    // TODO: check access rights
+    shm_segment_t *segment = shm_get(key);
+    if(segment == NULL && flags & SHM_CREAT)
+    {
+        segment = shm_create(key, size, current_thread->process->uid, current_thread->process->gid);
+    }
+    if(segment != NULL)
+    {
+        shm_descriptor_t *desc = shm_create_descriptor(current_thread->process, segment);
+        (*cpu)->CPU_ARG0 = desc->id;
+    }
+    else
+        (*cpu)->CPU_ARG0 = -1;
 }
 
 void sys_shm_ctl(struct cpu_state **cpu)

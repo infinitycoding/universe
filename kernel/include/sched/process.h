@@ -95,6 +95,9 @@ struct process_state
     uint32_t heap_top;
     uint32_t heap_lower_limit;
     uint32_t heap_upper_limit;
+
+    // shm
+    list_t *shm_descriptors;
 };
 
 struct child

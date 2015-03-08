@@ -28,14 +28,18 @@
 #include <cpu.h>
 #include <sys/types.h>
 
+#define SHM_CREAT 0x1
+
 typedef struct shm_segment
 {
     unsigned int key;
-    void *base;
     size_t size;
 
     gid_t uid;
     uid_t gid;
+
+    struct process_state *master_process;
+    void *master_base;
 } shm_segment_t;
 
 typedef struct shm_descriptor
@@ -45,6 +49,14 @@ typedef struct shm_descriptor
 } shm_descriptor_t;
 
 void INIT_SHM(void);
+
+shm_segment_t *shm_create(unsigned int key, size_t size, uid_t uid, gid_t gid);
+shm_segment_t *shm_get(unsigned int key);
+
+shm_descriptor_t *shm_create_descriptor(struct process_state *process, shm_segment_t *segment);
+shm_descriptor_t *shm_get_descriptor(struct process_state *process, unsigned int id);
+
+void *shm_attach(struct process_state *process, shm_segment_t *segment, uintptr_t offset);
 
 void sys_shm_get(struct cpu_state **cpu);
 void sys_shm_ctl(struct cpu_state **cpu);
