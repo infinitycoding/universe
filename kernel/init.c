@@ -36,6 +36,7 @@
 #include <pmm.h>
 #include <mm/paging.h>
 #include <mm/heap.h>
+#include <mm/shm.h>
 
 //descriptor tables
 #include <gdt.h>
@@ -76,6 +77,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     {
         panic("Incompatible Bootloader");
     }
+
     //Init Kernelmodules
     INIT_PREV();
     INIT_PMM(mb_info);
@@ -87,6 +89,8 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     INIT_TRIGGER();
     INIT_CLOCK(500);
     INIT_SCHEDULER();
+    INIT_SHM();
+
     //print Logo and loading message
     print_logo(YELLOW);
     set_color(WHITE | (BLACK << 4));
@@ -116,21 +120,21 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     printf("%d modules total, %d successfully loaded, %d failed\n", stats.total, stats.load_success, stats.load_failed);
 
     vfs_inode_t *pfnode = vfs_lookup_path("/drivers/system.pf");
+    /*
+        if(pfnode != NULL)
+        {
+            void *argv[2];
+            char *pf = (char *)malloc(pfnode->length+1);
+            vfs_read(pfnode, 0, 0, pf, pfnode->length);
+            pf[pfnode->length+1] = '\0';
+            list_t *pipelines = pfp(pf);
+            struct section *sec = list_pop_front(pipelines);
 
-    if(pfnode != NULL)
-    {
-        void *argv[2];
-        char *pf = (char *)malloc(pfnode->length+1);
-        vfs_read(pfnode, 0, 0, pf, pfnode->length);
-        pf[pfnode->length+1] = '\0';
-        list_t *pipelines = pfp(pf);
-        struct section *sec = list_pop_front(pipelines);
-
-        argv[1] = mb_info;
-        argv[0] = sec;
-        kernel_thread_create(INIT_HYPERVISOR,(char **) argv, NULL);
-    }
-
+            argv[1] = mb_info;
+            argv[0] = sec;
+            kernel_thread_create(INIT_HYPERVISOR,(char **) argv, NULL);
+        }
+    */
     load_elf_from_file(vfs_lookup_path("/drivers/keyboard.elf"), 0, 0, 0, 0, 0);
     load_elf_from_file(vfs_lookup_path("/drivers/cga.elf"), 0, 0, 0, 0, 0);
 
@@ -142,7 +146,8 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     }
     else
     {
-        load_elf_from_file(testnode, 0, 0, 0, 0, 0);
+        printf("tja.. voll verbuggt, deswegen erstmal so ;)");
+//        load_elf_from_file(testnode, 0, 0, 0, 0, 0);
     }
 
     return 0;
