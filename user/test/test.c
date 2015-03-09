@@ -9,10 +9,8 @@ char file[] = "/ultrashell.elf";
 
 int main(int argc, char **argv)
 {
-	sbrk(0x4010);
-	void *memory = sbrk(90);
-
-	printf("memory: %x\n", memory);
+	printf("testprogram\n");
+	while(1);
 
     //FILE *f = fopen("/dev/cga", 'w');
     //char str[] = "Hello!\nWorld!";

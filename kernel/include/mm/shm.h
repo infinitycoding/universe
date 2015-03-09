@@ -38,7 +38,7 @@ typedef struct shm_segment
     gid_t uid;
     uid_t gid;
 
-    struct process_state *master_process;
+    vmm_context_t *master_context;
     void *master_base;
 } shm_segment_t;
 
@@ -46,6 +46,9 @@ typedef struct shm_descriptor
 {
     unsigned int id;
     shm_segment_t *segment;
+
+    void *base;
+    size_t size;
 } shm_descriptor_t;
 
 void INIT_SHM(void);
@@ -56,7 +59,8 @@ shm_segment_t *shm_get(unsigned int key);
 shm_descriptor_t *shm_create_descriptor(struct process_state *process, shm_segment_t *segment);
 shm_descriptor_t *shm_get_descriptor(struct process_state *process, unsigned int id);
 
-void *shm_attach(struct process_state *process, shm_segment_t *segment, uintptr_t offset);
+void *shm_attach(vmm_context_t *context, shm_segment_t *segment, uintptr_t offset);
+void shm_detach(vmm_context_t *context, void *base, size_t size);
 
 void sys_shm_get(struct cpu_state **cpu);
 void sys_shm_ctl(struct cpu_state **cpu);

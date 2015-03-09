@@ -1,5 +1,5 @@
 /*
-     Copyright 2012-2014 Infinitycoding all rights reserved
+     Copyright 2015 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
 
      The Universe Kernel is free software: you can redistribute it and/or modify
@@ -50,7 +50,7 @@ shm_segment_t *shm_create(unsigned int key, size_t size, uid_t uid, gid_t gid)
     segment->uid = uid;
     segment->gid = gid;
 
-    segment->master_process = NULL;
+    segment->master_context = NULL;
 
     list_push_back(shm_segments, segment);
 
@@ -92,7 +92,7 @@ shm_segment_t *shm_get(unsigned int key)
     return NULL;
 }
 
-void *shm_attach(struct process_state *process, shm_segment_t *segment, uintptr_t offset)
+void *shm_attach(vmm_context_t *context, shm_segment_t *segment, uintptr_t offset)
 {
     if(offset >= segment->size)
         return -1;
@@ -104,16 +104,16 @@ void *shm_attach(struct process_state *process, shm_segment_t *segment, uintptr_
 
     int i;
 
-    if(segment->master_process == NULL)
+    if(segment->master_context == NULL)
     {
-        segment->master_process = process;
+        segment->master_context = context;
         segment->master_base = base;
 
         for(i = 0; i < num_pages; i++)
         {
             vaddr_t vaddr = start + i * PAGE_SIZE;
             paddr_t paddr = pmm_alloc_page();
-            vmm_map(&process->main_thread->context.memory, paddr, vaddr, VMM_PRESENT | VMM_USER);
+            vmm_map(context, paddr, vaddr, VMM_PRESENT | VMM_USER);
         }
     }
     else
@@ -122,13 +122,20 @@ void *shm_attach(struct process_state *process, shm_segment_t *segment, uintptr_
         {
             vaddr_t vaddr = start + i * PAGE_SIZE;
             vaddr_t master_vaddr = segment->master_base + i * PAGE_SIZE;
-            paddr_t paddr = arch_vaddr2paddr(&process->main_thread->context.memory, master_vaddr);
+            paddr_t paddr = arch_vaddr2paddr(segment->master_context, master_vaddr);
 
-            vmm_map(&process->main_thread->context.memory, paddr, vaddr, VMM_PRESENT | VMM_USER);
+            vmm_map(context, paddr, vaddr, VMM_PRESENT | VMM_USER);
         }
     }
 
     return start;
+}
+
+void shm_detach(vmm_context_t *context, void *base, size_t size)
+{
+    uintptr_t start = (uintptr_t)base & PAGE_MASK;
+    size_t num_pages = NUM_PAGES(size);
+    vmm_unmap_range(context, start, num_pages);
 }
 
 void sys_shm_get(struct cpu_state **cpu)
@@ -158,9 +165,33 @@ void sys_shm_ctl(struct cpu_state **cpu)
 
 void sys_shm_attach(struct cpu_state **cpu)
 {
+    unsigned int id = (*cpu)->CPU_ARG0;
+    const void *base = (*cpu)->CPU_ARG1;
+    int flags = (*cpu)->CPU_ARG2;
+
+    shm_descriptor_t *desc = shm_get_descriptor(current_thread->process, id);
+    if(desc != NULL)
+    {
+        desc->size = desc->segment->size - (size_t) base;
+        desc->base = shm_attach(&current_thread->context.memory, desc->segment, base);
+        (*cpu)->CPU_ARG0 = desc->base;
+    }
+    else
+        (*cpu)->CPU_ARG0 = -1;
 }
 
 void sys_shm_detach(struct cpu_state **cpu)
 {
+    void *base = (*cpu)->CPU_ARG0;
+
+    shm_descriptor_t *desc = list_get_by_int(current_thread->process->shm_descriptors, offsetof(shm_descriptor_t, base), base);
+
+    if(desc != NULL)
+    {
+        shm_detach(&current_thread->context.memory, desc->base, desc->size);
+        (*cpu)->CPU_ARG0 = 0;
+    }
+    else
+        (*cpu)->CPU_ARG0 = -1;
 }
 

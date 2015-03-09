@@ -3,7 +3,10 @@
 int main(int argc, char **argv)
 {
 	printf("started testserver with pid %d\n", getpid());
-	
+
+	while(1);
+
+	/*
 	open_port("5");
 
 	while(1)
@@ -15,6 +18,6 @@ int main(int argc, char **argv)
 		printf("accepted. (%d)\n", fd);
 
 		write(fd, "Hello from testsrv", 19);
-	}
+	}*/
 }
 

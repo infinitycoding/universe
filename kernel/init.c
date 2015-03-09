@@ -135,8 +135,8 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
             kernel_thread_create(INIT_HYPERVISOR,(char **) argv, NULL);
         }
     */
-    load_elf_from_file(vfs_lookup_path("/drivers/keyboard.elf"), 0, 0, 0, 0, 0);
-    load_elf_from_file(vfs_lookup_path("/drivers/cga.elf"), 0, 0, 0, 0, 0);
+    //load_elf_from_file(vfs_lookup_path("/drivers/keyboard.elf"), 0, 0, 0, 0, 0);
+    //load_elf_from_file(vfs_lookup_path("/drivers/cga.elf"), 0, 0, 0, 0, 0);
 
     vfs_inode_t *testnode = vfs_lookup_path("/ultrashell");
 
@@ -146,10 +146,14 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     }
     else
     {
-        printf("tja.. voll verbuggt, deswegen erstmal so ;)");
+        printf("tja.. voll verbuggt, deswegen erstmal so ;)\n\n");
 //        load_elf_from_file(testnode, 0, 0, 0, 0, 0);
     }
 
+    load_elf_from_file(vfs_lookup_path("/testsrv"), 0, 0, 0, 0, 0);
+    load_elf_from_file(vfs_lookup_path("/test"), 0, 0, 0, 0, 0);
+
     return 0;
 }
+
 
