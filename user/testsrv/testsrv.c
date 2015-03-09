@@ -4,7 +4,20 @@ int main(int argc, char **argv)
 {
 	printf("started testserver with pid %d\n", getpid());
 
-	while(1);
+	int shm_id = shmget(1234, 0x4000, 0x1);
+	printf("testsrv: created shared memory segment: %d\n", shm_id);
+
+	char *addr = shmat(shm_id, 0, 0);
+	printf("testsrv: attached shared memory at %x\n", addr);
+
+	while(1)
+	{
+		if(addr[0] != '\0')
+		{
+			printf("testsrv: read from shm: \"%s\"\n", addr);
+			while(1);
+		}
+	}
 
 	/*
 	open_port("5");

@@ -27,6 +27,7 @@
 #include <vfs/vfs.h>
 #include <vfs/user.h>
 #include <vfs/socket.h>
+#include <mm/shm.h>
 #include <printf.h>
 
 
@@ -62,7 +63,7 @@ void (*linux_functions[])(struct cpu_state **cpu) =
 
     /* 141: sys_getdents hab ich mal readdir genannt */
     sys_getdents, NULL, NULL, NULL,
-    /*FIXME: getcwd kommt weiter hinten (183)*/ sys_getcwd
+    /*FIXME: getcwd kommt weiter hinten (183)*/ sys_getcwd, sys_shm_get, sys_shm_ctl, sys_shm_attach, sys_shm_detach
 };
 
 void linux_syscall_handler(struct cpu_state **cpu)

@@ -10,6 +10,15 @@ char file[] = "/ultrashell.elf";
 int main(int argc, char **argv)
 {
 	printf("testprogram\n");
+
+	int shm_id = shmget(1234, 0x4000, 0x1);
+	printf("test: created shared memory segment: %d\n", shm_id);
+
+	char *addr = shmat(shm_id, 0, 0);
+	printf("test: attached shared memory at %x\n", addr);
+
+	strcpy(addr, "yeah!");
+
 	while(1);
 
     //FILE *f = fopen("/dev/cga", 'w');

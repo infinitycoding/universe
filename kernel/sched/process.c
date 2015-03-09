@@ -116,6 +116,8 @@ struct process_state *process_create(const char *name, uint16_t flags, struct pr
     state->files = list_create();
     state->ports = list_create();
 
+    state->shm_descriptors = list_create();
+
     // threads
     state->main_thread = NULL;
     state->threads = list_create();

@@ -97,7 +97,7 @@ void *shm_attach(vmm_context_t *context, shm_segment_t *segment, uintptr_t offse
     if(offset >= segment->size)
         return -1;
 
-    uintptr_t base = 0x0; /* TODO */
+    uintptr_t base = 0xB0000000; /* TODO */
     uintptr_t start = (base + offset) & PAGE_MASK;
     size_t size = segment->size - offset;
     size_t num_pages = NUM_PAGES(size);
@@ -113,7 +113,7 @@ void *shm_attach(vmm_context_t *context, shm_segment_t *segment, uintptr_t offse
         {
             vaddr_t vaddr = start + i * PAGE_SIZE;
             paddr_t paddr = pmm_alloc_page();
-            vmm_map(context, paddr, vaddr, VMM_PRESENT | VMM_USER);
+            vmm_map(context, paddr, vaddr, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
         }
     }
     else
@@ -124,7 +124,7 @@ void *shm_attach(vmm_context_t *context, shm_segment_t *segment, uintptr_t offse
             vaddr_t master_vaddr = segment->master_base + i * PAGE_SIZE;
             paddr_t paddr = arch_vaddr2paddr(segment->master_context, master_vaddr);
 
-            vmm_map(context, paddr, vaddr, VMM_PRESENT | VMM_USER);
+            vmm_map(context, paddr, vaddr, VMM_PRESENT | VMM_WRITABLE | VMM_USER);
         }
     }
 
@@ -140,9 +140,9 @@ void shm_detach(vmm_context_t *context, void *base, size_t size)
 
 void sys_shm_get(struct cpu_state **cpu)
 {
-    unsigned int key = (*cpu)->CPU_ARG0;
-    size_t size = (*cpu)->CPU_ARG1;
-    int flags = (*cpu)->CPU_ARG2;
+    unsigned int key = (*cpu)->CPU_ARG1;
+    size_t size = (*cpu)->CPU_ARG2;
+    int flags = (*cpu)->CPU_ARG3;
 
     // TODO: check access rights
     shm_segment_t *segment = shm_get(key);
@@ -150,6 +150,7 @@ void sys_shm_get(struct cpu_state **cpu)
     {
         segment = shm_create(key, size, current_thread->process->uid, current_thread->process->gid);
     }
+
     if(segment != NULL)
     {
         shm_descriptor_t *desc = shm_create_descriptor(current_thread->process, segment);
@@ -165,9 +166,9 @@ void sys_shm_ctl(struct cpu_state **cpu)
 
 void sys_shm_attach(struct cpu_state **cpu)
 {
-    unsigned int id = (*cpu)->CPU_ARG0;
-    const void *base = (*cpu)->CPU_ARG1;
-    int flags = (*cpu)->CPU_ARG2;
+    unsigned int id = (*cpu)->CPU_ARG1;
+    const void *base = (*cpu)->CPU_ARG2;
+    int flags = (*cpu)->CPU_ARG3;
 
     shm_descriptor_t *desc = shm_get_descriptor(current_thread->process, id);
     if(desc != NULL)
