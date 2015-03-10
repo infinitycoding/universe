@@ -34,8 +34,6 @@
 #include <event/trigger.h>
 #include <printf.h>
 #include <math.h>
-#include <vfs/vfs.h>
-#include <vfs/fd.h>
 #include <atoi.h>
 
 // defined in sched/scheduler.c
@@ -48,10 +46,6 @@ extern list_t *process_list;
 extern list_t *zombie_list;
 extern pid_t pid_counter;
 
-extern vfs_inode_t *proc_dir_inode;
-
-// defined in vfs/vfs.c
-extern vfs_inode_t *root;
 
 
 /**
@@ -78,7 +72,7 @@ void dump_thread_list(list_t *threads)
  * @param parent    pointer to the parent process struct (NULL: parent = Kernel Init)
  * @return          The new process-state
  */
-struct process_state *process_create(const char *name, uint16_t flags, struct process_state *parent, uid_t uid, gid_t gid, struct pipeset *set)
+struct process_state *process_create(const char *name, uint16_t flags, struct process_state *parent, uid_t uid, gid_t gid)
 {
     list_lock(process_list);
 
@@ -106,14 +100,7 @@ struct process_state *process_create(const char *name, uint16_t flags, struct pr
     else
         state->parent = parent;
 
-    // take working directory of parent
-    if(parent == NULL)
-        state->cwd = root;
-    else
-        state->cwd = parent->cwd;
-
     // create lists of files & ports
-    state->files = list_create();
     state->ports = list_create();
 
     state->shm_descriptors = list_create();
@@ -144,52 +131,6 @@ struct process_state *process_create(const char *name, uint16_t flags, struct pr
     state->heap_lower_limit = MEMORY_LAYOUT_USER_HEAP_START;
     state->heap_upper_limit = MEMORY_LAYOUT_USER_HEAP_END;
 
-    // create stream files
-    // if pipeset is avaiable, use it
-    vfs_inode_t *stdin;
-    vfs_inode_t *stdout;
-    vfs_inode_t *stderr;
-    if(!set)
-    {
-        stdin = vfs_create_pipe(uid, gid);
-        stdout = vfs_create_pipe(uid, gid);
-        stderr = vfs_create_pipe(uid, gid);
-    }
-    else
-    {
-        stdin = set->stdin;
-        stdout = set->stdout;
-        stderr = set->stderr;
-    }
-
-    file_descriptor_t *desc0 = create_fd(state);
-    desc0->id = 0;
-    desc0->mode = 0x7ff;
-    desc0->flags = O_RDONLY;
-    desc0->permission = VFS_PERMISSION_READ;
-    desc0->read_descriptor->inode = stdin;
-
-    file_descriptor_t *desc1 = create_fd(state);
-    desc1->id = 1;
-    desc1->mode = 0x7ff;
-    desc1->flags = O_WRONLY;
-    desc1->permission = VFS_PERMISSION_WRITE;
-    desc1->write_descriptor->inode = stdout;
-
-    file_descriptor_t  *desc2 = create_fd(state);
-    desc2->id = 2;
-    desc2->mode = 0x7ff;
-    desc2->flags = O_WRONLY;
-    desc2->permission = VFS_PERMISSION_WRITE;
-    desc2->write_descriptor->inode = stderr;
-
-    // create directory /proc/<pid>/ and /proc/<pid>/socket/
-    char str[64];
-    itoa(state->pid, str, 10);
-    state->proc_inode = vfs_create_inode(str, S_IFDIR | S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH, proc_dir_inode, 0, 0);
-    state->socket_inode = vfs_create_inode("socket", S_IFDIR | S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH, state->proc_inode, 0, 0);
-    state->socket_requests = list_create();
-    state->socket_event_id = 1;
 
     // add to process list
     list_push_front(process_list, state);
@@ -268,8 +209,6 @@ void process_kill(struct process_state *process)
     }
     list_unlock(process_list);
 
-    // remove vfs inode
-    vfs_remove_dir_entry(proc_dir_inode, process->proc_inode);
 
     // free process data
     list_destroy(process->ports);

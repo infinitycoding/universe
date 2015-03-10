@@ -29,33 +29,13 @@
 #include <printf.h>
 #include <string.h>
 
-struct process_state *load_elf_from_file(vfs_inode_t *inode, uid_t uid, gid_t gid, struct pipeset *s, char **argv, char **environ)
-{
-    void *image = malloc(inode->length);
-    vfs_read(inode, 0, 0, image, inode->length);
-    struct process_state *state = load_elf(image, inode->name, uid, gid, s, argv, environ);
-    free(image);
 
-    return state;
-}
-
-struct process_state *load_elf(void *image, char *name, uid_t uid, gid_t gid, struct pipeset *s, char **argv, char **environ)
+struct process_state *load_elf(void *image, char *name, uid_t uid, gid_t gid, char **argv, char **environ)
 {
-    struct process_state *proc = process_create(name, PROCESS_ACTIVE, NULL, uid, gid, s);
+    struct process_state *proc = process_create(name, PROCESS_ACTIVE, NULL, uid, gid);
     load_elf_thread(image, proc, argv, environ);
 
     return proc;
-}
-
-struct thread_state *load_elf_thread_from_file(vfs_inode_t *inode, struct process_state *proc, char **argv, char **environ)
-{
-    void *image = malloc(inode->length);
-    vfs_read(inode, 0, 0, image, inode->length);
-
-    struct thread_state *state = load_elf_thread(image, proc, argv, environ);
-    free(image);
-
-    return state;
 }
 
 struct thread_state *load_elf_thread(void *image, struct process_state *proc, char **argv, char **environ)

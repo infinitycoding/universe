@@ -1,5 +1,6 @@
 
 all:
+	@$(MAKE) -C pluto
 	@$(MAKE) -C test
 	@$(MAKE) -C testsrv
 	@$(MAKE) -C ultrashell
@@ -9,6 +10,7 @@ all:
 	@$(MAKE) -C cp
 
 clean:
+	@$(MAKE) -C pluto clean
 	@$(MAKE) -C test clean
 	@$(MAKE) -C testsrv clean
 	@$(MAKE) -C ultrashell clean

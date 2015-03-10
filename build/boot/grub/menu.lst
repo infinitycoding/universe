@@ -5,6 +5,7 @@ title Universe
     module /boot/grub/menu.lst
     module /drivers/keyboard.elf
     module /drivers/cga.elf
+    module /drivers/pci
     module /drivers/system.pf
     module /ultrashell
     module /test
@@ -13,5 +14,6 @@ title Universe
     module /lscpu
     module /cat
     module /cp
+    module /pluto
     boot
 

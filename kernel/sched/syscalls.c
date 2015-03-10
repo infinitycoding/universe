@@ -30,7 +30,6 @@
 #include <memory_layout.h>
 #include <string.h>
 #include <mm/heap.h>
-#include <vfs/fd.h>
 
 
 extern list_t *running_threads;
@@ -84,21 +83,9 @@ void sys_fork(struct cpu_state **cpu)
     strcpy(newname, current_thread->process->name);
     strcat(newname, add);
 
-    struct process_state *new_process = process_create(newname ,current_thread->process->flags ,current_thread->process, current_thread->process->uid, current_thread->process->gid, NULL);
+    struct process_state *new_process = process_create(newname ,current_thread->process->flags ,current_thread->process, current_thread->process->uid, current_thread->process->gid);
     struct thread_state *new_thread = thread_clone(new_process, current_thread);
 
-    // copy file descriptors
-    struct list_node *node = current_thread->process->files->head->next;
-    struct list_node *head = current_thread->process->files->head;
-    while(node != head)
-    {
-        file_descriptor_t *dest = malloc(sizeof(file_descriptor_t));
-        file_descriptor_t *src  = (file_descriptor_t*) node->element;
-        memcpy(dest, src, sizeof(file_descriptor_t));
-        list_push_back(new_process->files, dest);
-
-        node = node->next;
-    }
 
     new_thread->context.state->CPU_ARG0 = 0;
     current_thread->context.state->CPU_ARG0 = new_process->pid;
@@ -136,7 +123,7 @@ void sys_getpid(struct cpu_state **cpu)
  * @param cpu registers of the current process
  * todo: the function is still a litte bit slow and envp is not taken over from the new process.
  */
-void sys_execve(struct cpu_state **cpu)
+/**void sys_execve(struct cpu_state **cpu)
 {
     char *filename = (char*) (*cpu)->CPU_ARG1;
     char **argv = (char**) (*cpu)->CPU_ARG2;
@@ -173,5 +160,5 @@ void sys_execve(struct cpu_state **cpu)
     // run the new thread
     load_elf_thread_from_file(filenode, process, argv, envp);
     *cpu = (struct cpu_state *)task_schedule(*cpu);
-}
+}*/
 

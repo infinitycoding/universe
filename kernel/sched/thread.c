@@ -73,9 +73,6 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     if(prev == KERNELMODE)
         new_thread->flags |= THREAD_KERNELMODE;
 
-    new_thread->getdents_pos = 0;
-    new_thread->getdents_old_fd = -1;
-
     // context
     new_thread->return_value = 0;
 

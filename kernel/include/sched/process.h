@@ -26,7 +26,6 @@
  */
 
 #include <mm/paging.h>
-#include <vfs/vfs.h>
 #include <list.h>
 #include <cpu.h>
 
@@ -34,13 +33,6 @@
 typedef uint32_t tid_t;
 typedef uint32_t uid_t;
 typedef uint32_t gid_t;
-
-struct pipeset
-{
-    vfs_inode_t *stdin;
-    vfs_inode_t *stdout;
-    vfs_inode_t *stderr;
-};
 
 typedef enum
 {
@@ -70,14 +62,7 @@ struct process_state
     struct process_state *parent;
 
     // files & ports
-    vfs_inode_t *cwd;
-    list_t *files;
     list_t *ports;
-
-    list_t *socket_requests;
-    uint32_t socket_event_id;
-    vfs_inode_t *proc_inode;
-    vfs_inode_t *socket_inode;
 
     // threads
     struct thread_state *main_thread;
@@ -108,7 +93,7 @@ struct child
 
 void dump_thread_list(list_t *threads);
 
-struct process_state *process_create(const char *name, uint16_t flags, struct process_state *parent, uid_t uid, gid_t gid, struct pipeset *set);
+struct process_state *process_create(const char *name, uint16_t flags, struct process_state *parent, uid_t uid, gid_t gid);
 struct process_state *process_find(pid_t id);
 
 void process_kill(struct process_state *process);

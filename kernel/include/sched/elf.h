@@ -24,7 +24,6 @@
  */
 
 #include <stdint.h>
-#include <vfs/vfs.h>
 #include <sched/process.h>
 
 // File Types
@@ -117,8 +116,6 @@ struct elf_program_header
 } __attribute__((packed));
 
 struct thread_state *load_elf_thread(void *image, struct process_state *proc, char **argv, char **environ);
-struct thread_state *load_elf_thread_from_file(vfs_inode_t *inode, struct process_state *proc, char **argv, char **environ);
-struct process_state *load_elf(void *image, char *name, uid_t uid, gid_t gid, struct pipeset *s, char **argv, char **environ);
-struct process_state *load_elf_from_file(vfs_inode_t *inode, uid_t uid, gid_t gid, struct pipeset *s, char **argv, char **environ);
+struct process_state *load_elf(void *image, char *name, uid_t uid, gid_t gid, char **argv, char **environ);
 
 #endif

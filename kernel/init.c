@@ -47,17 +47,9 @@
 #include <sched/elf.h>
 #include <sched/scheduler.h>
 
-//vfs
-#include <vfs/vfs.h>
-#include <vfs/module.h>
-
 //event and timing
 #include <clock.h>
 #include <event/trigger.h>
-
-//udrcp
-#include <udrcp/hypervisor.h>
-#include <udrcp/pfp.h>
 
 
 /**
@@ -85,7 +77,6 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     INIT_HEAP();
     INIT_PIC();
     INIT_IDT();
-    INIT_VFS();
     INIT_TRIGGER();
     INIT_CLOCK(500);
     INIT_SCHEDULER();
@@ -116,43 +107,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
         modules[i].string = virt + diff;
     }
 
-    struct mapping_statistics stats = map_all(mb_info);
-    printf("%d modules total, %d successfully loaded, %d failed\n", stats.total, stats.load_success, stats.load_failed);
-
-    vfs_inode_t *pfnode = vfs_lookup_path("/drivers/system.pf");
-    /*
-        if(pfnode != NULL)
-        {
-            void *argv[2];
-            char *pf = (char *)malloc(pfnode->length+1);
-            vfs_read(pfnode, 0, 0, pf, pfnode->length);
-            pf[pfnode->length+1] = '\0';
-            list_t *pipelines = pfp(pf);
-            struct section *sec = list_pop_front(pipelines);
-
-            argv[1] = mb_info;
-            argv[0] = sec;
-            kernel_thread_create(INIT_HYPERVISOR,(char **) argv, NULL);
-        }
-    */
-    //load_elf_from_file(vfs_lookup_path("/drivers/keyboard.elf"), 0, 0, 0, 0, 0);
-    //load_elf_from_file(vfs_lookup_path("/drivers/cga.elf"), 0, 0, 0, 0, 0);
-
-    vfs_inode_t *testnode = vfs_lookup_path("/ultrashell");
-
-    if(testnode == NULL)
-    {
-        printf("ultrashell not in vfs\n");
-    }
-    else
-    {
-        printf("tja.. voll verbuggt, deswegen erstmal so ;)\n\n");
-//        load_elf_from_file(testnode, 0, 0, 0, 0, 0);
-    }
-
-    load_elf_from_file(vfs_lookup_path("/testsrv"), 0, 0, 0, 0, 0);
-    load_elf_from_file(vfs_lookup_path("/test"), 0, 0, 0, 0, 0);
-
+    //struct mapping_statistics stats = map_all(mb_info);
     return 0;
 }
 
