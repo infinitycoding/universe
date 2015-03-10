@@ -26,7 +26,7 @@
  * @author Michael Sippel <micha@infinitycoding.de>
  */
 
-#include <sys/multiboot.h>
+#include <multiboot.h>
 #include <arch_paging.h>
 #include <stdint.h>
 #include <cpu.h>

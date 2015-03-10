@@ -25,7 +25,7 @@
 
 #include <pmm.h>
 #include <math.h>
-#include <sys/multiboot.h>
+#include <multiboot.h>
 #include <mm/paging.h>
 #include <memory_layout.h>
 #include <printf.h>

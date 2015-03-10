@@ -24,7 +24,7 @@
  */
 
 
-#include <sys/types.h>
+#include <types.h>
 
 
 #define CMOS_TIMER_FREQ_REG 0xA

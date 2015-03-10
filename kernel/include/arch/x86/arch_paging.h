@@ -29,7 +29,7 @@
 #include <stdint.h>
 #include <cpu.h>
 #include <pmm.h>
-#include <sys/multiboot.h>
+#include <multiboot.h>
 
 
 #define PD_LENGTH 1024 /// length of a page-directory

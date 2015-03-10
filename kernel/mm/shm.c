@@ -24,7 +24,7 @@
 
 #include <list.h>
 #include <stddef.h>
-#include <sys/types.h>
+#include <types.h>
 #include <sched/process.h>
 #include <sched/thread.h>
 #include <memory_layout.h>

@@ -22,7 +22,7 @@
  *  reviewed by Micha at 22.10.2014
  */
 
-#include <sys/errorcode.h>
+#include <errorcode.h>
 #include <sched/process.h>
 #include <sched/thread.h>
 #include <sched/elf.h>

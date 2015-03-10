@@ -29,7 +29,7 @@
 #include <logo.h>
 #include <panic.h>
 
-#include <sys/multiboot.h>
+#include <multiboot.h>
 
 //memory
 #include "memory_layout.h"

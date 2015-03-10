@@ -23,7 +23,7 @@
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
-#include <sys/multiboot.h>
+#include <multiboot.h>
 #include <stdint.h>
 
 

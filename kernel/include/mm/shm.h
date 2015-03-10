@@ -26,7 +26,7 @@
  */
 
 #include <cpu.h>
-#include <sys/types.h>
+#include <types.h>
 
 #define SHM_CREAT 0x1
 

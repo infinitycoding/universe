@@ -22,7 +22,7 @@
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  *  @author Michael Sippel <micha@infinitycoding.com>
  */
-#include <sys/types.h>
+#include <types.h>
 #include <stdint.h>
 #include <cpu.h>
 
