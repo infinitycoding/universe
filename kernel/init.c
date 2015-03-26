@@ -80,7 +80,6 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     INIT_TRIGGER();
     INIT_CLOCK(500);
     INIT_SCHEDULER();
-    INIT_SHM();
 
     //print Logo and loading message
     print_logo(YELLOW);

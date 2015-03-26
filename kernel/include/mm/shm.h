@@ -1,5 +1,5 @@
-#ifndef _shm_h
-#define _shm_h
+#ifndef _shm_h_
+#define _shm_h_
 
 /*
      Copyright 2015 Infinitycoding all rights reserved
@@ -27,40 +27,34 @@
 
 #include <cpu.h>
 #include <types.h>
+#include <list.h>
+#include <mm/paging.h>
+#include <sched/process.h>
 
-#define SHM_CREAT 0x1
-
-typedef struct shm_segment
+typedef struct shm_context
 {
-    unsigned int key;
     size_t size;
-
-    gid_t uid;
-    uid_t gid;
-
-    vmm_context_t *master_context;
-    void *master_base;
-} shm_segment_t;
+    list_t *phys_pages;
+} shm_context_t;
 
 typedef struct shm_descriptor
 {
     unsigned int id;
-    shm_segment_t *segment;
+    shm_context_t *context;
 
     void *base;
-    size_t size;
 } shm_descriptor_t;
 
 void INIT_SHM(void);
 
-shm_segment_t *shm_create(unsigned int key, size_t size, uid_t uid, gid_t gid);
-shm_segment_t *shm_get(unsigned int key);
-
-shm_descriptor_t *shm_create_descriptor(struct process_state *process, shm_segment_t *segment);
+shm_context_t *shm_create_context(size_t size);
+void shm_destroy_context(shm_context_t *context);
+shm_descriptor_t *shm_create_descriptor(struct process_state *process, shm_context_t *context);
 shm_descriptor_t *shm_get_descriptor(struct process_state *process, unsigned int id);
+void shm_destroy_descriptor(struct process_state *process, unsigned int id);
 
-void *shm_attach(vmm_context_t *context, shm_segment_t *segment, uintptr_t offset);
-void shm_detach(vmm_context_t *context, void *base, size_t size);
+void *shm_attach(vmm_context_t *vmm_context, shm_context_t *shm_context, uintptr_t offset);
+void shm_detach(vmm_context_t *vmm_context, shm_descriptor_t *desc);
 
 void sys_shm_get(struct cpu_state **cpu);
 void sys_shm_ctl(struct cpu_state **cpu);
