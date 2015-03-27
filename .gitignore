@@ -15,6 +15,9 @@ user/cp/cp
 user/test/test
 user/testsrv/testsrv
 user/lscpu/lscpu
+user/pluto/pluto
+
+drivers/pci/pci
 
 build/ls
 build/cp
@@ -23,6 +26,8 @@ build/ultrashell
 build/test
 build/testsrv
 build/lscpu
+build/drivers/pci
+build/pluto
 
 libs/pfp/test/host_test
 libs/pfp/test/test
