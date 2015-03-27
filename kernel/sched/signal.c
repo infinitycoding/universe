@@ -56,6 +56,14 @@ void send_signal(struct process_state *process, unsigned int id)
     }
 }
 
+void sys_pause(struct cpu_state **cpu)
+{
+	thread_suspend(current_thread);
+	(*cpu)->CPU_ARG0 = 0;
+
+    *cpu = (struct cpu_state *)task_schedule(*cpu);
+}
+
 void sys_kill(struct cpu_state **cpu)
 {
     unsigned int pid = (*cpu)->CPU_ARG1;
