@@ -83,6 +83,9 @@ struct process_state
 
     // shm
     list_t *shm_descriptors;
+
+    // signals
+    list_t *signals;
 };
 
 struct child
@@ -90,6 +93,22 @@ struct child
     int status;
     struct process_state *process;
 };
+
+enum signal_action
+{
+    NONE,
+    WAKEUP,
+    HANDLER,
+    THREAD,
+};
+
+typedef struct signal
+{
+    unsigned int id;
+    enum signal_action action;
+    void (*handler)(int pid);
+} signal_t;
+
 
 void dump_thread_list(list_t *threads);
 

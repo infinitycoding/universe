@@ -34,4 +34,10 @@ void sys_waitpid(struct cpu_state **cpu);
 void sys_getpid(struct cpu_state **cpu);
 void sys_execve(struct cpu_state **cpu);
 
+void sys_pause(struct cpu_state **cpu);
+void sys_kill(struct cpu_state **cpu);
+void sys_raise(struct cpu_state **cpu);
+void sys_signal(struct cpu_state **cpu);
+
 #endif
+

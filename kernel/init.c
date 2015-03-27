@@ -107,6 +107,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     }
 
     //struct mapping_statistics stats = map_all(mb_info);
+
     return 0;
 }
 

@@ -48,7 +48,7 @@ void usys_identify_os(struct cpu_state **cpu)
 void (*linux_functions[])(struct cpu_state **cpu) =
 {
     NULL, sys_exit, sys_fork, sys_waitpid, sys_time,
-    sys_brk, sys_shm_get, sys_shm_ctl, sys_shm_attach, sys_shm_detach
+    sys_brk, sys_shm_get, sys_shm_ctl, sys_shm_attach, sys_shm_detach, sys_kill, sys_raise, sys_signal
 };
 
 void linux_syscall_handler(struct cpu_state **cpu)
