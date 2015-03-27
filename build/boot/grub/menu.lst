@@ -3,17 +3,6 @@ timeout 10
 title Universe
     kernel /kernel32.elf
     module /boot/grub/menu.lst
-    module /drivers/keyboard.elf
-    module /drivers/cga.elf
-    module /drivers/pci
-    module /drivers/system.pf
-    module /ultrashell
     module /test
-	module /testsrv
-    module /ls
-    module /lscpu
-    module /cat
-    module /cp
-    module /pluto
     boot
 

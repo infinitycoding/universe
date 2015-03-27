@@ -9,79 +9,11 @@ char file[] = "/ultrashell.elf";
 
 int main(int argc, char **argv)
 {
-	printf("testprogram\n");
-
-	int shm_id = shmget(1234, 0x4000, 0x1);
-	printf("test: created shared memory segment: %d\n", shm_id);
-
-	char *addr = shmat(shm_id, 0, 0);
-	printf("test: attached shared memory at %x\n", addr);
-
-	strcpy(addr, "yeah!");
+	linux_syscall(13, 5, 1, 0, 0, 0); // signal
+	linux_syscall(12, 5, 0, 0, 0, 0); // raise
+	linux_syscall(10, 0, 0, 0, 0, 0); // pause
 
 	while(1);
-
-    //FILE *f = fopen("/dev/cga", 'w');
-    //char str[] = "Hello!\nWorld!";
-    //fwrite(str,strlen(str), 1, f);
-
-	return 0;
-	//printf("connecting to pid 2 on port 5..\n");
-	//int sock = uconnect(2, "5");
-	//printf("..connected .. %d\n", sock);
-
-	//char str[19];
-	//read(sock, &str, 19);
-	//printf("read \"%s\"\n", str);
-
-	return 0;
-    /*linux_syscall(SYS_RENAME,(uint32_t) "foo.txt",(uint32_t) "bar.txt", 0, 0, 0);
-
-    FILE *f = fopen("bar.txt", "r");
-    char buffer[20];
-    fread(buffer,20, 1, f);
-    printf("%s\n",buffer);
-    while(1);
-*/
-    bool success = true;
-    success &= test_vfs_api();
-
-    printf("================================================================================");
-    if(success)
-        printf("success\n");
-    else
-        printf("failed\n");
-return 0;
-	int fd[2];
-	linux_syscall(SYS_PIPE, (int)&fd, 0, 0, 0, 0);
-
-	char buf[10];
-
-	write(fd[1], "hallo", 6);
-	write(fd[1], "von", 4);
-
-	read(fd[0], &buf, 6);
-	printf("%s\n", buf);
-
-	read(fd[0], &buf, 4);
-	printf("%s\n", buf);
-
-	write(fd[1], "test", 5);
-
-	read(fd[0], &buf, 5);
-	printf("%s\n", buf);
-
-
-	int pid = fork();
-	printf("hi ");
-	if(pid == 0)
-	{
-		printf("child\n");
-	}
-	else
-	{
-		printf("parent\n");
-	}
 
     return 0;
 }

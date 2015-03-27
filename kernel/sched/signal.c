@@ -45,6 +45,7 @@ void send_signal(struct process_state *process, unsigned int id)
             process_wakeup(process);
 
         case WAKEUP:
+            printf("wakeup\n");
             break;
 
         case HANDLER:
@@ -58,8 +59,10 @@ void send_signal(struct process_state *process, unsigned int id)
 
 void sys_pause(struct cpu_state **cpu)
 {
-	thread_suspend(current_thread);
-	(*cpu)->CPU_ARG0 = 0;
+    thread_suspend(current_thread);
+    (*cpu)->CPU_ARG0 = 0;
+
+    printf("pause\n");
 
     *cpu = (struct cpu_state *)task_schedule(*cpu);
 }
@@ -90,10 +93,11 @@ void sys_signal(struct cpu_state **cpu)
     void (*handler)(int pid) = (*cpu)->CPU_ARG3;
 
     signal_t *signal = get_signal(current_thread->process, id);
+
     if(signal == NULL)
     {
         signal = (signal_t*) malloc(sizeof(signal_t));
-        list_push_back(current_thread->process, signal);
+        list_push_back(current_thread->process->signals, signal);
     }
 
     if(action == NONE)
@@ -104,6 +108,8 @@ void sys_signal(struct cpu_state **cpu)
     signal->id = id;
     signal->action = action;
     signal->handler = handler;
+
+    printf("register signal\n");
 
     (*cpu)->CPU_ARG0 = 0;
 }
