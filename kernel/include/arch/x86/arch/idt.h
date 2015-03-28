@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include <cpu.h>
-#include <pic.h>
+#include <arch/pic.h>
 
 
 

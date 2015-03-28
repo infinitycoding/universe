@@ -22,7 +22,7 @@
  *  @author Michael Sippel <michamimosa@gmail.com>
  */
 
-#include <cmos.h>
+#include <arch/cmos.h>
 #include <clock.h>
 #include <mm/heap.h>
 #include <io.h>

@@ -28,7 +28,7 @@
 
 #include <stdint.h>
 #include <cpu.h>
-#include <pmm.h>
+#include <arch/mm/pmm.h>
 #include <multiboot.h>
 
 
@@ -67,27 +67,12 @@ typedef struct arch_vmm_context
 void ARCH_INIT_VMM(struct multiboot_struct *mb_info);
 
 // context
-void arch_vmm_create_context(arch_vmm_context_t *context);
-void arch_vmm_fork_context(arch_vmm_context_t *src, arch_vmm_context_t *dest);
-void arch_vmm_destroy_context(arch_vmm_context_t *context);
-void arch_vmm_update_context(arch_vmm_context_t *context);
-void arch_vmm_sync_pts(arch_vmm_context_t *dest, arch_vmm_context_t *src, int index_low, int index_high);
-void arch_vmm_switch_context(arch_vmm_context_t *context);
+void arch_vmm_map_context(arch_vmm_context_t *context);
 
 // pagetable
 pt_t arch_pt_get(arch_vmm_context_t *context, int index);
 pt_t arch_pt_create(arch_vmm_context_t *context, int index, uint8_t flags);
 void arch_pt_destroy(arch_vmm_context_t *context, int index);
-
-// pages
-int arch_vmm_map(arch_vmm_context_t *context, paddr_t pframe, vaddr_t vframe, uint8_t flags);
-int arch_vmm_unmap(arch_vmm_context_t *context, vaddr_t frame);
-int arch_vmm_is_present(arch_vmm_context_t *context, vaddr_t vaddr);
-
-vaddr_t arch_vaddr_find(arch_vmm_context_t *context, int num, vaddr_t limit_low, vaddr_t limit_high);
-paddr_t arch_vaddr2paddr(arch_vmm_context_t *context, vaddr_t vaddr);
-
-void pagefault_handler(struct cpu_state **cpu_p);
 
 #endif
 

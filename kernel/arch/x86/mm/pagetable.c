@@ -17,16 +17,15 @@
  */
 
 /**
- * @file /arch/x86/pagetable.c
+ * @file /arch/x86/mm/pagetable.c
  * @brief x86-architecture dependent paging functions
  *
  * @author Michael Sippel <micha@infinitycoding.de>
  */
 
-#include <pmm.h>
-#include <arch_paging.h>
-#include <mm/paging.h>
-#include <memory_layout.h>
+#include <arch/mm/pmm.h>
+#include <arch/mm/layout.h>
+#include <mm/vmm.h>
 
 // some macros
 #define PT_PADDR(i) (context->entries[i] & ~0xFFF)

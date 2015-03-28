@@ -24,8 +24,9 @@
  */
 
 #include <cpu.h>
-#include <printf.h>
 #include <video.h>
+
+#include <printf.h>
 
 /**
  *  @brief Shows an errorscreen  with a error message.

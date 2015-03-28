@@ -22,7 +22,7 @@
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
-#include <pic.h>
+#include <arch/pic.h>
 #include <io.h>
 
 /**

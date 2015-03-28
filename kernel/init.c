@@ -32,16 +32,15 @@
 #include <multiboot.h>
 
 //memory
-#include "memory_layout.h"
-#include <pmm.h>
-#include <mm/paging.h>
+#include <arch/mm/pmm.h>
+#include <mm/vmm.h>
 #include <mm/heap.h>
 #include <mm/shm.h>
 
 //descriptor tables
-#include <gdt.h>
-#include <idt.h>
-#include <pic.h>
+#include <arch/gdt.h>
+#include <arch/idt.h>
+#include <arch/pic.h>
 
 //scheduling
 #include <sched/elf.h>
@@ -70,10 +69,20 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
         panic("Incompatible Bootloader");
     }
 
-    //Init Kernelmodules
+    // arch
+#ifdef _PREV_
     INIT_PREV();
+#endif
+
+#ifdef _PMM_
     INIT_PMM(mb_info);
-    INIT_PAGING(mb_info);
+#endif
+
+#ifdef _VMM_
+    INIT_VMM(mb_info);
+#endif
+
+    //Init Kernelmodules
     INIT_HEAP();
     INIT_PIC();
     INIT_IDT();

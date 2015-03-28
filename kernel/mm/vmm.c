@@ -22,24 +22,31 @@
  *
  *  @author Michael Sippel <micha@infinitycoding.de>
  */
+#include <arch.h>
 
-#include <mm/paging.h>
-#include <arch_paging.h>
-#include <memory_layout.h>
-#include <idt.h>
+#ifdef _VMM_
+
+// arch
+#include <arch/mm/vmm.h>
+#include <arch/mm/layout.h>
+#include <arch/idt.h>
+
+// common
+#include <mm/vmm.h>
 #include <sched/thread.h>
+
 
 vmm_context_t *current_context = NULL; /// @var current_context pointer to the current memory context
 
 /**
- * @fn INIT_PAGING
+ * @fn INIT_VMM
  * @brief Initalize the virtual memory management.
  * Setup the hardware for paging and create basic mappings.
  *
  * @param mb_info pointer to multiboot structure
  * @return void
  */
-void INIT_PAGING(struct multiboot_struct *mb_info)
+void INIT_VMM(struct multiboot_struct *mb_info)
 {
     ARCH_INIT_VMM(mb_info);
 }
@@ -80,7 +87,7 @@ void vmm_switch_context(vmm_context_t *context)
 {
     if(context != current_context)
     {
-        arch_vmm_update_context(&context->arch_context);
+        arch_vmm_map_context(&context->arch_context);
         arch_vmm_switch_context(&context->arch_context);
         current_context = context;
     }
@@ -259,6 +266,7 @@ void alloc_memory(struct cpu_state **cpu)
     {
         uint32_t *paddr = (uint32_t *)pmm_alloc_page();
         uint32_t *vaddr = dest + i*PAGE_SIZE;
+
         vmm_map(current_context, (paddr_t)paddr, (vaddr_t)vaddr, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
     }
     (*cpu)->CPU_ARG0 = (uint32_t)dest;
@@ -305,4 +313,6 @@ void sys_brk(struct cpu_state **cpu)
 
 
 }
+
+#endif
 

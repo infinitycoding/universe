@@ -28,7 +28,7 @@
 
 #include <list.h>
 
-#include <idt.h>
+#include <arch/idt.h>
 #include <mm/heap.h>
 
 #include <sched/scheduler.h>

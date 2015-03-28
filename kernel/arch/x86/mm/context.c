@@ -17,20 +17,19 @@
  */
 
 /**
- * @file /arch/x86/context.c
+ * @file /arch/x86/mm/context.c
  * @brief x86-architecture dependent paging functions
  *
  * @author Michael Sippel <micha@infinitycoding.de>
  */
 
-#include <arch_paging.h>
-#include <pmm.h>
-#include <mm/paging.h>
-#include <memory_layout.h>
+#include <arch/mm/vmm.h>
+#include <arch/mm/pmm.h>
+#include <arch/mm/layout.h>
+
+#include <mm/vmm.h>
 
 extern vmm_context_t *current_context;
-
-
 
 /**
  * @fn arch_vmm_create_context
@@ -49,7 +48,7 @@ void arch_vmm_create_context(arch_vmm_context_t *context)
     context->entries = (pde_t *) vaddr;
     context->phys_addr = paddr;
 
-    arch_vmm_update_context(context);
+    arch_vmm_map_context(context);
 }
 
 /**
@@ -121,9 +120,9 @@ void arch_vmm_fork_context(arch_vmm_context_t *src, arch_vmm_context_t *dest)
  * @param context context
  * @return void
  */
-void arch_vmm_update_context(arch_vmm_context_t *context)
+void arch_vmm_map_context(arch_vmm_context_t *context)
 {
-    arch_vmm_sync_pts(context, arch_current_context, PDE_INDEX(MEMORY_LAYOUT_KERNEL_START), 1024);
+    arch_vmm_sync_context(context, arch_current_context, MEMORY_LAYOUT_KERNEL_START, MEMORY_LAYOUT_KERNEL_END);
     context->entries[PDE_INDEX(MEMORY_LAYOUT_PAGING_STRUCTURES_START)] = (uint32_t) context->phys_addr | VMM_PRESENT | VMM_WRITABLE;
 }
 
@@ -137,10 +136,13 @@ void arch_vmm_update_context(arch_vmm_context_t *context)
  * @param index_high end pde-index
  * @return void
  */
-void arch_vmm_sync_pts(arch_vmm_context_t *dest, arch_vmm_context_t *src, int index_low, int index_high)
+void arch_vmm_sync_context(arch_vmm_context_t *dest, arch_vmm_context_t *src, vaddr_t limit_low, vaddr_t limit_high)
 {
+    int index_low = PDE_INDEX(limit_low);
+    int index_high = PDE_INDEX(limit_high);
+
     int i;
-    for(i = index_low; i < index_high; i++)
+    for(i = index_low; i <= index_high; i++)
     {
         dest->entries[i] = src->entries[i];
     }

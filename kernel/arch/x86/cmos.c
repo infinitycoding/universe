@@ -23,7 +23,7 @@
  */
 
 #include <io.h>
-#include <cmos.h>
+#include <arch/cmos.h>
 
 /**
  * @brief Reads a byte from CMOS.

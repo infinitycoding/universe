@@ -28,10 +28,10 @@
 #include <printf.h>
 
 #include <mm/heap.h>
-#include <mm/paging.h>
-#include <memory_layout.h>
+#include <mm/vmm.h>
+#include <arch/mm/layout.h>
 
-#include <gdt.h>
+#include <arch/gdt.h>
 
 // global stuff
 struct process_state *kernel_state = NULL;	// kernel init thread state

@@ -23,11 +23,11 @@
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
-#include <pmm.h>
+#include <arch/mm/pmm.h>
 #include <math.h>
 #include <multiboot.h>
-#include <mm/paging.h>
-#include <memory_layout.h>
+#include <mm/vmm.h>
+#include <arch/mm/layout.h>
 #include <printf.h>
 #include <panic.h>
 

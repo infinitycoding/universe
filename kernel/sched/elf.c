@@ -21,10 +21,10 @@
  */
 
 #include <sched/elf.h>
-#include <mm/paging.h>
+#include <mm/vmm.h>
 #include <mm/heap.h>
-#include <pmm.h>
-#include <memory_layout.h>
+#include <arch/mm/pmm.h>
+#include <arch/mm/layout.h>
 #include <sched/thread.h>
 #include <printf.h>
 #include <string.h>

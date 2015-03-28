@@ -24,7 +24,7 @@
 
 #include <arch_context.h>
 #include <sched/process.h>
-#include <mm/paging.h>
+#include <mm/vmm.h>
 #include <stdint.h>
 #include <list.h>
 

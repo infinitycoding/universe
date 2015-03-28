@@ -26,12 +26,11 @@
  */
 
 #include <arch_context.h>
-#include <arch_paging.h>
+#include <arch/mm/layout.h>
 #include <cpu.h>
-#include <pmm.h>
+#include <arch/mm/pmm.h>
 #include <string.h>
-#include <memory_layout.h>
-#include <mm/paging.h>
+#include <mm/vmm.h>
 #include <mm/heap.h>
 
 

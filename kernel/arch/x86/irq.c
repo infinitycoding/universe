@@ -22,7 +22,7 @@
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
-#include <idt.h>
+#include <arch/idt.h>
 #include <panic.h>
 #include <syscall.h>
 #include <sched/scheduler.h>

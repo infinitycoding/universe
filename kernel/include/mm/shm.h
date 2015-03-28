@@ -24,12 +24,15 @@
  *
  * @author Michael Sippel <micha@infinitycoding.de>
  */
+#include <arch.h>
+
+#ifdef _VMM_
 
 #include <cpu.h>
+#include <mm/vmm.h>
+#include <sched/process.h>
 #include <types.h>
 #include <list.h>
-#include <mm/paging.h>
-#include <sched/process.h>
 
 typedef struct shm_context
 {
@@ -44,6 +47,8 @@ typedef struct shm_descriptor
 
     void *base;
 } shm_descriptor_t;
+
+#endif
 
 void INIT_SHM(void);
 

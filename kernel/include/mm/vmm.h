@@ -1,5 +1,5 @@
-#ifndef _PAGING_H_
-#define _PAGING_H_
+#ifndef _VMM_H_
+#define _VMM_H_
 
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
@@ -20,14 +20,17 @@
  */
 
 /**
- * @file /include/mm/paging.h
+ * @file /include/mm/vmm.h
  * @brief header file for common paging functions
  *
  * @author Michael Sippel <micha@infinitycoding.de>
  */
+#include <arch.h>
+
+#ifdef _VMM_
 
 #include <multiboot.h>
-#include <arch_paging.h>
+#include <arch/mm/vmm.h>
 #include <stdint.h>
 #include <cpu.h>
 
@@ -42,20 +45,27 @@ typedef struct vmm_context
 
 extern vmm_context_t *current_context; /// defined in mm/paging.c
 
-// arch
-void ARCH_INIT_PAGING(struct multiboot_struct *mb_info);
-arch_vmm_context_t *arch_create_vmm_context(void);
-void arch_destroy_vmm_context(arch_vmm_context_t *context);
-void arch_switch_context(arch_vmm_context_t *context);
-void arch_update_context(arch_vmm_context_t *context);
-int arch_map(arch_vmm_context_t *context, paddr_t pframe, vaddr_t vframe, uint8_t flags);
-int arch_unmap(arch_vmm_context_t *context, vaddr_t frame);
-void arch_sync_pts(arch_vmm_context_t *src, arch_vmm_context_t *dest, int index_low, int index_high);
-void arch_fork_context(arch_vmm_context_t *src, arch_vmm_context_t *dest);
-void page_fault_handler(struct cpu_state **cpu_p);
+// arch must have
+void ARCH_INIT_VMM(struct multiboot_struct *mb_info);
+
+void arch_vmm_create_context(arch_vmm_context_t *context);
+void arch_vmm_fork_context(arch_vmm_context_t *src, arch_vmm_context_t *dest);
+void arch_vmm_destroy_context(arch_vmm_context_t *context);
+void arch_vmm_sync_context(arch_vmm_context_t *dest, arch_vmm_context_t *src, vaddr_t limit_low, vaddr_t limit_high);
+void arch_vmm_switch_context(arch_vmm_context_t *context);
+
+int arch_vmm_map(arch_vmm_context_t *context, paddr_t pframe, vaddr_t vframe, uint8_t flags);
+int arch_vmm_unmap(arch_vmm_context_t *context, vaddr_t frame);
+int arch_vmm_is_present(arch_vmm_context_t *context, vaddr_t vaddr);
+
+vaddr_t arch_vaddr_find(arch_vmm_context_t *context, int num, vaddr_t limit_low, vaddr_t limit_high);
+paddr_t arch_vaddr2paddr(arch_vmm_context_t *context, vaddr_t vaddr);
+
+void pagefault_handler(struct cpu_state **cpu_p);
+
 
 // global
-void INIT_PAGING(struct multiboot_struct *mb_info);
+void INIT_VMM(struct multiboot_struct *mb_info);
 vmm_context_t *create_vmm_context(void);
 void destroy_vmm_context(vmm_context_t *context);
 int vmm_map(vmm_context_t *context, paddr_t pframe, vaddr_t vframe, uint8_t flags);
@@ -72,6 +82,8 @@ void vmm_create_context(vmm_context_t *context);
 
 void alloc_memory(struct cpu_state **cpu);
 void sys_brk(struct cpu_state **cpu);
+
+#endif
 
 #endif
 

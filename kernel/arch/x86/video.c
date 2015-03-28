@@ -20,7 +20,7 @@
  *  @author Tom Slawik <tom.slawik@gmail.com>
  */
 
-#include <crtc.h>
+#include <arch/crtc.h>
 #include <video.h>
 #include <string.h>
 #include <io.h>

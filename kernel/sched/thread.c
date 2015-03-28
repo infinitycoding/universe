@@ -26,11 +26,11 @@
 #include <sched/thread.h>
 #include <mm/heap.h>
 #include <cpu.h>
-#include <memory_layout.h>
-#include <mm/paging.h>
+#include <arch/mm/layout.h>
+#include <mm/vmm.h>
 #include <string.h>
 #include <sched/scheduler.h>
-#include <pmm.h>
+#include <arch/mm/pmm.h>
 
 // defined in sched/scheduler.c
 extern struct thread_state *current_thread;
@@ -200,8 +200,7 @@ void thread_sync_context(struct thread_state *thread)
     struct thread_state *main_thread = thread->process->main_thread;
     if(thread != main_thread && main_thread != NULL && thread != NULL)
     {
-        int end = PDE_INDEX(0xB0000000);
-        arch_vmm_sync_pts(&thread->context.memory.arch_context, &main_thread->context.memory.arch_context, 0, end);
+        arch_vmm_sync_context(&thread->context.memory.arch_context, &main_thread->context.memory.arch_context, 0, 0xB0000000);
     }
 }
 

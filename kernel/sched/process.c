@@ -29,8 +29,8 @@
 #include <mm/heap.h>
 #include <string.h>
 #include <sched/scheduler.h>
-#include <mm/paging.h>
-#include <memory_layout.h>
+#include <mm/vmm.h>
+#include <arch/mm/layout.h>
 #include <event/trigger.h>
 #include <printf.h>
 #include <math.h>

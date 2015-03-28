@@ -25,7 +25,7 @@
  *  reviewed by Micha at 22.10.2014
  */
 
-#include <mm/paging.h>
+#include <mm/vmm.h>
 #include <list.h>
 #include <cpu.h>
 

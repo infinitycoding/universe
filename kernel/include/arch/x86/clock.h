@@ -25,7 +25,7 @@
 */
 
 #include <event/time.h>
-#include <cmos.h>
+#include <arch/cmos.h>
 
 
 void INIT_CLOCK(int freq);

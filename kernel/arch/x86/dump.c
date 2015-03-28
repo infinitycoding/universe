@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include <printf.h>
-#include <mm/paging.h>
+#include <mm/vmm.h>
 #include <cpu.h>
 #include <panic.h>
 

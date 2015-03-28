@@ -21,12 +21,15 @@
  *  @brief Kernel Module for Dynamic memory management (malloc, free)
  *  @author Michael Sippel (Universe Team) <micha@infinitycoding.com>
  */
+#include <arch.h>
+
+#ifdef _VMM_
 
 #include <stdint.h>
 #include <mm/heap.h>
-#include <pmm.h>
-#include <memory_layout.h>
-#include <mm/paging.h>
+#include <arch/mm/pmm.h>
+#include <arch/mm/layout.h>
+#include <mm/vmm.h>
 #include <string.h>
 #include <printf.h>
 
@@ -268,4 +271,7 @@ void *realloc(void *ptr, size_t size)
 
     return dest;
 }
+
+#endif
+
 

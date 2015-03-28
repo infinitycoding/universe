@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include <cpu.h>
-#include <mm/paging.h>
+#include <mm/vmm.h>
 #include <sched/thread.h>
 
 

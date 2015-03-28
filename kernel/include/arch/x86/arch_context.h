@@ -24,8 +24,8 @@
  */
 
 #include <cpu.h>
-#include <mm/paging.h>
-#include <tss.h>
+#include <mm/vmm.h>
+#include <arch/tss.h>
 
 
 struct arch_thread_context

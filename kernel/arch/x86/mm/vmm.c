@@ -17,7 +17,7 @@
  */
 
 /**
- * @file /arch/x86/vmm.c
+ * @file /arch/x86/mm/vmm.c
  * @brief x86-architecture dependent paging functions
  *
  * @author Michael Sippel <micha@infinitycoding.de>
@@ -28,14 +28,14 @@
 #include <string.h>
 #include <panic.h>
 
-#include <memory_layout.h>
-#include <mm/paging.h>
+#include <arch/mm/layout.h>
+#include <mm/vmm.h>
 
 #include <sched/thread.h>
 
 #include <cpu.h>
-#include <idt.h>
-#include <pmm.h>
+#include <arch/idt.h>
+#include <arch/mm/pmm.h>
 
 
 static inline void arch_flush_tlb(vaddr_t addr);
