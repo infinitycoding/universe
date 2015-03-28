@@ -10,7 +10,7 @@ char file[] = "/ultrashell.elf";
 int main(int argc, char **argv)
 {
 	linux_syscall(13, 5, 1, 0, 0, 0); // signal
-	linux_syscall(12, 5, 0, 0, 0, 0); // raise
+	//linux_syscall(12, 5, 0, 0, 0, 0); // raise
 	linux_syscall(10, 0, 0, 0, 0, 0); // pause
 
 	while(1);

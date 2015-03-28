@@ -144,7 +144,7 @@ struct thread_state *thread_clone(struct process_state *process, struct thread_s
     new_thread->return_value = 0;
 
     vmm_create_context(&new_thread->context.memory);
-    arch_fork_context(&src_thread->context.memory.arch_context, &new_thread->context.memory.arch_context);
+    arch_vmm_fork_context(&src_thread->context.memory.arch_context, &new_thread->context.memory.arch_context);
     thread_sync_context(new_thread);
 
     arch_create_thread_context(&new_thread->context, prev, (vaddr_t) 0, (vaddr_t) 0, 0, 0);
@@ -201,7 +201,7 @@ void thread_sync_context(struct thread_state *thread)
     if(thread != main_thread && main_thread != NULL && thread != NULL)
     {
         int end = PDE_INDEX(0xB0000000);
-        arch_sync_pts(&thread->context.memory.arch_context, &main_thread->context.memory.arch_context, 0, end);
+        arch_vmm_sync_pts(&thread->context.memory.arch_context, &main_thread->context.memory.arch_context, 0, end);
     }
 }
 

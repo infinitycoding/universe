@@ -41,7 +41,7 @@ vmm_context_t *current_context = NULL; /// @var current_context pointer to the c
  */
 void INIT_PAGING(struct multiboot_struct *mb_info)
 {
-    ARCH_INIT_PAGING(mb_info);
+    ARCH_INIT_VMM(mb_info);
 }
 
 /**
@@ -80,8 +80,8 @@ void vmm_switch_context(vmm_context_t *context)
 {
     if(context != current_context)
     {
-        arch_update_context(&context->arch_context);
-        arch_switch_context(&context->arch_context);
+        arch_vmm_update_context(&context->arch_context);
+        arch_vmm_switch_context(&context->arch_context);
         current_context = context;
     }
 }
@@ -99,7 +99,7 @@ void vmm_switch_context(vmm_context_t *context)
  */
 int vmm_map(vmm_context_t *context, paddr_t pframe, vaddr_t vframe, uint8_t flags)
 {
-    return arch_map(&context->arch_context, pframe, vframe, flags);
+    return arch_vmm_map(&context->arch_context, pframe, vframe, flags);
 }
 
 /**
@@ -112,7 +112,7 @@ int vmm_map(vmm_context_t *context, paddr_t pframe, vaddr_t vframe, uint8_t flag
  */
 int vmm_unmap(vmm_context_t *context, vaddr_t frame)
 {
-    return arch_unmap(&context->arch_context, frame);
+    return arch_vmm_unmap(&context->arch_context, frame);
 }
 
 /**

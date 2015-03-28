@@ -95,7 +95,7 @@ void pd_dump(arch_vmm_context_t *context)
             pdi++;
         }
 
-        pt = pt_get(context, pdi);
+        pt = arch_pt_get(context, pdi);
 
         for( pti = 0; pti < PT_LENGTH; pti++ )
         {
@@ -176,7 +176,7 @@ void pd_dump2(arch_vmm_context_t *context)
     {
         if(pd[pd_index] & VMM_PRESENT)
         {
-            pt = pt_get(context, pd_index);
+            pt = arch_pt_get(context, pd_index);
 
             for(pt_index = 0; pt_index < 1024; pt_index++)
             {

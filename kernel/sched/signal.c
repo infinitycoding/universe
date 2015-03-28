@@ -47,7 +47,6 @@ void send_signal(struct process_state *process, unsigned int id)
         case WAKEUP:
             printf("wakeup\n");
             break;
-
         case HANDLER:
             // TODO
             break;
@@ -73,9 +72,14 @@ void sys_kill(struct cpu_state **cpu)
     unsigned int sig = (*cpu)->CPU_ARG2;
 
     struct process_state *proc = process_find(pid);
-    send_signal(proc, sig);
-
-    (*cpu)->CPU_ARG0 = 0;
+    if(proc != NULL)
+    {
+        printf("send signal %d to %d: %s..\n", sig, pid, proc->name);
+        send_signal(proc, sig);
+        (*cpu)->CPU_ARG0 = 0;
+    }
+    else
+        (*cpu)->CPU_ARG0 = -1;
 }
 
 void sys_raise(struct cpu_state **cpu)
