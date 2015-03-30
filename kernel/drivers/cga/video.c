@@ -19,11 +19,18 @@
 /**
  *  @author Tom Slawik <tom.slawik@gmail.com>
  */
+#include <platform.h>
+#ifdef _CGA_
 
-#include <arch/crtc.h>
-#include <video.h>
-#include <string.h>
+#include <drivers/cga.h>
 #include <io.h>
+
+#include <string.h>
+
+#define CRTC_INDEX_PORT 		0x3D4
+#define CRTC_DATA_PORT 			0x3D5
+#define CRTC_CURSOR_LOCATION_HIGH 	0x0E
+#define CRTC_CURSOR_LOCATION_LOW 	0x0F
 
 #define lines  25
 #define columns  80
@@ -148,10 +155,12 @@ void gotoxy(uint8_t _x, uint8_t _y)
         video_mem[2 * offset + 1] = cga_color;
     }
 
-
     outb(CRTC_INDEX_PORT, CRTC_CURSOR_LOCATION_HIGH);
     outb(CRTC_DATA_PORT, (uint8_t)(offset >> 8));
 
     outb(CRTC_INDEX_PORT, CRTC_CURSOR_LOCATION_LOW);
     outb(CRTC_DATA_PORT, (uint8_t)offset);
 }
+
+#endif
+

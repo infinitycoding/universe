@@ -27,7 +27,7 @@
 #include <types.h>
 #include <sched/process.h>
 #include <sched/thread.h>
-#include <arch/mm/layout.h>
+#include <mm/layout.h>
 #include <mm/heap.h>
 #include <mm/vmm.h>
 #include <mm/shm.h>

@@ -27,9 +27,9 @@
 #ifdef _VMM_
 
 // arch
-#include <arch/mm/vmm.h>
-#include <arch/mm/layout.h>
-#include <arch/idt.h>
+#include <mm/arch_vmm.h>
+#include <mm/layout.h>
+#include <idt.h>
 
 // common
 #include <mm/vmm.h>

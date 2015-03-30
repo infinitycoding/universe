@@ -26,9 +26,9 @@
  */
 
 #include <arch_context.h>
-#include <arch/mm/layout.h>
+#include <mm/layout.h>
 #include <cpu.h>
-#include <arch/mm/pmm.h>
+#include <mm/pmm.h>
 #include <string.h>
 #include <mm/vmm.h>
 #include <mm/heap.h>

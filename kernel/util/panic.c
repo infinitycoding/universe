@@ -24,7 +24,7 @@
  */
 
 #include <cpu.h>
-#include <video.h>
+#include <drivers/cga.h>
 
 #include <printf.h>
 

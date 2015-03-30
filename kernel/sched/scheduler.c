@@ -29,9 +29,9 @@
 
 #include <mm/heap.h>
 #include <mm/vmm.h>
-#include <arch/mm/layout.h>
+#include <mm/layout.h>
 
-#include <arch/gdt.h>
+#include <gdt.h>
 
 // global stuff
 struct process_state *kernel_state = NULL;	// kernel init thread state

@@ -1,5 +1,5 @@
 #define LINKER
-#include "arch/mm/layout.h"
+#include "mm/layout.h"
 //#include "elf.h"
 
 ENTRY (start)

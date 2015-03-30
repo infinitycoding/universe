@@ -24,7 +24,7 @@
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
-#include <video.h>
+#include <drivers/cga.h>
 
 static const char *__logo = "\
                                                                                \n\

@@ -22,8 +22,8 @@
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
-#include <arch/gdt.h>
-#include <arch/tss.h>
+#include <gdt.h>
+#include <tss.h>
 #include <stddef.h>
 #include <string.h>
 

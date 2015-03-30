@@ -23,7 +23,7 @@
  */
 
 #include <io.h>
-#include <arch/tss.h>
+#include <tss.h>
 
 uint32_t global_iobmp[IO_BITMAP_LENGTH / 32] = {0};
 // 1 = taken, 0 = free (not like x86 io bitmap)

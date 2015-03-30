@@ -1,5 +1,5 @@
-#ifndef _VIDEO_H_
-#define _VIDEO_H_
+#ifndef _cga_h_
+#define _cga_h_
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
@@ -21,6 +21,8 @@
 /**
  *  @author Tom Slawik <tom.slawik@gmail.com>
  */
+#include <platform.h>
+#ifdef _CGA_
 
 #include <stdint.h>
 
@@ -54,3 +56,6 @@ color_t get_color(void);
 void gotoxy(uint8_t _x, uint8_t _y);
 
 #endif
+
+#endif
+

@@ -47,7 +47,7 @@ void usys_identify_os(struct cpu_state **cpu)
 
 void (*linux_functions[])(struct cpu_state **cpu) =
 {
-    NULL, sys_exit, sys_fork, sys_waitpid, sys_time,
+    NULL, sys_exit, sys_fork, sys_waitpid,
     sys_brk, sys_shm_get, sys_shm_ctl, sys_shm_attach, sys_shm_detach, sys_pause, sys_kill, sys_raise, sys_signal
 };
 

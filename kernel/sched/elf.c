@@ -23,8 +23,8 @@
 #include <sched/elf.h>
 #include <mm/vmm.h>
 #include <mm/heap.h>
-#include <arch/mm/pmm.h>
-#include <arch/mm/layout.h>
+#include <mm/pmm.h>
+#include <mm/layout.h>
 #include <sched/thread.h>
 #include <printf.h>
 #include <string.h>

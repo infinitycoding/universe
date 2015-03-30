@@ -1,6 +1,3 @@
-#ifndef _pic_h_
-#define _pic_h_
-
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
@@ -19,22 +16,39 @@
      along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdint.h>
+/**
+ *  @file drivers/pit/pit.c
+ *  @brief Kernel driver for the programmable interrupt timer (PIT)
+ *  @author Michael Sippel <micha@infinitycoding.de>
+ */
+#include <platform.h>
+#ifdef _PIT_
 
-#define PIC_MASTER_CMD	0x20
-#define PIC_MASTER_DATA	0x21
-#define PIC_SLAVE_CMD	0xA0
-#define PIC_SLAVE_DATA	0xA1
-#define PIC_EOI 0x20
-#define PIC_INIT 0x11
+#include <drivers/pit.h>
+#include <io.h>
 
-#define IRQ_OFFSET 32
-#define PIC_SET_CHANNEL 0x4
-#define PIC_DEFAULT_CHANNEL 0x2
-#define PIC_X86_MODE 0x1
+/**
+ * @brief Initalize the Programmable Intervall Timer.
+ * @param frequency
+ * @return void
+ */
+void INIT_PIT(int freq)
+{
+    outb(0x43, 0x34);
+    set_pit_freq(freq);
+}
 
-typedef uint16_t irqnum_t;
+/**
+ * @brief set PIT Fequency.
+ * @param freqency
+ * @return void
+ */
+void set_pit_freq(int freq)
+{
+    int counter = 1193182 / freq;
+    outb(0x40,counter & 0xFF);
+    outb(0x40,counter >> 8);
+}
 
-void EOI(irqnum_t irq);
-void INIT_PIC(void);
 #endif
+

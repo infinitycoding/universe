@@ -23,14 +23,14 @@
  */
 
 #include <printf.h>
-#include <sched/thread.h>
-#include <mm/heap.h>
-#include <cpu.h>
-#include <arch/mm/layout.h>
-#include <mm/vmm.h>
-#include <string.h>
 #include <sched/scheduler.h>
-#include <arch/mm/pmm.h>
+#include <sched/thread.h>
+#include <cpu.h>
+#include <mm/layout.h>
+#include <mm/pmm.h>
+#include <mm/vmm.h>
+#include <mm/heap.h>
+#include <string.h>
 
 // defined in sched/scheduler.c
 extern struct thread_state *current_thread;

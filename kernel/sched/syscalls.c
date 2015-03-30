@@ -27,7 +27,7 @@
 #include <sched/scheduler.h>
 #include <sched/elf.h>
 
-#include <arch/mm/layout.h>
+#include <mm/layout.h>
 #include <string.h>
 #include <mm/heap.h>
 

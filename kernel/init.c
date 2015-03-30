@@ -31,25 +31,28 @@
 
 #include <multiboot.h>
 
+#include <arch.h>
+#include <platform.h>
+
 //memory
-#include <arch/mm/pmm.h>
+#include <mm/pmm.h>
 #include <mm/vmm.h>
 #include <mm/heap.h>
 #include <mm/shm.h>
 
 //descriptor tables
-#include <arch/gdt.h>
-#include <arch/idt.h>
-#include <arch/pic.h>
+#include <gdt.h>
+#include <idt.h>
+#include <drivers/pic.h>
 
 //scheduling
 #include <sched/elf.h>
 #include <sched/scheduler.h>
 
 //event and timing
-#include <clock.h>
 #include <event/trigger.h>
 
+void INIT_PLATFORM(void);
 
 /**
 * Initalize the Kernel
@@ -70,24 +73,17 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     }
 
     // arch
-#ifdef _PREV_
     INIT_PREV();
-#endif
+    INIT_IDT();
 
-#ifdef _PMM_
     INIT_PMM(mb_info);
-#endif
-
-#ifdef _VMM_
     INIT_VMM(mb_info);
-#endif
+
+    INIT_PLATFORM();
 
     //Init Kernelmodules
     INIT_HEAP();
-    INIT_PIC();
-    INIT_IDT();
     INIT_TRIGGER();
-    INIT_CLOCK(500);
     INIT_SCHEDULER();
 
     //print Logo and loading message
@@ -98,12 +94,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     uint32_t pages = pmm_count_free_pages();
     printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
 
-    //print current timestamp
-    struct time t;
-    update_time(&t);
-    printf("\n");
-    printf("Timestamp:%d\n\n",unix_time(&t));
-    // mapping strings
+    // mapping modules
     int i;
     struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
 

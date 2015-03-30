@@ -22,11 +22,10 @@
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
-#include <arch/idt.h>
+#include <idt.h>
 #include <panic.h>
 #include <syscall.h>
 #include <sched/scheduler.h>
-#include <clock.h>
 
 
 static struct IDT_Entry IDT[256]; ///@var define the interrupt decriptor table
@@ -95,7 +94,6 @@ struct cpu_state* irq_handler(struct cpu_state* cpu)
     //Taskscheduler
     if(irqnum == 32)
     {
-        sync_sys_clock();
         cpu = task_schedule(cpu);
         EOI(0);
     }

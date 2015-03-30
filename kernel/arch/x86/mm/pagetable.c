@@ -23,8 +23,8 @@
  * @author Michael Sippel <micha@infinitycoding.de>
  */
 
-#include <arch/mm/pmm.h>
-#include <arch/mm/layout.h>
+#include <mm/pmm.h>
+#include <mm/layout.h>
 #include <mm/vmm.h>
 
 // some macros

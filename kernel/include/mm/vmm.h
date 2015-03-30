@@ -30,7 +30,7 @@
 #ifdef _VMM_
 
 #include <multiboot.h>
-#include <arch/mm/vmm.h>
+#include <mm/arch_vmm.h>
 #include <stdint.h>
 #include <cpu.h>
 

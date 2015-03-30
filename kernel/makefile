@@ -11,10 +11,14 @@ L_LDFLAGS = -Tlinkerscript.x
 
 ifeq (${ARCH},PPC)
 L_CFLAGS +=  -Iinclude/arch/ppc
-else ifeq ($(ARCH),i686)
+else ifeq (${ARCH},i686)
 L_CFLAGS +=  -Iinclude/arch/x86
-else ifeq ($(ARCH),arm)
+else ifeq (${ARCH},arm)
 L_CFLAGS +=  -Iinclude/arch/arm
+endif
+
+ifeq (${PLATFORM},pc)
+L_CFLAGS += -Iinclude/platform/pc
 endif
 
 all: linkerscript.x kernel32.elf

@@ -30,7 +30,7 @@
 #include <string.h>
 #include <sched/scheduler.h>
 #include <mm/vmm.h>
-#include <arch/mm/layout.h>
+#include <mm/layout.h>
 #include <event/trigger.h>
 #include <printf.h>
 #include <math.h>

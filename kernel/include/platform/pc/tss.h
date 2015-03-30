@@ -1,5 +1,5 @@
-#ifndef _ARCH_CONTEXT_H_
-#define _ARCH_CONTEXT_H_
+#ifndef _TSS_H_
+#define _TSS_H_
 
 /*
      Copyright 2012-2014 Infinitycoding all rights reserved
@@ -23,22 +23,45 @@
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
-#include <cpu.h>
-#include <mm/vmm.h>
-#include <tss.h>
 
+#define IO_BITMAP_LEN 0xFFFF
+#define IO_BITMAP_LENGTH 0xFFFF
 
-struct arch_thread_context
+typedef struct
 {
-    struct cpu_state 	*state;
-    vaddr_t 			kernel_mode_stack; 	// virtual adress
-    vaddr_t 			program_stack; 		// physical adress
-    vmm_context_t 		memory;				// memory context
-    iopb 				ports;				// port context
-} arch_thread_context;
+    uint32_t iobmp[IO_BITMAP_LENGTH / 32];
+} iopb;
 
-struct cpu_state *arch_create_thread_context(struct arch_thread_context *context, privilege_t prev, vaddr_t entry,vaddr_t return_adress, char **argv, char **environ);
-void arch_destroy_thread_context(struct arch_thread_context *context);
+typedef struct tss_s
+{
+    uint32_t ptl;
+    uint32_t esp0;
+    uint32_t ss0;
+    uint32_t esp1;
+    uint32_t ss1;
+    uint32_t esp2;
+    uint32_t ss2;
+    uint32_t cr3;
+    uint32_t eip;
+    uint32_t eflags;
+    uint32_t eax;
+    uint32_t ecx;
+    uint32_t edx;
+    uint32_t ebx;
+    uint32_t esp;
+    uint32_t ebp;
+    uint32_t esi;
+    uint32_t edi;
+    uint32_t es;
+    uint32_t cs;
+    uint32_t ss;
+    uint32_t ds;
+    uint32_t fs;
+    uint32_t gs;
+    uint32_t ldt;
+    uint16_t reserved;
+    uint32_t iobmp_offset;
+    uint32_t iobmp[IO_BITMAP_LENGTH / 32];
+} __attribute__((packed)) tss_s;
 
 #endif
-

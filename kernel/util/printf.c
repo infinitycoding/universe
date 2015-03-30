@@ -25,7 +25,7 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <atoi.h>
-#include <video.h>
+#include <drivers/cga.h>
 
 int printf(const char *fmt, ...)
 {

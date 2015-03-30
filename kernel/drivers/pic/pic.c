@@ -17,26 +17,15 @@
  */
 
 /**
- *  @file /arch/x86/pic.c
+ *  @file drivers/pic/pic.c
  *  @brief Functions for setting up the programmable interrupt controler (pic)
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
+#include <platform.h>
+#ifdef _PIC_
 
-#include <arch/pic.h>
+#include <drivers/pic.h>
 #include <io.h>
-
-/**
- *  @brief Sends End of Interrupt Signal to the PIC which
- *  allows the pic to dispatch the next irq.
- *  @param irq number of the runnig interrupt
- */
-void EOI(irqnum_t irq)
-{
-    outb(PIC_MASTER_CMD, PIC_EOI);
-    if (irq >= 8)
-        outb(PIC_SLAVE_CMD, PIC_EOI);
-}
-
 
 /**
  *  @brief Remaps IRQs to irqnum 31.
@@ -52,3 +41,18 @@ void INIT_PIC(void)
     outb(PIC_MASTER_DATA , PIC_X86_MODE		);
     outb(PIC_SLAVE_DATA  , PIC_X86_MODE		);
 }
+
+/**
+ *  @brief Sends End of Interrupt Signal to the PIC which
+ *  allows the pic to dispatch the next irq.
+ *  @param irq number of the runnig interrupt
+ */
+void EOI(irqnum_t irq)
+{
+    outb(PIC_MASTER_CMD, PIC_EOI);
+    if (irq >= 8)
+        outb(PIC_SLAVE_CMD, PIC_EOI);
+}
+
+#endif
+

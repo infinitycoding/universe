@@ -28,7 +28,7 @@
 
 #include <stdint.h>
 #include <cpu.h>
-#include <arch/mm/pmm.h>
+#include <mm/pmm.h>
 #include <multiboot.h>
 
 

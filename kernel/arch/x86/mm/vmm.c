@@ -28,14 +28,14 @@
 #include <string.h>
 #include <panic.h>
 
-#include <arch/mm/layout.h>
+#include <mm/layout.h>
 #include <mm/vmm.h>
 
 #include <sched/thread.h>
 
 #include <cpu.h>
-#include <arch/idt.h>
-#include <arch/mm/pmm.h>
+#include <idt.h>
+#include <mm/pmm.h>
 
 
 static inline void arch_flush_tlb(vaddr_t addr);
