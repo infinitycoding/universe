@@ -54,39 +54,23 @@ vmm_context_t kernel_context; /// the context for initalisation
  * @param mb_info multiboot structure
  * @return void
  */
-void ARCH_INIT_VMM(struct multiboot_struct *mb_info)
+void ARCH_INIT_VMM(void)
 {
     paddr_t pframe = pmm_alloc_page_limit(0);
     vaddr_t vframe = MEMORY_LAYOUT_PAGING_STRUCTURES_START;
 
-    kernel_context.arch_context.phys_addr = pframe;
-    kernel_context.arch_context.entries = (pde_t *) pframe + MEMORY_LAYOUT_KERNEL_START;
-    memset(kernel_context.arch_context.entries, 0, PAGE_SIZE);
+    kernel_context.phys_addr = pframe;
+    kernel_context.entries = (pde_t *) pframe + MEMORY_LAYOUT_KERNEL_START;
+    memset(kernel_context.entries, 0, PAGE_SIZE);
 
-    kernel_context.arch_context.entries[PDE_INDEX(vframe)] = pframe | VMM_WRITABLE | VMM_PRESENT;
+    kernel_context.entries[PDE_INDEX(vframe)] = pframe | VMM_WRITABLE | VMM_PRESENT;
     vmm_map_range(&kernel_context, 0, MEMORY_LAYOUT_KERNEL_START, NUM_PAGES(MEMORY_LAYOUT_DIRECT_MAPPED), VMM_WRITABLE);// kernel
     vmm_map(&kernel_context, 0xB8000, 0xC00B8000, VMM_WRITABLE);// videomemory (0xB8000 - 0xBFFFF)
-    // multiboot
-    vmm_map(&kernel_context, ((vaddr_t)mb_info & (~0xfff)) - MEMORY_LAYOUT_KERNEL_START, ((paddr_t)mb_info&(~0xfff)), VMM_WRITABLE);
-    vmm_map(&kernel_context, (mb_info->mods_addr & (~0xfff)) - MEMORY_LAYOUT_KERNEL_START, mb_info->mods_addr & (~0xfff), VMM_WRITABLE);
-
-    int i;
-    uintptr_t addr;
-    struct mods_add *modules = (void*) mb_info->mods_addr;
-    for(i = 0; i < mb_info->mods_count; i++)
-    {
-        addr = modules[i].mod_start & (~0xfff);
-        while(addr < modules[i].mod_end)
-        {
-            vmm_map(&kernel_context, addr, addr, VMM_PRESENT | VMM_WRITABLE);
-            addr += PAGE_SIZE;
-        }
-    }
 
     void *pd_vaddr = (void *) vmm_automap_kernel(&kernel_context, pframe, VMM_WRITABLE);
-    kernel_context.arch_context.entries = pd_vaddr;
+    kernel_context.entries = pd_vaddr;
 
-    arch_vmm_switch_context(&kernel_context.arch_context);
+    arch_vmm_switch_context(&kernel_context);
     current_context = &kernel_context;
 }
 
@@ -100,7 +84,7 @@ void ARCH_INIT_VMM(struct multiboot_struct *mb_info)
  * @param flags flags
  * @return success
  */
-int arch_vmm_map(arch_vmm_context_t *context, paddr_t pframe, vaddr_t vframe, uint8_t flags)
+int vmm_map(vmm_context_t *context, paddr_t pframe, vaddr_t vframe, uint8_t flags)
 {
     if( (pframe & 0xFFF) || (vframe & 0xFFF) )
     {
@@ -116,18 +100,18 @@ int arch_vmm_map(arch_vmm_context_t *context, paddr_t pframe, vaddr_t vframe, ui
 
     if (pde & VMM_PRESENT)
     {
-        pt = arch_pt_get(context, pd_index);
+        pt = pt_get(context, pd_index);
     }
     else
     {
-        pt = arch_pt_create(context, pd_index, VMM_PRESENT | flags);
+        pt = pt_create(context, pd_index, VMM_PRESENT | flags);
     }
 
     pt[pt_index] = (pte_t)(pframe & ~0xFFF) | VMM_PRESENT | (flags & 0xFFF);
 
     if(current_context != NULL)
     {
-        if(context == &current_context->arch_context)
+        if(context == current_context)
         {
             arch_flush_tlb(vframe);
         }
@@ -148,9 +132,9 @@ int arch_vmm_map(arch_vmm_context_t *context, paddr_t pframe, vaddr_t vframe, ui
  *
  * @return void
  */
-int arch_vmm_unmap(arch_vmm_context_t *context, vaddr_t frame)
+int vmm_unmap(vmm_context_t *context, vaddr_t frame)
 {
-    pt_t pt = arch_pt_get(context, PDE_INDEX(frame));
+    pt_t pt = pt_get(context, PDE_INDEX(frame));
     pt[PTE_INDEX(frame)] = 0;
 
     int pt_emty = 1, i;
@@ -165,11 +149,11 @@ int arch_vmm_unmap(arch_vmm_context_t *context, vaddr_t frame)
 
     if(pt_emty)
     {
-        arch_pt_destroy(context, PDE_INDEX(frame));
+        pt_destroy(context, PDE_INDEX(frame));
     }
     else
     {
-        if(context != &current_context->arch_context)
+        if(context != current_context)
             vmm_unmap(current_context, (vaddr_t) pt);
     }
 
@@ -188,7 +172,7 @@ int arch_vmm_unmap(arch_vmm_context_t *context, vaddr_t frame)
  * @param flags paging flags for temporary mappings
  * @return virtual start adress
  */
-vaddr_t arch_vaddr_find(arch_vmm_context_t *context, int num, vaddr_t limit_low, vaddr_t limit_high)
+vaddr_t vaddr_find(vmm_context_t *context, int num, vaddr_t limit_low, vaddr_t limit_high)
 {
 #define PAGES_FOUND(l) \
 	  if(vaddr == (vaddr_t)NULL) { \
@@ -213,7 +197,7 @@ vaddr_t arch_vaddr_find(arch_vmm_context_t *context, int num, vaddr_t limit_low,
     {
         if(context->entries[pd_index] & VMM_PRESENT)
         {
-            pt = arch_pt_get(context, pd_index);
+            pt = pt_get(context, pd_index);
 
             uint32_t pt_end = (pd_index == pd_index_end) ? pt_index_end : PT_LENGTH; // last pd entry
             for(; pt_index < pt_end; pt_index++)
@@ -230,7 +214,7 @@ vaddr_t arch_vaddr_find(arch_vmm_context_t *context, int num, vaddr_t limit_low,
             }
 
             pt_index = 0;
-            if(context != &current_context->arch_context)
+            if(context != current_context)
                 vmm_unmap(current_context, (vaddr_t)pt);
         }
         else
@@ -251,14 +235,14 @@ vaddr_t arch_vaddr_find(arch_vmm_context_t *context, int num, vaddr_t limit_low,
  * @param vaddr adress to check
  * @return true, if is present; false, if not
  */
-int arch_vmm_is_present(arch_vmm_context_t *context, vaddr_t vaddr)
+int vmm_is_present(vmm_context_t *context, vaddr_t vaddr)
 {
     unsigned int pd_index = PDE_INDEX(vaddr);
     unsigned int pt_index = PTE_INDEX(vaddr);
 
     if(context->entries[pd_index] & VMM_PRESENT)
     {
-        pt_t *pt = (pt_t *)arch_pt_get(context, pd_index);
+        pt_t *pt = (pt_t *)pt_get(context, pd_index);
         return ((uint32_t)pt[pt_index] & VMM_PRESENT) ? 1 : 0;
     }
 
@@ -273,14 +257,14 @@ int arch_vmm_is_present(arch_vmm_context_t *context, vaddr_t vaddr)
  * @param vaddr the virtual adress
  * @return the physical adress
  */
-paddr_t arch_vaddr2paddr(arch_vmm_context_t *context, vaddr_t vaddr)
+paddr_t vaddr2paddr(vmm_context_t *context, vaddr_t vaddr)
 {
     unsigned int pd_index = PDE_INDEX(vaddr);
     unsigned int pt_index = PTE_INDEX(vaddr);
 
     if(context->entries[pd_index] & VMM_PRESENT)
     {
-        pt_t *pt = (pt_t *) arch_pt_get(context, pd_index);
+        pt_t *pt = (pt_t *) pt_get(context, pd_index);
         return (paddr_t) pt[pt_index] & ~0xfff;
     }
     return 0;

@@ -77,7 +77,7 @@ void exc_panic(struct cpu_state* cpu)
  * @param pointer to the phys. pd frame
  * @return void
  */
-void pd_dump(arch_vmm_context_t *context)
+void pd_dump(vmm_context_t *context)
 {
     int pdi, pti, phys_base, virt_base, size, sec = 0;
     uint32_t *pt;
@@ -95,7 +95,7 @@ void pd_dump(arch_vmm_context_t *context)
             pdi++;
         }
 
-        pt = arch_pt_get(context, pdi);
+        pt = pt_get(context, pdi);
 
         for( pti = 0; pti < PT_LENGTH; pti++ )
         {
@@ -144,7 +144,7 @@ void pd_dump(arch_vmm_context_t *context)
 
 
 
-void pd_dump2(arch_vmm_context_t *context)
+void pd_dump2(vmm_context_t *context)
 {
 #define END 	if(size > 0) { \
 			if(size == 1) { \
@@ -176,7 +176,7 @@ void pd_dump2(arch_vmm_context_t *context)
     {
         if(pd[pd_index] & VMM_PRESENT)
         {
-            pt = arch_pt_get(context, pd_index);
+            pt = pt_get(context, pd_index);
 
             for(pt_index = 0; pt_index < 1024; pt_index++)
             {

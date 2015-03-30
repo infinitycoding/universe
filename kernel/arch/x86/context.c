@@ -187,7 +187,7 @@ struct cpu_state *arch_create_thread_context(struct arch_thread_context *context
 void arch_destroy_thread_context(struct arch_thread_context *context)
 {
     free(context->state);
-    arch_vmm_destroy_context(&context->memory.arch_context);
+    vmm_destroy_context(&context->memory);
     free(context);
 }
 

@@ -48,32 +48,24 @@ vmm_context_t *current_context = NULL; /// @var current_context pointer to the c
  */
 void INIT_VMM(struct multiboot_struct *mb_info)
 {
-    ARCH_INIT_VMM(mb_info);
-}
+    ARCH_INIT_VMM();
 
-/**
- * @fn vmm_create_context
- * @brief Initalizes a new vmm context from a pointer.
- * The memory must be allocated before.
- *
- * @param context pointer to the memory structure
- * @return void
- */
-void vmm_create_context(vmm_context_t *context)
-{
-    arch_vmm_create_context(&context->arch_context);
-}
+    // multiboot
+    vmm_map(current_context, ((vaddr_t)mb_info & (~0xfff)) - MEMORY_LAYOUT_KERNEL_START, ((paddr_t)mb_info&(~0xfff)), VMM_WRITABLE);
+    vmm_map(current_context, (mb_info->mods_addr & (~0xfff)) - MEMORY_LAYOUT_KERNEL_START, mb_info->mods_addr & (~0xfff), VMM_WRITABLE);
 
-/**
- * @fn vmm_destroy_context
- * @brief Destroys a vmm context
- *
- * @param context pointer to to destroying context
- * @return void
- */
-void vmm_destroy_context(vmm_context_t *context)
-{
-    arch_vmm_destroy_context(&context->arch_context);
+    int i;
+    uintptr_t addr;
+    struct mods_add *modules = (void*) mb_info->mods_addr;
+    for(i = 0; i < mb_info->mods_count; i++)
+    {
+        addr = modules[i].mod_start & (~0xfff);
+        while(addr < modules[i].mod_end)
+        {
+            vmm_map(current_context, addr, addr, VMM_PRESENT | VMM_WRITABLE);
+            addr += PAGE_SIZE;
+        }
+    }
 }
 
 /**
@@ -87,39 +79,10 @@ void vmm_switch_context(vmm_context_t *context)
 {
     if(context != current_context)
     {
-        arch_vmm_map_context(&context->arch_context);
-        arch_vmm_switch_context(&context->arch_context);
+        arch_vmm_map_context(context);
+        arch_vmm_switch_context(context);
         current_context = context;
     }
-}
-
-/**
- * @fn vmm_map
- * @brief Map a physical adress to a virtual adress.
- * The adresses must be 4k-aligned as in all other following mapping functions too.
- *
- * @param context the context
- * @param pframe the physical adress
- * @param vframe virtual adress
- * @param flags additional paging flags (defined /include/arch/x86/arch_paging.h)
- * @return success
- */
-int vmm_map(vmm_context_t *context, paddr_t pframe, vaddr_t vframe, uint8_t flags)
-{
-    return arch_vmm_map(&context->arch_context, pframe, vframe, flags);
-}
-
-/**
- * @fn vmm_unmap
- * @brief free a virtual adress from the mapping
- *
- * @param context the vmm context
- * @param frame the adress to free
- * @return success
- */
-int vmm_unmap(vmm_context_t *context, vaddr_t frame)
-{
-    return arch_vmm_unmap(&context->arch_context, frame);
 }
 
 /**
@@ -175,9 +138,9 @@ int vmm_unmap_range(vmm_context_t *context, vaddr_t frame, int pages)
  */
 vaddr_t vmm_automap_kernel(vmm_context_t *context, paddr_t pframe, uint8_t flags)
 {
-    vaddr_t vframe = arch_vaddr_find(&context->arch_context, 1,
-                                     MEMORY_LAYOUT_RESERVED_AREA_END,
-                                     MEMORY_LAYOUT_KERNEL_HEAP_START);
+    vaddr_t vframe = vaddr_find(context, 1,
+                                MEMORY_LAYOUT_RESERVED_AREA_END,
+                                MEMORY_LAYOUT_KERNEL_HEAP_START);
     vmm_map(context, pframe, vframe, flags | VMM_PRESENT);
 
     return vframe;
@@ -198,7 +161,7 @@ vaddr_t vmm_automap_kernel(vmm_context_t *context, paddr_t pframe, uint8_t flags
 vaddr_t vmm_automap_kernel_range(vmm_context_t *context, paddr_t pframe, int pages, uint8_t flags)
 {
     int i;
-    vaddr_t vaddr_start = arch_vaddr_find(&context->arch_context, pages, MEMORY_LAYOUT_RESERVED_AREA_END, MEMORY_LAYOUT_KERNEL_HEAP_START);
+    vaddr_t vaddr_start = vaddr_find(context, pages, MEMORY_LAYOUT_RESERVED_AREA_END, MEMORY_LAYOUT_KERNEL_HEAP_START);
     for(i = 0; i < pages; i++)
     {
         paddr_t paddr = pframe + i*PAGE_SIZE;
@@ -222,8 +185,8 @@ vaddr_t vmm_automap_kernel_range(vmm_context_t *context, paddr_t pframe, int pag
  */
 vaddr_t vmm_automap_user(vmm_context_t *context, paddr_t pframe, uint8_t flags)
 {
-    vaddr_t vframe = arch_vaddr_find(&context->arch_context, 1,
-                                     0x0, MEMORY_LAYOUT_KERNEL_START);
+    vaddr_t vframe = vaddr_find(context, 1,
+                                0x0, MEMORY_LAYOUT_KERNEL_START);
     vmm_map(context, pframe, vframe, flags | VMM_PRESENT);
 
     return vframe;
@@ -244,7 +207,7 @@ vaddr_t vmm_automap_user(vmm_context_t *context, paddr_t pframe, uint8_t flags)
 vaddr_t vmm_automap_user_range(vmm_context_t *context, paddr_t pframe, int pages, uint8_t flags)
 {
     int i;
-    vaddr_t vaddr_start = arch_vaddr_find(&context->arch_context, pages, 0x1000, MEMORY_LAYOUT_KERNEL_START);
+    vaddr_t vaddr_start = vaddr_find(context, pages, 0x1000, MEMORY_LAYOUT_KERNEL_START);
     for(i = 0; i < pages; i++)
     {
         paddr_t paddr = pframe + i*PAGE_SIZE;
@@ -259,7 +222,7 @@ void alloc_memory(struct cpu_state **cpu)
 {
     int pages = (*cpu)->CPU_ARG1;
 
-    uint32_t *dest = (uint32_t *)arch_vaddr_find(&current_context->arch_context, pages, MEMORY_LAYOUT_USER_HEAP_START, MEMORY_LAYOUT_USER_HEAP_END);
+    uint32_t *dest = (uint32_t *)vaddr_find(current_context, pages, MEMORY_LAYOUT_USER_HEAP_START, MEMORY_LAYOUT_USER_HEAP_END);
 
     int i;
     for(i = 0; i < pages; i++)

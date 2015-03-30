@@ -77,7 +77,7 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     new_thread->return_value = 0;
 
     if(context != NULL)
-        memcpy(&new_thread->context.memory.arch_context, &context->arch_context, sizeof(arch_vmm_context_t));
+        memcpy(&new_thread->context.memory, context, sizeof(vmm_context_t));
     else
         vmm_create_context(&new_thread->context.memory);
 
@@ -87,7 +87,7 @@ struct thread_state *thread_create(struct process_state *process, privilege_t pr
     // heap
     if(process->heap_top == 0)
     {
-        process->heap_top = arch_vaddr_find(&new_thread->context.memory.arch_context, 1, MEMORY_LAYOUT_USER_HEAP_START, MEMORY_LAYOUT_USER_HEAP_END);
+        process->heap_top = vaddr_find(new_thread->context.memory, 1, MEMORY_LAYOUT_USER_HEAP_START, MEMORY_LAYOUT_USER_HEAP_END);
         vmm_map(&new_thread->context.memory, pmm_alloc_page(), process->heap_top, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
         process->heap_lower_limit = process->heap_top;
         process->heap_upper_limit = (uint32_t) MEMORY_LAYOUT_STACK_TOP - 0x1000;
@@ -143,8 +143,8 @@ struct thread_state *thread_clone(struct process_state *process, struct thread_s
     // context
     new_thread->return_value = 0;
 
-    vmm_create_context(&new_thread->context.memory);
-    arch_vmm_fork_context(&src_thread->context.memory.arch_context, &new_thread->context.memory.arch_context);
+    vmm_create_context(new_thread->context);
+    vmm_fork_context(&src_thread->context.memory, &new_thread->context.memory);
     thread_sync_context(new_thread);
 
     arch_create_thread_context(&new_thread->context, prev, (vaddr_t) 0, (vaddr_t) 0, 0, 0);
@@ -169,7 +169,7 @@ struct thread_state *thread_clone(struct process_state *process, struct thread_s
     if(process->heap_top == 0)
     {
         // what the fuck?
-        process->heap_top = arch_vaddr_find(&new_thread->context.memory.arch_context, 1, MEMORY_LAYOUT_USER_HEAP_START, MEMORY_LAYOUT_USER_HEAP_END);
+        process->heap_top = vaddr_find(&new_thread->context.memory, 1, MEMORY_LAYOUT_USER_HEAP_START, MEMORY_LAYOUT_USER_HEAP_END);
         vmm_map(&new_thread->context.memory, pmm_alloc_page(), process->heap_top, VMM_PRESENT|VMM_WRITABLE|VMM_USER);
         process->heap_lower_limit = process->heap_top;
         process->heap_upper_limit = (uint32_t) MEMORY_LAYOUT_STACK_TOP - 0x1000;
@@ -200,7 +200,7 @@ void thread_sync_context(struct thread_state *thread)
     struct thread_state *main_thread = thread->process->main_thread;
     if(thread != main_thread && main_thread != NULL && thread != NULL)
     {
-        arch_vmm_sync_context(&thread->context.memory.arch_context, &main_thread->context.memory.arch_context, 0, 0xB0000000);
+        vmm_sync_context(&thread->context.memory, &main_thread->context.memory, 0, 0xB0000000);
     }
 }
 

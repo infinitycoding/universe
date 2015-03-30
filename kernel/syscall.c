@@ -22,7 +22,6 @@
 
 #include <sched/thread.h>
 #include <sched/syscalls.h>
-#include <event/time.h>
 #include <syscall.h>
 #include <mm/shm.h>
 #include <printf.h>

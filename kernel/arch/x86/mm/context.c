@@ -39,7 +39,7 @@ extern vmm_context_t *current_context;
  * @param context pointer to the memory structure
  * @return void
  */
-void arch_vmm_create_context(arch_vmm_context_t *context)
+void vmm_create_context(vmm_context_t *context)
 {
     uintptr_t paddr = (uintptr_t) pmm_alloc_page();
     uintptr_t vaddr = vmm_automap_kernel(current_context, paddr, VMM_PRESENT | VMM_WRITABLE);
@@ -52,13 +52,13 @@ void arch_vmm_create_context(arch_vmm_context_t *context)
 }
 
 /**
- * @fn arch_vmm_destroy_context
+ * @fn vmm_destroy_context
  * @brief Destroys a vmm context
  *
  * @param context pointer to to destroying context
  * @return void
  */
-void arch_vmm_destroy_context(arch_vmm_context_t *context)
+void vmm_destroy_context(vmm_context_t *context)
 {
     int pt;
     for (pt = 0; pt < PD_LENGTH; ++pt)
@@ -79,7 +79,7 @@ void arch_vmm_destroy_context(arch_vmm_context_t *context)
  * @param dest the new context
  * @return void
  */
-void arch_vmm_fork_context(arch_vmm_context_t *src, arch_vmm_context_t *dest)
+void vmm_fork_context(vmm_context_t *src, vmm_context_t *dest)
 {
     if(src != NULL && dest != NULL)
     {
@@ -92,8 +92,8 @@ void arch_vmm_fork_context(arch_vmm_context_t *src, arch_vmm_context_t *dest)
                 {
                     int flags = src->entries[i] & 0xfff;
 
-                    pt_t *pt_src = (pt_t *) arch_pt_get(src, i);
-                    pt_t *pt_dest = (pt_t *) arch_pt_create(dest, i, flags);
+                    pt_t *pt_src = (pt_t *) pt_get(src, i);
+                    pt_t *pt_dest = (pt_t *) pt_create(dest, i, flags);
 
                     if(pt_src == NULL || pt_dest == NULL)
                     {
@@ -103,7 +103,7 @@ void arch_vmm_fork_context(arch_vmm_context_t *src, arch_vmm_context_t *dest)
 
                     memcpy(pt_dest, pt_src, 0x1000);
 
-                    if(src != arch_current_context)
+                    if(src != current_context)
                         vmm_unmap(current_context, (vaddr_t) pt_src);
 
                     vmm_unmap(current_context, (vaddr_t) pt_dest);
@@ -120,9 +120,9 @@ void arch_vmm_fork_context(arch_vmm_context_t *src, arch_vmm_context_t *dest)
  * @param context context
  * @return void
  */
-void arch_vmm_map_context(arch_vmm_context_t *context)
+void arch_vmm_map_context(vmm_context_t *context)
 {
-    arch_vmm_sync_context(context, arch_current_context, MEMORY_LAYOUT_KERNEL_START, MEMORY_LAYOUT_KERNEL_END);
+    vmm_sync_context(context, current_context, MEMORY_LAYOUT_KERNEL_START, MEMORY_LAYOUT_KERNEL_END);
     context->entries[PDE_INDEX(MEMORY_LAYOUT_PAGING_STRUCTURES_START)] = (uint32_t) context->phys_addr | VMM_PRESENT | VMM_WRITABLE;
 }
 
@@ -136,7 +136,7 @@ void arch_vmm_map_context(arch_vmm_context_t *context)
  * @param index_high end pde-index
  * @return void
  */
-void arch_vmm_sync_context(arch_vmm_context_t *dest, arch_vmm_context_t *src, vaddr_t limit_low, vaddr_t limit_high)
+void vmm_sync_context(vmm_context_t *dest, vmm_context_t *src, vaddr_t limit_low, vaddr_t limit_high)
 {
     int index_low = PDE_INDEX(limit_low);
     int index_high = PDE_INDEX(limit_high);
@@ -157,7 +157,7 @@ void arch_vmm_sync_context(arch_vmm_context_t *dest, arch_vmm_context_t *src, va
  * @param flags flags
  * @return void
  */
-void arch_vmm_switch_context(arch_vmm_context_t *context)
+void arch_vmm_switch_context(vmm_context_t *context)
 {
     asm volatile ("mov %0, %%cr3" : : "r" (context->phys_addr));
 }

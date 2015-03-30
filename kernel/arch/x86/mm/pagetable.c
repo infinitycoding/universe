@@ -35,7 +35,7 @@ extern vmm_context_t *current_context;
 
 
 /**
- * @fn arch_pt_get
+ * @fn pt_get
  * @brief Get the pagetable at index
  *
  * @param pd pagedirectory
@@ -43,13 +43,13 @@ extern vmm_context_t *current_context;
  * @param flags flags
  * @return pagetable
  */
-pt_t arch_pt_get(arch_vmm_context_t *context, int index)
+pt_t pt_get(vmm_context_t *context, int index)
 {
     pt_t pt;
 
     if(current_context != NULL)
     {
-        if(context == arch_current_context)
+        if(context == current_context)
         {
             pt = (pt_t) PT_VADDR(index);
         }
@@ -68,7 +68,7 @@ pt_t arch_pt_get(arch_vmm_context_t *context, int index)
 }
 
 /**
- * @fn arch_pt_create
+ * @fn pt_create
  * @brief Create a new pagetable
  *
  * @param context pagedirectory
@@ -76,7 +76,7 @@ pt_t arch_pt_get(arch_vmm_context_t *context, int index)
  * @param flags flags
  * @return pagetable
  */
-pt_t arch_pt_create(arch_vmm_context_t *context, int index, uint8_t flags)
+pt_t pt_create(vmm_context_t *context, int index, uint8_t flags)
 {
     pt_t pt;
     if(current_context == NULL)
@@ -86,21 +86,21 @@ pt_t arch_pt_create(arch_vmm_context_t *context, int index, uint8_t flags)
 
     context->entries[index] = (pde_t) pt | flags | VMM_PRESENT;
 
-    pt = arch_pt_get(context, index);
+    pt = pt_get(context, index);
     memset(pt, 0, 4096);
 
     return pt;
 }
 
 /**
- * @fn arch_pt_destroy
+ * @fn pt_destroy
  * @brief Destroy a pagetable
  *
  * @param context pagedirectory
  * @param index index
  * @return void
  */
-void arch_pt_destroy(arch_vmm_context_t *context, int index)
+void pt_destroy(vmm_context_t *context, int index)
 {
     pmm_mark_page_as_free((paddr_t)context->entries[index]);
     context->entries[index] = 0;

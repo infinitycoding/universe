@@ -19,6 +19,10 @@
 /**
  * @author Michael Sippel <micha@infinitycoding.de>
  */
+#include <platform.h>
+
+#include <drivers/pic.h>
+#include <drivers/pit.h>
 
 void INIT_PLATFORM(void)
 {

@@ -43,8 +43,6 @@
 #define PDE_INDEX(x) ((x) >> 22)          /// get the pagedirectory index from an adress
 #define PTE_INDEX(x) ((x) >> 12 & 0x03FF) /// get the pagetable index from an adress
 
-#define arch_current_context &current_context->arch_context
-
 // paging flags
 #define VMM_PRESENT  0x1
 #define VMM_WRITABLE 0x2
@@ -58,21 +56,19 @@ typedef pte_t* pt_t;
  * @struct arch_vmm_context
  * @brief the x86-dependent vmm context struct
  */
-typedef struct arch_vmm_context
+typedef struct vmm_context
 {
     pde_t *entries;
     paddr_t phys_addr;
-} arch_vmm_context_t;
-
-void ARCH_INIT_VMM(struct multiboot_struct *mb_info);
+} vmm_context_t;
 
 // context
-void arch_vmm_map_context(arch_vmm_context_t *context);
+void arch_vmm_map_context(vmm_context_t *context);
 
 // pagetable
-pt_t arch_pt_get(arch_vmm_context_t *context, int index);
-pt_t arch_pt_create(arch_vmm_context_t *context, int index, uint8_t flags);
-void arch_pt_destroy(arch_vmm_context_t *context, int index);
+pt_t pt_get(vmm_context_t *context, int index);
+pt_t pt_create(vmm_context_t *context, int index, uint8_t flags);
+void pt_destroy(vmm_context_t *context, int index);
 
 #endif
 
