@@ -39,36 +39,6 @@
 vmm_context_t *current_context = NULL; /// @var current_context pointer to the current memory context
 
 /**
- * @fn INIT_VMM
- * @brief Initalize the virtual memory management.
- * Setup the hardware for paging and create basic mappings.
- *
- * @param mb_info pointer to multiboot structure
- * @return void
- */
-void INIT_VMM(struct multiboot_struct *mb_info)
-{
-    ARCH_INIT_VMM();
-
-    // multiboot
-    vmm_map(current_context, ((vaddr_t)mb_info & (~0xfff)) - MEMORY_LAYOUT_KERNEL_START, ((paddr_t)mb_info&(~0xfff)), VMM_WRITABLE);
-    vmm_map(current_context, (mb_info->mods_addr & (~0xfff)) - MEMORY_LAYOUT_KERNEL_START, mb_info->mods_addr & (~0xfff), VMM_WRITABLE);
-
-    int i;
-    uintptr_t addr;
-    struct mods_add *modules = (void*) mb_info->mods_addr;
-    for(i = 0; i < mb_info->mods_count; i++)
-    {
-        addr = modules[i].mod_start & (~0xfff);
-        while(addr < modules[i].mod_end)
-        {
-            vmm_map(current_context, addr, addr, VMM_PRESENT | VMM_WRITABLE);
-            addr += PAGE_SIZE;
-        }
-    }
-}
-
-/**
  * @fn vmm_switch_context
  * @brief Change the vmm context running currently on hardware
  *

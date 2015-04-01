@@ -29,7 +29,6 @@
 
 #ifdef _VMM_
 
-#include <multiboot.h>
 #include <mm/arch_vmm.h>
 #include <stdint.h>
 #include <cpu.h>
@@ -37,11 +36,10 @@
 extern vmm_context_t *current_context; /// defined in mm/vmm.c
 
 // arch must have
-void ARCH_INIT_VMM(void);
 void arch_vmm_switch_context(vmm_context_t *context);
 
 // global
-void INIT_VMM(struct multiboot_struct *mb_info);
+void INIT_VMM();
 
 void vmm_context_create(vmm_context_t *context);
 void vmm_context_fork(vmm_context_t *src, vmm_context_t *dest);

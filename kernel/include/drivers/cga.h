@@ -1,7 +1,7 @@
 #ifndef _cga_h_
 #define _cga_h_
 /*
-     Copyright 2012-2014 Infinitycoding all rights reserved
+     Copyright 2012-2015 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
 
      The Universe Kernel is free software: you can redistribute it and/or modify
@@ -19,7 +19,8 @@
  */
 
 /**
- *  @author Tom Slawik <tom.slawik@gmail.com>
+ *	@author Tom Slawik <tom.slawik@gmail.com>
+ *	@author Michael Sippel <micha@infinitycoding.de>
  */
 #include <platform.h>
 #ifdef _CGA_
@@ -43,17 +44,33 @@
 #define YELLOW		0xE
 #define WHITE		0xF
 
-typedef uint8_t color_t;
+typedef struct __attribute__((packed)) cga_color
+{
+    int text_color : 4;
+    int back_color : 3;
+    int blink : 1;
+} cga_color_t;
 
-#define STDOUT 1
+typedef struct __attribute__((packed)) cga_data
+{
+    uint8_t id;
+    cga_color_t color;
+} cga_data_t;
 
-int putchar(int c);
-int puts(const char* s);
-int fputs(const char* s, int fd);
-void clear_screen(void);
-void set_color(color_t _color);
-color_t get_color(void);
-void gotoxy(uint8_t _x, uint8_t _y);
+void INIT_CGA(void);
+
+void cga_set_cursor(int x, int y);
+void cga_set_color(cga_color_t color);
+cga_color_t cga_color(int text, int back, int blink);
+
+void cga_scroll(int lines);
+void cga_clear_color(cga_color_t color);
+void cga_clear(void);
+
+void cga_putc_color(char c, cga_color_t col);
+void cga_puts_color(const char *string, cga_color_t col);
+void cga_putc(char c);
+void cga_puts(const char *string);
 
 #endif
 

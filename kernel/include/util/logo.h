@@ -47,15 +47,9 @@ static const char *__logo = "\
                                                                                \n\
 ";
 
-static void print_logo(color_t color)
+static void print_logo(void)
 {
-    color_t color_saved = get_color();
-
-    set_color(color | BLACK << 4);
-
     puts(__logo);
-
-    set_color(color_saved);
 }
 
 #endif

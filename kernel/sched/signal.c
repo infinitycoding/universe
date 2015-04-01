@@ -37,6 +37,11 @@ void send_signal(struct process_state *process, unsigned int id)
 {
     signal_t *signal = get_signal(process, id);
 
+    if(signal == NULL)
+    {
+        return;
+    }
+
     switch(signal->action)
     {
         case NONE:

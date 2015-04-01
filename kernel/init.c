@@ -35,6 +35,7 @@
 #include <platform.h>
 
 //memory
+#include <mm/layout.h>
 #include <mm/pmm.h>
 #include <mm/vmm.h>
 #include <mm/heap.h>
@@ -52,7 +53,9 @@
 //event and timing
 #include <event/trigger.h>
 
+void INIT_ARCH(void);
 void INIT_PLATFORM(void);
+void INIT_MM(struct multiboot_struct *mb_info);
 
 /**
 * Initalize the Kernel
@@ -66,37 +69,39 @@ extern struct process_state *kernel_state;
 extern list_t *running_threads;
 int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 {
-    clear_screen();
     if (magic_number != 0x2BADB002)
     {
         panic("Incompatible Bootloader");
     }
 
-    // arch
-    INIT_PREV();
-    INIT_IDT();
-
-    INIT_PMM(mb_info);
-    INIT_VMM(mb_info);
-
+    // init kernel
+    INIT_ARCH();
+    INIT_MM(mb_info);
     INIT_PLATFORM();
 
-    //Init Kernelmodules
-    INIT_HEAP();
     INIT_TRIGGER();
     INIT_SCHEDULER();
 
     //print Logo and loading message
-    print_logo(YELLOW);
-    set_color(WHITE | (BLACK << 4));
-    puts("Universe wird gestartet...\n");
+#ifdef _CGA_
+    cga_set_color(cga_color(YELLOW, BLACK, 0));
+#endif
+    print_logo();
+#ifdef _CGA_
+    cga_set_color(cga_color(WHITE, BLACK, 0));
+#endif
+    printf("Universe wird gestartet...\n");
+
     // count free memory and display it
     uint32_t pages = pmm_count_free_pages();
     printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
 
-    // mapping modules
+    // map modules
     int i;
     struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
+
+    vmm_map(current_context, ((vaddr_t)mb_info & (~0xfff)) - MEMORY_LAYOUT_KERNEL_START, ((paddr_t)mb_info&(~0xfff)), VMM_WRITABLE);
+    vmm_map(current_context, (mb_info->mods_addr & (~0xfff)) - MEMORY_LAYOUT_KERNEL_START, mb_info->mods_addr & (~0xfff), VMM_WRITABLE);
 
     void *phys = (void*)((int)modules[0].string & (int)~0xfff);
     void *virt = (void*) vmm_automap_kernel(current_context, (paddr_t)phys, VMM_WRITABLE);

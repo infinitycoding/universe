@@ -22,11 +22,11 @@
  *  @author Tom Slawik <tom.slawik@gmail.com>
  *  @author Simon Diepold <simon.diepold@infinitycoding.de>
  */
+#include <platform.h>
 
 #include <cpu.h>
-#include <drivers/cga.h>
-
 #include <printf.h>
+#include <drivers/cga.h>
 
 /**
  *  @brief Shows an errorscreen  with a error message.
@@ -41,23 +41,23 @@ void panic(char *message)
     int i;
     len += sprintf(buffer + len, "      %c", 201);
     for(i=0; i<66; i++) len += sprintf(buffer + len, "%c", 205);
-    len += sprintf(buffer + len, "%c      \n", 187);
+    len += sprintf(buffer + len, "%c      ", 187);
 
     len += sprintf(buffer + len,
-                   "      %c                             Universe                             %c      \n",
+                   "      %c                             Universe                             %c      ",
                    186, 186);
 
     len += sprintf(buffer + len, "      %c", 200);
     for(i=0; i<66; i++) len += sprintf(buffer + len, "%c", 205);
-    len += sprintf(buffer + len, "%c      \n", 188);
+    len += sprintf(buffer + len, "%c      ", 188);
 
     len += sprintf(buffer + len,
 // 		"      %c==================================================================%c      \n"
 // 		"      |                             Universe                             |      \n"
 // 		"      |==================================================================|      \n"
-                   "                                                                                \n"
-                   "      Universe has been crashed. You have to restart your computer.             \n"
-                   "                                                                                \n"
+                   "                                                                                "
+                   "      Universe has been crashed. You have to restart your computer.             "
+                   "                                                                                "
                   );
 
     while (*message != '\0')
@@ -74,14 +74,14 @@ void panic(char *message)
     }
 
     len += sprintf (buffer + len,
-                    "\n      To help us improving our systems, please report this incident to us.     "
+                    "\n      To help us improving our systems, please report this incident to us.      "
                    );
 
-    set_color(WHITE | RED << 4);
-    //clear_screen();
-
-    //gotoxy(0, (25 / 2) - (lines / 2) - 1);
+#ifdef _CGA_
+    cga_puts_color(buffer, cga_color(WHITE, RED, 0));
+#else
     printf("%s", buffer);
+#endif
 
     halt();
 }
@@ -89,7 +89,7 @@ void panic(char *message)
 
 
 /* easter egg! */
-void winpanic(char *message)
+/*void winpanic(char *message)
 {
     set_color(WHITE | BLUE << 4);
     clear_screen();
@@ -116,4 +116,5 @@ void winpanic(char *message)
     printf("      *  Druecken Sie Strg+Alt+Entf, um den Computer neu zu\n");
     printf("      starten. nicht gespeicherte Daten gehen dabei verloren.\n");
     halt();
-}
+}*/
+

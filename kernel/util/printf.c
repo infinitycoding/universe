@@ -19,6 +19,7 @@
 /**
  * @author Tom Slawik <tom.slawik@gmail.com>
  */
+#include <platform.h>
 
 #include <printf.h>
 #include <string.h>
@@ -26,6 +27,14 @@
 #include <ctype.h>
 #include <atoi.h>
 #include <drivers/cga.h>
+
+int puts(const char *str)
+{
+#ifdef _CGA_
+    cga_puts(str);
+    cga_puts("\n");
+#endif
+}
 
 int printf(const char *fmt, ...)
 {
@@ -38,8 +47,9 @@ int printf(const char *fmt, ...)
 
     size = vsprintf(buffer, fmt, args);
 
-    fputs(buffer, STDOUT);
-
+#ifdef _CGA_
+    cga_puts(buffer);
+#endif
     va_end(args);
     return size;
 }

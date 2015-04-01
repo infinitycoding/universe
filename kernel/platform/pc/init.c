@@ -21,11 +21,15 @@
  */
 #include <platform.h>
 
+#include <drivers/cga.h>
 #include <drivers/pic.h>
 #include <drivers/pit.h>
 
 void INIT_PLATFORM(void)
 {
+    INIT_CGA();
+    cga_clear();
+
     INIT_PIC();
     INIT_PIT(5000);
 }

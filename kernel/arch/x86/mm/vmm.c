@@ -54,7 +54,7 @@ vmm_context_t kernel_context; /// the context for initalisation
  * @param mb_info multiboot structure
  * @return void
  */
-void ARCH_INIT_VMM(void)
+void INIT_VMM(void)
 {
     paddr_t pframe = pmm_alloc_page_limit(0);
     vaddr_t vframe = MEMORY_LAYOUT_PAGING_STRUCTURES_START;

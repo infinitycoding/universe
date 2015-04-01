@@ -2,7 +2,7 @@
 
 int main(int argc, char **argv)
 {
-	linux_syscall(10, 3, 5, 0, 0, 0); // send signal 5 to pid 1
+	linux_syscall(10, 2, 5, 0, 0, 0); // send signal 5 to pid 2
 	while(1);
 
 	/*printf("started testserver with pid %d\n", getpid());
