@@ -105,6 +105,7 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
 
     void *phys = (void*)((int)modules[0].string & (int)~0xfff);
     void *virt = (void*) vmm_automap_kernel(current_context, (paddr_t)phys, VMM_WRITABLE);
+
     for(i = 0; i < mb_info->mods_count; i++)
     {
         struct mods_add *module = &modules[i];

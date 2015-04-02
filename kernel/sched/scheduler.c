@@ -31,8 +31,6 @@
 #include <mm/vmm.h>
 #include <mm/layout.h>
 
-#include <gdt.h>
-
 // global stuff
 struct process_state *kernel_state = NULL;	// kernel init thread state
 struct thread_state *current_thread = NULL; // current thread state
@@ -68,18 +66,10 @@ void INIT_SCHEDULER(void)
     enable_irqs();
 }
 
-/**
- * @brief			performs context switches
- * @param thread	pointer to the thread state to switch to
- * @return			new cpu state
- */
-struct cpu_state *task_switch(struct thread_state *thread)
+struct cpu_state *switch_thread(struct thread_state *thread)
 {
-    struct cpu_state *cpu = thread->context.state;
-    set_kernelstack(cpu+1);
-    vmm_switch_context(&thread->context.memory);
-    set_iobmp(&thread->context);
-    return cpu;
+    current_thread = thread;
+    dispatch_thread(thread);
 }
 
 /**
@@ -110,9 +100,8 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
         }
 
         list_set_first(&thread_iterator);
-        current_thread = list_get_current(&thread_iterator);
 
-        cpu = task_switch(current_thread);
+        cpu = switch_thread(list_get_current(&thread_iterator));
     }
     else if(current_thread->ticks == 0)
     {
@@ -122,9 +111,8 @@ struct cpu_state *task_schedule(struct cpu_state *cpu)
         {
             list_set_first(&thread_iterator);
         }
-        current_thread = list_get_current(&thread_iterator);
 
-        cpu = task_switch(current_thread);
+        cpu = switch_thread(list_get_current(&thread_iterator));
     }
     else
     {

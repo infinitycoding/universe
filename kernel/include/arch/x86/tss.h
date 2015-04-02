@@ -23,7 +23,6 @@
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
 
-
 #define IO_BITMAP_LEN 0xFFFF
 #define IO_BITMAP_LENGTH 0xFFFF
 
@@ -32,7 +31,7 @@ typedef struct
     uint32_t iobmp[IO_BITMAP_LENGTH / 32];
 } iopb;
 
-typedef struct tss_s
+typedef struct __attribute__((packed)) tss_s
 {
     uint32_t ptl;
     uint32_t esp0;
@@ -62,6 +61,7 @@ typedef struct tss_s
     uint16_t reserved;
     uint32_t iobmp_offset;
     uint32_t iobmp[IO_BITMAP_LENGTH / 32];
-} __attribute__((packed)) tss_s;
+} tss_s;
 
 #endif
+

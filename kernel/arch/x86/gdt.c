@@ -34,7 +34,7 @@ tss_s tss = { .ss0 = 0x10 };
 /**
  * @brief INIT function for x86 segment/previleg level system
  */
-void INIT_PREV(void)
+void INIT_GDT(void)
 {
     //NULL Descriptor
     gdt_set_entry(GDT, 0, 0, 0, 0, NULL_DESC, 0);
@@ -49,6 +49,7 @@ void INIT_PREV(void)
 
     //TSS descriptor
     gdt_set_entry(GDT, 5, (paddr_t)&tss, sizeof(tss), KERNELMODE, TSS_DESC, GRAN4K | PRESENT);
+
     //load the new table
     gdt_load(GDT,5);
 
@@ -64,9 +65,9 @@ void INIT_PREV(void)
         ".1:;"
     );
 
-
     //initiate the i/o bitmap
-    tss.iobmp_offset =(uint32_t)(((uint32_t)&tss.iobmp) - ((uint32_t)&tss)); // calculate real adressoffset
+    tss.iobmp_offset = (uint32_t)(((uint32_t)&tss.iobmp) - ((uint32_t)&tss)); // calculate real adressoffset
+
     size_t i;
     for(i=0; i<2048; i++)
         tss.iobmp[i]=0xFFFFFFFF;
@@ -126,3 +127,4 @@ void set_iobmp(struct arch_thread_context *context)
 {
     memcpy(tss.iobmp, context->ports.iobmp, sizeof(tss.iobmp));
 }
+

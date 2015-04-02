@@ -1,8 +1,5 @@
-#ifndef _SCHEDULER_H_
-#define _SCHEDULER_H_
-
 /*
-     Copyright 2012-2014 Infinitycoding all rights reserved
+     Copyright 2012-2015 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
 
      The Universe Kernel is free software: you can redistribute it and/or modify
@@ -21,27 +18,25 @@
 
 /**
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
+ *	@author Michael Sippel <micha@infinitycoding.de>
  */
 
-#include <stdint.h>
 #include <cpu.h>
-#include <mm/vmm.h>
+#include <gdt.h>
+#include <io.h>
 #include <sched/thread.h>
 
-//Definitions
-#define STACK_HEAD 0xBFFFFFFF
-#define KERNEL_STACK_SIZE 4096
-
-#define PORT_ACCESS_STRUCT_SIZE 10
-#define THREAD_STRUCT_SIZE 24
-#define CHILD_STRUCT_SIZE 20
-#define ZOMBIEPID_STRUCT_SIZE 12
-#define CPU_STATE_STRUCT_SIZE 76
-
-void INIT_SCHEDULER(void);
-struct cpu_state *dispatch_thread(struct thread_state *thread);
-struct cpu_state *switch_thread(struct thread_state *thread);
-struct cpu_state *task_schedule(struct cpu_state *cpu);
-
-#endif
+/**
+ * @brief			performs context switches
+ * @param thread	pointer to the thread state to switch to
+ * @return			new cpu state
+ */
+struct cpu_state *dispatch_thread(struct thread_state *thread)
+{
+    struct cpu_state *cpu = thread->context.state;
+    set_kernelstack(cpu+1);
+    vmm_switch_context(&thread->context.memory);
+    set_iobmp(&thread->context);
+    return cpu;
+}
 

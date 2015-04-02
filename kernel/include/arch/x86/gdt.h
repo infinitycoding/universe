@@ -26,7 +26,6 @@
 #include <stdint.h>
 #include <arch_context.h>
 
-
 typedef enum
 {
     NULL_DESC   = 0,
@@ -68,10 +67,12 @@ struct gdtpt
     void* base;
 } __attribute__((packed));
 
-void INIT_PREV();
+void INIT_GDT();
 void gdt_set_entry(struct gdt_entry *gdt, uint16_t entry, paddr_t base, size_t size, privilege_t prev,gdt_seg_type type, gdt_flag_type flags);;
 void gdt_load(struct gdt_entry *gdt, uint16_t last_entry);
 
 void set_kernelstack(void *stack);
 void set_iobmp(struct arch_thread_context *context);
+
 #endif
+

@@ -27,7 +27,6 @@
 #include <mm/vmm.h>
 #include <tss.h>
 
-
 struct arch_thread_context
 {
     struct cpu_state 	*state;
