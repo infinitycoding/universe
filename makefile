@@ -4,7 +4,6 @@ all: kernel libs drivers user iso-img
 # I686
 # arm
 ARCH=i686
-
 PLATFORM=pc
 
 HOST_PREFIX=/usr/

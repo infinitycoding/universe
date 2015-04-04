@@ -23,7 +23,6 @@
  *  @author Michael Sippel <micha@infinitycoding.de>
  */
 #include <arch.h>
-
 #ifdef _VMM_
 
 // arch

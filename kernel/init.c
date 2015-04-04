@@ -57,6 +57,9 @@ void INIT_ARCH(void);
 void INIT_PLATFORM(void);
 void INIT_MM(struct multiboot_struct *mb_info);
 
+extern struct process_state *kernel_state;
+extern list_t *running_threads;
+
 /**
  * Initalize the Kernel
  *
@@ -65,9 +68,7 @@ void INIT_MM(struct multiboot_struct *mb_info);
  *
  * @return 0
  */
-extern struct process_state *kernel_state;
-extern list_t *running_threads;
-int init (struct multiboot_struct *mb_info, uint32_t magic_number)
+int init(struct multiboot_struct *mb_info, uint32_t magic_number)
 {
     if (magic_number != 0x2BADB002)
     {
@@ -97,15 +98,21 @@ int init (struct multiboot_struct *mb_info, uint32_t magic_number)
     printf("%u freie Speicherseiten (%u MB)\n", pages, pages >> 8);
 
     // map modules
+    paddr_t align = (paddr_t)mb_info & (~0xfff);
+    paddr_t diff = (paddr_t)mb_info - align;
+    mb_info = vmm_automap_kernel(current_context, align, VMM_WRITABLE) + diff;
+
+    align = (paddr_t)mb_info->mods_addr & (~0xfff);
+    diff = (paddr_t)mb_info->mods_addr - align;
+    mb_info->mods_addr = vmm_automap_kernel(current_context, align, VMM_WRITABLE) + diff;
+
     int i;
     struct mods_add* modules = (struct mods_add*) mb_info->mods_addr;
-
-    vmm_map(current_context, ((vaddr_t)mb_info & (~0xfff)) - MEMORY_LAYOUT_KERNEL_START, ((paddr_t)mb_info&(~0xfff)), VMM_WRITABLE);
-    vmm_map(current_context, (mb_info->mods_addr & (~0xfff)) - MEMORY_LAYOUT_KERNEL_START, mb_info->mods_addr & (~0xfff), VMM_WRITABLE);
 
     void *phys = (void*)((int)modules[0].string & (int)~0xfff);
     void *virt = (void*) vmm_automap_kernel(current_context, (paddr_t)phys, VMM_WRITABLE);
 
+    printf("%d modules\n", mb_info->mods_count);
     for(i = 0; i < mb_info->mods_count; i++)
     {
         struct mods_add *module = &modules[i];

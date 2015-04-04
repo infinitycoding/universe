@@ -9,12 +9,12 @@ Blub
 * Libs: GNU LGPL
 
 
-### [Bugs](doku/bugs.md)
+### [Bugs](/doku/bugs.md)
 If you find any kind of bug please report it to <info@infinitycoding.de>
 
-### [How to Build](doku/howto/building.md)
+### [How to Build](/doku/howto/building.md)
 
-### [How to Port](doku/howto/porting.md)
+### [How to Port](/doku/howto/porting.md)
 
-### [Todo](doku/todo.md)
+### [Todo](/doku/todo.md)
 

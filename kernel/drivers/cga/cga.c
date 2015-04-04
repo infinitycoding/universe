@@ -46,6 +46,8 @@ static int cga_y;
 void INIT_CGA(void)
 {
     cga_mem = (cga_data_t*) vmm_automap_kernel(current_context, 0xb8000, VMM_WRITABLE);
+    pmm_mark_page_as_used(0xb8000);
+
     cga_default_color.text_color = WHITE;
     cga_default_color.back_color = BLACK;
     cga_x = 0;

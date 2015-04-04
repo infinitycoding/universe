@@ -1,5 +1,5 @@
-#ifndef _arch_h_
-#define _arch_h_
+#ifndef _arch_modules_h_
+#define _arch_modules_h_
 
 #define _PREV_
 #define _VMM_

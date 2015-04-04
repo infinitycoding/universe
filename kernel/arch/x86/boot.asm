@@ -73,8 +73,6 @@ start:
 
 higherhalf:
   mov esp, stack
-  add ebx, MEMORY_LAYOUT_KERNEL_START
-  
   push 0
   push 0
   push eax

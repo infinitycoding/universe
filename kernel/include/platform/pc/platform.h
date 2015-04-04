@@ -1,5 +1,5 @@
-#ifndef _platform_h_
-#define _platform_h_
+#ifndef _platform_modules_h_
+#define _platform_modules_h_
 
 #define _CGA_
 #define _PIC_

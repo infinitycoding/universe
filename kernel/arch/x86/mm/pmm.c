@@ -352,6 +352,12 @@ void INIT_PMM(struct multiboot_struct *mb_info)
         pmm_mmap[i] = 0;
     }
 
+    pmm_mark_page_as_used((paddr_t)mb_info);
+
+    mb_info += MEMORY_LAYOUT_KERNEL_START;
+
+    pmm_mark_page_as_used((paddr_t) mb_info->mods_addr);
+
     mb_info->mmap_addr += MEMORY_LAYOUT_KERNEL_START;
     mb_info->mods_addr += MEMORY_LAYOUT_KERNEL_START;
 
@@ -370,7 +376,7 @@ void INIT_PMM(struct multiboot_struct *mb_info)
         }
     }
 
-    //protect Memory structures
+    // protect Memory structures
     pmm_mark_page_as_used(0); //IVT+BDA
 
     uint16_t* EBDA_p = (void *)0x040E;
@@ -380,13 +386,10 @@ void INIT_PMM(struct multiboot_struct *mb_info)
     pmm_mark_page_as_used((BDA_size[0] / 4) * 1024); //FPS (maybe)
     pmm_mark_page_range_as_used(0xA0000, 96); //0xA0000 - 0xFFFFF ROM-AREA
 
-
-    //multiboot structures
+    // multiboot structures
     struct mods_add *mods = (void*)mb_info->mods_addr;
-    pmm_mark_page_as_used((paddr_t)mb_info - MEMORY_LAYOUT_KERNEL_START);
-    pmm_mark_page_as_used((paddr_t)mods    - MEMORY_LAYOUT_KERNEL_START);
 
-    //multiboot modules
+    // multiboot modules
     for (i = 0; i < mb_info->mods_count; i++)
     {
         uint32_t size = mods[i].mod_end - mods[i].mod_start;
@@ -400,5 +403,8 @@ void INIT_PMM(struct multiboot_struct *mb_info)
         panic("PMM_INIT: no ram info in multiboot structure");
     }
 
+    mb_info->mmap_addr -= MEMORY_LAYOUT_KERNEL_START;
+    mb_info->mods_addr -= MEMORY_LAYOUT_KERNEL_START;
+    mb_info -= MEMORY_LAYOUT_KERNEL_START;
 }
 

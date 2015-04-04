@@ -1,6 +1,6 @@
 Universe Kernel
 =============
 
-### [Syscalls](syscalls.md)
+### [Syscalls](/doku/syscalls.md)
 
 
