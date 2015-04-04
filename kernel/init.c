@@ -58,13 +58,13 @@ void INIT_PLATFORM(void);
 void INIT_MM(struct multiboot_struct *mb_info);
 
 /**
-* Initalize the Kernel
-*
-* @param mb_info The pointer to the multiboot-struct from the bootloader
-* @param magic_number Multiboot-magic
-*
-* @return 0
-*/
+ * Initalize the Kernel
+ *
+ * @param mb_info The pointer to the multiboot-struct from the bootloader
+ * @param magic_number Multiboot-magic
+ *
+ * @return 0
+ */
 extern struct process_state *kernel_state;
 extern list_t *running_threads;
 int init (struct multiboot_struct *mb_info, uint32_t magic_number)

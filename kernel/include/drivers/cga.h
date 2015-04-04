@@ -19,7 +19,6 @@
  */
 
 /**
- *	@author Tom Slawik <tom.slawik@gmail.com>
  *	@author Michael Sippel <micha@infinitycoding.de>
  */
 #include <platform.h>

@@ -1,36 +1,18 @@
-universe
-========
+Universe
+=============
 
-Universe is a small unix-compatible operating system kernel.
-It can nativly run linux programs und has a very generic driver pipeline system.
+### About Universe
+Blub
 
-Licenses: 
-  Kernel: GNU GPL v.3
-  Libraries: GNU LGPL
-
-If you find any kind of bug please report it to info@infinitycoding.de
-
-Dependencies:
-========
-* gcc   	            (only for compiling)
-* nasm  	            (only for compiling)
-* qemu		            (only for testing)
-* cdrkit/genisoimage	(only for compiling)
-* make					(only for compiling)
+#### Licences
+* Kernel: GNU GPL v.3
+* Libs: GNU LGPL
 
 
-How to compile:
-========
+### [Bugs](doku/bugs.md)
+If you find any kind of bug please report it to <info@infinitycoding.de>
 
-````
-	make dependencies
-	make all
-````
+### [How to Build](doku/building.md)
 
-run in qemu vm:
-========
-
-````
-	make qemu
-````
+### [Todo](doku/todo.md)
 
