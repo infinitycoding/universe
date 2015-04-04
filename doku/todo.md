@@ -1,4 +1,5 @@
-### TODO
+TODO
+=============
 
 ##### General
 * write testcases
@@ -33,7 +34,7 @@
 * write **doku doku doku**
 * define the missing functions for lua
 
-###### minimal dependencie functions for liblua
+###### minimal dependency functions for liblua
 
 	feof
 	freopen
