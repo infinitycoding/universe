@@ -1,1 +1,1 @@
-doku/concepts/udrcp.md
+../../doku/concepts/udrcp.md

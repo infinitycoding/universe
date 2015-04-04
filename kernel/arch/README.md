@@ -1,1 +1,1 @@
-doku/arch/hal.md
+../../doku/arch/hal.md

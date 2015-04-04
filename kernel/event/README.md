@@ -1,1 +1,1 @@
-doku/event/trigger.md
+../../doku/event/trigger.md

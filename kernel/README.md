@@ -1,1 +1,1 @@
-doku/kernel.md
+../doku/kernel.md

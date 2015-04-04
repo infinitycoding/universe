@@ -1,4 +1,4 @@
-#Paths
+# UDRCP
 
 UDRCP (Universe(al) driver communication protocoll) is the standart protocoll for driver 
 communication in universe. UDRCP offers simple possibilites to communicate with drivers for standart devices
@@ -7,27 +7,27 @@ with sub standarts for different devices.
 
 The protocoll is bidirectional and is in default binary (edianess hardware dependent) or UTF8.
 
-Connection establishing:
-========
+### Connection establishing:
+
 The the connection is usually established with process sockets in universe, but cann also be used via any
 bi directional pipe system. 
 
 
-socket folder:
+##### socket folder:
 - containing in and out file for main
 - optional udrcp pipes/files
 
-udrcp file:
+##### udrcp file:
 - dma as readable memory block(s) as a file which is mapped to memory
 - stream in and outputs (ports)
 
 
-mapping on filesystem:
+#### mapping on filesystem:
   open pipelines are mapped on the service hub
   ln from /dev to sockets in or outputs
   
 
-###Levels:
+### Levels:
 
 |---------------------------------------|-------|
 |                 Layer                 | Level |
@@ -48,7 +48,7 @@ Port access.
 
 
 
-Example:
+#### Example:
 
 PCI SSD
 
@@ -60,7 +60,7 @@ linking to filesystem                   | FS driver
 
 
 
-###Packages:
+### Packages:
 
 |--------------|-------------|------------------|
 |    offset    |    size     |     field        |
@@ -76,7 +76,7 @@ linking to filesystem                   | FS driver
 
 
 
-###Universa Types:
+### Universa Types:
 
 
 |---------|---------------------|
@@ -102,7 +102,7 @@ share memory:
 passed memory:
 
 
-###Level 0 Types:
+### Level 0 Types:
 
 |---------|---------------------|
 |  value  |         typ         |
@@ -126,19 +126,19 @@ passed memory:
 
 
 
-hosted Ports:
+**hosted Ports**:
 ports which aren't accessible directly. Acces is performed via UDRCP Pipline
 
-direct ports:
+**direct ports**:
 ports which can directly be accessed via CPU instruction
 
-direct memory:
+**direct memory**:
 
-hosted memory:
+**hosted memory**:
 
 
 
-###Level 1:
+### Level 1:
 
 |---------|----------------------|
 |  value  |         typ          |
@@ -168,10 +168,7 @@ SATA/SCSI/SAS:
 
 
 
-###Level 2 Types:
-
-
-
+### Level 2 Types:
 
 
 Block Device:
@@ -191,7 +188,7 @@ Stream Device:
 LVM:
 
 
-###Level 3 Types:
+### Level 3 Types:
 
 
 File system:
@@ -229,6 +226,7 @@ upload kernel:
 
 
 network:
+
 |---------|---------------------|
 |  value  |         typ         |
 |---------|---------------------|
@@ -238,11 +236,10 @@ network:
 |---------|---------------------|
 
 
-###establishing a connection:
+### establishing a connection:
 
 
-
-###shuting down pipline:
+### shuting down pipline:
 
 
 Abbildung von root piplines in /dev
