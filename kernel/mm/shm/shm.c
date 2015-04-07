@@ -40,6 +40,7 @@ shm_context_t *shm_create_context(size_t size)
     shm_context_t *context = malloc(sizeof(shm_context_t));
     context->size = size;
     context->phys_pages = list_create();
+    context->users = list_create();
 
     int i;
     for(i = 0; i < size; i++)

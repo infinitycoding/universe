@@ -39,6 +39,28 @@
 extern struct thread_state *current_thread;
 
 
+void sys_kill(struct cpu_state **cpu)
+{
+    unsigned int id = (*cpu)->CPU_ARG1;
+    unsigned int sig = (*cpu)->CPU_ARG2;
+
+    shm_descriptor_t *desc = shm_get_descriptor(current_thread->process, id);
+
+    iterator_t it = iterator_create(desc->context->users);
+    list_set_first(&it);
+    while(! list_is_last(&it))
+    {
+        struct process_state *proc = list_get_current(&it);
+        if(proc != NULL && proc != current_thread->process)
+            send_signal(proc, sig);
+
+        list_next(&it);
+    }
+
+    (*cpu)->CPU_ARG0 = 0;
+}
+
+
 void sys_shm_get(struct cpu_state **cpu)
 {
     unsigned int key = (*cpu)->CPU_ARG1;

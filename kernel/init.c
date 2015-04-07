@@ -112,7 +112,7 @@ int init(struct multiboot_struct *mb_info, uint32_t magic_number)
     void *phys = (void*)((int)modules[0].string & (int)~0xfff);
     void *virt = (void*) vmm_automap_kernel(current_context, (paddr_t)phys, VMM_WRITABLE);
 
-    printf("%d modules\n", mb_info->mods_count);
+    printf("\nloaded %d modules.\n", mb_info->mods_count);
     for(i = 0; i < mb_info->mods_count; i++)
     {
         struct mods_add *module = &modules[i];
@@ -123,7 +123,6 @@ int init(struct multiboot_struct *mb_info, uint32_t magic_number)
         // map and execute (all)
         if( i > 0 )
         {
-            printf("execute %s\n", module->string);
             int size = module->mod_end - module->mod_start;
             int pages = NUM_PAGES(size);
             vaddr_t virtaddr = vmm_automap_kernel_range(current_context, module->mod_start, pages, VMM_WRITABLE);

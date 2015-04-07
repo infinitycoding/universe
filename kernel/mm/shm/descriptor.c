@@ -36,6 +36,7 @@ shm_descriptor_t *shm_create_descriptor(struct process_state *process, shm_conte
     descriptor->context = context;
 
     list_push_back(process->shm_descriptors, descriptor);
+    list_push_back(context->users, process);
 
     return descriptor;
 }
@@ -47,7 +48,11 @@ shm_descriptor_t *shm_get_descriptor(struct process_state *process, unsigned int
 
 void shm_destroy_descriptor(struct process_state *process, unsigned int id)
 {
-    // TODO
-}
+    shm_descriptor_t *desc = shm_get_descriptor(process, id);
 
+    // TODO: remove process from users list in context
+    // TODO: remove descriptor from descriptor list in process
+
+    free(desc);
+}
 

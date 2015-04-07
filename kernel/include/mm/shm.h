@@ -1,6 +1,5 @@
 #ifndef _shm_h_
 #define _shm_h_
-
 /*
      Copyright 2015 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
@@ -24,10 +23,6 @@
  *
  * @author Michael Sippel <micha@infinitycoding.de>
  */
-#include <arch.h>
-
-#ifdef _VMM_
-
 #include <cpu.h>
 #include <mm/vmm.h>
 #include <sched/process.h>
@@ -38,6 +33,8 @@ typedef struct shm_context
 {
     size_t size;
     list_t *phys_pages;
+
+    list_t *users;
 } shm_context_t;
 
 typedef struct shm_descriptor
@@ -48,7 +45,6 @@ typedef struct shm_descriptor
     void *base;
 } shm_descriptor_t;
 
-#endif
 
 void INIT_SHM(void);
 
