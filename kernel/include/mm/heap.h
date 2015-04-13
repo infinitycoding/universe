@@ -1,61 +1,62 @@
-#ifndef _HEAP_H_
-#define _HEAP_H_
-
+#ifndef _heap_h_
+#define _heap_h_
 /*
-	Copyright 2012-2014 universe coding group (UCG) all rights reserved
-	This file is part of the Universe Kernel.
+     Copyright 2015 Infinitycoding all rights reserved
+     This file is part of the Universe Kernel.
 
-	Universe Kernel is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	any later version.
+     The Universe Kernel is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     any later version.
 
-	Universe Kernel is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+     The Universe Kernel is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with Universe Kernel.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/**
- *  @author Michael Sippel (Universe Team) <micha@infinitycoding.com>
+     You should have received a copy of the GNU General Public License
+     along with the Universe Kernel. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @author Michael Sippel <micha@infinitycoding.de>
+ */
 #include <stdint.h>
 
-/*
-	std interface
-*/
-
-void *malloc(size_t size);
-void free(void *ptr);
-void *calloc(size_t num, size_t size);
-void *realloc(void *ptr, size_t size);
-
-/*
-	internal interface
-*/
-
-struct memory_block
+typedef struct heap_node
 {
-    size_t size;
-    vaddr_t base;
-};
+    uintptr_t base;
+    size_t length;
+    uint8_t flags;
 
-struct header_block
+    // tree pointers
+    struct heap_node* left;
+    struct heap_node* right;
+
+    struct heap_node* top;
+    struct heap_node* bottom;
+} heap_node_t;
+
+typedef struct heap
 {
-    struct memory_block fragments[511];
-    struct header_block *next;
-};
+    heap_node_t* free_root;
+    heap_node_t* used_root;
 
-void INIT_HEAP(void);
+    heap_node_t* (*node_create)(void);
+    void (*node_destroy)(heap_node_t* node);
+} heap_t;
 
-struct header_block *create_block(void);
-void heap_provide_address(vaddr_t start, vaddr_t end);
-void *heap_alloc(size_t size);
-void heap_free(void *ptr);
+void heap_create(heap_t *heap, heap_node_t* (*node_create)(void), void (*node_destroy)(heap_node_t*));
+
+heap_node_t* heap_alloc(heap_t* heap, size_t size);
+heap_node_t* heap_free(heap_t* heap, uintptr_t base);
+
+heap_node_t* heap_find_base(heap_node_t* root, uintptr_t base);
+heap_node_t* heap_find_size(heap_node_t* root, size_t length);
+
+void heap_insert_base(heap_node_t** root, heap_node_t* new_node);
+void heap_insert_size(heap_node_t** root, heap_node_t* new_node);
+heap_node_t* heap_remove(heap_node_t* node);
 
 #endif
 

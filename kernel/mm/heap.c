@@ -1,5 +1,5 @@
 /*
-     Copyright 2012-2014 Infinitycoding all rights reserved
+     Copyright 2015 Infinitycoding all rights reserved
      This file is part of the Universe Kernel.
 
      The Universe Kernel is free software: you can redistribute it and/or modify
@@ -17,261 +17,149 @@
  */
 
 /**
- *  @file /mm/heap.c
- *  @brief Kernel Module for Dynamic memory management (malloc, free)
- *  @author Michael Sippel (Universe Team) <micha@infinitycoding.com>
+ * @author Michael Sippel <micha@infinitycoding.de>
  */
-#include <arch.h>
-
-#ifdef _VMM_
-
-#include <stdint.h>
 #include <mm/heap.h>
-#include <mm/pmm.h>
-#include <mm/layout.h>
-#include <mm/vmm.h>
-#include <string.h>
-#include <printf.h>
+#include <stdint.h>
+#include <stddef.h>
 
-static struct header_block *used_blocks = NULL;
-static struct header_block *free_blocks = NULL;
-
-
-
-/**
- *  @brief Initiates the dynamic memory management module.
- */
-void INIT_HEAP(void)
+void heap_create(heap_t *heap, heap_node_t* (*node_create)(void), void (*node_destroy)(heap_node_t*))
 {
-    used_blocks = create_block();
-    free_blocks = create_block();
-    free_blocks->fragments[0].base = MEMORY_LAYOUT_KERNEL_HEAP_START;
-    free_blocks->fragments[0].size = MEMORY_LAYOUT_KERNEL_HEAP_END - MEMORY_LAYOUT_KERNEL_HEAP_START;
+    heap->used_root = NULL;
+    heap->free_root = NULL;
+
+    heap->node_create = node_create;
+    heap->node_destroy= node_destroy;
 }
 
-
-/**
- *  @brief Allocates header block for internal memory management structs.
- *  @return Pointer to the new header block
- */
-struct header_block *create_block(void)
+heap_node_t* heap_alloc(heap_t* heap, size_t length)
 {
-    struct header_block *block = (struct header_block *) vmm_automap_kernel(current_context, pmm_alloc_page(), VMM_WRITABLE);
-    memset((void*)block, 0, PAGE_SIZE);
+    heap_node_t* node = heap_find_size(heap->free_root, length);
 
-    return block;
-}
-
-
-/**
- *  @brief Adds a Memory fragment to management struct.
- *  @param header The Header block.
- *  @param base   The base adress of the new fragment.
- *  @param size   The size of the new Fragment.
- */
-void heap_add_fragment(struct header_block *header, vaddr_t base, size_t size)
-{
-    // go through all header blocks...
-    while(header != NULL)
+    if(node->length > length)
     {
-        int i;
+        uintptr_t base = node->base;
 
-        // go through all fragments...
-        for(i = 0; i < 511; i++)
-        {
-            if(header->fragments[i].base == 0)
-            {
-                header->fragments[i].base = base;
-                header->fragments[i].size = size;
-#if HEAP_DEBUG
-                printf("[heap/add] %p, %d to %p\n", base, size, header);
-#endif
-                return;
-            }
-        }
+        // shrink old
+        node->base += length;
+        node->length -= length;
 
-        if(header->next == NULL)
-        {
-            header->next = create_block();
-        }
-
-        header = header->next;
+        // create new
+        node = heap->node_create();
+        node->base = base;
+        node->length = length;
     }
+    else
+        node = heap_remove(node);
+
+    heap_insert_base(&heap->used_root, node);
+
+    return node;
 }
 
-
-/**
- *  @brief Removes a fragment from the management struct
- *  @param header Header Block.
- *  @param base   Base address of the fragment to remove.
- *  @return size  0 = failure else the size fo the removed fragment
- */
-size_t heap_remove_fragment(struct header_block *header, vaddr_t base)
+heap_node_t* heap_free(heap_t* heap, uintptr_t base)
 {
-    // go through all header blocks...
-    while(header != NULL)
+    heap_node_t *node = heap_find_base(heap->used_root, base);
+    node = heap_remove(node);
+
+    // TODO: merge
+    heap_insert_size(&heap->free_root, node);
+
+    return node;
+}
+
+heap_node_t* heap_find_base(heap_node_t* root, uintptr_t base)
+{
+    heap_node_t* node = root;
+    while(node != NULL)
     {
-        int i;
+        if(base == node->base)
+            break;
 
-        // go through all fragments...
-        for(i = 0; i < 511; i++)
-        {
-            if(header->fragments[i].base == base)
-            {
-                header->fragments[i].base = 0;
-#if HEAP_DEBUG
-                printf("[heap/remove] %p, %d from %p\n", base, header->fragments[i].size, header);
-#endif
-                return header->fragments[i].size;
-            }
-        }
-
-        header = header->next;
+        if(base < node->base)
+            node = node->left;
+        else
+            node = node->right;
     }
 
-    return 0;
+    return node;
 }
 
-
-/**
- *  @brief provide a specific data area
- *  @param start pointer to begin of data
- *  @param end pointer to end of data
- */
-void heap_provide_address(vaddr_t start, vaddr_t end)
+heap_node_t* heap_find_size(heap_node_t* root, size_t length)
 {
-    int pages = NUM_PAGES(end - (start & PAGE_MASK));
+    heap_node_t* node = root;
+    heap_node_t* best = NULL;
 
-    paddr_t pframe = 0;
-    vaddr_t vframe = start & PAGE_MASK;
-
-    int i;
-    for(i = 0; i < pages; i++)
+    while(node != NULL)
     {
-        if(! vmm_is_present(current_context, vframe) &&
-                vaddr2paddr(current_context, vframe) == 0)
+        if(length <= node->length)
         {
-            pframe = pmm_alloc_page();
-            vmm_map(current_context, pframe, vframe, VMM_WRITABLE);
+            if(best == NULL || node->length < best->length)
+                best = node;
+
+            node = node->left;
         }
-        vframe += PAGE_SIZE;
-    }
-}
-
-#
-/**
- * @brief Search for a free address and mark it as used.
- * @param size number of bytes
- * @return pointer to reserved bytes
- */
-void *malloc(size_t bytes)
-{
-    struct header_block *header = free_blocks;
-
-    // go through all header blocks...
-    while(header != NULL)
-    {
-        int i;
-
-        // go through all fragments...
-        for(i = 0; i < 511; i++)
-        {
-            if(header->fragments[i].base == 0)
-            {
-                continue;
-            }
-
-            if(header->fragments[i].size >= bytes)
-            {
-                // found some space.
-                vaddr_t base = header->fragments[i].base;
-
-#if HEAP_DEBUG
-                printf("[heap/malloc] %p (%d >= %d) in %p\n", base, header->fragments[i].size,bytes, header);
-#endif
-
-                if(header->fragments[i].size > bytes)
-                {
-                    // shrink fragment
-                    header->fragments[i].base += bytes;
-                    header->fragments[i].size -= bytes;
-                }
-                else
-                {
-                    // remove fragment
-                    header->fragments[i].base = 0;
-                }
-
-                // add fragment to used list
-                heap_add_fragment(used_blocks, base, bytes);
-
-                // make sure that everything is mapped
-                heap_provide_address(base, base + bytes);
-
-                return (void *)base;
-            }
-        }
-
-        header = header->next;
+        else
+            node = node->right;
     }
 
-    // no more memory :'(
-    printf("!!! ERROR: no memory for malloc.. !!!\n");
-    while(1);
-
-    return NULL;
+    return best;
 }
 
-
-/**
- *  @brief Free a range of bytes in the heap
- *  @param ptr pointer
- */
-void free(void *ptr)
+void heap_insert_base(heap_node_t** root, heap_node_t* new_node)
 {
-    size_t bytes = heap_remove_fragment(used_blocks, (vaddr_t) ptr);
-    heap_add_fragment(free_blocks, (vaddr_t)ptr, bytes);
+    heap_node_t** node = root;
+    while((*node) != NULL)
+    {
+        if(new_node->base < (*node)->base)
+            node = &(*node)->left;
+        else
+            node = &(*node)->right;
+    }
+
+    new_node->left = NULL;
+    new_node->right = NULL;
+    (*node) = new_node;
 }
 
-
-/**
- * @brief allocate num*blocks and clear memory
- * @param num number of blocks
- * @param size size of one block
- * @return pointer to allocated memory
- */
-void *calloc(size_t num, size_t size)
+void heap_insert_size(heap_node_t** root, heap_node_t* new_node)
 {
-    size_t bytes = num * size;
+    heap_node_t** node = root;
+    while((*node) != NULL)
+    {
+        if(new_node->length <= (*node)->length)
+            node = &(*node)->left;
+        else
+            node = &(*node)->right;
+    }
 
-    void *data = malloc(bytes);
-    memset(data, 0, bytes);
-
-    return data;
+    new_node->left = NULL;
+    new_node->right = NULL;
+    (*node) = new_node;
 }
 
-
-/**
- *  @brief resize an allocated object
- *  @param ptr pointer to old location
- *  @param size new size
- *  @return new pointer
- */
-void *realloc(void *ptr, size_t size)
+heap_node_t* heap_remove(heap_node_t* node)
 {
-    // get fragment size and remove
-    size_t old_size = heap_remove_fragment(used_blocks, (vaddr_t) ptr);
+    heap_node_t** swap = &node->right;
+    while((*swap)->left != NULL)
+        swap = &(*swap)->left;
 
-    // malloc new
-    void *dest = malloc(size);
+    heap_node_t tmp;
+    tmp.base = node->base;
+    tmp.length = node->length;
+    tmp.flags = node->flags;
 
-    // copy data from old to new
-    size_t copy_size = (size > old_size) ? old_size : size;
-    memcpy(dest, ptr, copy_size);
+    node->base = (*swap)->base;
+    node->length = (*swap)->length;
+    node->flags = (*swap)->flags;
 
-    return dest;
+    node = (*swap);
+    node->base = tmp.base;
+    node->length = tmp.length;
+    node->flags = tmp.flags;
+
+    (*swap) = (*swap)->right;
+
+    return node;
 }
-
-#endif
-
 

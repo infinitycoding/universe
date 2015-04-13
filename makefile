@@ -1,4 +1,5 @@
-all: kernel libs drivers user iso-img
+#all: kernel libs drivers user iso-img
+all: kernel iso-img
 
 # PPC
 # I686
@@ -59,10 +60,10 @@ usb:
 	cp -R ./build /mnt
 	grub-install --root-directory=/mnt --no-floppy --recheck $(USBDEV)
 
-qemu: kernel libs drivers user iso-img
+qemu: all
 	$(QEMU)
 
-debug: kernel libs drivers user iso-img
+debug: all
 	$(QEMU) -s -S
 
 style:

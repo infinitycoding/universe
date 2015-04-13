@@ -39,6 +39,7 @@
 #include <mm/pmm.h>
 #include <mm/vmm.h>
 #include <mm/heap.h>
+#include <mm/malloc.h>
 #include <mm/shm.h>
 
 //descriptor tables
