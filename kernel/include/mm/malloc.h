@@ -46,8 +46,6 @@ void INIT_HEAP(void);
 
 struct header_block *create_block(void);
 void heap_provide_address(vaddr_t start, vaddr_t end);
-void *heap_alloc(size_t size);
-void heap_free(void *ptr);
 
 #endif
 

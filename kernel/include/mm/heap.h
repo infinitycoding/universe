@@ -23,6 +23,8 @@
  */
 #include <stdint.h>
 
+#define HEAP_MERGE 0x1
+
 typedef struct heap_node
 {
     uintptr_t base;
@@ -51,12 +53,12 @@ void heap_create(heap_t *heap, heap_node_t* (*node_create)(void), void (*node_de
 heap_node_t* heap_alloc(heap_t* heap, size_t size);
 heap_node_t* heap_free(heap_t* heap, uintptr_t base);
 
-heap_node_t* heap_find_base(heap_node_t* root, uintptr_t base);
-heap_node_t* heap_find_size(heap_node_t* root, size_t length);
-
-void heap_insert_base(heap_node_t** root, heap_node_t* new_node);
-void heap_insert_size(heap_node_t** root, heap_node_t* new_node);
-heap_node_t* heap_remove(heap_node_t* node);
+heap_node_t** heap_find_used(heap_t* heap, uintptr_t base);
+heap_node_t** heap_find_free(heap_t* heap, size_t length);
+heap_node_t** heap_insert_used(heap_t* heap, heap_node_t* new_node);
+heap_node_t** heap_insert_free(heap_t* heap, heap_node_t* new_node);
+heap_node_t** heap_merge(heap_t* heap, heap_node_t** node);
+void heap_remove(heap_node_t** node);
 
 #endif
 
