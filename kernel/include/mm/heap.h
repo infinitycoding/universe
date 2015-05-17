@@ -27,6 +27,10 @@
  */
 #include <stdint.h>
 
+
+#define HEAP_MERGE 0x1
+#define HEAP_FREE 0x2
+
 typedef struct heap_node
 {
     uintptr_t base;

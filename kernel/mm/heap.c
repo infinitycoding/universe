@@ -66,12 +66,14 @@ heap_node_t* heap_alloc(heap_t* heap, size_t length)
         new_node->base = base;
         new_node->length = length;
 
-        // insert into tree
-        heap_node_t** ins = heap_insert_used(heap, new_node);
-
         // insert into linear chain
         new_node->bottom = node->bottom;
         new_node->top = found_node;
+
+        // insert into used tree; next wee need 'ins'
+        heap_node_t** ins = heap_insert_used(heap, new_node);
+
+        // rest linear chain
         node->bottom = ins;
 
         if(new_node->bottom != NULL && *new_node->bottom != NULL)
@@ -87,7 +89,10 @@ heap_node_t* heap_alloc(heap_t* heap, size_t length)
     }
     else
     {
+        // remove from free tree
         heap_remove(found_node);
+
+        // insert into used tree
         heap_insert_used(heap, node);
     }
 
@@ -106,15 +111,14 @@ heap_node_t* heap_free(heap_t* heap, uintptr_t base)
 
         // insert to free tree
         heap_node_t** ins = heap_insert_free(heap, node);
+        node = *ins;
 
         // merge
-//		if((*ins)->bottom != NULL)
-//			ins = heap_merge(heap, ins, (*ins)->bottom);
+        if(node->bottom != NULL)
+            heap_merge(heap, node->bottom, ins);
 
-//		if((*ins)->top != NULL)
-//			ins = heap_merge(heap, ins, (*ins)->top);
-
-        node = *ins;
+        if(node->top != NULL)
+            heap_merge(heap, ins, node->top);
     }
 
     return node;
@@ -175,6 +179,8 @@ heap_node_t** heap_insert_used(heap_t* heap, heap_node_t* new_node)
     heap_update_pointers(new_node, node);
     (*node) = new_node;
 
+    new_node->flags &= ~HEAP_FREE;
+
     return node;
 }
 
@@ -182,6 +188,7 @@ heap_node_t** heap_insert_free(heap_t* heap, heap_node_t* new_node)
 {
     new_node->left = NULL;
     new_node->right = NULL;
+
     heap_node_t** node = &heap->free_root;
     while((*node) != NULL)
     {
@@ -193,6 +200,8 @@ heap_node_t** heap_insert_free(heap_t* heap, heap_node_t* new_node)
 
     heap_update_pointers(new_node, node);
     (*node) = new_node;
+
+    new_node->flags |= HEAP_FREE;
 
     return node;
 }
@@ -215,7 +224,7 @@ heap_node_t** heap_merge(heap_t* heap, heap_node_t** node1, heap_node_t** node2)
     heap_node_t *n1 = *node1;
     heap_node_t *n2 = *node2;
 
-    if(n1 != NULL && n2 != NULL)
+    if(n1 != NULL && n2 != NULL && n1->flags == n2->flags && (n1->flags & HEAP_MERGE))
     {
         if(n2->base == (n1->base + n1->length))
         {
@@ -223,15 +232,16 @@ heap_node_t** heap_merge(heap_t* heap, heap_node_t** node1, heap_node_t** node2)
             n1->flags |= n2->flags;
 
             heap_remove(node2);
-            heap->node_destroy(n2);
 
-            return node1;
+            n1->top = n2->top;
+            if(n1->top != NULL && *n1->top != NULL)
+                (*n1->top)->bottom = node1;
+
+            heap->node_destroy(n2);
         }
-        else if(n1->base == (n2->base + n2->length))
-            return heap_merge(heap, node2, node1);
     }
 
-    return NULL;
+    return node1;
 }
 
 void heap_remove(heap_node_t** node)
