@@ -20,10 +20,12 @@
 
 /**
  * @author Michael Sippel <micha@infinitycoding.de>
+ *
+ *	!!! WARNING !!!
+ *	THIS IS A FUCKING POINTER HACK
+ *  Glory to them who debug it ;)
  */
 #include <stdint.h>
-
-#define HEAP_MERGE 0x1
 
 typedef struct heap_node
 {
@@ -35,8 +37,8 @@ typedef struct heap_node
     struct heap_node* left;
     struct heap_node* right;
 
-    struct heap_node* top;
-    struct heap_node* bottom;
+    struct heap_node** top;
+    struct heap_node** bottom;
 } heap_node_t;
 
 typedef struct heap
@@ -44,20 +46,25 @@ typedef struct heap
     heap_node_t* free_root;
     heap_node_t* used_root;
 
+    heap_node_t* top;
+    heap_node_t* bottom;
+
     heap_node_t* (*node_create)(void);
     void (*node_destroy)(heap_node_t* node);
 } heap_t;
 
 void heap_create(heap_t *heap, heap_node_t* (*node_create)(void), void (*node_destroy)(heap_node_t*));
 
+// heap functions
 heap_node_t* heap_alloc(heap_t* heap, size_t size);
 heap_node_t* heap_free(heap_t* heap, uintptr_t base);
 
+// tree functions
 heap_node_t** heap_find_used(heap_t* heap, uintptr_t base);
 heap_node_t** heap_find_free(heap_t* heap, size_t length);
 heap_node_t** heap_insert_used(heap_t* heap, heap_node_t* new_node);
 heap_node_t** heap_insert_free(heap_t* heap, heap_node_t* new_node);
-heap_node_t** heap_merge(heap_t* heap, heap_node_t** node);
+heap_node_t** heap_merge(heap_t* heap, heap_node_t** node1, heap_node_t** node2);
 void heap_remove(heap_node_t** node);
 
 #endif
