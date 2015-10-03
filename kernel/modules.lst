@@ -1,14 +1,1 @@
-drivers/cga
-drivers/pic
-drivers/pit
-event/syscall
-event/trigger
-mm/heap
-mm/mm
-mm/shm
-mm/vmm
-sched/elf
-sched/process
-sched/roundrobin
-sched/signal
 util/nlc
