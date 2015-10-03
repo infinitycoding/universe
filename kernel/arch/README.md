@@ -1,1 +1,0 @@
-../../doku/arch/hal.md

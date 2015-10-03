@@ -9,7 +9,7 @@ PLATFORM=pc
 
 HOST_PREFIX=/usr/
 
-CFLAGS = -Wall -g -nostdinc -fno-stack-protector -fno-builtin-log
+CFLAGS = -Wall -g -nostdinc -fno-stack-protector -fno-builtin-log -fno-builtin
 ASFLAGS =-felf32
 #LDFLAGS = -muniverse_i386
 
@@ -38,7 +38,6 @@ endif
 
 
 export PREFIX
-
 
 kernel:
 	@$(MAKE) -C kernel ARCH="$(ARCH)" PLATFORM="$(PLATFORM)" CC="$(CC)" ASM="$(ASM)" LD="$(LD)" CFLAGS="$(CFLAGS)" ASFLAGS="$(ASFLAGS)" LDFLAGS="$(LDFLAGS)"

@@ -1,1 +1,0 @@
-../../doku/event/trigger.md
