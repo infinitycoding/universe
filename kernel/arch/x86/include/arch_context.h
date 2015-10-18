@@ -24,7 +24,7 @@
  */
 
 #include <cpu.h>
-#include <mm/vmm.h>
+#include <mm/arch_vmm.h>
 #include <tss.h>
 
 struct arch_thread_context

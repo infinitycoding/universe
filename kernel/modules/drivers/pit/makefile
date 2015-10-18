@@ -22,7 +22,7 @@ $(MODFILE): $(C_OBJS) $(ASM_OBJS)
 	ar -rcs $@ $^
 
 %.o: %.c $(C_SRCS)
-	$(CC) ${CFLAGS} $(L_CFLAGS) -c -o $@ $< $
+	$(CC) ${CFLAGS} -c -o $@ $< $
 
 %.o: %.asm $(ASM_SRCS)
 	$(ASM) $(ASFLAGS) -o $@ $< $
@@ -45,7 +45,7 @@ endif
 testmod: $(TEST_C_OBJS) $(TEST_ASM_OBJS)
 	gcc -m32 -o test $^
 %.o: %.c $(TEST_C_SRCS)
-	$(CC) ${CFLAGS} $(L_CFLAGS) -c -o $@ $< $
+	${CC} ${CFLAGS} $(L_CFLAGS) -c -o $@ $< $
 
 %.o: %.asm $(TEST_ASM_SRCS)
 	$(ASM) $(ASFLAGS) -o $@ $< $
