@@ -1,0 +1,6 @@
+util/nlc
+event/syscall
+arch/x86/interrupt
+arch/x86/mm
+arch/x86/sched
+

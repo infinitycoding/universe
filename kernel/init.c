@@ -31,9 +31,6 @@
 
 #include <multiboot.h>
 
-#include <arch.h>
-#include <platform.h>
-
 //memory
 #include <mm/layout.h>
 #include <mm/pmm.h>
