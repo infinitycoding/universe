@@ -21,9 +21,6 @@
  *  @brief Kernel driver for the programmable interrupt timer (PIT)
  *  @author Michael Sippel <micha@infinitycoding.de>
  */
-#include <platform.h>
-#ifdef _PIT_
-
 #include <drivers/pit.h>
 #include <io.h>
 
@@ -49,6 +46,4 @@ void set_pit_freq(int freq)
     outb(0x40,counter & 0xFF);
     outb(0x40,counter >> 8);
 }
-
-#endif
 

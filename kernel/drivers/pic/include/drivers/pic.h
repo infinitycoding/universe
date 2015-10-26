@@ -21,9 +21,6 @@
 /**
  *  @author Michael Sippel <micha@infinitycoding.de>
  */
-#include <platform.h>
-#ifdef _PIC_
-
 #include <stdint.h>
 
 #define PIC_MASTER_CMD	0x20
@@ -42,8 +39,6 @@ typedef uint16_t irqnum_t;
 
 void INIT_PIC(void);
 void EOI(irqnum_t irq);
-
-#endif
 
 #endif
 

@@ -21,9 +21,6 @@
 /**
  *	@author Michael Sippel <micha@infinitycoding.de>
  */
-#include <platform.h>
-#ifdef _CGA_
-
 #include <stdint.h>
 
 #define BLACK		0x0
@@ -70,8 +67,6 @@ void cga_putc_color(char c, cga_color_t col);
 void cga_puts_color(const char *string, cga_color_t col);
 void cga_putc(char c);
 void cga_puts(const char *string);
-
-#endif
 
 #endif
 

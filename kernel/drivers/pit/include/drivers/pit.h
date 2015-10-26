@@ -21,13 +21,9 @@
 /**
  *  @author Michael Sippel <micha@infinitycoding.de>
  */
-#include <platform.h>
-#ifdef _PIT_
 
 void INIT_PIT(int freq);
 void set_pit_freq(int freq);
-
-#endif
 
 #endif
 

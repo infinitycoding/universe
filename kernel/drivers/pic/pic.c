@@ -21,9 +21,6 @@
  *  @brief Functions for setting up the programmable interrupt controler (pic)
  *  @author Simon Diepold aka. Tdotu <simon.diepold@infinitycoding.de>
  */
-#include <platform.h>
-#ifdef _PIC_
-
 #include <drivers/pic.h>
 #include <io.h>
 
@@ -53,6 +50,4 @@ void EOI(irqnum_t irq)
     if (irq >= 8)
         outb(PIC_SLAVE_CMD, PIC_EOI);
 }
-
-#endif
 

@@ -22,8 +22,6 @@
  *  @author Tom Slawik <tom.slawik@gmail.com>
  *  @author Simon Diepold <simon.diepold@infinitycoding.de>
  */
-#include <platform.h>
-
 #include <cpu.h>
 #include <printf.h>
 #include <drivers/cga.h>
@@ -77,11 +75,8 @@ void panic(char *message)
                     "\n      To help us improving our systems, please report this incident to us.      "
                    );
 
-#ifdef _CGA_
     cga_puts_color(buffer, cga_color(WHITE, RED, 0));
-#else
     printf("%s", buffer);
-#endif
 
     halt();
 }

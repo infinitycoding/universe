@@ -26,7 +26,7 @@
 
 #include <drivers/cga.h>
 
-static const char *__logo = "\
+const char *__logo = "\
                                                                                \n\
            UUUUUUUU     UUUUUUUU NNNNNNNN        NNNNNNNN IIIIIIIIII           \n\
            U::::::U     U::::::U N:::::::N       N::::::N I::::::::I           \n\
@@ -46,10 +46,10 @@ static const char *__logo = "\
                  UUUUUUUUU       NNNNNNNN         NNNNNNN IIIIIIIIII           \n\
                                                                                \n\
 ";
-
-static void print_logo(void)
+/*
+inline void print_logo(void)
 {
-    puts(__logo);
+    printf("%s", __logo);
 }
-
+*/
 #endif

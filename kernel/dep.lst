@@ -1,4 +1,7 @@
+util/nlc
 arch
 platform
+mm/vmm
+mm/heap
 mm/shm
 

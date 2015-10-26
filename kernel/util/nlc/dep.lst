@@ -1,4 +1,6 @@
+arch
 platform
 mm/heap
 util/nlc/src
+drivers/cga
 

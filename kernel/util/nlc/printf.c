@@ -19,8 +19,6 @@
 /**
  * @author Tom Slawik <tom.slawik@gmail.com>
  */
-#include <platform.h>
-
 #include <printf.h>
 #include <string.h>
 #include <stdarg.h>
@@ -30,10 +28,9 @@
 
 int puts(const char *str)
 {
-#ifdef _CGA_
     cga_puts(str);
     cga_puts("\n");
-#endif
+
     return 0;
 }
 
@@ -48,9 +45,8 @@ int printf(const char *fmt, ...)
 
     size = vsprintf(buffer, fmt, args);
 
-#ifdef _CGA_
     cga_puts(buffer);
-#endif
+
     va_end(args);
     return size;
 }

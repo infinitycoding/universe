@@ -41,6 +41,7 @@ export PREFIX
 
 kernel:
 	$(MAKE) -C kernel
+	cp kernel/kernel32.elf build/kernel32.elf
 
 libs:
 	@$(MAKE) -C libs ARCH="$(ARCH)" PLATFORM="$(PLATFORM)" CC="$(CC)" ASM="$(ASM)" LD="$(LD)" CFLAGS="$(CFLAGS)" ASFLAGS="$(ASFLAGS)" LDFLAGS="$(LDFLAGS)"

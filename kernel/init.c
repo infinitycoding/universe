@@ -26,7 +26,8 @@
 
 //abstract
 #include <printf.h>
-#include <logo.h>
+
+
 #include <panic.h>
 
 #include <multiboot.h>
@@ -75,20 +76,16 @@ int init(struct multiboot_struct *mb_info, uint32_t magic_number)
 
     // init kernel
     INIT_ARCH();
-    INIT_MM(mb_info);
+
+	INIT_PMM(mb_info);
+	INIT_VMM();
+	INIT_HEAP();
+
     INIT_PLATFORM();
 
     INIT_TRIGGER();
     INIT_SCHEDULER();
 
-    //print Logo and loading message
-#ifdef _CGA_
-    cga_set_color(cga_color(YELLOW, BLACK, 0));
-#endif
-    print_logo();
-#ifdef _CGA_
-    cga_set_color(cga_color(WHITE, BLACK, 0));
-#endif
     printf("Universe wird gestartet...\n");
 
     // count free memory and display it
