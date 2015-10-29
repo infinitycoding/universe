@@ -19,20 +19,20 @@ def dependices(mpath):
 	else:
 		return []
 
-def compile_c_file(cccall, ipath):
+def compile_c_file(includes, ipath):
 	opath = "{}.o".format(ipath)
-	cccall = "{} {} -c -o {}".format(cccall, ipath, opath)
+	cccall = "i686-universe-gcc -Wall -g -nostdinc -fno-stack-protector -fno-builtin-log -fno-builtin {} {} -c -o {}".format(includes, ipath, opath)
 	print(cccall)
 	if(not os.system(cccall) == 0):
 		print("BUILD ERROR. Aborting")
 		exit()
 	return opath
 
-def compile_asm_file(cccall, ipath):
+def compile_asm_file(includes, ipath):
 	tpath = "{}.pp".format(ipath)
 	opath = "{}.o".format(ipath)
 
-	cccall = "{} -x assembler-with-cpp -P -E {} -o {}".format(cccall, ipath, tpath)
+	cccall = "i686-universe-gcc -Wall -x assembler-with-cpp -P -E {} {} -o {}".format(includes, ipath, tpath)
 	print(cccall)
 	if(not os.system(cccall) == 0):
 		print("BUILD ERROR. Aborting")
@@ -45,36 +45,42 @@ def compile_asm_file(cccall, ipath):
 		exit()
 	return opath
 
-def compile_module_files(mpath, cccall):
+def compile_module_files(mpath, includes):
 	ofiles = []
 	for fpath in os.listdir(mpath):
+		inpath = ""
+		for i in includes:
+			inpath = "{} -I{}/include".format(inpath, i)
+
 		if(fpath.endswith(".c")):
 			ipath = "{}/{}".format(mpath, fpath)
-			opath = compile_c_file(cccall, ipath)
+			opath = compile_c_file(inpath, ipath)
 			ofiles.append(opath)
 		if(fpath.endswith(".asm")):
 			ipath = "{}/{}".format(mpath, fpath)
-			opath = compile_asm_file(cccall, ipath)
+			opath = compile_asm_file(inpath, ipath)
 			ofiles.append(opath)
 	return ofiles
 
-def build_module(mpath, cccall):
+def build_module(mpath, includes=[]):
 	ofiles = []
-	cccall = "{} -I{}/include".format(cccall, mpath)
+	if(not mpath in includes):
+		includes.append(mpath)
+
 	if(not mpath in built):
 		print("building module {}..".format(mpath))
 		built.append(mpath)
 
 		for submod in dependices(mpath):
-			cccall, sof = build_module(submod, cccall)
+			includes, sof = build_module(submod, includes)
 			ofiles.extend(sof)
 
-		ofiles.extend(compile_module_files(mpath, cccall))
+		ofiles.extend(compile_module_files(mpath, includes))
 		print("built module {}".format(mpath))
-	return cccall, ofiles
+	return includes, ofiles
 
 # compile all
-cccall, ofiles = build_module(".", "i686-universe-gcc -Wall -g -nostdinc -fno-stack-protector -fno-builtin-log -fno-builtin")
+include, ofiles = build_module(".")
 # generate string
 ostr = ""
 for of in ofiles:
