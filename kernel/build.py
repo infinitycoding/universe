@@ -52,14 +52,20 @@ def compile_module_files(mpath, includes):
 		for i in includes:
 			inpath = "{} -I{}/include".format(inpath, i)
 
+		ipath = "{}/{}".format(mpath, fpath)
+		opath = "{}.o".format(ipath)
+		if(os.path.isfile(opath)):
+			if(os.path.getmtime(opath) > os.path.getmtime(ipath)):
+				ofiles.append(opath)
+				continue
+
 		if(fpath.endswith(".c")):
-			ipath = "{}/{}".format(mpath, fpath)
 			opath = compile_c_file(inpath, ipath)
 			ofiles.append(opath)
 		if(fpath.endswith(".asm")):
-			ipath = "{}/{}".format(mpath, fpath)
 			opath = compile_asm_file(inpath, ipath)
 			ofiles.append(opath)
+
 	return ofiles
 
 def build_module(mpath, includes=[]):
