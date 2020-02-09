@@ -6,12 +6,12 @@ all: kernel iso-img
 # arm
 ARCH=i686
 PLATFORM=pc
-
+HOSTCOMPILER=true
 HOST_PREFIX=/usr/
 
 CFLAGS = -Wall -g -nostdinc -fno-stack-protector -fno-builtin-log
-ASFLAGS =-felf32
-#LDFLAGS = -muniverse_i386
+ASFLAGS = -felf32
+LDFLAGS = -muniverse_i386
 
 PREFIX = $(PWD)/build
 #USBDEV = /dev/sdb
@@ -19,6 +19,7 @@ PREFIX = $(PWD)/build
 CC = $(ARCH)-universe-gcc
 LD = $(ARCH)-universe-ld
 ASM = $(ARCH)-universe-as
+CCPP = $(ARCH)-universe-g++
 
 
 #change defaults
@@ -26,9 +27,18 @@ ifeq ($(ARCH),PPC)
 QEMU = qemu-system-ppc
 
 else ifeq ($(ARCH),i686)
+ifeq ($(HOSTCOMPILER),true)
+CFLAGS = -m32 -Wall -g -nostdinc -fno-stack-protector -fno-builtin-log
+ASFLAGS = -felf32
+LDFLAGS = -melf_i386
+CC = gcc
+LD = ld
+ASM = nasm
+CCPP = g++
+else
 QEMU = qemu-system-i386 -cdrom cdrom.iso -net nic,model=rtl8139 -net user
 ASM = nasm
-
+endif
 else ifeq ($(ARCH),arm)
 CC = arm-universe-eabi-gcc
 LD = arm-universe-eabi-ld
@@ -44,7 +54,7 @@ kernel:
 	@$(MAKE) -C kernel ARCH="$(ARCH)" PLATFORM="$(PLATFORM)" CC="$(CC)" ASM="$(ASM)" LD="$(LD)" CFLAGS="$(CFLAGS)" ASFLAGS="$(ASFLAGS)" LDFLAGS="$(LDFLAGS)"
 
 libs:
-	@$(MAKE) -C libs ARCH="$(ARCH)" PLATFORM="$(PLATFORM)" CC="$(CC)" ASM="$(ASM)" LD="$(LD)" CFLAGS="$(CFLAGS)" ASFLAGS="$(ASFLAGS)" LDFLAGS="$(LDFLAGS)"
+	@$(MAKE) -C libs ARCH="$(ARCH)" PLATFORM="$(PLATFORM)" CCPP="$(CCPP)" CC="$(CC)" ASM="$(ASM)" LD="$(LD)" CFLAGS="$(CFLAGS)" ASFLAGS="$(ASFLAGS)" LDFLAGS="$(LDFLAGS)"
 
 drivers:libs
 	@$(MAKE) -C drivers ARCH="$(ARCH)" PLATFORM="$(PLATFORM)" CC="$(CC)" ASM="$(ASM)" LD="$(LD)" CFLAGS="$(CFLAGS)" ASFLAGS="$(ASFLAGS)" LDFLAGS="$(LDFLAGS)"

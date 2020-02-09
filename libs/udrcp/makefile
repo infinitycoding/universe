@@ -1,7 +1,7 @@
 SRCS = $(shell find -name '*.c')
 OBJS = $(addsuffix .o,$(basename $(SRCS)))
 
-L_CFLAGS = -m32 -Wall -fno-stack-protector -fno-builtin -fno-builtin-log -Wimplicit-function-declaration -nostdinc -I../mercury/include -Iinclude
+L_CFLAGS = -m32 -Wall -fno-stack-protector -fno-builtin -fno-builtin-log -Wimplicit-function-declaration -nostdinc -I../mercury/include -I../mercury/include/c/ -Iinclude
 
 all: udrcp.a
 	cp -R ./include/* $(PREFIX)/usr/include
