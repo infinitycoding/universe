@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <universe/universe.h>
+#include <universe.h>
 #include <stdio.h>
 
 
