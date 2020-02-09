@@ -27,17 +27,15 @@ ifeq ($(ARCH),PPC)
 QEMU = qemu-system-ppc
 
 else ifeq ($(ARCH),i686)
+QEMU = qemu-system-i386 -cdrom cdrom.iso -net nic,model=rtl8139 -net user
+ASM = nasm
 ifeq ($(HOSTCOMPILER),true)
 CFLAGS = -m32 -Wall -g -nostdinc -fno-stack-protector -fno-builtin-log
 ASFLAGS = -felf32
 LDFLAGS = -melf_i386
 CC = gcc
 LD = ld
-ASM = nasm
 CCPP = g++
-else
-QEMU = qemu-system-i386 -cdrom cdrom.iso -net nic,model=rtl8139 -net user
-ASM = nasm
 endif
 else ifeq ($(ARCH),arm)
 CC = arm-universe-eabi-gcc
