@@ -1,6 +1,6 @@
 
 all:
-	@$(MAKE) -C pluto
+	#@$(MAKE) -C pluto
 	@$(MAKE) -C test
 	@$(MAKE) -C testsrv
 	@$(MAKE) -C ultrashell
