@@ -82,10 +82,10 @@ update:
 	git submodule update
 
 clean:
-	@$(MAKE) -C kernel clean
-	@$(MAKE) -C drivers clean
-	@$(MAKE) -C user clean
-	@$(MAKE) -C libs clean
+	@$(MAKE) -C kernel clean ARCH="$(ARCH)" PLATFORM="$(PLATFORM)"
+	@$(MAKE) -C drivers clean ARCH="$(ARCH)" PLATFORM="$(PLATFORM)"
+	@$(MAKE) -C user clean ARCH="$(ARCH)" PLATFORM="$(PLATFORM)"
+	@$(MAKE) -C libs clean ARCH="$(ARCH)" PLATFORM="$(PLATFORM)"
 	@rm *.iso -f
 
 dependencies:

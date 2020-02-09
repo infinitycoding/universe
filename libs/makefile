@@ -6,7 +6,7 @@ all:
 	#@$(MAKE) -C cdi
 
 clean:
-	@$(MAKE) -C mercury clean
+	@$(MAKE) -C mercury clean TARGET="universe" ARCH="$(ARCH)"
 	@$(MAKE) -C udrcp clean
 	@$(MAKE) -C cdi clean
 
