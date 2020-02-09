@@ -1,7 +1,7 @@
 all:
 	mkdir -p ../build/usr/lib
 	mkdir -p ../build/usr/include
-	@$(MAKE) -C mercury TARGET="universe" CCPP="$(CCPP)" CC="$(CC)" ASM="$(ASM)" LD="$(LD)" ARCH="$(ARCH)"
+	@$(MAKE) -C mercury TARGET="universe" CCPP="$(CCPP)" CC="$(CC)" AS="$(ASM)" LD="$(LD)" ARCH="$(ARCH)"
 	@$(MAKE) -C udrcp ARCH="$(ARCH)"
 	#@$(MAKE) -C cdi
 
